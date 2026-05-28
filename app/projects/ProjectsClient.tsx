@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, LayoutGrid, List } from 'lucide-react';
-import ProjectBoard from './ProjectBoard';
+import KanbanBoard from '@/components/Kanban/KanbanBoard';
 import CreateProjectModal from '@/components/CreateProjectModal';
 import EditProjectModal from '@/components/EditProjectModal';
 import { createProject, updateProject } from '@/app/actions/projectActions';
@@ -29,9 +29,12 @@ export default function ProjectsClient({ initialProjects }: ProjectsClientProps)
     }
   };
 
-  const handleEditProject = (project: any) => {
-    setSelectedProject(project);
-    setIsEditModalOpen(true);
+  const handleCardClick = (projectId: string) => {
+    const project = initialProjects.find((p) => p._id === projectId);
+    if (project) {
+      setSelectedProject(project);
+      setIsEditModalOpen(true);
+    }
   };
 
   const handleUpdateProject = async (projectId: string, data: any) => {
@@ -101,9 +104,9 @@ export default function ProjectsClient({ initialProjects }: ProjectsClientProps)
 
       {/* Kanban Board Layout */}
       {viewMode === 'board' && (
-        <ProjectBoard 
+        <KanbanBoard 
           initialProjects={initialProjects}
-          onEdit={handleEditProject}
+          onCardClick={handleCardClick}
         />
       )}
       
