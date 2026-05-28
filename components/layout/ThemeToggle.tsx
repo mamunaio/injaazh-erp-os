@@ -6,7 +6,7 @@ import { Sun, Moon, Laptop } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function ThemeToggle() {
-  const { theme, setTheme, mounted } = useTheme();
+  const { theme, setTheme } = useTheme();
   
   // Prevent hydration mismatch
   const [isMounted, setIsMounted] = React.useState(false);

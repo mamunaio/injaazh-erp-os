@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, 
@@ -14,28 +14,8 @@ import {
   Clock
 } from 'lucide-react';
 import Link from 'next/link';
-
-// --- MOCK DATA ---
-const stats = [
-  { label: 'Total Active Leads', value: '1,248', trend: '+12% this month', icon: Users, color: 'from-purple-500 to-fuchsia-400' },
-  { label: 'Follow-ups Today', value: '14', trend: '5 urgent', icon: CalendarClock, color: 'from-purple-500 to-fuchsia-400', glow: true },
-  { label: 'Pipeline Value', value: '$84,500', trend: '+5% this week', icon: DollarSign, color: 'from-purple-500 to-fuchsia-400' },
-  { label: 'Active Gigs', value: '7', trend: '3 near delivery', icon: Briefcase, color: 'from-purple-500 to-fuchsia-400' },
-];
-
-const priorityFollowUps = [
-  { id: 1, name: 'Acme Corp', service: 'High-end Web Development', status: 'Meeting Booked', time: '10:00 AM', statusColor: 'text-purple-600 dark:text-purple-300 bg-purple-500/10 dark:bg-purple-900/40' },
-  { id: 2, name: 'Global Tech', service: 'Technical SEO', status: 'Contacted', time: '1:30 PM', statusColor: 'text-fuchsia-600 dark:text-fuchsia-300 bg-fuchsia-500/10 dark:bg-fuchsia-900/40' },
-  { id: 3, name: 'Stark Industries', service: 'Custom ERP / SaaS', status: 'Replied', time: '3:15 PM', statusColor: 'text-violet-600 dark:text-violet-300 bg-violet-500/10 dark:bg-violet-900/40' },
-  { id: 4, name: 'Wayne Enterprises', service: 'UI/UX Design', status: 'New', time: 'Overdue', statusColor: 'text-purple-600 dark:text-purple-300 bg-purple-500/10 dark:bg-purple-900/40' },
-];
-
-const recentActivity = [
-  { id: 1, action: 'Sent Pitch Deck', target: 'Acme Corp', type: 'Email', time: '2 hrs ago' },
-  { id: 2, action: 'Follow-up message', target: 'Global Tech', type: 'WhatsApp', time: '4 hrs ago' },
-  { id: 3, action: 'Moved to Meeting Booked', target: 'Oscorp', type: 'System', time: '5 hrs ago' },
-  { id: 4, action: 'Added new lead', target: 'Wayne Enterprises', type: 'System', time: 'Yesterday' },
-];
+import { getLeads } from '@/app/actions/leadActions';
+import { getMarketplaceProjects } from '@/app/actions/marketplaceActions';
 
 // --- ANIMATION VARIANTS ---
 const containerVariants = {
@@ -51,13 +31,158 @@ const itemVariants = {
   show: { 
     opacity: 1, 
     y: 0, 
-    transition: { duration: 0.6, ease: "easeOut" } 
+    transition: { duration: 0.6, ease: "easeOut" as const } 
   }
 };
 
 export default function Dashboard() {
   const [isActionsOpen, setIsActionsOpen] = useState(false);
+  const [stats, setStats] = useState([
+    { label: 'Total Active Leads', value: '0', trend: 'Loading...', icon: Users, color: 'from-purple-500 to-fuchsia-400' },
+    { label: 'Follow-ups Today', value: '0', trend: 'Loading...', icon: CalendarClock, color: 'from-purple-500 to-fuchsia-400', glow: true },
+    { label: 'Pipeline Value', value: '$0', trend: 'Loading...', icon: DollarSign, color: 'from-purple-500 to-fuchsia-400' },
+    { label: 'Active Gigs', value: '0', trend: 'Loading...', icon: Briefcase, color: 'from-purple-500 to-fuchsia-400' },
+  ]);
+  const [priorityFollowUps, setPriorityFollowUps] = useState<any[]>([]);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  
   const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+  useEffect(() => {
+    async function loadDashboardData() {
+      try {
+        // Fetch leads
+        const leadsResponse = await getLeads();
+        const leads = leadsResponse.success ? leadsResponse.data : [];
+        
+        // Fetch marketplace projects
+        const projects = await getMarketplaceProjects();
+        
+        // Calculate total active leads
+        const totalLeads = leads.length;
+        
+        // Calculate follow-ups today
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const followUpsToday = leads.filter((lead: any) => {
+          if (!lead.nextFollowUpDate) return false;
+          const followUpDate = new Date(lead.nextFollowUpDate);
+          followUpDate.setHours(0, 0, 0, 0);
+          return followUpDate.getTime() === today.getTime();
+        }).length;
+        
+        // Calculate pipeline value from marketplace projects
+        const pipelineValue = projects.reduce((sum: number, project: any) => {
+          const budgetValue = project.budget 
+            ? parseFloat(project.budget.replace(/[^0-9.-]+/g, '')) 
+            : 0;
+          return sum + budgetValue;
+        }, 0);
+        
+        // Count active projects
+        const activeProjects = projects.filter((p: any) => 
+          p.status === 'In Progress' || p.status === 'Planning'
+        ).length;
+        
+        // Update stats
+        setStats([
+          { 
+            label: 'Total Active Leads', 
+            value: totalLeads.toString(), 
+            trend: `${leads.filter((l: any) => l.outreach_status === 'New').length} new this week`, 
+            icon: Users, 
+            color: 'from-purple-500 to-fuchsia-400' 
+          },
+          { 
+            label: 'Follow-ups Today', 
+            value: followUpsToday.toString(), 
+            trend: followUpsToday > 0 ? `${followUpsToday} urgent` : 'All clear', 
+            icon: CalendarClock, 
+            color: 'from-purple-500 to-fuchsia-400', 
+            glow: followUpsToday > 0 
+          },
+          { 
+            label: 'Pipeline Value', 
+            value: `$${pipelineValue.toLocaleString()}`, 
+            trend: `${projects.length} total projects`, 
+            icon: DollarSign, 
+            color: 'from-purple-500 to-fuchsia-400' 
+          },
+          { 
+            label: 'Active Gigs', 
+            value: activeProjects.toString(), 
+            trend: `${projects.filter((p: any) => p.status === 'Completed').length} completed`, 
+            icon: Briefcase, 
+            color: 'from-purple-500 to-fuchsia-400' 
+          },
+        ]);
+        
+        // Get priority follow-ups (leads with follow-up date today or overdue)
+        const priorityLeads = leads
+          .filter((lead: any) => {
+            if (!lead.nextFollowUpDate) return false;
+            const followUpDate = new Date(lead.nextFollowUpDate);
+            return followUpDate <= new Date();
+          })
+          .slice(0, 4)
+          .map((lead: any) => ({
+            id: lead._id,
+            name: lead.company_name,
+            service: lead.targetService || 'General Inquiry',
+            status: lead.outreach_status,
+            time: new Date(lead.nextFollowUpDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+            statusColor: getStatusColor(lead.outreach_status)
+          }));
+        
+        setPriorityFollowUps(priorityLeads);
+        
+        // Get recent activity from leads
+        const activities: any[] = [];
+        leads.slice(0, 4).forEach((lead: any) => {
+          if (lead.outreach_logs && lead.outreach_logs.length > 0) {
+            const latestLog = lead.outreach_logs[0];
+            activities.push({
+              id: lead._id,
+              action: `${latestLog.method} outreach`,
+              target: lead.company_name,
+              type: latestLog.method,
+              time: getRelativeTime(new Date(latestLog.date))
+            });
+          }
+        });
+        
+        setRecentActivity(activities.slice(0, 4));
+        
+      } catch (error) {
+        console.error('Failed to load dashboard data:', error);
+      }
+    }
+    
+    loadDashboardData();
+  }, []);
+  
+  const getStatusColor = (status: string) => {
+    switch(status) {
+      case 'New': return 'text-blue-600 dark:text-blue-300 bg-blue-500/10 dark:bg-blue-900/40';
+      case 'Contacted': return 'text-yellow-600 dark:text-yellow-300 bg-yellow-500/10 dark:bg-yellow-900/40';
+      case 'Meeting Booked': return 'text-purple-600 dark:text-purple-300 bg-purple-500/10 dark:bg-purple-900/40';
+      case 'Replied': return 'text-violet-600 dark:text-violet-300 bg-violet-500/10 dark:bg-violet-900/40';
+      default: return 'text-purple-600 dark:text-purple-300 bg-purple-500/10 dark:bg-purple-900/40';
+    }
+  };
+  
+  const getRelativeTime = (date: Date) => {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 60) return `${diffMins} min${diffMins !== 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hr${diffHours !== 1 ? 's' : ''} ago`;
+    if (diffDays === 1) return 'Yesterday';
+    return `${diffDays} days ago`;
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-500/5 via-slate-50 to-slate-50 dark:from-purple-900/20 dark:via-slate-950 dark:to-slate-950 text-slate-800 dark:text-slate-200 p-8 overflow-x-hidden transition-colors duration-300">
@@ -200,7 +325,14 @@ export default function Dashboard() {
             >
               <div className="absolute inset-0 bg-gradient-to-b from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
               <div className="divide-y divide-slate-100 dark:divide-purple-500/10 relative z-10 h-full flex flex-col">
-                {priorityFollowUps.map((lead) => (
+                {priorityFollowUps.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full p-12 text-center">
+                    <CalendarClock size={48} className="text-slate-300 dark:text-slate-700 mb-4" />
+                    <h3 className="text-lg font-semibold text-slate-600 dark:text-slate-400 mb-2">No Follow-ups Today</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-500">All caught up! No urgent follow-ups scheduled.</p>
+                  </div>
+                ) : (
+                  priorityFollowUps.map((lead) => (
                   <motion.div 
                     key={lead.id} 
                     whileHover={{ backgroundColor: 'rgba(139, 92, 246, 0.05)' }}
@@ -228,7 +360,8 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </motion.div>
-                ))}
+                ))
+                )}
               </div>
             </motion.div>
           </motion.div>
@@ -243,7 +376,14 @@ export default function Dashboard() {
             >
               <div className="absolute inset-0 bg-gradient-to-b from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-3xl" />
               <div className="relative border-l-2 border-purple-500/20 ml-4 space-y-10 z-10 pt-2 pb-4">
-                {recentActivity.map((activity, idx) => (
+                {recentActivity.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center ml-8">
+                    <Clock size={48} className="text-slate-300 dark:text-slate-700 mb-4" />
+                    <h3 className="text-base font-semibold text-slate-600 dark:text-slate-400 mb-2">No Recent Activity</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-500">Start adding leads to see activity here.</p>
+                  </div>
+                ) : (
+                  recentActivity.map((activity, idx) => (
                   <motion.div 
                     key={activity.id} 
                     initial={{ opacity: 0, x: -10 }}
@@ -265,7 +405,8 @@ export default function Dashboard() {
                       </p>
                     </div>
                   </motion.div>
-                ))}
+                ))
+                )}
               </div>
             </motion.div>
           </motion.div>

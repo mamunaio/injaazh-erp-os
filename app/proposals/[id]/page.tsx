@@ -1,11 +1,21 @@
-import ProposalEditorClient from "./ProposalEditorClient";
+import { notFound } from 'next/navigation';
+import { getProposalById } from '@/app/actions/proposalActions';
+import ProposalEditorClient from './ProposalEditorClient';
 
-export const metadata = {
-  title: "Proposal Editor | Injaazh ERP",
-  description: "Edit and manage client proposals",
-};
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
-export default async function ProposalEditorPage({ params }: { params: Promise<{ id: string }> }) {
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function ProposalEditorPage({ params }: PageProps) {
   const { id } = await params;
-  return <ProposalEditorClient proposalId={id} />;
+  const result = await getProposalById(id);
+
+  if (!result.success || !result.data) {
+    notFound();
+  }
+
+  return <ProposalEditorClient proposal={result.data} />;
 }

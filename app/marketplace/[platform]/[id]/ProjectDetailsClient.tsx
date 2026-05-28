@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Clock, Briefcase, ShoppingCart, Globe, Users, CheckCircle2, Circle, UploadCloud, FileText, Search, Filter, DollarSign, Check, MoreHorizontal, Pencil, Archive, Trash, ChevronDown, Lock, XCircle, AlertTriangle, Plus, File, Download } from 'lucide-react';
-import CreateProjectModal from '@/components/CreateProjectModal';
+import EditMarketplaceProjectModal from '@/components/EditMarketplaceProjectModal';
 import { getMarketplaceProjectById, updateMarketplaceProject, deleteMarketplaceProject } from '@/app/actions/marketplaceActions';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -22,7 +22,6 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
   // State Management
   const [tasks, setTasks] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'Details' | 'Payments' | 'Tasklists' | 'Files'>('Details');
-  const [currentTime, setCurrentTime] = useState<string>('');
   const [loading, setLoading] = useState(true);
   
   // Dropdown States
@@ -40,7 +39,9 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
     title: "",
     client: "",
     budget: "",
-    scope: ""
+    scope: "",
+    startDate: "",
+    deadline: ""
   });
 
   // Milestones State
@@ -69,7 +70,9 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
             title: data.title || '',
             client: data.clientDetails?.clientName || '',
             budget: data.budget || '',
-            scope: data.scope || ''
+            scope: data.scope || '',
+            startDate: data.startDate || '',
+            deadline: data.deadline || ''
           });
           setCurrentStatus(data.status || 'Planning');
           setTasks(data.tasks || []);
@@ -104,26 +107,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
 
   // Derived State
   const completedTasks = tasks.filter(t => t.completed).length;
-  const progressPercentage = Math.round((completedTasks / tasks.length) * 100);
-
-  // Real-Time Clock
-  useEffect(() => {
-    // We are hardcoding the timezone to 'America/New_York' for demo purposes
-    const updateTime = () => {
-      const time = new Intl.DateTimeFormat('en-US', {
-        timeZone: 'America/New_York',
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
-        hour12: true
-      }).format(new Date());
-      setCurrentTime(time);
-    };
-    
-    updateTime(); // Initial call
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  const progressPercentage = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
 
   const handleTaskToggle = (id: number | string) => {
     const newTasks = tasks.map(task => 
@@ -315,11 +299,18 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
             <div className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-2xl p-4 min-w-[160px]">
               <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">Client</p>
               <p className="text-lg font-bold text-slate-800 dark:text-white">{projectData.client}</p>
-              <div className="mt-2 flex items-center gap-2 text-sm text-slate-600 dark:text-gray-300">
-                <Clock size={14} className={pConf.accent} />
-                <span className="font-medium w-24 tabular-nums">{currentTime}</span>
-                <span className="text-xs text-slate-400 dark:text-gray-500">EST</span>
-              </div>
+              {projectData.deadline && (
+                <div className="mt-2 flex items-center gap-2 text-sm text-slate-600 dark:text-gray-300">
+                  <Clock size={14} className={pConf.accent} />
+                  <span className="font-medium">
+                    {new Date(projectData.deadline).toLocaleDateString('en-US', { 
+                      month: 'short', 
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Global Progress Widget */}
@@ -679,22 +670,30 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
       </div>
 
       {/* Edit Project Modal */}
-      <CreateProjectModal 
+      <EditMarketplaceProjectModal 
         isOpen={isEditModalOpen} 
         onClose={() => setIsEditModalOpen(false)} 
-        defaultPlatform={platform}
-        isEditMode={true}
-        initialData={projectData}
+        project={projectData}
         onSave={async (updatedData) => {
-          setProjectData(updatedData);
-          
-          await saveToServer({
+          const taskList = updatedData.tasks && updatedData.tasks.length > 0
+            ? updatedData.tasks.map((t: string, idx: number) => ({ 
+                id: Date.now() + idx, 
+                title: t, 
+                completed: false 
+              }))
+            : projectData.tasks || [];
+
+          const updatePayload = {
             title: updatedData.title,
             clientDetails: { clientName: updatedData.client },
-            budget: updatedData.budget,
-            scope: updatedData.scope
-          });
-          
+            budget: updatedData.budget ? `$${updatedData.budget}` : projectData.budget,
+            scope: updatedData.scope,
+            startDate: updatedData.startDate ? new Date(updatedData.startDate) : undefined,
+            deadline: updatedData.deadline ? new Date(updatedData.deadline) : undefined,
+            tasks: taskList,
+          };
+
+          await saveToServer(updatePayload);
           setIsEditModalOpen(false);
         }}
       />

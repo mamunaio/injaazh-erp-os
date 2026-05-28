@@ -34,6 +34,16 @@ body::before {
   100% { transform: scale(1.1); opacity: 1; }
 }
 
+/* Shimmer animation for card hover effect */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
 /* Custom Ultra-thin Scrollbars */
 ::-webkit-scrollbar {
   width: 4px;

@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Calendar, DollarSign } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-interface CreateProjectModalProps {
+interface EditProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreateProject: (data: any) => Promise<void>;
+  project: any;
+  onUpdateProject: (projectId: string, data: any) => Promise<void>;
 }
 
 const TECH_STACK_OPTIONS = [
@@ -26,7 +27,7 @@ const TECH_STACK_OPTIONS = [
   'SaaS',
 ];
 
-export default function CreateProjectModal({ isOpen, onClose, onCreateProject }: CreateProjectModalProps) {
+export default function EditProjectModal({ isOpen, onClose, project, onUpdateProject }: EditProjectModalProps) {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -42,39 +43,38 @@ export default function CreateProjectModal({ isOpen, onClose, onCreateProject }:
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (project) {
+      setFormData({
+        title: project.title || '',
+        description: project.description || '',
+        clientName: project.clientName || '',
+        status: project.status || 'Planning',
+        techStack: project.techStack || [],
+        assignees: Array.isArray(project.assignees) ? project.assignees.join(', ') : '',
+        progress: project.progress || 0,
+        startDate: project.startDate ? new Date(project.startDate).toISOString().split('T')[0] : '',
+        deadline: project.deadline ? new Date(project.deadline).toISOString().split('T')[0] : '',
+        priority: project.priority || 'Medium',
+        budget: project.budget?.toString() || '',
+      });
+    }
+  }, [project]);
+
+  if (!isOpen || !project) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const projectData = {
+    const updateData = {
       ...formData,
       assignees: formData.assignees.split(',').map(a => a.trim()).filter(Boolean),
       budget: formData.budget ? parseFloat(formData.budget) : undefined,
-      tags: ['Manual'],
-      attachments: 0,
-      comments: 0,
     };
 
-    await onCreateProject(projectData);
+    await onUpdateProject(project._id, updateData);
     setIsSubmitting(false);
-    
-    // Reset form
-    setFormData({
-      title: '',
-      description: '',
-      clientName: '',
-      status: 'Planning',
-      techStack: [],
-      assignees: '',
-      progress: 0,
-      startDate: '',
-      deadline: '',
-      priority: 'Medium',
-      budget: '',
-    });
-    
     onClose();
   };
 
@@ -109,9 +109,9 @@ export default function CreateProjectModal({ isOpen, onClose, onCreateProject }:
           <div className="flex justify-between items-center p-6 border-b border-slate-200 dark:border-purple-500/20 bg-gradient-to-r from-indigo-500/10 to-purple-500/10">
             <div>
               <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
-                Create New Project
+                Edit Project
               </h2>
-              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Add a project manually to the board</p>
+              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Update project details</p>
             </div>
             <button 
               onClick={onClose} 
@@ -135,7 +135,6 @@ export default function CreateProjectModal({ isOpen, onClose, onCreateProject }:
                   required
                   value={formData.title}
                   onChange={e => setFormData({...formData, title: e.target.value})}
-                  placeholder="e.g., Website Redesign for Acme Corp"
                   className="w-full bg-white dark:bg-slate-800/60 border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                 />
               </div>
@@ -150,13 +149,12 @@ export default function CreateProjectModal({ isOpen, onClose, onCreateProject }:
                     type="text" 
                     value={formData.clientName}
                     onChange={e => setFormData({...formData, clientName: e.target.value})}
-                    placeholder="Client or company name"
                     className="w-full bg-white dark:bg-slate-800/60 border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                    Initial Status
+                    Status
                   </label>
                   <select 
                     value={formData.status}
@@ -179,7 +177,6 @@ export default function CreateProjectModal({ isOpen, onClose, onCreateProject }:
                 <textarea 
                   value={formData.description}
                   onChange={e => setFormData({...formData, description: e.target.value})}
-                  placeholder="Brief description of the project..."
                   rows={3}
                   className="w-full bg-white dark:bg-slate-800/60 border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all resize-none"
                 />
@@ -221,7 +218,6 @@ export default function CreateProjectModal({ isOpen, onClose, onCreateProject }:
                     placeholder="John, Jane, Bob"
                     className="w-full bg-white dark:bg-slate-800/60 border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                   />
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Comma separated</p>
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
@@ -287,7 +283,6 @@ export default function CreateProjectModal({ isOpen, onClose, onCreateProject }:
                     step="0.01"
                     value={formData.budget}
                     onChange={e => setFormData({...formData, budget: e.target.value})}
-                    placeholder="5000"
                     className="w-full bg-white dark:bg-slate-800/60 border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                   />
                 </div>
@@ -310,7 +305,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreateProject }:
               disabled={isSubmitting || !formData.title}
               className="px-8 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Creating...' : 'Create Project'}
+              {isSubmitting ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </motion.div>

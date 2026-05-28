@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import connectToDatabase from '@/lib/mongodb';
 import MarketplaceProject from '@/models/MarketplaceProject';
+import { Project } from '@/models/Project';
 
 export async function getMarketplaceProjects(platform?: string) {
   try {
@@ -29,6 +30,7 @@ export async function createMarketplaceProject(data: any) {
     await connectToDatabase();
     
     const newProject = await MarketplaceProject.create(data);
+    
     revalidatePath('/marketplace');
     revalidatePath(`/marketplace/${data.platform?.toLowerCase()}`);
     
@@ -60,8 +62,9 @@ export async function updateMarketplaceProject(id: string, data: any) {
        return { success: false, error: 'Project not found' };
     }
     
-    revalidatePath(`/marketplace/${updatedProject.platform.toLowerCase()}/${id}`);
+    revalidatePath('/marketplace');
     revalidatePath(`/marketplace/${updatedProject.platform.toLowerCase()}`);
+    revalidatePath(`/marketplace/${updatedProject.platform.toLowerCase()}/${id}`);
     
     return { success: true, data: JSON.parse(JSON.stringify(updatedProject)) };
   } catch (error: any) {

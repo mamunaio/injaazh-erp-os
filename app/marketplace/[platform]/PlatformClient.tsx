@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Search, Plus, Clock, Briefcase, ShoppingCart, Globe, Users } from 'lucide-react';
-import CreateProjectModal from '@/components/CreateProjectModal';
+import CreateMarketplaceProjectModal from '@/components/CreateMarketplaceProjectModal';
 import { getMarketplaceProjects, createMarketplaceProject } from '@/app/actions/marketplaceActions';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -87,7 +87,7 @@ export default function PlatformClient({ platform }: { platform: string }) {
 
   const itemVariants = {
     hidden: { opacity: 0, y: 10 },
-    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+    show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } }
   };
 
   const getPlatformConfig = () => {
@@ -156,7 +156,7 @@ export default function PlatformClient({ platform }: { platform: string }) {
               {pConf.icon}
             </div>
             <div>
-              <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-900 to-slate-600 dark:from-white dark:to-gray-400 capitalize">
+              <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 capitalize">
                 {pConf.name} Projects
               </h1>
               <p className="text-slate-500 dark:text-gray-400 text-sm mt-1">Manage active pipeline and deliverables</p>
@@ -279,7 +279,7 @@ export default function PlatformClient({ platform }: { platform: string }) {
 
       <Toaster position="bottom-right" />
 
-      <CreateProjectModal 
+      <CreateMarketplaceProjectModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         defaultPlatform={platform}
@@ -287,7 +287,7 @@ export default function PlatformClient({ platform }: { platform: string }) {
           const loadingToast = toast.loading('Creating project...');
           
           const initialTasks = data.tasks && data.tasks.length > 0
-            ? data.tasks.map((t, idx) => ({ id: Date.now() + idx, title: t, completed: false }))
+            ? data.tasks.map((t: string, idx: number) => ({ id: Date.now() + idx, title: t, completed: false }))
             : [];
             
           const newProject = {
@@ -296,8 +296,9 @@ export default function PlatformClient({ platform }: { platform: string }) {
             platform: platform.charAt(0).toUpperCase() + platform.slice(1),
             status: 'Planning',
             progress: 0,
-            budget: `$${data.budget}`,
-            deadline: new Date(new Date().setMonth(new Date().getMonth() + 1)), // 1 month from now
+            budget: data.budget ? `$${data.budget}` : '$0',
+            startDate: data.startDate ? new Date(data.startDate) : undefined,
+            deadline: data.deadline ? new Date(data.deadline) : undefined,
             scope: data.scope,
             tasks: initialTasks,
             milestones: [],
