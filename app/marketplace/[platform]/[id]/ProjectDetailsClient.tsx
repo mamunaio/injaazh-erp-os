@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Clock, Briefcase, ShoppingCart, Globe, Users, CheckCircle2, Circle, UploadCloud, FileText, Search, Filter, DollarSign, Check, MoreHorizontal, Pencil, Archive, Trash, ChevronDown, Lock, XCircle, AlertTriangle, Plus, File, Download } from 'lucide-react';
+import { ArrowLeft, Clock, Briefcase, ShoppingCart, Globe, Users, CheckCircle2, Circle, UploadCloud, FileText, Search, Filter, DollarSign, Check, MoreHorizontal, Pencil, Archive, Trash, ChevronDown, Lock, XCircle, AlertTriangle, Plus, File, Download, CheckSquare, User } from 'lucide-react';
 import EditMarketplaceProjectModal from '@/components/EditMarketplaceProjectModal';
 import { getMarketplaceProjectById, updateMarketplaceProject, deleteMarketplaceProject } from '@/app/actions/marketplaceActions';
 import toast, { Toaster } from 'react-hot-toast';
@@ -33,7 +33,6 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
-
   // Project Data State
   const [projectData, setProjectData] = useState<any>({
     title: "",
@@ -56,8 +55,27 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
   // Files State
   const [files, setFiles] = useState<any[]>([]);
   const [fileSearchQuery, setFileSearchQuery] = useState('');
-  const [activeFileCategory, setActiveFileCategory] = useState('All Files');
+  const activeFileCategoryState = useState('All Files');
+  const activeFileCategory = activeFileCategoryState[0];
+  const setActiveFileCategory = activeFileCategoryState[1];
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const statusRef = useRef<HTMLDivElement>(null);
+  const actionsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (statusRef.current && !statusRef.current.contains(event.target as Node)) {
+        setIsStatusOpen(false);
+      }
+      if (actionsRef.current && !actionsRef.current.contains(event.target as Node)) {
+        setIsActionsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const router = useRouter();
 
@@ -205,6 +223,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
       }
     }
   };
+  
   const getDynamicBadgeStyle = () => {
     switch (currentStatus) {
       case 'Planning':
@@ -222,29 +241,37 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-8 text-slate-800 dark:text-slate-200 flex flex-col items-center">
+    <div className="min-h-screen p-4 md:p-8 text-slate-800 dark:text-slate-200 flex flex-col items-center relative overflow-hidden bg-slate-50/50 dark:bg-slate-950/50">
       
-      <div className="w-full max-w-6xl">
+      {/* Ambient Backgrounds */}
+      <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/10 dark:bg-indigo-600/10 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 dark:bg-purple-600/10 blur-[120px] rounded-full" />
+      </div>
+      
+      <div className="w-full max-w-6xl relative z-10">
         {/* Navigation Breadcrumb */}
         <Link 
           href={`/marketplace/${platform.toLowerCase()}`}
-          className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors mb-6 group font-medium"
+          className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors mb-6 group font-bold"
         >
           <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
           Back to Directory
         </Link>
 
         {/* Dynamic Header & Overview Panel */}
-        <div className="bg-white/70 dark:bg-purple-950/10 backdrop-blur-2xl border border-slate-200 dark:border-purple-500/10 rounded-3xl p-8 mb-8 shadow-sm relative flex flex-col md:flex-row gap-8 justify-between">
+        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-3xl border border-white/50 dark:border-white/10 rounded-[2.5rem] p-8 md:p-10 mb-8 shadow-xl shadow-slate-200/50 dark:shadow-black/40 relative flex flex-col md:flex-row gap-8 justify-between">
           
-          {/* Decorative Background Wrapper (Clips background but allows dropdowns to overflow card) */}
-          <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
-            <div className="absolute -top-32 -right-32 w-96 h-96 bg-indigo-500/5 blur-[100px] rounded-full pointer-events-none" />
+          {/* Decorative Background Wrapper */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[2.5rem]">
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-indigo-500/20 via-purple-500/10 to-transparent blur-3xl -translate-y-1/2 translate-x-1/3 rounded-full" />
+            <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-gradient-to-tr from-pink-500/10 to-transparent blur-2xl translate-y-1/3 -translate-x-1/3 rounded-full" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/40 to-transparent dark:from-white/5 dark:to-transparent opacity-50" />
           </div>
           
           {/* Left: Info */}
           <div className="flex-1 relative z-10">
-            <div className="flex items-center gap-3 mb-4 relative">
+            <div className="flex items-center gap-3 mb-4 relative" ref={statusRef}>
               <button 
                 onClick={() => setIsStatusOpen(!isStatusOpen)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 border ${getDynamicBadgeStyle()} hover:opacity-80 transition-all outline-none`}
@@ -294,31 +321,31 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
           </div>
 
           {/* Right: Client & Progress Widgets */}
-          <div className="flex items-center gap-6 relative z-10 min-w-[300px] justify-end">
+          <div className="flex items-center gap-4 sm:gap-6 relative z-10 min-w-min justify-end">
             {/* Client Profile Widget */}
-            <div className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-2xl p-4 min-w-[160px]">
-              <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">Client</p>
-              <p className="text-lg font-bold text-slate-800 dark:text-white">{projectData.client}</p>
+            <div className="bg-white/60 dark:bg-white/5 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl p-5 min-w-[160px] shadow-sm flex flex-col justify-center relative overflow-hidden group hover:border-indigo-200 dark:hover:border-indigo-500/30 transition-all">
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/0 to-indigo-500/0 group-hover:from-indigo-500/5 group-hover:to-transparent transition-all" />
+              <p className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                <User size={12} /> Client Details
+              </p>
+              <p className="text-lg font-black text-slate-800 dark:text-white truncate">{projectData.client || 'Direct Client'}</p>
               {projectData.deadline && (
-                <div className="mt-2 flex items-center gap-2 text-sm text-slate-600 dark:text-gray-300">
-                  <Clock size={14} className={pConf.accent} />
-                  <span className="font-medium">
-                    {new Date(projectData.deadline).toLocaleDateString('en-US', { 
-                      month: 'short', 
-                      day: 'numeric',
-                      year: 'numeric'
-                    })}
+                <div className="mt-2.5 flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 bg-slate-100/80 dark:bg-black/30 w-fit px-2.5 py-1 rounded-md">
+                  <Clock size={12} className={pConf.accent} />
+                  <span>
+                    Due: {new Date(projectData.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </span>
                 </div>
               )}
             </div>
 
             {/* Global Progress Widget */}
-            <div className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center min-w-[120px]">
-              <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">Progress</p>
+            <div className="bg-white/60 dark:bg-white/5 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl p-5 flex flex-col items-center justify-center min-w-[140px] shadow-sm relative overflow-hidden group hover:border-indigo-200 dark:hover:border-indigo-500/30 transition-all hidden sm:flex">
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/0 to-indigo-500/0 group-hover:from-indigo-500/5 group-hover:to-transparent transition-all" />
+              <p className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">Progress</p>
               
               <div className="relative w-16 h-16 flex items-center justify-center">
-                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                <svg className="w-full h-full transform -rotate-90 drop-shadow-sm" viewBox="0 0 36 36">
                   {/* Background Circle */}
                   <path
                     className="text-slate-200 dark:text-white/10"
@@ -348,7 +375,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
             </div>
 
             {/* Project Actions Button (Sleek Horizontal Alignment) */}
-            <div className="relative z-50">
+            <div className="relative z-50" ref={actionsRef}>
               <button 
                 onClick={() => setIsActionsOpen(!isActionsOpen)}
                 className="h-8 w-8 rounded-full flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-gray-400 transition-colors outline-none"
@@ -385,21 +412,25 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
         </div>
 
         {/* Sliding Navigation Tabs */}
-        <div className="flex bg-white/50 dark:bg-black/20 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-2xl p-1 mb-8 w-max">
+        <div className="flex bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl border border-white/50 dark:border-white/10 rounded-2xl p-1.5 mb-8 w-max shadow-sm overflow-x-auto max-w-full">
           {['Details', 'Payments', 'Tasklists', 'Files'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
-              className="relative px-6 py-2.5 text-sm font-semibold rounded-xl outline-none transition-colors"
+              className="relative px-5 md:px-7 py-2.5 text-sm font-bold rounded-xl outline-none transition-all duration-300 flex-shrink-0"
             >
-              <span className={`relative z-10 ${activeTab === tab ? 'text-indigo-600 dark:text-white' : 'text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200'}`}>
+              <span className={`relative z-10 flex items-center gap-2 ${activeTab === tab ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}`}>
+                {tab === 'Details' && <FileText size={16} className={activeTab === tab ? 'opacity-100' : 'opacity-70'} />}
+                {tab === 'Payments' && <DollarSign size={16} className={activeTab === tab ? 'opacity-100' : 'opacity-70'} />}
+                {tab === 'Tasklists' && <CheckSquare size={16} className={activeTab === tab ? 'opacity-100' : 'opacity-70'} />}
+                {tab === 'Files' && <UploadCloud size={16} className={activeTab === tab ? 'opacity-100' : 'opacity-70'} />}
                 {tab}
               </span>
               {activeTab === tab && (
                 <motion.div
-                  layoutId="activeTab"
-                  className="absolute inset-0 bg-white dark:bg-white/10 border border-slate-200/50 dark:border-white/10 rounded-xl shadow-sm"
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  layoutId="activeTabDetails"
+                  className="absolute inset-0 bg-white dark:bg-white/10 border border-white dark:border-white/20 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)]"
+                  transition={{ type: "spring", stiffness: 500, damping: 35 }}
                 />
               )}
             </button>
@@ -407,7 +438,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
         </div>
 
         {/* Tab Contents */}
-        <div className="bg-white/70 dark:bg-purple-950/10 backdrop-blur-2xl border border-slate-200 dark:border-purple-500/10 rounded-3xl min-h-[500px] relative overflow-hidden">
+        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-3xl border border-white/50 dark:border-white/10 rounded-[2.5rem] min-h-[500px] relative overflow-hidden shadow-xl shadow-slate-200/50 dark:shadow-black/40">
           <AnimatePresence mode="wait">
             
             {activeTab === 'Tasklists' && (
@@ -472,13 +503,29 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
             {activeTab === 'Details' && (
               <motion.div
                 key="Details"
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="p-8 md:p-12 prose dark:prose-invert max-w-none prose-indigo"
-                dangerouslySetInnerHTML={{ __html: projectData.scope }}
-              />
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+                className="p-8 md:p-12"
+              >
+                <div className="max-w-4xl mx-auto">
+                  <div className="flex items-center gap-4 mb-8 pb-6 border-b border-slate-200/50 dark:border-white/10">
+                    <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center shadow-inner">
+                      <FileText size={24} />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white">Project Brief</h2>
+                      <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Complete scope, requirements, and deliverables.</p>
+                    </div>
+                  </div>
+                  
+                  <div 
+                    className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-bold prose-h1:text-3xl prose-h2:text-2xl prose-a:text-indigo-600 dark:prose-a:text-indigo-400 hover:prose-a:text-indigo-500 prose-img:rounded-2xl prose-img:shadow-lg prose-indigo"
+                    dangerouslySetInnerHTML={{ __html: projectData.scope || '<p class="text-slate-400 italic">No project scope provided.</p>' }}
+                  />
+                </div>
+              </motion.div>
             )}
 
             {activeTab === 'Payments' && (
@@ -954,6 +1001,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
           </div>
         )}
       </AnimatePresence>
+
     </div>
   );
 }

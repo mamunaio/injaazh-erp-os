@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, models } from 'mongoose';
+import { IMarketplaceClient } from './MarketplaceClient';
 
 export interface IMarketplaceProject extends Document {
   title: string;
@@ -13,6 +14,7 @@ export interface IMarketplaceProject extends Document {
   prototypeLink?: string;
   startDate?: Date;
   deadline?: Date;
+  clientId?: mongoose.Types.ObjectId | IMarketplaceClient | string;
   clientDetails: {
     clientName: string;
     company?: string;
@@ -62,6 +64,7 @@ const MarketplaceProjectSchema = new Schema<IMarketplaceProject>(
     prototypeLink: { type: String },
     startDate: { type: Date },
     deadline: { type: Date },
+    clientId: { type: Schema.Types.ObjectId, ref: 'MarketplaceClient' },
     clientDetails: {
       clientName: { type: String, required: true },
       company: { type: String },

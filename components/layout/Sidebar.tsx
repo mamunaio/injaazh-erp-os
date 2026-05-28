@@ -7,11 +7,12 @@ import { LayoutDashboard, Users, FileText, Briefcase, Store, DollarSign, Setting
 import ThemeToggle from './ThemeToggle';
 
 const navItems = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Leads', href: '/leads', icon: Users },
   { name: 'Proposals', href: '/proposals', icon: FileText },
   { name: 'Projects', href: '/projects', icon: Briefcase },
   { name: 'Marketplace', href: '/marketplace', icon: Store },
+  { name: 'Market Clients', href: '/marketplace/clients', icon: Users },
   { name: 'Money', href: '/money', icon: DollarSign },
 ];
 
@@ -39,9 +40,11 @@ export default function Sidebar() {
         </div>
         {navItems.map((item) => {
           // Determine active state for both exact match and sub-routes (except dashboard)
-          const isActive = item.href === '/' 
-            ? pathname === '/' 
-            : pathname.startsWith(item.href);
+          const isActive = item.href === '/dashboard' 
+            ? pathname === '/' || pathname === '/dashboard'
+            : item.href === '/marketplace'
+              ? pathname === '/marketplace' || (pathname.startsWith('/marketplace/') && !pathname.startsWith('/marketplace/clients'))
+              : pathname.startsWith(item.href);
           
           const Icon = item.icon;
           return (

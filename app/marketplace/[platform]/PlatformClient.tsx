@@ -137,47 +137,54 @@ export default function PlatformClient({ platform }: { platform: string }) {
   const pConf = getPlatformConfig();
 
   return (
-    <div className="min-h-screen p-4 md:p-8 text-slate-800 dark:text-slate-200">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen p-4 md:p-8 text-slate-800 dark:text-slate-200 relative overflow-hidden bg-slate-50/50 dark:bg-slate-950/50">
+      
+      {/* Ambient Backgrounds */}
+      <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
+        <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-indigo-500/10 dark:bg-indigo-600/10 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-purple-500/10 dark:bg-purple-600/10 blur-[120px] rounded-full" />
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-10">
         
         {/* Navigation Breadcrumb */}
         <Link 
           href="/marketplace"
-          className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors mb-6 group font-medium"
+          className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors mb-8 group font-bold"
         >
           <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
           Back to Folders
         </Link>
 
         {/* Dynamic Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-white/70 dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6 bg-white/60 dark:bg-slate-900/60 backdrop-blur-3xl border border-white/50 dark:border-white/10 rounded-[2rem] p-6 md:p-8 shadow-xl shadow-slate-200/50 dark:shadow-black/40">
+          <div className="flex items-center gap-5">
+            <div className="w-14 h-14 bg-white dark:bg-white/5 backdrop-blur-xl border border-slate-200/50 dark:border-white/10 rounded-2xl shadow-sm flex items-center justify-center">
               {pConf.icon}
             </div>
             <div>
-              <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 capitalize">
+              <h1 className="text-3xl font-black text-slate-800 dark:text-white capitalize flex items-center gap-3">
                 {pConf.name} Projects
               </h1>
-              <p className="text-slate-500 dark:text-gray-400 text-sm mt-1">Manage active pipeline and deliverables</p>
+              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 font-medium">Manage active pipeline and deliverables</p>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
             {/* Search Bar */}
-            <div className="relative w-full sm:w-64">
-              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <div className="relative w-full sm:w-72">
+              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
               <input 
                 type="text" 
                 placeholder="Search projects..." 
-                className="w-full pl-10 pr-4 py-2.5 bg-white/70 dark:bg-purple-950/20 backdrop-blur-xl border border-slate-200 dark:border-purple-500/20 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm text-slate-800 dark:text-slate-200 placeholder-slate-400"
+                className="w-full pl-11 pr-4 py-3 bg-white/50 dark:bg-black/20 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-inner text-slate-800 dark:text-slate-200 placeholder-slate-400 font-medium transition-all"
               />
             </div>
             
             {/* Action Button */}
             <button 
               onClick={() => setIsModalOpen(true)}
-              className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-xl hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/30 transition-all text-sm w-full sm:w-auto flex-shrink-0"
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl hover:-translate-y-0.5 shadow-[0_4px_14px_0_rgba(79,70,229,0.39)] hover:shadow-[0_6px_20px_rgba(79,70,229,0.23)] transition-all text-sm w-full sm:w-auto flex-shrink-0"
             >
               <Plus size={18} /> New Project
             </button>
@@ -194,85 +201,88 @@ export default function PlatformClient({ platform }: { platform: string }) {
             <p className="text-slate-500 dark:text-gray-400">No projects found. Create one to get started!</p>
           </div>
         ) : (
-          <div className="bg-white/70 dark:bg-purple-950/10 backdrop-blur-3xl border border-slate-200 dark:border-purple-500/10 rounded-3xl shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200 dark:border-white/10 text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-gray-400">
-                  <th className="px-6 py-5">Project Details</th>
-                  <th className="px-6 py-5">Status</th>
-                  <th className="px-6 py-5">Progress</th>
-                  <th className="px-6 py-5">Budget</th>
-                  <th className="px-6 py-5">Deadline</th>
-                </tr>
-              </thead>
-              
-              <motion.tbody 
-                variants={containerVariants}
-                initial="hidden"
-                animate="show"
-                className="divide-y divide-slate-100 dark:divide-white/5"
-              >
-                {projects.map((project) => (
-                  <motion.tr 
-                    key={project._id}
-                    variants={itemVariants}
-                    className={`group cursor-pointer transition-all duration-300 ${pConf.hoverBg}`}
-                  >
-                    <td className="p-0">
-                      <Link href={`/marketplace/${platform.toLowerCase()}/${project._id}`} className="block px-6 py-5 outline-none">
-                        <div>
-                          <p className={`font-bold text-base text-slate-800 dark:text-white mb-1 group-hover:${pConf.accent} transition-colors`}>
-                            {project.title}
-                          </p>
-                          <p className="text-sm text-slate-500 dark:text-gray-400 flex items-center gap-1.5">
-                            <Users size={14} /> {project.clientDetails?.clientName || 'Unknown Client'}
-                          </p>
-                        </div>
-                      </Link>
-                    </td>
+          <div className="space-y-4 pb-20">
+            {/* Column Headers (Hidden on small screens) */}
+            <div className="hidden md:grid grid-cols-12 gap-6 px-8 py-2 text-xs font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-2">
+              <div className="col-span-4">Project Name</div>
+              <div className="col-span-2">Status</div>
+              <div className="col-span-3">Progress</div>
+              <div className="col-span-1">Budget</div>
+              <div className="col-span-2 text-right">Deadline</div>
+            </div>
+
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              className="flex flex-col gap-5"
+            >
+              {projects.map((project) => (
+                <motion.div
+                  key={project._id}
+                  variants={itemVariants}
+                  className="group block relative"
+                >
+                  <Link href={`/marketplace/${platform.toLowerCase()}/${project._id}`} className="block relative z-10 bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl border border-white/50 dark:border-white/10 rounded-[1.5rem] p-6 md:p-7 shadow-lg shadow-slate-200/40 dark:shadow-black/20 hover:shadow-2xl hover:shadow-indigo-500/10 dark:hover:shadow-indigo-500/10 hover:-translate-y-1.5 hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all duration-300">
                     
-                    <td className="p-0">
-                      <Link href={`/marketplace/${platform.toLowerCase()}/${project._id}`} className="block px-6 py-5 outline-none h-full w-full">
-                        <span className={`px-3 py-1 text-xs font-bold rounded-lg border ${getStatusBadge(project.status)}`}>
+                    {/* Hover Glow Effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-purple-500/0 to-pink-500/0 group-hover:from-indigo-500/5 group-hover:via-purple-500/5 group-hover:to-pink-500/5 rounded-[1.5rem] pointer-events-none transition-all duration-500" />
+                    
+                    <div className="flex flex-col md:grid md:grid-cols-12 gap-6 md:items-center relative z-10">
+                      
+                      {/* Project Title & Client */}
+                      <div className="col-span-4">
+                        <h3 className={`font-black text-lg text-slate-800 dark:text-white mb-2 group-hover:${pConf.accent} transition-colors line-clamp-1`}>
+                          {project.title}
+                        </h3>
+                        <p className="text-sm font-bold text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                          <Users size={14} className="opacity-70" /> {project.clientDetails?.clientName || 'Unknown Client'}
+                        </p>
+                      </div>
+
+                      {/* Status */}
+                      <div className="col-span-2 flex items-center">
+                        <span className={`px-4 py-1.5 text-[11px] uppercase tracking-widest font-black rounded-xl border ${getStatusBadge(project.status)} shadow-sm`}>
                           {project.status}
                         </span>
-                      </Link>
-                    </td>
+                      </div>
 
-                    <td className="p-0">
-                      <Link href={`/marketplace/${platform.toLowerCase()}/${project._id}`} className="block px-6 py-5 outline-none h-full w-full">
-                        <div className="flex items-center gap-3 w-40">
-                          <span className="text-xs font-bold text-slate-600 dark:text-gray-300 w-8">{project.progress}%</span>
-                          <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                      {/* Progress */}
+                      <div className="col-span-3 flex items-center">
+                        <div className="flex flex-col w-full max-w-[180px] gap-2">
+                          <div className="flex justify-between items-center text-xs font-bold text-slate-500 dark:text-slate-400">
+                            <span className="uppercase tracking-widest text-[10px]">Completion</span>
+                            <span>{project.progress}%</span>
+                          </div>
+                          <div className="h-2.5 w-full bg-slate-100 dark:bg-black/40 rounded-full overflow-hidden shadow-inner">
                             <div 
-                              className={`h-full rounded-full ${pConf.bgAccent}`}
+                              className={`h-full rounded-full ${pConf.bgAccent} shadow-sm transition-all duration-1000 ease-out`}
                               style={{ width: `${project.progress}%` }}
                             />
                           </div>
                         </div>
-                      </Link>
-                    </td>
+                      </div>
 
-                    <td className="p-0">
-                      <Link href={`/marketplace/${platform.toLowerCase()}/${project._id}`} className="block px-6 py-5 outline-none h-full w-full">
-                        <span className="font-bold text-slate-700 dark:text-slate-200">{project.budget}</span>
-                      </Link>
-                    </td>
+                      {/* Budget */}
+                      <div className="col-span-1 flex items-center">
+                        <span className="font-black text-slate-700 dark:text-slate-200 bg-white dark:bg-white/5 px-3.5 py-1.5 rounded-xl border border-slate-200/60 dark:border-white/10 shadow-sm">
+                          {project.budget}
+                        </span>
+                      </div>
 
-                    <td className="p-0">
-                      <Link href={`/marketplace/${platform.toLowerCase()}/${project._id}`} className="block px-6 py-5 outline-none h-full w-full">
-                        <div className="flex items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-gray-300">
-                          <Clock size={14} className="text-slate-400" />
+                      {/* Deadline */}
+                      <div className="col-span-2 flex items-center md:justify-end">
+                        <div className="flex items-center gap-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-white/5 px-4 py-2.5 rounded-xl border border-slate-200/60 dark:border-white/10 group-hover:border-indigo-200 dark:group-hover:border-indigo-500/30 transition-colors shadow-sm">
+                          <Clock size={16} className={pConf.accent} />
                           {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(project.deadline))}
                         </div>
-                      </Link>
-                    </td>
-                  </motion.tr>
-                ))}
-              </motion.tbody>
-            </table>
-          </div>
+                      </div>
+                      
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </motion.div>
           </div>
         )}
       </div>
