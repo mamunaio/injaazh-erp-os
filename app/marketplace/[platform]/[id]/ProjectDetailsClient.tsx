@@ -1,0 +1,960 @@
+'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, Clock, Briefcase, ShoppingCart, Globe, Users, CheckCircle2, Circle, UploadCloud, FileText, Search, Filter, DollarSign, Check, MoreHorizontal, Pencil, Archive, Trash, ChevronDown, Lock, XCircle, AlertTriangle, Plus, File, Download } from 'lucide-react';
+import CreateProjectModal from '@/components/CreateProjectModal';
+import { getMarketplaceProjectById, updateMarketplaceProject, deleteMarketplaceProject } from '@/app/actions/marketplaceActions';
+import toast, { Toaster } from 'react-hot-toast';
+
+const INITIAL_TASKS = [
+  { id: 1, title: 'Project Kickoff & Discovery Call', completed: true },
+  { id: 2, title: 'Figma Wireframing (Low Fidelity)', completed: true },
+  { id: 3, title: 'Figma UI Design (High Fidelity)', completed: false },
+  { id: 4, title: 'Next.js Frontend Scaffolding', completed: false },
+  { id: 5, title: 'Backend API Integration', completed: false },
+  { id: 6, title: 'Final Review & Handover', completed: false },
+];
+
+export default function ProjectDetailsClient({ platform, projectId }: { platform: string; projectId: string }) {
+  // State Management
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'Details' | 'Payments' | 'Tasklists' | 'Files'>('Details');
+  const [currentTime, setCurrentTime] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  
+  // Dropdown States
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState('Planning');
+
+  // Modal States
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
+
+  // Project Data State
+  const [projectData, setProjectData] = useState<any>({
+    title: "",
+    client: "",
+    budget: "",
+    scope: ""
+  });
+
+  // Milestones State
+  const [milestones, setMilestones] = useState<any[]>([]);
+  const [isMilestoneModalOpen, setIsMilestoneModalOpen] = useState(false);
+  const [editingMilestone, setEditingMilestone] = useState<{ id?: number | string, description: string, date: string, status: string, amount: number } | null>(null);
+
+  // Task State
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<{ id?: number | string, title: string, completed: boolean } | null>(null);
+
+  // Files State
+  const [files, setFiles] = useState<any[]>([]);
+  const [fileSearchQuery, setFileSearchQuery] = useState('');
+  const [activeFileCategory, setActiveFileCategory] = useState('All Files');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const router = useRouter();
+
+  useEffect(() => {
+    async function loadProject() {
+      try {
+        const data = await getMarketplaceProjectById(projectId);
+        if (data) {
+          setProjectData({
+            title: data.title || '',
+            client: data.clientDetails?.clientName || '',
+            budget: data.budget || '',
+            scope: data.scope || ''
+          });
+          setCurrentStatus(data.status || 'Planning');
+          setTasks(data.tasks || []);
+          setMilestones(data.milestones || []);
+          setFiles(data.files || []);
+        } else {
+          router.push(`/marketplace/${platform.toLowerCase()}`);
+        }
+      } catch (error) {
+        console.error("Failed to load project details", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProject();
+  }, [projectId, platform, router]);
+
+  // Unified save handler
+  const saveToServer = async (updates: any, silent = false) => {
+    try {
+      if (!silent) toast.loading('Saving...', { id: 'save' });
+      const res = await updateMarketplaceProject(projectId, updates);
+      if (res.success) {
+        if (!silent) toast.success('Saved successfully', { id: 'save' });
+      } else {
+        if (!silent) toast.error('Failed to save', { id: 'save' });
+      }
+    } catch (e) {
+      if (!silent) toast.error('Failed to save', { id: 'save' });
+    }
+  };
+
+  // Derived State
+  const completedTasks = tasks.filter(t => t.completed).length;
+  const progressPercentage = Math.round((completedTasks / tasks.length) * 100);
+
+  // Real-Time Clock
+  useEffect(() => {
+    // We are hardcoding the timezone to 'America/New_York' for demo purposes
+    const updateTime = () => {
+      const time = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/New_York',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: true
+      }).format(new Date());
+      setCurrentTime(time);
+    };
+    
+    updateTime(); // Initial call
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleTaskToggle = (id: number | string) => {
+    const newTasks = tasks.map(task => 
+      task.id === id ? { ...task, completed: !task.completed } : task
+    );
+    setTasks(newTasks);
+    
+    // Also save progress automatically when a task is toggled
+    const newCompleted = newTasks.filter(t => t.completed).length;
+    const newProgress = Math.round((newCompleted / newTasks.length) * 100) || 0;
+    saveToServer({ tasks: newTasks, progress: newProgress }, true);
+  };
+
+  const getPlatformConfig = () => {
+    const p = platform.toLowerCase();
+    switch(p) {
+      case 'upwork': return { 
+        name: 'Upwork', 
+        icon: <Briefcase size={16} />,
+        badge: 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400',
+        accent: 'text-emerald-600 dark:text-emerald-400'
+      };
+      case 'fiverr': return { 
+        name: 'Fiverr', 
+        icon: <ShoppingCart size={16} />,
+        badge: 'bg-fuchsia-50 dark:bg-fuchsia-500/10 border-fuchsia-200 dark:border-fuchsia-500/20 text-fuchsia-600 dark:text-fuchsia-400',
+        accent: 'text-fuchsia-600 dark:text-fuchsia-400'
+      };
+      case 'freelancer': return { 
+        name: 'Freelancer', 
+        icon: <Globe size={16} />,
+        badge: 'bg-cyan-50 dark:bg-cyan-500/10 border-cyan-200 dark:border-cyan-500/20 text-cyan-600 dark:text-cyan-400',
+        accent: 'text-cyan-600 dark:text-cyan-400'
+      };
+      case 'direct': default: return { 
+        name: 'Direct Client', 
+        icon: <Users size={16} />,
+        badge: 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400',
+        accent: 'text-indigo-600 dark:text-indigo-400'
+      };
+    }
+  };
+
+  const updateStatus = (newStatus: string) => {
+    setCurrentStatus(newStatus);
+    setIsStatusOpen(false);
+    saveToServer({ status: newStatus }, true);
+  };
+
+  const pConf = getPlatformConfig();
+
+  const filteredFiles = files.filter(f => 
+    (activeFileCategory === 'All Files' || f.category === activeFileCategory) &&
+    f.name.toLowerCase().includes(fileSearchQuery.toLowerCase())
+  );
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const uploadedFile = e.target.files[0];
+      const uploadToast = toast.loading('Uploading file...');
+      
+      const formData = new FormData();
+      formData.append('file', uploadedFile);
+      
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          const newFile = {
+            id: Date.now(),
+            name: uploadedFile.name,
+            size: (uploadedFile.size / 1024 > 1024) 
+              ? (uploadedFile.size / 1024 / 1024).toFixed(2) + ' MB' 
+              : (uploadedFile.size / 1024).toFixed(0) + ' KB',
+            category: activeFileCategory === 'All Files' ? 'Documents' : activeFileCategory,
+            date: new Date().toISOString().split('T')[0],
+            url: data.url
+          };
+          
+          const updatedFiles = [newFile, ...files];
+          setFiles(updatedFiles);
+          await saveToServer({ files: updatedFiles }, true);
+          toast.success('File uploaded successfully', { id: uploadToast });
+        } else {
+          toast.error(data.error || 'Upload failed', { id: uploadToast });
+        }
+      } catch (error) {
+        console.error('File upload error', error);
+        toast.error('Upload failed', { id: uploadToast });
+      }
+    }
+  };
+  const getDynamicBadgeStyle = () => {
+    switch (currentStatus) {
+      case 'Planning':
+        return 'text-amber-600 bg-amber-50 border-amber-200 dark:text-amber-400 dark:bg-amber-500/10 dark:border-amber-500/20';
+      case 'Completed':
+        return 'text-emerald-600 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-500/10 dark:border-emerald-500/20';
+      case 'Cancelled':
+        return 'text-rose-600 bg-rose-50 border-rose-200 dark:text-rose-400 dark:bg-rose-500/10 dark:border-rose-500/20';
+      case 'Private':
+        return 'text-slate-600 bg-slate-50 border-slate-200 dark:text-slate-400 dark:bg-slate-500/10 dark:border-slate-500/20';
+      case 'In Progress':
+      default:
+        return pConf.badge;
+    }
+  };
+
+  return (
+    <div className="min-h-screen p-4 md:p-8 text-slate-800 dark:text-slate-200 flex flex-col items-center">
+      
+      <div className="w-full max-w-6xl">
+        {/* Navigation Breadcrumb */}
+        <Link 
+          href={`/marketplace/${platform.toLowerCase()}`}
+          className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors mb-6 group font-medium"
+        >
+          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+          Back to Directory
+        </Link>
+
+        {/* Dynamic Header & Overview Panel */}
+        <div className="bg-white/70 dark:bg-purple-950/10 backdrop-blur-2xl border border-slate-200 dark:border-purple-500/10 rounded-3xl p-8 mb-8 shadow-sm relative flex flex-col md:flex-row gap-8 justify-between">
+          
+          {/* Decorative Background Wrapper (Clips background but allows dropdowns to overflow card) */}
+          <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
+            <div className="absolute -top-32 -right-32 w-96 h-96 bg-indigo-500/5 blur-[100px] rounded-full pointer-events-none" />
+          </div>
+          
+          {/* Left: Info */}
+          <div className="flex-1 relative z-10">
+            <div className="flex items-center gap-3 mb-4 relative">
+              <button 
+                onClick={() => setIsStatusOpen(!isStatusOpen)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 border ${getDynamicBadgeStyle()} hover:opacity-80 transition-all outline-none`}
+              >
+                {pConf.icon} {pConf.name} {currentStatus} <ChevronDown size={14} className="opacity-50" />
+              </button>
+              
+              <AnimatePresence>
+                {isStatusOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute top-full left-0 mt-2 w-48 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200 dark:border-purple-500/20 rounded-xl shadow-xl overflow-hidden z-[100]"
+                  >
+                    <div className="py-1">
+                      <button onClick={() => updateStatus('Planning')} className="w-full px-4 py-2 text-left text-sm font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 flex items-center gap-2 transition-colors">
+                        <Clock size={14} /> Planning
+                      </button>
+                      <button onClick={() => updateStatus('In Progress')} className="w-full px-4 py-2 text-left text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 flex items-center gap-2 transition-colors">
+                        <Circle size={14} /> In Progress
+                      </button>
+                      <button onClick={() => updateStatus('Completed')} className="w-full px-4 py-2 text-left text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 flex items-center gap-2 transition-colors">
+                        <CheckCircle2 size={14} /> Completed
+                      </button>
+                      <button onClick={() => updateStatus('Cancelled')} className="w-full px-4 py-2 text-left text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2 transition-colors">
+                        <XCircle size={14} /> Cancelled
+                      </button>
+                      <div className="h-px w-full bg-slate-100 dark:bg-white/10 my-1" />
+                      <button onClick={() => updateStatus('Private')} className="w-full px-4 py-2 text-left text-sm font-medium text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5 flex items-center gap-2 transition-colors">
+                        <Lock size={14} /> Private
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <span className="text-sm font-semibold text-slate-500 dark:text-gray-400">ID: {projectId.toUpperCase()}</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold text-slate-800 dark:text-white leading-tight mb-2">
+              {projectData.title}
+            </h1>
+            <p className="text-xl font-medium text-slate-600 dark:text-gray-300 flex items-center gap-1.5">
+              <DollarSign size={20} className={pConf.accent} /> {projectData.budget} Budget
+            </p>
+          </div>
+
+          {/* Right: Client & Progress Widgets */}
+          <div className="flex items-center gap-6 relative z-10 min-w-[300px] justify-end">
+            {/* Client Profile Widget */}
+            <div className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-2xl p-4 min-w-[160px]">
+              <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">Client</p>
+              <p className="text-lg font-bold text-slate-800 dark:text-white">{projectData.client}</p>
+              <div className="mt-2 flex items-center gap-2 text-sm text-slate-600 dark:text-gray-300">
+                <Clock size={14} className={pConf.accent} />
+                <span className="font-medium w-24 tabular-nums">{currentTime}</span>
+                <span className="text-xs text-slate-400 dark:text-gray-500">EST</span>
+              </div>
+            </div>
+
+            {/* Global Progress Widget */}
+            <div className="bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center min-w-[120px]">
+              <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">Progress</p>
+              
+              <div className="relative w-16 h-16 flex items-center justify-center">
+                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                  {/* Background Circle */}
+                  <path
+                    className="text-slate-200 dark:text-white/10"
+                    strokeWidth="3"
+                    stroke="currentColor"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  {/* Animated Progress Circle */}
+                  <motion.path
+                    className={pConf.accent}
+                    strokeWidth="3"
+                    strokeDasharray="100, 100"
+                    strokeLinecap="round"
+                    stroke="currentColor"
+                    fill="none"
+                    initial={{ strokeDashoffset: 100 }}
+                    animate={{ strokeDashoffset: 100 - progressPercentage }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center font-bold text-sm text-slate-800 dark:text-white">
+                  {progressPercentage}%
+                </div>
+              </div>
+            </div>
+
+            {/* Project Actions Button (Sleek Horizontal Alignment) */}
+            <div className="relative z-50">
+              <button 
+                onClick={() => setIsActionsOpen(!isActionsOpen)}
+                className="h-8 w-8 rounded-full flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-gray-400 transition-colors outline-none"
+              >
+                <MoreHorizontal size={18} />
+              </button>
+
+              <AnimatePresence>
+                {isActionsOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute top-full right-0 mt-2 w-56 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200 dark:border-purple-500/20 rounded-xl shadow-xl overflow-hidden z-[100]"
+                  >
+                    <div className="py-1">
+                      <button onClick={() => { setIsEditModalOpen(true); setIsActionsOpen(false); }} className="w-full px-4 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-white/5 flex items-center gap-3 transition-colors">
+                        <Pencil size={16} className="text-slate-400" /> Edit Project Details
+                      </button>
+                      <button onClick={() => { setIsArchiveModalOpen(true); setIsActionsOpen(false); }} className="w-full px-4 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-white/5 flex items-center gap-3 transition-colors">
+                        <Archive size={16} className="text-slate-400" /> Archive Project
+                      </button>
+                      <div className="h-px w-full bg-slate-100 dark:bg-white/10 my-1" />
+                      <button onClick={() => { setIsDeleteModalOpen(true); setIsActionsOpen(false); }} className="w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-300 flex items-center gap-3 transition-colors">
+                        <Trash size={16} className="text-red-500 dark:text-red-400" /> Delete Project
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+
+        {/* Sliding Navigation Tabs */}
+        <div className="flex bg-white/50 dark:bg-black/20 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-2xl p-1 mb-8 w-max">
+          {['Details', 'Payments', 'Tasklists', 'Files'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab as any)}
+              className="relative px-6 py-2.5 text-sm font-semibold rounded-xl outline-none transition-colors"
+            >
+              <span className={`relative z-10 ${activeTab === tab ? 'text-indigo-600 dark:text-white' : 'text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200'}`}>
+                {tab}
+              </span>
+              {activeTab === tab && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute inset-0 bg-white dark:bg-white/10 border border-slate-200/50 dark:border-white/10 rounded-xl shadow-sm"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab Contents */}
+        <div className="bg-white/70 dark:bg-purple-950/10 backdrop-blur-2xl border border-slate-200 dark:border-purple-500/10 rounded-3xl min-h-[500px] relative overflow-hidden">
+          <AnimatePresence mode="wait">
+            
+            {activeTab === 'Tasklists' && (
+              <motion.div
+                key="Tasklists"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="p-8"
+              >
+                <div className="flex justify-between items-center mb-6">
+                  <div className="flex items-center gap-4">
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-white">Project Deliverables</h2>
+                    <span className="px-3 py-1 bg-slate-100 dark:bg-white/5 rounded-full text-sm font-medium text-slate-500 dark:text-gray-400">{completedTasks} of {tasks.length} Completed</span>
+                  </div>
+                  <button 
+                    onClick={() => { setEditingTask(null); setIsTaskModalOpen(true); }}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors shadow-sm flex items-center gap-2"
+                  >
+                    <Plus size={16} /> Add Task
+                  </button>
+                </div>
+                
+                <div className="space-y-3">
+                  {tasks.map(task => (
+                    <div 
+                      key={task.id}
+                      onClick={() => handleTaskToggle(task.id)}
+                      className={`group flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${task.completed ? 'bg-slate-50/50 dark:bg-white/5 border-transparent' : 'bg-white/80 dark:bg-black/20 border-slate-200 dark:border-white/10 hover:border-indigo-300 dark:hover:border-purple-500/30 shadow-sm hover:shadow-md'}`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`w-6 h-6 rounded-md flex items-center justify-center border transition-colors flex-shrink-0 ${task.completed ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 dark:border-gray-600 group-hover:border-indigo-400 dark:group-hover:border-purple-400'}`}>
+                          {task.completed && <Check size={14} strokeWidth={3} />}
+                        </div>
+                        <span className={`text-base font-medium transition-colors ${task.completed ? 'text-slate-400 dark:text-gray-500 line-through decoration-slate-300 dark:decoration-gray-600' : 'text-slate-700 dark:text-slate-200'}`}>
+                          {task.title}
+                        </span>
+                      </div>
+                      
+                      {/* Task Actions */}
+                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setEditingTask(task); setIsTaskModalOpen(true); }}
+                          className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-colors"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setTasks(tasks.filter(t => t.id !== task.id)); }}
+                          className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
+                        >
+                          <Trash size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'Details' && (
+              <motion.div
+                key="Details"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="p-8 md:p-12 prose dark:prose-invert max-w-none prose-indigo"
+                dangerouslySetInnerHTML={{ __html: projectData.scope }}
+              />
+            )}
+
+            {activeTab === 'Payments' && (
+              <motion.div
+                key="Payments"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="p-8"
+              >
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-bold text-slate-800 dark:text-white">Milestone Payments</h2>
+                  <button 
+                    onClick={() => { setEditingMilestone(null); setIsMilestoneModalOpen(true); }}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors shadow-sm flex items-center gap-2"
+                  >
+                    <Plus size={16} /> Add Milestone
+                  </button>
+                </div>
+                
+                <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-black/20">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-slate-100/50 dark:bg-white/5 border-b border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-400">
+                      <tr>
+                        <th className="p-4 font-semibold">Description</th>
+                        <th className="p-4 font-semibold w-32">Date</th>
+                        <th className="p-4 font-semibold w-24">Status</th>
+                        <th className="p-4 font-semibold text-right w-32">Amount</th>
+                        <th className="p-4 font-semibold text-right w-24">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                      {milestones.map((milestone) => (
+                        <tr key={milestone.id} className="hover:bg-white dark:hover:bg-white/5 transition-colors group">
+                          <td className="p-4 text-slate-800 dark:text-slate-200 font-medium">{milestone.description}</td>
+                          <td className="p-4 text-slate-500 dark:text-gray-400">{new Date(milestone.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                          <td className="p-4">
+                            <span className={`px-2.5 py-1 text-xs font-bold rounded-lg border ${
+                              milestone.status === 'Paid' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20' : 
+                              milestone.status === 'Pending' ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/20' :
+                              'bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-gray-400 border-slate-200 dark:border-white/10'
+                            }`}>
+                              {milestone.status}
+                            </span>
+                          </td>
+                          <td className="p-4 text-slate-800 dark:text-slate-200 font-bold text-right">${milestone.amount.toLocaleString()}</td>
+                          <td className="p-4 text-right">
+                            <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button 
+                                onClick={() => { setEditingMilestone(milestone); setIsMilestoneModalOpen(true); }}
+                                className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-md transition-colors"
+                              >
+                                <Pencil size={14} />
+                              </button>
+                              <button 
+                                onClick={() => setMilestones(milestones.filter(m => m.id !== milestone.id))}
+                                className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-colors"
+                              >
+                                <Trash size={14} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                      {milestones.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="p-8 text-center text-slate-500 dark:text-gray-400 italic">No milestones defined.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'Files' && (
+              <motion.div
+                key="Files"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="p-8 flex flex-col md:flex-row gap-8 min-h-[400px]"
+              >
+                {/* Filters Sidebar */}
+                <div className="w-full md:w-64 flex flex-col gap-4 flex-shrink-0">
+                  <div className="relative">
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input 
+                      type="text" 
+                      value={fileSearchQuery}
+                      onChange={(e) => setFileSearchQuery(e.target.value)}
+                      placeholder="Search files..." 
+                      className="w-full pl-9 pr-4 py-2 bg-white/50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl text-sm focus:outline-none focus:border-indigo-500" 
+                    />
+                  </div>
+                  
+                  <div className="flex flex-col gap-1 mt-4">
+                    <p className="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2 px-2">Categories</p>
+                    {['All Files', 'Design Assets', 'Documents', 'Invoices'].map((cat) => (
+                      <button 
+                        key={cat} 
+                        onClick={() => setActiveFileCategory(cat)}
+                        className={`text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${activeFileCategory === cat ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Main Files Area */}
+                <div className="flex-1 flex flex-col gap-6">
+                  {/* Drag and Drop Zone */}
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full border-2 border-dashed border-slate-200 dark:border-purple-500/20 rounded-3xl bg-white/30 dark:bg-black/10 flex flex-col items-center justify-center p-8 text-center group hover:border-indigo-400 dark:hover:border-purple-500/50 hover:bg-white/50 dark:hover:bg-purple-900/10 transition-all cursor-pointer"
+                  >
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      className="hidden" 
+                      onChange={handleFileUpload} 
+                    />
+                    <div className="w-12 h-12 bg-slate-100 dark:bg-white/5 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/20 transition-all shadow-sm">
+                      <UploadCloud size={24} className="text-slate-400 dark:text-gray-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors" />
+                    </div>
+                    <h3 className="text-base font-bold text-slate-800 dark:text-white mb-1">Upload Project Assets</h3>
+                    <p className="text-slate-500 dark:text-gray-400 text-xs max-w-sm">
+                      Drag and drop your files here, or click to browse. Supports PDF, PNG, JPG, ZIP up to 50MB.
+                    </p>
+                  </div>
+
+                  {/* File List */}
+                  <div className="flex flex-col gap-3 overflow-y-auto pr-2 max-h-[300px]">
+                    {filteredFiles.map(file => (
+                      <div key={file.id} className="group flex items-center justify-between p-4 bg-white/80 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-2xl hover:border-indigo-300 dark:hover:border-purple-500/30 transition-all shadow-sm hover:shadow-md">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-500 dark:text-indigo-400">
+                            <File size={20} />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{file.name}</p>
+                            <div className="flex items-center gap-3 text-xs font-medium text-slate-500 dark:text-gray-400 mt-1">
+                              <span>{file.size}</span>
+                              <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-gray-600" />
+                              <span>{new Date(file.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                              <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-gray-600" />
+                              <span>{file.category}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {file.url ? (
+                            <a href={file.url} download className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-colors inline-flex">
+                              <Download size={16} />
+                            </a>
+                          ) : (
+                            <button className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-colors">
+                              <Download size={16} />
+                            </button>
+                          )}
+                          <button 
+                            onClick={() => {
+                              const updatedFiles = files.filter(f => f.id !== file.id);
+                              setFiles(updatedFiles);
+                              saveToServer({ files: updatedFiles }, true);
+                            }}
+                            className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
+                          >
+                            <Trash size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    {filteredFiles.length === 0 && (
+                      <div className="text-center p-8 bg-slate-50/50 dark:bg-white/5 rounded-2xl border border-slate-200 border-dashed dark:border-white/10">
+                        <p className="text-slate-500 dark:text-gray-400 text-sm font-medium">No files found.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Edit Project Modal */}
+      <CreateProjectModal 
+        isOpen={isEditModalOpen} 
+        onClose={() => setIsEditModalOpen(false)} 
+        defaultPlatform={platform}
+        isEditMode={true}
+        initialData={projectData}
+        onSave={async (updatedData) => {
+          setProjectData(updatedData);
+          
+          await saveToServer({
+            title: updatedData.title,
+            clientDetails: { clientName: updatedData.client },
+            budget: updatedData.budget,
+            scope: updatedData.scope
+          });
+          
+          setIsEditModalOpen(false);
+        }}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {isDeleteModalOpen && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsDeleteModalOpen(false)}
+              className="absolute inset-0 bg-slate-900/60 dark:bg-black/70 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-md bg-white dark:bg-slate-900 backdrop-blur-2xl border border-red-200 dark:border-red-500/30 rounded-3xl p-8 shadow-2xl flex flex-col items-center text-center"
+            >
+              <div className="w-16 h-16 bg-red-50 dark:bg-red-500/10 rounded-full flex items-center justify-center mb-4 text-red-500">
+                <AlertTriangle size={32} />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Delete Project</h3>
+              <p className="text-slate-600 dark:text-gray-400 mb-8 leading-relaxed">
+                Are you sure? All milestones, tasks, and files will be permanently lost. This action cannot be undone.
+              </p>
+              <div className="flex gap-4 w-full">
+                <button 
+                  onClick={() => setIsDeleteModalOpen(false)}
+                  className="flex-1 py-3 text-sm font-bold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={async () => {
+                    const loadingToast = toast.loading('Deleting project...');
+                    const res = await deleteMarketplaceProject(projectId);
+                    if (res.success) {
+                      toast.success('Project deleted', { id: loadingToast });
+                      router.push(`/marketplace/${platform.toLowerCase()}`);
+                    } else {
+                      toast.error(res.error || 'Failed to delete project', { id: loadingToast });
+                    }
+                  }}
+                  className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white text-sm font-bold rounded-xl transition-colors shadow-lg shadow-red-500/25"
+                >
+                  Confirm Delete
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Archive Confirmation Modal */}
+      <AnimatePresence>
+        {isArchiveModalOpen && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsArchiveModalOpen(false)}
+              className="absolute inset-0 bg-slate-900/60 dark:bg-black/70 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-md bg-white dark:bg-slate-900 backdrop-blur-2xl border border-amber-200 dark:border-amber-500/30 rounded-3xl p-8 shadow-2xl flex flex-col items-center text-center"
+            >
+              <div className="w-16 h-16 bg-amber-50 dark:bg-amber-500/10 rounded-full flex items-center justify-center mb-4 text-amber-500">
+                <Archive size={32} />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Archive Project?</h3>
+              <p className="text-slate-600 dark:text-gray-400 mb-8 leading-relaxed">
+                Archiving will hide this project from active boards. You can restore it later from the settings.
+              </p>
+              <div className="flex gap-4 w-full">
+                <button 
+                  onClick={() => setIsArchiveModalOpen(false)}
+                  className="flex-1 py-3 text-sm font-bold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => router.push(`/marketplace/${platform.toLowerCase()}`)}
+                  className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-xl transition-colors shadow-lg shadow-amber-500/25"
+                >
+                  Archive It
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      {/* Milestone Add/Edit Modal */}
+      <AnimatePresence>
+        {isMilestoneModalOpen && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMilestoneModalOpen(false)}
+              className="absolute inset-0 bg-slate-900/60 dark:bg-black/70 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-lg bg-white dark:bg-slate-900 backdrop-blur-2xl border border-slate-200 dark:border-purple-500/30 rounded-3xl p-8 shadow-2xl flex flex-col"
+            >
+              <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-6">
+                {editingMilestone ? 'Edit Milestone' : 'Add Milestone'}
+              </h3>
+              
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const newMilestone = {
+                  id: editingMilestone?.id || Date.now(),
+                  description: formData.get('description') as string,
+                  date: formData.get('date') as string,
+                  status: formData.get('status') as string,
+                  amount: Number(formData.get('amount'))
+                };
+
+                if (editingMilestone) {
+                  const updatedMilestones = milestones.map(m => m.id === editingMilestone.id ? newMilestone : m);
+                  setMilestones(updatedMilestones);
+                  saveToServer({ milestones: updatedMilestones }, true);
+                } else {
+                  const updatedMilestones = [...milestones, newMilestone];
+                  setMilestones(updatedMilestones);
+                  saveToServer({ milestones: updatedMilestones }, true);
+                }
+                setIsMilestoneModalOpen(false);
+              }} className="flex flex-col gap-5">
+                
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-2">Description</label>
+                  <input name="description" required defaultValue={editingMilestone?.description} type="text" placeholder="e.g. Initial Deposit" className="w-full px-4 py-3 bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:text-white transition-all shadow-sm" />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-2">Amount ($)</label>
+                    <input name="amount" required defaultValue={editingMilestone?.amount} type="number" placeholder="3750" className="w-full px-4 py-3 bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:text-white transition-all shadow-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-2">Expected Date</label>
+                    <input name="date" required defaultValue={editingMilestone?.date} type="date" className="w-full px-4 py-3 bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:text-white transition-all shadow-sm [&::-webkit-calendar-picker-indicator]:dark:invert" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-2">Status</label>
+                  <select name="status" defaultValue={editingMilestone?.status || 'Pending'} className="w-full px-4 py-3 bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:text-white transition-all shadow-sm appearance-none">
+                    <option value="Paid">Paid</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Locked">Locked</option>
+                  </select>
+                </div>
+
+                <div className="flex gap-4 mt-4">
+                  <button 
+                    type="button"
+                    onClick={() => setIsMilestoneModalOpen(false)}
+                    className="flex-1 py-3 text-sm font-bold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit"
+                    className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors shadow-lg shadow-indigo-500/25"
+                  >
+                    {editingMilestone ? 'Save Changes' : 'Create Milestone'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Task Add/Edit Modal */}
+      <AnimatePresence>
+        {isTaskModalOpen && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsTaskModalOpen(false)}
+              className="absolute inset-0 bg-slate-900/60 dark:bg-black/70 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-lg bg-white dark:bg-slate-900 backdrop-blur-2xl border border-slate-200 dark:border-purple-500/30 rounded-3xl p-8 shadow-2xl flex flex-col"
+            >
+              <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-6">
+                {editingTask ? 'Edit Task' : 'Add Task'}
+              </h3>
+              
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const newTask = {
+                  id: editingTask?.id || Date.now(),
+                  title: formData.get('title') as string,
+                  completed: editingTask ? editingTask.completed : false
+                };
+
+                if (editingTask) {
+                  const updatedTasks = tasks.map(t => t.id === editingTask.id ? { ...t, title: newTask.title } : t);
+                  setTasks(updatedTasks);
+                  saveToServer({ tasks: updatedTasks }, true);
+                } else {
+                  const updatedTasks = [...tasks, newTask];
+                  setTasks(updatedTasks);
+                  const newProgress = Math.round((updatedTasks.filter(t => t.completed).length / updatedTasks.length) * 100) || 0;
+                  saveToServer({ tasks: updatedTasks, progress: newProgress }, true);
+                }
+                setIsTaskModalOpen(false);
+              }} className="flex flex-col gap-5">
+                
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-2">Task Title</label>
+                  <input name="title" required defaultValue={editingTask?.title} type="text" placeholder="e.g. Design System Implementation" className="w-full px-4 py-3 bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:text-white transition-all shadow-sm" />
+                </div>
+
+                <div className="flex gap-4 mt-4">
+                  <button 
+                    type="button"
+                    onClick={() => setIsTaskModalOpen(false)}
+                    className="flex-1 py-3 text-sm font-bold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit"
+                    className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors shadow-lg shadow-indigo-500/25"
+                  >
+                    {editingTask ? 'Save Changes' : 'Create Task'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
