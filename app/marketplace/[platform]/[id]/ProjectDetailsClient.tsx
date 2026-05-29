@@ -732,7 +732,8 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
 
           const updatePayload = {
             title: updatedData.title,
-            clientDetails: { clientName: updatedData.client },
+            clientId: updatedData.clientId,
+            clientDetails: updatedData.clientDetails || { clientName: updatedData.clientName || 'Unknown Client' },
             budget: updatedData.budget ? `$${updatedData.budget}` : projectData.budget,
             scope: updatedData.scope,
             startDate: updatedData.startDate ? new Date(updatedData.startDate) : undefined,

@@ -206,7 +206,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
 
       {/* Empty State */}
       {filteredLeads.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 bg-gradient-to-br from-white/90 to-slate-50/90 dark:from-purple-950/20 dark:to-purple-900/10 backdrop-blur-3xl border-2 border-slate-200/60 dark:border-purple-500/20 rounded-3xl shadow-xl">
+        <div className="flex flex-col items-center justify-center py-24 bg-gradient-to-br from-white/90 to-slate-50/90 dark:from-slate-900/60 dark:to-slate-900/40 backdrop-blur-3xl border-2 border-slate-200/60 dark:border-slate-800 rounded-3xl shadow-xl">
           <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-2xl shadow-indigo-500/30 mb-6">
             <Building2 size={40} strokeWidth={2.5} />
           </div>
@@ -250,7 +250,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
               >
                 <div 
                   onClick={() => handleCardClick(lead)}
-                  className="group bg-gradient-to-br from-white/90 to-white/70 dark:from-purple-950/30 dark:to-purple-900/20 backdrop-blur-2xl border border-slate-200/60 dark:border-purple-500/20 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:-translate-y-2 hover:shadow-2xl dark:hover:shadow-[0_20px_60px_rgba(168,85,247,0.25)] hover:border-indigo-300/60 dark:hover:border-purple-400/40 transition-all duration-500 flex flex-col cursor-pointer relative h-full"
+                  className="group bg-gradient-to-br from-white/90 to-white/70 dark:from-slate-900/60 dark:to-slate-900/40 backdrop-blur-2xl border border-slate-200/60 dark:border-slate-800 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:-translate-y-2 hover:shadow-2xl dark:hover:shadow-[0_20px_60px_rgba(0,0,0,0.4)] hover:border-indigo-300/60 dark:hover:border-slate-700 transition-all duration-500 flex flex-col cursor-pointer relative h-full"
                 >
                   {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/0 via-purple-500/0 to-pink-500/0 group-hover:from-indigo-500/5 group-hover:via-purple-500/5 group-hover:to-pink-500/5 transition-all duration-500 rounded-3xl" />

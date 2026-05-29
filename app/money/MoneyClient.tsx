@@ -511,7 +511,7 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
 
         {/* Transactions Table */}
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full whitespace-nowrap">
             <thead>
               <tr className="border-b-2 border-slate-200 dark:border-slate-700">
                 <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Date</th>

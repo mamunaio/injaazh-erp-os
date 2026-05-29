@@ -46,7 +46,7 @@ function DroppableColumn({ column, projects, isDragging, onEdit, onDelete, onRes
   return (
     <div
       ref={setNodeRef}
-      className="w-full min-w-[340px] max-w-[380px] flex-shrink-0 flex flex-col snap-center rounded-3xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-2 border-purple-200/40 dark:border-purple-500/20 overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300"
+      className="w-full min-w-[280px] md:min-w-[340px] md:max-w-[380px] flex-shrink-0 flex flex-col snap-center rounded-3xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-2 border-purple-200/40 dark:border-purple-500/20 overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300"
     >
       {/* Column Header */}
       <div className="p-5 border-b-2 border-purple-200/40 dark:border-purple-500/20 bg-gradient-to-br from-white/80 to-purple-50/50 dark:from-black/30 dark:to-purple-950/30">
@@ -299,7 +299,7 @@ export default function ProjectBoard({ initialProjects, onEdit }: ProjectBoardPr
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-6 overflow-x-auto pb-8 snap-x">
+      <div className="flex flex-col lg:flex-row gap-6 lg:overflow-x-auto pb-8 snap-y lg:snap-x">
         {COLUMNS.map((column) => {
           const columnProjects = projectsByStatus[column.id] || [];
           return (

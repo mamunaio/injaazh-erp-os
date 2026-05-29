@@ -36,19 +36,36 @@ export default function MarketplaceClient({ allProjects = [] }: { allProjects?: 
         const budgetValue = project.budget 
           ? parseFloat(project.budget.replace(/[^0-9.-]+/g, '')) 
           : 0;
+          
+        let paidMilestonesSum = 0;
+        if (project.milestones && Array.isArray(project.milestones)) {
+          project.milestones.forEach((m: any) => {
+            if (m.status === 'Paid') {
+              paidMilestonesSum += parseFloat(m.amount) || 0;
+            }
+          });
+        }
+        
+        const earned = paidMilestonesSum > 0 
+          ? paidMilestonesSum 
+          : (project.status === 'Completed' ? budgetValue : 0);
+          
+        const pipelineAmount = project.status === 'Cancelled' ? 0 : Math.max(0, budgetValue - earned);
+        
+        stats[platform as keyof typeof stats].totalEarned += earned;
         
         // Count by status
         if (project.status === 'In Progress') {
           stats[platform as keyof typeof stats].inProgress++;
-          stats[platform as keyof typeof stats].pipeline += budgetValue;
+          stats[platform as keyof typeof stats].pipeline += pipelineAmount;
         } else if (project.status === 'Completed') {
           stats[platform as keyof typeof stats].completed++;
-          stats[platform as keyof typeof stats].totalEarned += budgetValue;
+          stats[platform as keyof typeof stats].pipeline += pipelineAmount;
         } else if (project.status === 'Cancelled') {
           stats[platform as keyof typeof stats].cancelled++;
         } else {
-          // Planning, In Review, etc. - add to pipeline
-          stats[platform as keyof typeof stats].pipeline += budgetValue;
+          // Planning, In Review, etc.
+          stats[platform as keyof typeof stats].pipeline += pipelineAmount;
         }
       }
     });
@@ -129,12 +146,12 @@ export default function MarketplaceClient({ allProjects = [] }: { allProjects?: 
           <Link key={folder.id} href={folder.href} className="block outline-none outline-0 focus:ring-0">
             <motion.div
               variants={itemVariants}
-              className={`group flex flex-col min-h-[480px] bg-white/80 dark:bg-purple-950/20 backdrop-blur-3xl border-2 border-slate-200 dark:border-purple-500/20 rounded-3xl p-10 shadow-xl transition-all duration-300 hover:-translate-y-3 hover:scale-[1.03] cursor-pointer relative overflow-hidden ${folder.glow} ${folder.borderGlow}`}
+              className={`group flex flex-col min-h-[380px] md:min-h-[480px] bg-white/80 dark:bg-purple-950/20 backdrop-blur-3xl border-2 border-slate-200 dark:border-purple-500/20 rounded-3xl p-6 md:p-10 shadow-xl transition-all duration-300 hover:-translate-y-3 hover:scale-[1.03] cursor-pointer relative overflow-hidden ${folder.glow} ${folder.borderGlow}`}
             >
               
               {/* Folder Icon container */}
-              <div className="mb-12 flex justify-between items-start">
-                <div className={`p-5 rounded-2xl border-2 ${folder.iconBg} transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-lg`}>
+              <div className="mb-8 md:mb-12 flex justify-between items-start">
+                <div className={`p-4 md:p-5 rounded-2xl border-2 ${folder.iconBg} transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-lg`}>
                   {folder.icon}
                 </div>
                 
@@ -145,7 +162,7 @@ export default function MarketplaceClient({ allProjects = [] }: { allProjects?: 
 
               {/* Title & Stats */}
               <div className="mt-auto">
-                <h2 className="text-3xl font-bold text-slate-800 dark:text-white mb-8">
+                <h2 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white mb-6 md:mb-8">
                   {folder.title}
                 </h2>
                 

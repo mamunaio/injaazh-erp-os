@@ -128,7 +128,7 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-bold mb-3 border border-indigo-100 dark:border-indigo-500/20">
             <Globe size={14} /> Global Network
           </div>
-          <h1 className="text-4xl font-black text-slate-800 dark:text-white tracking-tight">
+          <h1 className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-fuchsia-600 dark:from-violet-400 dark:to-fuchsia-400 tracking-tight drop-shadow-sm">
             Client Hub
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium text-sm max-w-xl">
@@ -137,20 +137,20 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
+          <div className="relative group w-full sm:w-80">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
             <input 
               type="text" 
               placeholder="Search clients..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full sm:w-64 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm text-slate-800 dark:text-white transition-all"
+              className="w-full bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl pl-12 pr-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm text-slate-800 dark:text-white transition-all placeholder:text-slate-400"
             />
           </div>
           
           <button 
             onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-[0_4px_14px_0_rgba(79,70,229,0.39)] hover:shadow-[0_6px_20px_rgba(79,70,229,0.23)] transition-all duration-300"
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-2xl shadow-[0_4px_14px_0_rgba(79,70,229,0.39)] hover:shadow-[0_6px_20px_rgba(79,70,229,0.23)] hover:-translate-y-0.5 transition-all duration-300 w-full sm:w-auto"
           >
             <Plus size={18} /> Add Client
           </button>
@@ -169,13 +169,16 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
           {filteredClients.map(client => (
             <motion.div 
               key={client._id}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               onClick={() => openEditModal(client)}
-              className="group bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/70 dark:border-white/10 rounded-[1.5rem] shadow-sm hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-1 transition-all duration-300 relative flex flex-col cursor-pointer"
+              className="group bg-white/80 dark:bg-slate-900/40 backdrop-blur-3xl border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-2 transition-all duration-300 relative flex flex-col cursor-pointer overflow-hidden"
             >
+              {/* Dynamic Glow background */}
+              <div className="absolute -right-20 -top-20 w-40 h-40 bg-indigo-500/10 dark:bg-indigo-500/20 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
+              
               {/* Top color accent */}
-              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-t-[1.5rem]" />
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               
               <div className="p-6 flex-1 relative z-10">
                 <div className="flex justify-between items-start mb-6">
@@ -252,11 +255,15 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
                 </div>
               </div>
 
-              <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200/50 dark:border-white/10 flex justify-between items-center rounded-b-[1.5rem]">
-                <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Total Spent</div>
-                <div className="font-black text-slate-800 dark:text-white flex items-center text-lg">
-                  <span className="text-green-500 mr-1">$</span>
-                  {client.totalSpent.toLocaleString()}
+              <div className="px-6 py-5 bg-gradient-to-r from-slate-50 to-white dark:from-slate-950 dark:to-slate-900 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center rounded-b-3xl">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-500/20 flex items-center justify-center border border-green-200 dark:border-green-500/30">
+                    <DollarSign size={16} className="text-green-600 dark:text-green-400" />
+                  </div>
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Total Spent</span>
+                </div>
+                <div className="font-black text-slate-800 dark:text-white text-xl">
+                  ${(client.totalSpent || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
               </div>
             </motion.div>

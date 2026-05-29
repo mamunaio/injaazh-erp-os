@@ -88,6 +88,9 @@ export default function CreateMarketplaceProjectModal({
     await onSave({
       ...formData,
       tasks: taskList,
+      clientDetails: {
+        clientName: formData.clientName || 'Unknown Client',
+      }
     });
     
     setIsSubmitting(false);

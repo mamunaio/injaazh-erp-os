@@ -3,8 +3,10 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, FileText, Briefcase, Store, DollarSign, Settings, Globe } from 'lucide-react';
+
+import { LayoutDashboard, Users, FileText, Briefcase, Store, DollarSign, Settings, Globe, Activity, X, Wallet } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
+import { useSidebar } from './SidebarContext';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -14,24 +16,42 @@ const navItems = [
   { name: 'Marketplace', href: '/marketplace', icon: Store },
   { name: 'Market Clients', href: '/marketplace/clients', icon: Users },
   { name: 'Money', href: '/money', icon: DollarSign },
+  { name: 'Daily Expenses', href: '/daily-expenses', icon: Wallet },
+  { name: 'SEO & AEO Tracker', href: '/seo', icon: Activity },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { isMobileSidebarOpen, setIsMobileSidebarOpen } = useSidebar();
 
   return (
-    <aside className="w-64 fixed inset-y-0 left-0 z-50 bg-white/50 dark:bg-purple-950/10 backdrop-blur-3xl border-r border-slate-200/50 dark:border-white/10 flex flex-col transition-all duration-300 shadow-[2px_0_10px_rgba(0,0,0,0.05)] dark:shadow-none">
-      {/* Logo */}
-      <div className="h-16 flex items-center px-6 border-b border-slate-200/50 dark:border-white/5">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 dark:from-white dark:to-gray-500 flex items-center justify-center shadow-lg dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]">
-            <Globe className="text-white dark:text-black" size={18} />
-          </div>
-          <span className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-gray-400">
-            Injaazh Global
-          </span>
-        </Link>
-      </div>
+    <>
+      {/* Mobile Backdrop */}
+      {isMobileSidebarOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        />
+      )}
+      
+      <aside className={`w-64 fixed inset-y-0 left-0 z-50 bg-white/90 dark:bg-slate-950/90 lg:bg-white/50 lg:dark:bg-purple-950/10 backdrop-blur-3xl border-r border-slate-200/50 dark:border-white/10 flex flex-col transition-transform duration-300 shadow-[2px_0_10px_rgba(0,0,0,0.05)] dark:shadow-none ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+        {/* Logo */}
+        <div className="h-16 flex items-center justify-between px-6 border-b border-slate-200/50 dark:border-white/5">
+          <Link href="/" className="flex items-center gap-2 group" onClick={() => setIsMobileSidebarOpen(false)}>
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 dark:from-white dark:to-gray-500 flex items-center justify-center shadow-lg dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]">
+              <Globe className="text-white dark:text-black" size={18} />
+            </div>
+            <span className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-gray-400">
+              Injaazh Global
+            </span>
+          </Link>
+          <button 
+            onClick={() => setIsMobileSidebarOpen(false)}
+            className="lg:hidden p-2 text-slate-500 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-white/10 rounded-lg"
+          >
+            <X size={20} />
+          </button>
+        </div>
 
       {/* Navigation */}
       <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
@@ -51,6 +71,7 @@ export default function Sidebar() {
             <Link
               key={item.name}
               href={item.href}
+              onClick={() => setIsMobileSidebarOpen(false)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${
                 isActive 
                   ? 'text-indigo-600 bg-indigo-500/10 dark:text-white dark:bg-white/10 dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]' 
@@ -73,6 +94,7 @@ export default function Sidebar() {
         
         <Link
           href="/settings"
+          onClick={() => setIsMobileSidebarOpen(false)}
           className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
             pathname.startsWith('/settings')
               ? 'text-indigo-600 bg-indigo-500/10 dark:text-white dark:bg-white/10 dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]'
@@ -84,5 +106,6 @@ export default function Sidebar() {
         </Link>
       </div>
     </aside>
+    </>
   );
 }

@@ -22,7 +22,7 @@ export default function Column({ column }: ColumnProps) {
   return (
     <div
       ref={setNodeRef}
-      className={`w-80 flex-shrink-0 flex flex-col rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-2 ${
+      className={`w-full md:w-80 flex-shrink-0 flex flex-col rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-2 ${
         isOver
           ? 'border-purple-400 dark:border-purple-500 bg-purple-50/50 dark:bg-purple-500/10'
           : 'border-purple-200/40 dark:border-purple-500/20'

@@ -71,7 +71,7 @@ export default function KanbanBoard({ initialProjects, onCardClick }: KanbanBoar
 
   return (
     <BoardProvider initialColumns={columns} onCardClick={onCardClick}>
-      <div className="flex gap-5 overflow-x-auto pb-8 snap-x snap-mandatory">
+      <div className="flex flex-col md:flex-row gap-5 md:overflow-x-auto pb-8 snap-y md:snap-x snap-mandatory">
         {columns.map((column) => (
           <Column key={column.id} column={column} />
         ))}

@@ -4,6 +4,7 @@ import "./globals.css";
 import Sidebar from "@/components/layout/Sidebar";
 import Topbar from "@/components/layout/Topbar";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
+import { SidebarProvider } from "@/components/layout/SidebarContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,13 +39,15 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Sidebar />
-          <Topbar />
-          
-          {/* Main Content Area */}
-          <main className="pl-64 pt-16 min-h-screen transition-colors duration-300">
-            {children}
-          </main>
+          <SidebarProvider>
+            <Sidebar />
+            <Topbar />
+            
+            {/* Main Content Area */}
+            <main className="pl-0 lg:pl-64 pt-16 min-h-screen transition-all duration-300">
+              {children}
+            </main>
+          </SidebarProvider>
         </ThemeProvider>
       </body>
     </html>

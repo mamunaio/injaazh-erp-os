@@ -302,7 +302,8 @@ export default function PlatformClient({ platform }: { platform: string }) {
             
           const newProject = {
             title: data.title,
-            clientDetails: { clientName: data.client },
+            clientId: data.clientId,
+            clientDetails: data.clientDetails || { clientName: data.clientName || 'Unknown Client' },
             platform: platform.charAt(0).toUpperCase() + platform.slice(1),
             status: 'Planning',
             progress: 0,
