@@ -370,49 +370,38 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
     const smtpData = (dbSettings?.value as any) || {};
 
     const smtpHost = smtpData.host || process.env.SMTP_HOST;
-    const smtpPort = smtpData.port ? parseInt(smtpData.port) : (process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 587);
     const smtpUser = smtpData.user || process.env.SMTP_USER;
     const smtpPass = smtpData.pass || process.env.SMTP_PASS;
-
-    const defaultFrom = smtpData.fromEmail || smtpUser || 'outreach@injaazh.com';
-    const defaultFromName = smtpData.fromName || 'Injaazh CRM Outreach';
-    const smtpFrom = smtpData.fromEmail 
-      ? `"${defaultFromName}" <${defaultFrom}>`
-      : (process.env.SMTP_FROM || `"${defaultFromName}" <${defaultFrom}>`);
     
     let emailSent = false;
     let isSimulated = false;
     
-    // Send email using Nodemailer if SMTP is configured
-    if (smtpHost && smtpUser && smtpPass) {
+    // Check if SMTP is configured
+    const hasSmtpConfig = !!(smtpHost && smtpUser && smtpPass);
+    
+    if (hasSmtpConfig) {
       try {
-        const nodemailer = await import('nodemailer');
-        const transporter = nodemailer.createTransport({
-          host: smtpHost,
-          port: smtpPort,
-          secure: smtpPort === 465, // true for 465, false for other ports
-          auth: {
-            user: smtpUser,
-            pass: smtpPass,
-          },
-        });
-        
-        await transporter.sendMail({
-          from: smtpFrom,
+        const { sendEmail } = await import('@/lib/email');
+        const emailRes = await sendEmail({
           to: emailTo,
           subject: subject,
           text: body,
-          html: body.replace(/\n/g, '<br />'), // simple conversion to HTML format
+          html: body.replace(/\n/g, '<br />'),
         });
         
-        emailSent = true;
-        console.log(`✉️ Email successfully sent via SMTP to: ${emailTo}`);
+        if (emailRes.success) {
+          emailSent = true;
+          console.log(`✉️ Email successfully sent via SMTP to: ${emailTo}`);
+        } else {
+          console.error('❌ SMTP send failed:', emailRes.error);
+          return { success: false, error: `SMTP configuration is active but failed: ${emailRes.error}` };
+        }
       } catch (smtpError: any) {
         console.error('❌ SMTP send failed:', smtpError);
         return { success: false, error: `SMTP configuration is active but failed: ${smtpError.message || smtpError}` };
       }
     } else {
-      console.log('ℹ️ SMTP credentials missing in .env.local. Switched to Simulated Sandbox outreach.');
+      console.log('ℹ️ SMTP credentials missing. Switched to Simulated Sandbox outreach.');
       isSimulated = true;
     }
     
