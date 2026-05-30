@@ -342,10 +342,16 @@ export default function OutreachClient({ initialLeads }: OutreachClientProps) {
                   .join('')
                   .toUpperCase();
 
+                const isSelected = selectedLead?._id === lead._id;
+
                 return (
                   <div
                     key={lead._id}
-                    className="p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700/50 bg-white/50 dark:bg-slate-800/50 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg hover:shadow-indigo-500/10 dark:hover:shadow-indigo-500/20 transition-all cursor-pointer group"
+                    className={`p-4 rounded-xl border-2 transition-all cursor-pointer group hover:shadow-lg ${
+                      isSelected
+                        ? 'border-indigo-500 dark:border-indigo-400 bg-indigo-50/25 dark:bg-indigo-950/30 shadow-md shadow-indigo-500/5'
+                        : 'border-slate-200 dark:border-slate-700/50 bg-white/50 dark:bg-slate-800/50 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-indigo-500/10 dark:hover:shadow-indigo-500/20'
+                    }`}
                     onClick={() => setSelectedLead(lead)}
                   >
                     <div className="flex items-start gap-3">
