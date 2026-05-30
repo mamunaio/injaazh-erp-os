@@ -408,7 +408,8 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
         emailSent = true;
         console.log(`✉️ Email successfully sent via SMTP to: ${emailTo}`);
       } catch (smtpError: any) {
-        console.error('⚠️ SMTP send failed, falling back to simulated sandbox:', smtpError);
+        console.error('❌ SMTP send failed:', smtpError);
+        return { success: false, error: `SMTP configuration is active but failed: ${smtpError.message || smtpError}` };
       }
     } else {
       console.log('ℹ️ SMTP credentials missing in .env.local. Switched to Simulated Sandbox outreach.');
