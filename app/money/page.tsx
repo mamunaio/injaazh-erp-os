@@ -2,8 +2,15 @@ import { getTransactions, getPlatformSummary } from '@/app/actions/transactionAc
 import { getProjectAnalytics } from '@/app/actions/marketplaceActions';
 import MoneyClient from './MoneyClient';
 import PlatformProjectAnalytics from '@/components/PlatformProjectAnalytics';
+import { getAuthUser } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 
 export default async function MoneyPage() {
+  const authUser = await getAuthUser();
+  if (!authUser || authUser.role === 'team_member') {
+    redirect('/dashboard');
+  }
+
   const [transactionsResult, summaryResult, analyticsResult] = await Promise.all([
     getTransactions(),
     getPlatformSummary(),

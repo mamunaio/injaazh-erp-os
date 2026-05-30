@@ -8,8 +8,10 @@ import { getRecentNotifications, markNotificationAsRead, markAllNotificationsAsR
 import { logoutUser } from '@/app/actions/authActions';
 import toast from 'react-hot-toast';
 import { useSidebar } from './SidebarContext';
+import { useUser } from './UserContext';
 
 export default function Topbar() {
+  const { user } = useUser();
   const router = useRouter();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
@@ -169,12 +171,14 @@ export default function Topbar() {
           >
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 p-[1px] shadow-sm">
               <div className="w-full h-full rounded-full bg-white dark:bg-black flex items-center justify-center overflow-hidden">
-                <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Felix&backgroundColor=transparent" alt="User Avatar" className="w-full h-full object-cover" />
+                <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${user?.name || 'Felix'}&backgroundColor=transparent`} alt="User Avatar" className="w-full h-full object-cover" />
               </div>
             </div>
             <div className="hidden md:block">
-              <p className="text-sm font-bold text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Mamun</p>
-              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 group-hover:text-slate-500 dark:group-hover:text-slate-400 transition-colors">Agency Owner</p>
+              <p className="text-sm font-bold text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{user?.name || 'Loading...'}</p>
+              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 group-hover:text-slate-500 dark:group-hover:text-slate-400 transition-colors">
+                {user?.role === 'admin' ? 'Agency Owner' : user?.role === 'team_member' ? 'Team Member' : 'User'}
+              </p>
             </div>
             <ChevronDown size={14} className={`text-slate-400 dark:text-gray-500 transition-all duration-300 ${showProfile ? 'rotate-180 text-indigo-600 dark:text-indigo-400' : 'group-hover:text-indigo-600 dark:group-hover:text-white'}`} />
           </div>
@@ -191,12 +195,12 @@ export default function Topbar() {
                 <div className="px-4 py-3 mb-2 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 p-[1px] flex-shrink-0">
                     <div className="w-full h-full rounded-full bg-white dark:bg-black flex items-center justify-center overflow-hidden">
-                      <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Felix&backgroundColor=transparent" alt="User Avatar" className="w-full h-full object-cover" />
+                      <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${user?.name || 'Felix'}&backgroundColor=transparent`} alt="User Avatar" className="w-full h-full object-cover" />
                     </div>
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-slate-800 dark:text-white">Mamun</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate w-32">admin@injaazh.com</p>
+                    <p className="text-sm font-bold text-slate-800 dark:text-white">{user?.name || 'Loading...'}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate w-32">{user?.email || ''}</p>
                   </div>
                 </div>
 

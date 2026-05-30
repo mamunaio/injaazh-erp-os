@@ -3,6 +3,8 @@ import { getMarketplaceClients } from '@/actions/marketplaceClientActions';
 import { getMarketplaceProjects } from '@/app/actions/marketplaceActions';
 import ClientHubClient from './ClientHubClient';
 import { Metadata } from 'next';
+import { getAuthUser } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
   title: 'Marketplace Clients | Injaazh ERP',
@@ -12,6 +14,11 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function MarketplaceClientsPage() {
+  const authUser = await getAuthUser();
+  if (!authUser || authUser.role === 'team_member') {
+    redirect('/dashboard');
+  }
+
   const [result, projects] = await Promise.all([
     getMarketplaceClients(),
     getMarketplaceProjects()

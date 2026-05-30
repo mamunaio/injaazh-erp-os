@@ -28,6 +28,15 @@ import {
 } from 'lucide-react';
 import { getSystemSettings, saveSystemSettings, testSmtpConnection } from '@/app/actions/settingsActions';
 import { sendTestEmail } from '@/app/actions/emailActions';
+import { useUser } from '@/components/layout/UserContext';
+import { 
+  getTeamMembers, 
+  createTeamMember, 
+  updateTeamMemberPermissions, 
+  deleteTeamMember, 
+  updateUserProfile 
+} from '@/app/actions/teamActions';
+import { Users } from 'lucide-react';
 
 const playSound = (type: 'success' | 'pop' | 'error' | 'cash') => {
   try {
@@ -170,6 +179,34 @@ export default function SettingsClient() {
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [testEmailAddress, setTestEmailAddress] = useState('');
 
+  // User Profile States
+  const { user, refreshUser } = useUser();
+  const [profileName, setProfileName] = useState('');
+  const [profileEmail, setProfileEmail] = useState('');
+
+  // Own Password Change States
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // Team Management States
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [inviteName, setInviteName] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [invitePassword, setInvitePassword] = useState('');
+  const [invitePermissions, setInvitePermissions] = useState<string[]>(['leads', 'outreach']);
+  const [isInviting, setIsInviting] = useState(false);
+
+  // Dynamic Tabs list
+  const tabsToRender = user?.role === 'admin' 
+    ? [
+        ...TABS.slice(0, 3), // general, notifications, security
+        { id: 'team', label: 'Manage Team', icon: Users },
+        ...TABS.slice(3) // smtp, api, billing, danger
+      ]
+    : TABS.filter(t => t.id === 'general' || t.id === 'security');
+
   useEffect(() => {
     checkTwoFactorStatus().then(res => {
       if (res.success) setIs2FAEnabled(res.enabled || false);
@@ -182,6 +219,20 @@ export default function SettingsClient() {
       }
     });
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      setProfileName(user.name);
+      setProfileEmail(user.email);
+    }
+    if (user?.role === 'admin') {
+      getTeamMembers().then(res => {
+        if (res.success && res.data) {
+          setTeamMembers(res.data);
+        }
+      });
+    }
+  }, [user]);
   
   // Notification States
   const [masterSound, setMasterSound] = useState(true);
@@ -198,19 +249,156 @@ export default function SettingsClient() {
     toast.loading('Saving preferences...', { id: 'save' });
     
     try {
-      // Save SMTP settings dynamically
-      const res = await saveSystemSettings('smtp', smtpSettings);
-      if (!res.success) {
-        throw new Error(res.error || 'Failed to save SMTP configurations');
+      if (activeTab === 'general') {
+        const res = await updateUserProfile({ name: profileName, email: profileEmail });
+        if (!res.success) {
+          throw new Error(res.error || 'Failed to update profile');
+        }
+        await refreshUser();
+        toast.success('Profile updated successfully!', { id: 'save' });
+        if (masterSound) playSound('success');
+      } else if (activeTab === 'smtp') {
+        const res = await saveSystemSettings('smtp', smtpSettings);
+        if (!res.success) {
+          throw new Error(res.error || 'Failed to save SMTP configurations');
+        }
+        toast.success('SMTP settings saved successfully!', { id: 'save' });
+        if (masterSound) playSound('success');
+      } else {
+        toast.success('Settings saved successfully!', { id: 'save' });
+        if (masterSound) playSound('success');
       }
-
-      toast.success('Settings saved successfully!', { id: 'save' });
-      if (masterSound) playSound('success');
     } catch (err: any) {
       toast.error(err.message || 'Failed to save settings.', { id: 'save' });
       if (masterSound) playSound('error');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      toast.error('All password fields are required');
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      toast.error('New passwords do not match');
+      return;
+    }
+    if (newPassword.length < 8) {
+      toast.error('New password must be at least 8 characters long');
+      return;
+    }
+
+    setIsChangingPassword(true);
+    toast.loading('Changing password...', { id: 'ch-pass' });
+    try {
+      const res = await updateUserProfile({
+        name: profileName,
+        email: profileEmail,
+        currentPassword,
+        newPassword
+      });
+      if (res.success) {
+        toast.success('Password updated successfully!', { id: 'ch-pass' });
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmNewPassword('');
+        if (masterSound) playSound('success');
+      } else {
+        toast.error(res.error || 'Failed to change password', { id: 'ch-pass' });
+        if (masterSound) playSound('error');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error occurred', { id: 'ch-pass' });
+      if (masterSound) playSound('error');
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const handleInviteMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteName || !inviteEmail || !invitePassword) {
+      toast.error('Please fill in all team member details');
+      return;
+    }
+    setIsInviting(true);
+    toast.loading('Creating team member...', { id: 'invite' });
+    try {
+      const res = await createTeamMember({
+        name: inviteName,
+        email: inviteEmail,
+        password: invitePassword,
+        permissions: invitePermissions
+      });
+      if (res.success && res.data) {
+        toast.success('Team member added successfully!', { id: 'invite' });
+        setInviteName('');
+        setInviteEmail('');
+        setInvitePassword('');
+        setInvitePermissions(['leads', 'outreach']);
+        const updated = await getTeamMembers();
+        if (updated.success && updated.data) setTeamMembers(updated.data);
+        if (masterSound) playSound('success');
+      } else {
+        toast.error(res.error || 'Failed to add team member', { id: 'invite' });
+        if (masterSound) playSound('error');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error occurred', { id: 'invite' });
+      if (masterSound) playSound('error');
+    } finally {
+      setIsInviting(false);
+    }
+  };
+
+  const handleTogglePermission = async (memberId: string, moduleKey: string, isChecked: boolean) => {
+    const member = teamMembers.find(m => m._id === memberId);
+    if (!member) return;
+
+    let updatedPermissions = [...(member.permissions || [])];
+    if (isChecked) {
+      if (!updatedPermissions.includes(moduleKey)) updatedPermissions.push(moduleKey);
+    } else {
+      updatedPermissions = updatedPermissions.filter(p => p !== moduleKey);
+    }
+
+    toast.loading('Updating permissions...', { id: 'perm-update' });
+    try {
+      const res = await updateTeamMemberPermissions(memberId, updatedPermissions);
+      if (res.success) {
+        toast.success('Permissions updated!', { id: 'perm-update' });
+        setTeamMembers(prev => prev.map(m => m._id === memberId ? { ...m, permissions: updatedPermissions } : m));
+        if (masterSound) playSound('success');
+      } else {
+        toast.error(res.error || 'Failed to update permissions', { id: 'perm-update' });
+        if (masterSound) playSound('error');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error occurred', { id: 'perm-update' });
+      if (masterSound) playSound('error');
+    }
+  };
+
+  const handleDeleteMember = async (memberId: string) => {
+    if (!confirm('Are you sure you want to remove this team member?')) return;
+
+    toast.loading('Removing team member...', { id: 'team-delete' });
+    try {
+      const res = await deleteTeamMember(memberId);
+      if (res.success) {
+        toast.success('Team member removed!', { id: 'team-delete' });
+        setTeamMembers(prev => prev.filter(m => m._id !== memberId));
+        if (masterSound) playSound('success');
+      } else {
+        toast.error(res.error || 'Failed to remove member', { id: 'team-delete' });
+        if (masterSound) playSound('error');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error occurred', { id: 'team-delete' });
+      if (masterSound) playSound('error');
     }
   };
 
@@ -327,7 +515,7 @@ export default function SettingsClient() {
         {/* Sidebar Menu */}
         <div className="w-full lg:w-72 flex-shrink-0">
           <div className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl border border-white/20 dark:border-purple-500/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(167,139,250,0.05)] rounded-3xl p-4 flex flex-col gap-2">
-            {TABS.map(tab => {
+            {tabsToRender.map(tab => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
               return (
@@ -389,20 +577,23 @@ export default function SettingsClient() {
                         <p className="text-xs text-slate-500 mt-1">Recommended size: 500x500px</p>
                       </div>
                     </div>
-                    
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-jakarta font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 mb-2">Agency Name</label>
-                        <input type="text" defaultValue="Injaazh Global" className="w-full px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-inter text-[15px]" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-jakarta font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 mb-2">Admin Name</label>
-                        <input type="text" defaultValue="System Admin" className="w-full px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-inter text-[15px]" />
+                      {user?.role === 'admin' && (
+                        <div>
+                          <label className="block text-sm font-jakarta font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 mb-2">Agency Name</label>
+                          <input type="text" defaultValue="Injaazh Global" disabled className="w-full px-5 py-3.5 bg-white/30 dark:bg-slate-800/30 backdrop-blur-xl border border-white/10 dark:border-slate-800 rounded-2xl text-slate-400 dark:text-slate-500 font-inter text-[15px] cursor-not-allowed" />
+                        </div>
+                      )}
+                      <div className={user?.role === 'admin' ? '' : 'md:col-span-2'}>
+                        <label className="block text-sm font-jakarta font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 mb-2">
+                          {user?.role === 'admin' ? 'Admin Name' : 'Your Name'}
+                        </label>
+                        <input type="text" value={profileName} onChange={(e) => setProfileName(e.target.value)} className="w-full px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-inter text-[15px]" />
                       </div>
                     </div>
                     <div>
                       <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Email Address</label>
-                      <input type="email" defaultValue="admin@injaazh.com" className="w-full px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-medium" />
+                      <input type="email" value={profileEmail} onChange={(e) => setProfileEmail(e.target.value)} className="w-full px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-medium" />
                     </div>
                   </div>
                 </GlassCard>
@@ -542,6 +733,200 @@ export default function SettingsClient() {
                         )}
                       </div>
                     ))}
+                  </div>
+
+                  <div className="mt-10 pt-8 border-t border-slate-200 dark:border-slate-800">
+                    <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest mb-6 flex items-center gap-2">
+                      <Key size={18} className="text-slate-400" /> Change Password
+                    </h3>
+                    <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Current Password</label>
+                        <input 
+                          type="password" 
+                          value={currentPassword} 
+                          onChange={(e) => setCurrentPassword(e.target.value)} 
+                          className="w-full px-5 py-3 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 text-sm font-medium" 
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">New Password</label>
+                          <input 
+                            type="password" 
+                            value={newPassword} 
+                            onChange={(e) => setNewPassword(e.target.value)} 
+                            className="w-full px-5 py-3 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 text-sm font-medium" 
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Confirm New Password</label>
+                          <input 
+                            type="password" 
+                            value={confirmNewPassword} 
+                            onChange={(e) => setConfirmNewPassword(e.target.value)} 
+                            className="w-full px-5 py-3 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 text-sm font-medium" 
+                          />
+                        </div>
+                      </div>
+                      <button 
+                        type="submit" 
+                        disabled={isChangingPassword}
+                        className="px-6 py-3 bg-indigo-600 text-white font-jakarta font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors text-xs disabled:opacity-50"
+                      >
+                        {isChangingPassword ? 'Updating...' : 'Update Password'}
+                      </button>
+                    </form>
+                  </div>
+                </GlassCard>
+              )}
+
+              {/* TAB: Manage Team (Admin Only) */}
+              {activeTab === 'team' && user?.role === 'admin' && (
+                <GlassCard>
+                  <h2 className="text-3xl font-jakarta font-black text-slate-800 dark:text-slate-100 mb-8 flex items-center gap-3">
+                    <Users className="text-indigo-500" /> Manage Team
+                  </h2>
+
+                  {/* Invite Form */}
+                  <div className="mb-10 p-6 rounded-3xl bg-indigo-500/5 border border-indigo-500/10">
+                    <h3 className="text-base font-bold text-slate-800 dark:text-white mb-4">Invite New Team Member</h3>
+                    <form onSubmit={handleInviteMember} className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Name</label>
+                        <input 
+                          type="text" 
+                          placeholder="e.g. John Doe"
+                          value={inviteName} 
+                          onChange={(e) => setInviteName(e.target.value)} 
+                          className="w-full px-5 py-3.5 bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 text-sm font-medium" 
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Email</label>
+                        <input 
+                          type="email" 
+                          placeholder="e.g. john@injaazh.com"
+                          value={inviteEmail} 
+                          onChange={(e) => setInviteEmail(e.target.value)} 
+                          className="w-full px-5 py-3.5 bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 text-sm font-medium" 
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Password</label>
+                        <input 
+                          type="password" 
+                          placeholder="••••••••"
+                          value={invitePassword} 
+                          onChange={(e) => setInvitePassword(e.target.value)} 
+                          className="w-full px-5 py-3.5 bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 text-sm font-medium" 
+                        />
+                      </div>
+                      <div className="md:col-span-2 flex items-center gap-6 py-2">
+                        <span className="text-xs font-bold text-slate-500">Assign Permissions:</span>
+                        <label className="flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-400 cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            checked={invitePermissions.includes('leads')} 
+                            onChange={(e) => {
+                              if (e.target.checked) setInvitePermissions([...invitePermissions, 'leads']);
+                              else setInvitePermissions(invitePermissions.filter(p => p !== 'leads'));
+                            }} 
+                            className="rounded border-slate-300 text-indigo-650 focus:ring-indigo-500"
+                          />
+                          Leads Management
+                        </label>
+                        <label className="flex items-center gap-2 text-sm font-semibold text-slate-650 cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            checked={invitePermissions.includes('outreach')} 
+                            onChange={(e) => {
+                              if (e.target.checked) setInvitePermissions([...invitePermissions, 'outreach']);
+                              else setInvitePermissions(invitePermissions.filter(p => p !== 'outreach'));
+                            }} 
+                            className="rounded border-slate-300 text-indigo-650 focus:ring-indigo-500"
+                          />
+                          Email Outreach
+                        </label>
+                      </div>
+                      <div className="text-right">
+                        <button 
+                          type="submit" 
+                          disabled={isInviting}
+                          className="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-jakarta font-bold rounded-2xl shadow-lg transition-all text-sm w-full md:w-auto"
+                        >
+                          {isInviting ? 'Inviting...' : 'Invite Member'}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+
+                  {/* Members List */}
+                  <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest mb-6">
+                    Team Members list
+                  </h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="border-b border-slate-200/50 dark:border-white/5 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                          <th className="py-3 px-4">Name</th>
+                          <th className="py-3 px-4">Email</th>
+                          <th className="py-3 px-4">Role</th>
+                          <th className="py-3 px-4">Permissions</th>
+                          <th className="py-3 px-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {teamMembers.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="py-8 text-center text-xs font-bold text-slate-400">No team members invited yet.</td>
+                          </tr>
+                        ) : (
+                          teamMembers.map(member => (
+                            <tr key={member._id} className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-500/5 transition-colors text-sm font-medium">
+                              <td className="py-4 px-4 font-bold text-slate-800 dark:text-slate-200">{member.name}</td>
+                              <td className="py-4 px-4 text-slate-500">{member.email}</td>
+                              <td className="py-4 px-4">
+                                <span className="text-[10px] bg-slate-550/10 text-slate-650 dark:text-slate-450 px-2.5 py-1 rounded-full uppercase tracking-wider font-extrabold border border-slate-500/10">
+                                  {member.role}
+                                </span>
+                              </td>
+                              <td className="py-4 px-4">
+                                <div className="flex items-center gap-4 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                                  <label className="flex items-center gap-1.5 cursor-pointer">
+                                    <input 
+                                      type="checkbox" 
+                                      checked={member.permissions?.includes('leads')} 
+                                      onChange={(e) => handleTogglePermission(member._id, 'leads', e.target.checked)}
+                                      className="rounded text-indigo-605 focus:ring-indigo-500 border-slate-300"
+                                    />
+                                    Leads
+                                  </label>
+                                  <label className="flex items-center gap-1.5 cursor-pointer">
+                                    <input 
+                                      type="checkbox" 
+                                      checked={member.permissions?.includes('outreach')} 
+                                      onChange={(e) => handleTogglePermission(member._id, 'outreach', e.target.checked)}
+                                      className="rounded text-indigo-605 focus:ring-indigo-500 border-slate-300"
+                                    />
+                                    Outreach
+                                  </label>
+                                </div>
+                              </td>
+                              <td className="py-4 px-4 text-right">
+                                <button 
+                                  onClick={() => handleDeleteMember(member._id)}
+                                  className="p-2 text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all"
+                                  title="Remove Team Member"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
                   </div>
                 </GlassCard>
               )}

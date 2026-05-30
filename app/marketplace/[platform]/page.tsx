@@ -1,4 +1,6 @@
 import PlatformClient from "./PlatformClient";
+import { getAuthUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Platform Projects | Injaazh ERP",
@@ -14,6 +16,11 @@ export default async function PlatformPage({
 }: { 
   params: Promise<{ platform: string }> 
 }) {
+  const authUser = await getAuthUser();
+  if (!authUser || authUser.role === "team_member") {
+    redirect("/dashboard");
+  }
+
   const { platform } = await params;
   return <PlatformClient platform={platform} />;
 }

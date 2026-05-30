@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Users, FileText, Briefcase, Store, DollarSign, Settings, Globe, Activity, X, Wallet, Mail } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import { useSidebar } from './SidebarContext';
+import { useUser } from './UserContext';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -24,6 +25,18 @@ const navItems = [
 export default function Sidebar() {
   const pathname = usePathname();
   const { isMobileSidebarOpen, setIsMobileSidebarOpen } = useSidebar();
+  const { user } = useUser();
+
+  const filteredNavItems = navItems.filter((item) => {
+    if (!user) return false;
+    if (user.role === 'admin') return true;
+    
+    if (item.href === '/dashboard') return true;
+    if (item.href === '/leads' && user.permissions?.includes('leads')) return true;
+    if (item.href === '/outreach' && user.permissions?.includes('outreach')) return true;
+    
+    return false;
+  });
 
   return (
     <>
@@ -59,7 +72,7 @@ export default function Sidebar() {
         <div className="text-[10px] font-bold text-slate-400 dark:text-gray-600 uppercase tracking-widest mb-4 px-3">
           Navigation
         </div>
-        {navItems.map((item) => {
+        {filteredNavItems.map((item) => {
           // Determine active state for both exact match and sub-routes (except dashboard)
           const isActive = item.href === '/dashboard' 
             ? pathname === '/' || pathname === '/dashboard'

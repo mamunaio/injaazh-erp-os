@@ -1,5 +1,7 @@
 import ProposalsClient from "./ProposalsClient";
 import { getProposals, getProposalStats } from "@/app/actions/proposalActions";
+import { getAuthUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Proposals | Injaazh ERP",
@@ -11,6 +13,11 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function ProposalsPage() {
+  const authUser = await getAuthUser();
+  if (!authUser || authUser.role === "team_member") {
+    redirect("/dashboard");
+  }
+
   // Fetch proposals and stats
   const proposalsResponse = await getProposals();
   const statsResponse = await getProposalStats();

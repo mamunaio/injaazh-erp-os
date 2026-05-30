@@ -2,7 +2,7 @@
 
 import connectToDatabase from '@/lib/mongodb';
 import User from '@/models/User';
-import { generateAuthToken, setAuthCookie, removeAuthCookie, generate2FATempToken, verify2FATempToken } from '@/lib/auth';
+import { generateAuthToken, setAuthCookie, removeAuthCookie, generate2FATempToken, verify2FATempToken, getAuthUser } from '@/lib/auth';
 import { verifySync } from 'otplib';
 import crypto from 'crypto';
 
@@ -225,5 +225,23 @@ export async function resetPassword(formData: FormData, token: string) {
   } catch (error: any) {
     console.error('Password reset error:', error);
     return { success: false, message: 'Something went wrong while resetting password' };
+  }
+}
+
+export async function getCurrentUser() {
+  try {
+    await connectToDatabase();
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return { success: false, error: 'Not authenticated' };
+    }
+    const user = await User.findById(authUser.id).select('-password');
+    if (!user) {
+      return { success: false, error: 'User not found' };
+    }
+    return { success: true, data: JSON.parse(JSON.stringify(user)) };
+  } catch (error: any) {
+    console.error('Error fetching current user:', error);
+    return { success: false, error: error.message || 'Something went wrong' };
   }
 }

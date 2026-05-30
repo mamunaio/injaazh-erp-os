@@ -44,6 +44,7 @@ import {
 } from 'recharts';
 import { motion } from 'framer-motion';
 import AIAssistantWidget from '@/components/AIAssistantWidget';
+import { useUser } from '@/components/layout/UserContext';
 
 interface DashboardClientProps {
   dashboardData: any;
@@ -102,6 +103,7 @@ const itemVariants = {
 };
 
 export default function DashboardClient({ dashboardData, dailyInsights, islamicQuote }: DashboardClientProps) {
+  const { user } = useUser();
   if (!dashboardData) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-8 flex items-center justify-center">
@@ -149,6 +151,193 @@ export default function DashboardClient({ dashboardData, dailyInsights, islamicQ
     if (diffDays === 1) return 'Yesterday';
     return `${diffDays}d ago`;
   };
+
+  if (user?.role === 'team_member') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-[#0B0E1A] dark:via-[#0F1220] dark:to-[#0B0E1A] p-4 md:p-8 text-slate-800 dark:text-slate-200 overflow-hidden">
+        <motion.div 
+          className="max-w-[1400px] mx-auto space-y-6"
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+        >
+          {/* Header */}
+          <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
+            <div>
+              <h1 className="text-5xl md:text-6xl font-jakarta font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 mb-3 drop-shadow-sm tracking-tight leading-none">
+                Hello, {user.name}!
+              </h1>
+              <p className="text-slate-500 dark:text-slate-500 text-sm font-inter font-medium tracking-wide">
+                Welcome back to your workspace dashboard • {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+              </p>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="flex flex-wrap gap-3">
+              {user.permissions?.includes('leads') && (
+                <Link href="/leads">
+                  <button className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-jakarta font-bold text-sm rounded-xl hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] transition-all">
+                    <Plus size={18} /> Add Lead
+                  </button>
+                </Link>
+              )}
+              {user.permissions?.includes('outreach') && (
+                <Link href="/outreach">
+                  <button className="flex items-center gap-2 px-6 py-3 bg-white/85 dark:bg-[#1A2235]/85 border border-slate-200/50 dark:border-white/10 text-slate-700 dark:text-slate-200 font-jakarta font-bold text-sm rounded-xl hover:bg-white dark:hover:bg-[#1A2235] hover:shadow-lg transition-all">
+                    <Plus size={18} /> Create Outreach
+                  </button>
+                </Link>
+              )}
+            </div>
+          </motion.div>
+
+          {/* Daily Quote / Greeting Card (spans full width) */}
+          {islamicQuote && (
+            <motion.div variants={itemVariants} className="grid grid-cols-1 gap-6 mb-6">
+              <GlassCard className="relative overflow-hidden group">
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-500"></div>
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                      <BookOpen size={24} className="text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-jakarta font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest">
+                        Daily Quote
+                      </h3>
+                      <p className="text-[11px] font-inter text-slate-500 dark:text-slate-500 tracking-wide">আজকের বাণী</p>
+                    </div>
+                  </div>
+                  <div className="flex-1 max-w-2xl text-center md:text-right">
+                    <p className="text-xl font-arabic text-emerald-600 dark:text-emerald-400 mb-1 leading-relaxed" dir="rtl">{islamicQuote.text}</p>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-350">{islamicQuote.translation} — <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">{islamicQuote.reference}</span></p>
+                  </div>
+                </div>
+              </GlassCard>
+            </motion.div>
+          )}
+
+          {/* Statistics Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <motion.div variants={itemVariants}>
+              <GlassCard className="relative overflow-hidden group flex flex-col justify-between h-full">
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl group-hover:bg-indigo-500/20 transition-all"></div>
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-650 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                      <Users size={22} className="text-white drop-shadow-md" />
+                    </div>
+                  </div>
+                  <p className="text-xs font-jakarta font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1">Total Leads Tracked</p>
+                  <h3 className="text-4xl font-jakarta font-black text-slate-800 dark:text-white mb-2">{stats.totalLeads}</h3>
+                </div>
+                <div className="pt-2 border-t border-slate-200/50 dark:border-white/5 text-xs text-slate-400 dark:text-slate-500">
+                  Total logged prospects in database
+                </div>
+              </GlassCard>
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <GlassCard className="relative overflow-hidden group flex flex-col justify-between h-full">
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-teal-500/10 rounded-full blur-3xl group-hover:bg-teal-500/20 transition-all"></div>
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-teal-500/30">
+                      <Users size={22} className="text-white drop-shadow-md" />
+                    </div>
+                  </div>
+                  <p className="text-xs font-jakarta font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1">Active Outreach Leads</p>
+                  <h3 className="text-4xl font-jakarta font-black text-slate-800 dark:text-white mb-2">{stats.activeLeads}</h3>
+                </div>
+                <div className="pt-2 border-t border-slate-200/50 dark:border-white/5 text-xs text-slate-400 dark:text-slate-500">
+                  Leads currently being actively nurtured
+                </div>
+              </GlassCard>
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <GlassCard className="relative overflow-hidden group flex flex-col justify-between h-full">
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-pink-500/10 rounded-full blur-3xl group-hover:bg-pink-500/20 transition-all"></div>
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-lg shadow-pink-500/30">
+                      <Percent size={20} className="text-white drop-shadow-md" />
+                    </div>
+                  </div>
+                  <p className="text-xs font-jakarta font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1">Lead Conversion Rate</p>
+                  <h3 className="text-4xl font-jakarta font-black text-slate-800 dark:text-white mb-2">{stats.leadConversionRate}%</h3>
+                </div>
+                <div className="pt-2 border-t border-slate-200/50 dark:border-white/5 text-xs text-slate-400 dark:text-slate-500">
+                  Percentage of won/closed deals
+                </div>
+              </GlassCard>
+            </motion.div>
+          </div>
+
+          {/* Leads Details (spans full width/12) */}
+          <div className="grid grid-cols-1 gap-6">
+            <motion.div variants={itemVariants}>
+              <GlassCard className="flex flex-col">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
+                    <Users size={16} className="text-teal-500" />
+                    Recent Leads & Prospects
+                  </h3>
+                  <Link href="/leads" className="text-xs font-bold text-teal-500 hover:text-teal-400">View all</Link>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-200/50 dark:border-white/5 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                        <th className="py-3 px-4">Company Name</th>
+                        <th className="py-3 px-4">Target Service</th>
+                        <th className="py-3 px-4">Outreach Status</th>
+                        <th className="py-3 px-4">Created At</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recentLeads.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="py-8 text-center text-xs font-bold text-slate-400">No leads available.</td>
+                        </tr>
+                      ) : (
+                        recentLeads.map((lead: any) => {
+                          const status = lead.outreach_status;
+                          const statusColor = 
+                            status === 'Meeting Booked' ? 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20' :
+                            status === 'Replied' ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20' :
+                            status === 'Contacted' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' :
+                            status === 'Closed' ? 'bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 border-fuchsia-500/20' :
+                            'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20';
+                          return (
+                            <tr key={lead._id} className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-500/5 transition-colors text-sm font-medium">
+                              <td className="py-4 px-4 font-bold text-slate-800 dark:text-slate-250">{lead.company_name}</td>
+                              <td className="py-4 px-4 text-slate-600 dark:text-slate-400">{lead.targetService}</td>
+                              <td className="py-4 px-4">
+                                <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full border ${statusColor}`}>
+                                  {status}
+                                </span>
+                              </td>
+                              <td className="py-4 px-4 text-xs text-slate-500">{new Date(lead.createdAt).toLocaleDateString()}</td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </GlassCard>
+            </motion.div>
+          </div>
+        </motion.div>
+        
+        {/* Custom AI Widget only if they have outreach/leads permissions */}
+        {(user.permissions?.includes('leads') || user.permissions?.includes('outreach')) && (
+          <AIAssistantWidget />
+        )}
+      </div>
+    );
+  }
 
   // Prepare chart data
   const projectStatusData = Object.entries(projectStatusDistribution).map(([status, count]) => ({

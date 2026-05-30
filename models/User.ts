@@ -6,13 +6,14 @@ export interface IUser extends Document {
   email: string;
   password?: string;
   image?: string;
-  role: 'admin' | 'user';
+  role: 'admin' | 'user' | 'team_member';
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
   twoFactorSecret?: string;
   twoFactorEnabled: boolean;
+  permissions?: string[];
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -22,11 +23,12 @@ const UserSchema = new Schema<IUser>(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, select: false }, // Do not return password by default
     image: { type: String },
-    role: { type: String, enum: ['admin', 'user'], default: 'user' },
+    role: { type: String, enum: ['admin', 'user', 'team_member'], default: 'team_member' },
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
     twoFactorSecret: { type: String, select: false },
     twoFactorEnabled: { type: Boolean, default: false },
+    permissions: { type: [String], default: [] },
   },
   { timestamps: true }
 );

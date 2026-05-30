@@ -1,5 +1,7 @@
 import SeoClient from './SeoClient';
 import { getSeoProjects } from '@/app/actions/seoActions';
+import { getAuthUser } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 
 export const metadata = {
   title: 'SEO & AEO Tracker | Injaazh ERP',
@@ -7,6 +9,11 @@ export const metadata = {
 };
 
 export default async function SeoPage() {
+  const authUser = await getAuthUser();
+  if (!authUser || authUser.role === 'team_member') {
+    redirect('/dashboard');
+  }
+
   const result = await getSeoProjects();
   const projects = result.success ? result.data : [];
 
