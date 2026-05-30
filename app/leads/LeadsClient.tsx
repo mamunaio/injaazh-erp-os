@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Mail, MessageCircle, Globe, Plus, X, Trash2, Edit, MoreHorizontal, Building2, User, Calendar, Tag, Loader2, AlertTriangle, FileText } from 'lucide-react';
+import { Mail, MessageCircle, Globe, Plus, X, Trash2, Edit, MoreHorizontal, Building2, User, Calendar, Tag, Loader2, AlertTriangle, FileText, Clock, LayoutGrid, List } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createLead, deleteLead } from '@/app/actions/leadActions';
 import { useRouter } from 'next/navigation';
 import LeadDetailsModal from '@/components/leads/LeadDetailsModal';
+import OutreachComposerModal from '@/components/leads/OutreachComposerModal';
+import { toast } from 'react-hot-toast';
 
 const STATUS_OPTIONS = ['New', 'Contacted', 'Replied', 'Meeting Booked', 'Closed', 'Not Interested'];
 
@@ -20,6 +22,12 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [leadToDelete, setLeadToDelete] = useState<any>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Cold Email Outreach state
+  const [isComposerOpen, setIsComposerOpen] = useState(false);
+  const [composerLead, setComposerLead] = useState<any>(null);
   
   // Form State
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -72,13 +80,28 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
           targetService: 'High-end Web Development', website_url: '', facebook_url: '',
           instagram_url: '', linkedin_url: '', reportFileUrl: ''
         });
+        toast.success(res.message || 'Lead created successfully! 🎉');
         router.refresh();
       } else {
-        alert(res.error || 'Failed to create lead');
+        // Handle duplicate error with detailed message
+        if (res.isDuplicate && res.details) {
+          const detailsMessage = res.details.join('\n• ');
+          toast.error(
+            `${res.error}\n\n• ${detailsMessage}`,
+            { 
+              duration: 5000,
+              style: {
+                maxWidth: '500px',
+              }
+            }
+          );
+        } else {
+          toast.error(res.error || 'Failed to create lead');
+        }
       }
     } catch (error) {
       console.error('Error creating lead:', error);
-      alert('An error occurred. Please try again.');
+      toast.error('An error occurred. Please try again.');
     } finally {
       setIsCreating(false);
     }
@@ -154,6 +177,54 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
       })
     : leads;
 
+  // Apply search filter
+  const searchedLeads = searchQuery.trim()
+    ? filteredLeads.filter(lead => 
+        lead.company_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        lead.contact_person?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        lead.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        lead.phone?.includes(searchQuery) ||
+        lead.targetService?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : filteredLeads;
+
+  // Group leads by date
+  const groupedLeads = searchedLeads.reduce((groups: Record<string, any[]>, lead) => {
+    const date = new Date(lead.createdAt);
+    const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
+    if (!groups[dateKey]) {
+      groups[dateKey] = [];
+    }
+    groups[dateKey].push(lead);
+    return groups;
+  }, {});
+
+  // Sort dates descending (newest first)
+  const sortedDates = Object.keys(groupedLeads).sort((a, b) => b.localeCompare(a));
+
+  const formatDateHeader = (dateString: string) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    today.setHours(0, 0, 0, 0);
+    yesterday.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+    
+    if (date.getTime() === today.getTime()) {
+      return 'Today';
+    } else if (date.getTime() === yesterday.getTime()) {
+      return 'Yesterday';
+    } else {
+      return new Intl.DateTimeFormat('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      }).format(date);
+    }
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
@@ -168,72 +239,147 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
   };
 
   return (
-    <div className="min-h-screen p-8 text-slate-800 dark:text-slate-200">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-[#0B0E1A] dark:via-[#0F1220] dark:to-[#0B0E1A] p-4 md:p-8 text-slate-800 dark:text-slate-200">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 md:mb-10 gap-4 md:gap-6">
         <div>
-          <h1 className="text-3xl md:text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 mb-1 md:mb-2">
+          <h1 className="text-5xl md:text-6xl font-jakarta font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 mb-2 md:mb-3 tracking-tight leading-none">
             Leads & Outreach
           </h1>
-          <p className="text-slate-600 dark:text-gray-400 text-xs md:text-sm font-medium">Manage high-density pipeline and cold outreach</p>
+          <p className="text-slate-600 dark:text-gray-400 text-sm md:text-base font-inter font-medium tracking-wide">Manage high-density pipeline and cold outreach</p>
         </div>
 
         <div className="flex items-center gap-2 md:gap-4 flex-wrap w-full md:w-auto">
+          {/* View Mode Toggle */}
+          <div className="flex items-center bg-white/50 dark:bg-slate-800/40 p-1 border border-slate-300 dark:border-white/10 rounded-xl">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-lg transition-all ${
+                viewMode === 'list' 
+                  ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md' 
+                  : 'text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-white'
+              }`}
+              title="List View"
+            >
+              <List size={16} />
+            </button>
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded-lg transition-all ${
+                viewMode === 'grid' 
+                  ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md' 
+                  : 'text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-white'
+              }`}
+              title="Grid View"
+            >
+              <LayoutGrid size={16} />
+            </button>
+          </div>
+
           <button 
             onClick={() => setShowFollowUps(!showFollowUps)}
-            className={`flex items-center gap-2 md:gap-2.5 px-3 md:px-5 py-2 md:py-2.5 border-2 rounded-xl transition-all text-xs md:text-sm font-bold shadow-sm hover:shadow-md ${
+            className={`flex items-center gap-2 md:gap-2.5 px-4 md:px-6 py-2.5 md:py-3 border-2 rounded-xl transition-all text-sm md:text-sm font-jakarta font-bold shadow-sm hover:shadow-md ${
               showFollowUps 
                 ? 'bg-gradient-to-r from-red-50 to-orange-50 border-red-300 text-red-700 dark:from-red-500/20 dark:to-orange-500/20 dark:border-red-400/50 dark:text-red-300 shadow-red-200/50 dark:shadow-red-500/20' 
                 : 'bg-white/90 border-slate-300 text-slate-700 hover:bg-slate-50 dark:bg-white/10 dark:border-white/20 dark:hover:bg-white/15 dark:text-white'
             }`}
           >
-            <Calendar size={16} className="md:hidden" strokeWidth={2.5} />
-            <Calendar size={18} className="hidden md:block" strokeWidth={2.5} />
+            <Calendar size={18} strokeWidth={2.5} />
             <span className="hidden sm:inline">Follow-ups Today</span>
             <span className="sm:hidden">Follow-ups</span>
           </button>
 
           <button 
             onClick={() => setIsFormOpen(true)}
-            className="flex items-center gap-2 md:gap-2.5 px-4 md:px-6 py-2 md:py-2.5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-bold rounded-xl hover:-translate-y-1 hover:shadow-xl hover:shadow-purple-500/40 transition-all text-xs md:text-sm shadow-lg flex-1 md:flex-initial justify-center"
+            className="flex items-center gap-2 md:gap-2.5 px-5 md:px-7 py-2.5 md:py-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-jakarta font-bold rounded-xl hover:shadow-[0_0_25px_rgba(168,85,247,0.5)] transition-all text-sm md:text-sm shadow-lg flex-1 md:flex-initial justify-center"
           >
-            <Plus size={18} className="md:hidden" strokeWidth={2.5} />
-            <Plus size={20} className="hidden md:block" strokeWidth={2.5} />
+            <Plus size={20} strokeWidth={2.5} />
             <span>New Lead</span>
           </button>
         </div>
       </div>
 
+      {/* Search Bar */}
+      <div className="mb-6">
+        <div className="relative max-w-2xl">
+          <input
+            type="text"
+            placeholder="Search leads by company, contact, email, phone, or service..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-5 py-3.5 pl-12 bg-white/80 dark:bg-[#151B2E]/80 backdrop-blur-xl border border-slate-200/50 dark:border-white/5 rounded-xl shadow-lg dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)] focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 font-inter transition-all"
+          />
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors"
+            >
+              <X size={18} />
+            </button>
+          )}
+        </div>
+        {searchQuery && (
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400 font-inter">
+            Found <span className="font-bold text-indigo-600 dark:text-indigo-400">{searchedLeads.length}</span> lead{searchedLeads.length !== 1 ? 's' : ''}
+          </p>
+        )}
+      </div>
+
       {/* Empty State */}
-      {filteredLeads.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 bg-gradient-to-br from-white/90 to-slate-50/90 dark:from-slate-900/60 dark:to-slate-900/40 backdrop-blur-3xl border-2 border-slate-200/60 dark:border-slate-800 rounded-3xl shadow-xl">
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-2xl shadow-indigo-500/30 mb-6">
+      {searchedLeads.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24 bg-white/80 dark:bg-[#151B2E]/80 backdrop-blur-xl border border-slate-200/50 dark:border-white/5 rounded-2xl shadow-lg dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)]">
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white shadow-2xl shadow-indigo-500/30 mb-6">
             <Building2 size={40} strokeWidth={2.5} />
           </div>
-          <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-3">
-            {showFollowUps ? 'No follow-ups today' : 'No leads found'}
+          <h3 className="text-2xl font-jakarta font-black text-slate-800 dark:text-white mb-3 tracking-tight">
+            {searchQuery ? 'No leads found' : showFollowUps ? 'No follow-ups today' : 'No leads found'}
           </h3>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mb-8 font-medium">
-            {showFollowUps ? 'All caught up! Great work! 🎉' : 'Create your first lead to get started'}
+          <p className="text-sm font-inter text-slate-600 dark:text-slate-400 mb-8 font-medium tracking-wide">
+            {searchQuery ? 'Try adjusting your search query' : showFollowUps ? 'All caught up! Great work! 🎉' : 'Create your first lead to get started'}
           </p>
-          {!showFollowUps && (
+          {!showFollowUps && !searchQuery && (
             <button 
               onClick={() => setIsFormOpen(true)}
-              className="flex items-center gap-2.5 px-6 py-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-bold rounded-xl hover:-translate-y-1 hover:shadow-xl hover:shadow-purple-500/40 transition-all text-sm shadow-lg"
+              className="flex items-center gap-2.5 px-7 py-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-jakarta font-bold rounded-xl hover:shadow-[0_0_25px_rgba(168,85,247,0.5)] transition-all text-sm shadow-lg"
             >
               <Plus size={20} strokeWidth={2.5} /> Create First Lead
             </button>
           )}
         </div>
-      ) : (
-        /* Cards Grid */
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          animate="show"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-        >
-          {filteredLeads.map((lead) => {
+      ) : viewMode === 'grid' ? (
+        /* Date-wise Grouped Cards Grid */
+        <div className="space-y-8">
+          {sortedDates.map((dateKey) => {
+            const dateLeads = groupedLeads[dateKey];
+            return (
+              <div key={dateKey} className="space-y-4">
+                {/* Date Header */}
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 bg-white/80 dark:bg-[#151B2E]/80 backdrop-blur-xl border border-slate-200/50 dark:border-white/5 rounded-xl px-5 py-3 shadow-lg dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)]">
+                    <Calendar size={20} className="text-indigo-600 dark:text-indigo-400" />
+                    <h2 className="text-xl font-jakarta font-black text-slate-800 dark:text-white tracking-tight">
+                      {formatDateHeader(dateKey)}
+                    </h2>
+                    <span className="px-3 py-1 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-jakarta font-black rounded-full">
+                      {dateLeads.length} {dateLeads.length === 1 ? 'lead' : 'leads'}
+                    </span>
+                  </div>
+                  <div className="flex-1 h-px bg-gradient-to-r from-slate-200 via-slate-300 to-transparent dark:from-white/5 dark:via-white/10 dark:to-transparent"></div>
+                </div>
+
+                {/* Cards Grid for this date */}
+                <motion.div 
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="show"
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                >
+                  {dateLeads.map((lead) => {
             const statusStyle = getStatusConfig(lead.outreach_status);
             let isFollowUpToday = false;
             if (lead.nextFollowUpDate) {
@@ -250,201 +396,331 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
               >
                 <div 
                   onClick={() => handleCardClick(lead)}
-                  className="group bg-gradient-to-br from-white/90 to-white/70 dark:from-slate-900/60 dark:to-slate-900/40 backdrop-blur-2xl border border-slate-200/60 dark:border-slate-800 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:-translate-y-2 hover:shadow-2xl dark:hover:shadow-[0_20px_60px_rgba(0,0,0,0.4)] hover:border-indigo-300/60 dark:hover:border-slate-700 transition-all duration-500 flex flex-col cursor-pointer relative h-full"
+                  className="group bg-white/80 dark:bg-[#151B2E]/80 backdrop-blur-xl border border-slate-200/50 dark:border-white/5 rounded-2xl p-5 shadow-lg dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)] hover:shadow-xl dark:hover:shadow-[0_8px_40px_rgba(0,0,0,0.4)] hover:border-indigo-300/40 dark:hover:border-indigo-500/30 transition-all duration-300 flex flex-col cursor-pointer relative h-full"
                 >
-                  {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/0 via-purple-500/0 to-pink-500/0 group-hover:from-indigo-500/5 group-hover:via-purple-500/5 group-hover:to-pink-500/5 transition-all duration-500 rounded-3xl" />
-                  
-                  {/* Follow-up Indicator */}
-                  {isFollowUpToday && (
-                    <div className="absolute top-4 left-4 z-10">
-                      <div className="relative">
-                        <div className="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.8)] animate-pulse" />
-                        <div className="absolute inset-0 w-3 h-3 rounded-full bg-red-500 animate-ping opacity-75" />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Top Row: Company & Menu */}
-                  <div className="flex justify-between items-start mb-4 md:mb-5 relative z-10">
-                    <div className="flex items-center gap-2 md:gap-3 flex-1">
-                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 dark:from-indigo-600 dark:to-purple-700 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                        <Building2 size={18} className="md:hidden" strokeWidth={2.5} />
-                        <Building2 size={22} className="hidden md:block" strokeWidth={2.5} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-white line-clamp-1 mb-0.5">{lead.company_name}</h3>
-                        <p className="text-[10px] md:text-xs text-slate-500 dark:text-gray-400 font-medium">Company</p>
-                      </div>
-                    </div>
-                    <div className="relative">
-                      <button 
-                        onClick={(e) => toggleMenu(lead._id, e)}
-                        className="text-slate-400 hover:text-slate-700 dark:text-gray-500 dark:hover:text-white transition-colors p-1.5 md:p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 backdrop-blur-sm"
-                      >
-                        <MoreHorizontal size={18} className="md:hidden" />
-                        <MoreHorizontal size={20} className="hidden md:block" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Contact Person */}
-                  {lead.contact_person && (
-                    <div className="flex items-center gap-2 md:gap-2.5 mb-2 md:mb-3 px-2.5 md:px-3 py-1.5 md:py-2 bg-slate-50/80 dark:bg-white/5 rounded-lg md:rounded-xl relative z-10">
-                      <div className="w-6 h-6 md:w-7 md:h-7 rounded-md md:rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white shadow-sm">
-                        <User size={12} className="md:hidden" strokeWidth={2.5} />
-                        <User size={14} className="hidden md:block" strokeWidth={2.5} />
-                      </div>
-                      <span className="text-xs md:text-sm font-medium text-slate-700 dark:text-gray-200 line-clamp-1">{lead.contact_person}</span>
-                    </div>
-                  )}
-
-                  {/* Service Tag */}
-                  <div className="flex items-center gap-1.5 md:gap-2 mb-3 md:mb-4 px-2.5 md:px-3 py-1.5 md:py-2 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10 rounded-lg md:rounded-xl border border-indigo-100 dark:border-indigo-500/20 relative z-10">
-                    <Tag size={11} className="text-indigo-600 dark:text-indigo-400 md:hidden" strokeWidth={2.5} />
-                    <Tag size={13} className="text-indigo-600 dark:text-indigo-400 hidden md:block" strokeWidth={2.5} />
-                    <span className="text-[10px] md:text-xs font-semibold text-indigo-700 dark:text-indigo-300 line-clamp-1">{lead.targetService || 'No service'}</span>
-                  </div>
-
-                  <div className="mt-auto space-y-3 md:space-y-4 relative z-10">
-                    {/* Meta Info - Dates */}
-                    <div className="space-y-1.5 md:space-y-2">
-                      {/* Created Date */}
-                      <div className="flex items-center justify-between px-2.5 md:px-3 py-1.5 md:py-2 bg-slate-50/80 dark:bg-white/5 rounded-lg md:rounded-xl border border-slate-200/50 dark:border-white/10">
-                        <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs text-slate-600 dark:text-gray-400">
-                          <Calendar size={12} className="text-slate-400 md:hidden" strokeWidth={2.5} />
-                          <Calendar size={14} className="text-slate-400 hidden md:block" strokeWidth={2.5} />
-                          <span className="font-medium">Created</span>
+                  {/* Header: Status & Menu Action */}
+                  <div className="flex justify-between items-center mb-3 relative z-10 gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className={`text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full border ${statusStyle.bg} ${statusStyle.color} ${statusStyle.border}`}>
+                        {lead.outreach_status}
+                      </span>
+                      {isFollowUpToday && (
+                        <div className="flex items-center gap-1 bg-red-500/10 border border-red-500/20 px-2 py-0.5 rounded-full">
+                          <span className="relative flex h-1.5 w-1.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
+                          </span>
+                          <span className="text-[9px] font-black uppercase text-red-500">Due</span>
                         </div>
-                        <span className="text-[10px] md:text-xs font-bold text-slate-700 dark:text-gray-300">
-                          {formatDate(lead.createdAt)}
+                      )}
+                    </div>
+                    <button 
+                      onClick={(e) => toggleMenu(lead._id, e)}
+                      className="text-slate-400 hover:text-slate-700 dark:text-gray-500 dark:hover:text-white transition-colors p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10"
+                    >
+                      <MoreHorizontal size={16} />
+                    </button>
+                  </div>
+
+                  {/* Company Info Header */}
+                  <div className="flex items-start gap-3 mb-3 relative z-10">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/10 group-hover:scale-105 transition-transform duration-300">
+                      <Building2 size={18} strokeWidth={2.5} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-jakarta font-black text-slate-900 dark:text-white line-clamp-1 mb-0.5 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors tracking-tight">
+                        {lead.company_name}
+                      </h3>
+                      {lead.contact_person && lead.contact_person !== lead.company_name ? (
+                        <p className="text-[11px] font-inter text-slate-500 dark:text-gray-400 font-semibold truncate flex items-center gap-1">
+                          <User size={10} /> {lead.contact_person}
+                        </p>
+                      ) : (
+                        <p className="text-[11px] font-inter text-slate-400 dark:text-gray-500 font-medium">Outreach Target</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Service and Source Tags (Side-by-side) */}
+                  <div className="flex flex-wrap gap-1.5 mb-3.5 relative z-10">
+                    <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-md border border-indigo-500/10">
+                      {lead.targetService || 'No service'}
+                    </span>
+                    <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 px-2 py-0.5 bg-slate-500/10 rounded-md">
+                      Source: {lead.source}
+                    </span>
+                  </div>
+
+                  {/* Metadata Row: Created and Next Follow Up */}
+                  <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 space-y-1.5 mb-4 border-t border-slate-100 dark:border-slate-800/80 pt-3 mt-auto relative z-10">
+                    <div className="flex justify-between items-center">
+                      <span className="flex items-center gap-1 font-medium"><Calendar size={11} /> Created:</span>
+                      <span className="text-slate-700 dark:text-slate-350 font-black">{formatDate(lead.createdAt)}</span>
+                    </div>
+                    {lead.nextFollowUpDate && (
+                      <div className="flex justify-between items-center">
+                        <span className={`flex items-center gap-1 font-medium ${isFollowUpToday ? 'text-red-500' : 'text-blue-500'}`}>
+                          <Clock size={11} /> {isFollowUpToday ? 'Follow-up (Due!):' : 'Follow-up:'}
                         </span>
+                        <span className={`font-black ${isFollowUpToday ? 'text-red-500' : 'text-blue-500'}`}>{formatDate(lead.nextFollowUpDate)}</span>
                       </div>
-
-                      {/* Next Follow-up Date */}
-                      {lead.nextFollowUpDate ? (
-                        <div className={`flex items-center justify-between px-2.5 md:px-3 py-1.5 md:py-2 rounded-lg md:rounded-xl border ${
-                          isFollowUpToday 
-                            ? 'bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-500/10 dark:to-orange-500/10 border-red-200/50 dark:border-red-500/30' 
-                            : 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 border-blue-200/50 dark:border-blue-500/30'
-                        }`}>
-                          <div className={`flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs ${
-                            isFollowUpToday 
-                              ? 'text-red-700 dark:text-red-400' 
-                              : 'text-blue-700 dark:text-blue-400'
-                          }`}>
-                            <svg className="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span className="font-medium">
-                              {isFollowUpToday ? 'Due!' : 'Next'}
-                            </span>
-                          </div>
-                          <span className={`text-[10px] md:text-xs font-bold ${
-                            isFollowUpToday 
-                              ? 'text-red-700 dark:text-red-300' 
-                              : 'text-blue-700 dark:text-blue-300'
-                          }`}>
-                            {formatDate(lead.nextFollowUpDate)}
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-between px-2.5 md:px-3 py-1.5 md:py-2 bg-slate-50/80 dark:bg-white/5 rounded-lg md:rounded-xl border border-slate-200/50 dark:border-white/10">
-                          <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs text-slate-500 dark:text-gray-400">
-                            <svg className="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span className="font-medium">No Follow-up</span>
-                          </div>
-                          <span className="text-[10px] md:text-xs font-bold text-slate-600 dark:text-gray-400">
-                            {lead.source}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Status Badge */}
-                    <div className={`flex items-center justify-center gap-2 w-full px-3 md:px-4 py-2 md:py-2.5 rounded-lg md:rounded-xl border-2 text-[10px] md:text-xs font-bold uppercase tracking-wide shadow-sm ${statusStyle.bg} ${statusStyle.color} ${statusStyle.border}`}>
-                      {lead.outreach_status}
-                    </div>
-
-                    {/* Action Buttons - Enhanced */}
-                    <div className="grid grid-cols-3 gap-1.5 md:gap-2 pt-2 md:pt-3 border-t-2 border-slate-200/60 dark:border-white/10">
-                      {lead.email ? (
-                        <a 
-                          href={`mailto:${lead.email}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="flex flex-col items-center justify-center gap-1 md:gap-1.5 p-2 md:p-3 rounded-lg md:rounded-xl bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-500/10 dark:to-cyan-500/10 hover:from-blue-100 hover:to-cyan-100 dark:hover:from-blue-500/20 dark:hover:to-cyan-500/20 border border-blue-200/50 dark:border-blue-500/30 hover:border-blue-300 dark:hover:border-blue-400/50 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-all hover:scale-105 hover:shadow-md group/btn"
-                          title="Send Email"
-                        >
-                          <Mail size={14} className="md:hidden group-hover/btn:scale-110 transition-transform" strokeWidth={2.5} />
-                          <Mail size={18} className="hidden md:block group-hover/btn:scale-110 transition-transform" strokeWidth={2.5} />
-                          <span className="text-[9px] md:text-[10px] font-bold uppercase">Email</span>
-                        </a>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center gap-1 md:gap-1.5 p-2 md:p-3 rounded-lg md:rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/50 dark:border-white/10 opacity-40 cursor-not-allowed">
-                          <Mail size={14} className="md:hidden text-slate-400" strokeWidth={2.5} />
-                          <Mail size={18} className="hidden md:block text-slate-400" strokeWidth={2.5} />
-                          <span className="text-[9px] md:text-[10px] font-bold uppercase text-slate-400">Email</span>
-                        </div>
-                      )}
-                      
-                      {lead.phone ? (
-                        <a 
-                          href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="flex flex-col items-center justify-center gap-1 md:gap-1.5 p-2 md:p-3 rounded-lg md:rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-500/10 dark:to-emerald-500/10 hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-500/20 dark:hover:to-emerald-500/20 border border-green-200/50 dark:border-green-500/30 hover:border-green-300 dark:hover:border-green-400/50 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-all hover:scale-105 hover:shadow-md group/btn"
-                          title="WhatsApp"
-                        >
-                          <MessageCircle size={14} className="md:hidden group-hover/btn:scale-110 transition-transform" strokeWidth={2.5} />
-                          <MessageCircle size={18} className="hidden md:block group-hover/btn:scale-110 transition-transform" strokeWidth={2.5} />
-                          <span className="text-[9px] md:text-[10px] font-bold uppercase">WhatsApp</span>
-                        </a>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center gap-1 md:gap-1.5 p-2 md:p-3 rounded-lg md:rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/50 dark:border-white/10 opacity-40 cursor-not-allowed">
-                          <MessageCircle size={14} className="md:hidden text-slate-400" strokeWidth={2.5} />
-                          <MessageCircle size={18} className="hidden md:block text-slate-400" strokeWidth={2.5} />
-                          <span className="text-[9px] md:text-[10px] font-bold uppercase text-slate-400">WhatsApp</span>
-                        </div>
-                      )}
-
-                      {lead.website_url ? (
-                        <a 
-                          href={lead.website_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="flex flex-col items-center justify-center gap-1 md:gap-1.5 p-2 md:p-3 rounded-lg md:rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10 hover:from-indigo-100 hover:to-purple-100 dark:hover:from-indigo-500/20 dark:hover:to-purple-500/20 border border-indigo-200/50 dark:border-indigo-500/30 hover:border-indigo-300 dark:hover:border-indigo-400/50 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-all hover:scale-105 hover:shadow-md group/btn"
-                          title="Visit Website"
-                        >
-                          <Globe size={14} className="md:hidden group-hover/btn:scale-110 transition-transform" strokeWidth={2.5} />
-                          <Globe size={18} className="hidden md:block group-hover/btn:scale-110 transition-transform" strokeWidth={2.5} />
-                          <span className="text-[9px] md:text-[10px] font-bold uppercase">Website</span>
-                        </a>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center gap-1 md:gap-1.5 p-2 md:p-3 rounded-lg md:rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/50 dark:border-white/10 opacity-40 cursor-not-allowed">
-                          <Globe size={14} className="md:hidden text-slate-400" strokeWidth={2.5} />
-                          <Globe size={18} className="hidden md:block text-slate-400" strokeWidth={2.5} />
-                          <span className="text-[9px] md:text-[10px] font-bold uppercase text-slate-400">Website</span>
-                        </div>
-                      )}
-                    </div>
+                    )}
                   </div>
 
-                  {/* Enhanced accent line on hover */}
-                  <div className="absolute bottom-0 left-0 w-full h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-b-3xl" />
-                  
-                  {/* Shine effect on hover - with overflow control */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none overflow-hidden rounded-3xl">
-                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                  {/* Quick Action Capsules */}
+                  <div className="flex gap-2 relative z-10 border-t border-slate-100 dark:border-slate-800/80 pt-3">
+                    {lead.email ? (
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setComposerLead(lead);
+                          setIsComposerOpen(true);
+                        }}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition-colors text-[9px] font-black uppercase"
+                        title="Send Email"
+                      >
+                        <Mail size={12} strokeWidth={2.5} /> Email
+                      </button>
+                    ) : (
+                      <div className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 dark:text-gray-600 transition-colors text-[9px] font-black uppercase cursor-not-allowed opacity-40">
+                        <Mail size={12} strokeWidth={2.5} /> Email
+                      </div>
+                    )}
+                    
+                    {lead.phone ? (
+                      <a 
+                        href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 transition-colors text-[9px] font-black uppercase"
+                        title="WhatsApp"
+                      >
+                        <MessageCircle size={12} strokeWidth={2.5} /> Chat
+                      </a>
+                    ) : (
+                      <div className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 dark:text-gray-600 transition-colors text-[9px] font-black uppercase cursor-not-allowed opacity-40">
+                        <MessageCircle size={12} strokeWidth={2.5} /> Chat
+                      </div>
+                    )}
+
+                    {lead.website_url ? (
+                      <a 
+                        href={lead.website_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 transition-colors text-[9px] font-black uppercase"
+                        title="Visit Website"
+                      >
+                        <Globe size={12} strokeWidth={2.5} /> Site
+                      </a>
+                    ) : (
+                      <div className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 dark:text-gray-600 transition-colors text-[9px] font-black uppercase cursor-not-allowed opacity-40">
+                        <Globe size={12} strokeWidth={2.5} /> Site
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Accent bottom hover line & glow shine */}
+                  <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-b-2xl" />
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none overflow-hidden rounded-2xl">
+                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                   </div>
                 </div>
               </motion.div>
             );
           })}
         </motion.div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        /* Date-wise Grouped Table/List View */
+        <div className="space-y-8">
+          {sortedDates.map((dateKey) => {
+            const dateLeads = groupedLeads[dateKey];
+            return (
+              <div key={dateKey} className="space-y-4">
+                {/* Date Header */}
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 bg-white/80 dark:bg-[#151B2E]/80 backdrop-blur-xl border border-slate-200/50 dark:border-white/5 rounded-xl px-5 py-3 shadow-lg dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)]">
+                    <Calendar size={20} className="text-indigo-600 dark:text-indigo-400" />
+                    <h2 className="text-xl font-jakarta font-black text-slate-800 dark:text-white tracking-tight">
+                      {formatDateHeader(dateKey)}
+                    </h2>
+                    <span className="px-3 py-1 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-jakarta font-black rounded-full">
+                      {dateLeads.length} {dateLeads.length === 1 ? 'lead' : 'leads'}
+                    </span>
+                  </div>
+                  <div className="flex-1 h-px bg-gradient-to-r from-slate-200 via-slate-300 to-transparent dark:from-white/5 dark:via-white/10 dark:to-transparent"></div>
+                </div>
+
+                {/* Table for this date */}
+                <div className="w-full overflow-x-auto rounded-2xl border border-slate-200/50 dark:border-white/5 bg-white/80 dark:bg-[#151B2E]/80 backdrop-blur-xl shadow-lg dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)]">
+                  <table className="w-full border-collapse text-left text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-black/20 text-slate-500 dark:text-slate-400 font-jakarta font-black uppercase tracking-widest text-[11px]">
+                        <th className="px-6 py-4">Company & Target</th>
+                        <th className="px-6 py-4">Contact</th>
+                        <th className="px-6 py-4">Status</th>
+                        <th className="px-6 py-4">Next Follow-up</th>
+                        <th className="px-6 py-4 text-center">Actions</th>
+                        <th className="px-6 py-4 text-right"></th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200/50 dark:divide-white/5">
+                      {dateLeads.map((lead) => {
+                const statusStyle = getStatusConfig(lead.outreach_status);
+                let isFollowUpToday = false;
+                if (lead.nextFollowUpDate) {
+                  const followUpDate = new Date(lead.nextFollowUpDate);
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  isFollowUpToday = followUpDate <= today;
+                }
+
+                return (
+                  <tr 
+                    key={lead._id}
+                    onClick={() => handleCardClick(lead)}
+                    className="hover:bg-white/60 dark:hover:bg-white/5 transition-all duration-150 cursor-pointer group"
+                  >
+                    {/* Company Name & Target Service */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/10">
+                          <Building2 size={16} strokeWidth={2.5} />
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-jakarta font-black text-slate-900 dark:text-white group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors truncate max-w-[200px] sm:max-w-[300px] tracking-tight">
+                            {lead.company_name}
+                          </span>
+                          <span className="text-[11px] font-jakarta font-bold uppercase text-indigo-600 dark:text-indigo-400 tracking-wider mt-0.5">
+                            {lead.targetService || 'No service'}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Contact Person */}
+                    <td className="px-6 py-4">
+                      {lead.contact_person && lead.contact_person !== lead.company_name ? (
+                        <div className="flex items-center gap-1.5 text-xs font-inter font-semibold text-slate-700 dark:text-gray-300 bg-slate-50/80 dark:bg-white/5 px-2.5 py-1 rounded-lg w-max border border-slate-200/50 dark:border-white/5">
+                          <User size={12} className="text-slate-400" />
+                          <span>{lead.contact_person}</span>
+                        </div>
+                      ) : (
+                        <span className="text-xs font-inter text-slate-400 dark:text-gray-500 font-medium italic">Not set</span>
+                      )}
+                    </td>
+
+                    {/* Outreach Status */}
+                    <td className="px-6 py-4">
+                      <span className={`text-[9px] font-black uppercase px-2.5 py-1 rounded-full border ${statusStyle.bg} ${statusStyle.color} ${statusStyle.border}`}>
+                        {lead.outreach_status}
+                      </span>
+                    </td>
+
+                    {/* Created Date */}
+                    <td className="px-6 py-4 text-xs font-inter font-semibold text-slate-600 dark:text-slate-400">
+                      {formatDate(lead.createdAt)}
+                    </td>
+
+                    {/* Next Follow-up */}
+                    <td className="px-6 py-4">
+                      {lead.nextFollowUpDate ? (
+                        <div className="flex items-center gap-1.5">
+                          {isFollowUpToday && (
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                            </span>
+                          )}
+                          <span className={`text-xs font-inter font-semibold ${isFollowUpToday ? 'text-red-500' : 'text-blue-500'}`}>
+                            {formatDate(lead.nextFollowUpDate)}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-xs font-inter text-slate-400 dark:text-gray-500 font-medium">No follow-up</span>
+                      )}
+                    </td>
+
+                    {/* Action Buttons */}
+                    <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-center gap-2">
+                        {lead.email ? (
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setComposerLead(lead);
+                              setIsComposerOpen(true);
+                            }}
+                            className="p-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition-colors"
+                            title="Send Email"
+                          >
+                            <Mail size={14} strokeWidth={2.5} />
+                          </button>
+                        ) : (
+                          <div className="p-2 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-gray-650 opacity-40 cursor-not-allowed">
+                            <Mail size={14} strokeWidth={2.5} />
+                          </div>
+                        )}
+
+                        {lead.phone ? (
+                          <a 
+                            href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="p-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 transition-colors"
+                            title="WhatsApp"
+                          >
+                            <MessageCircle size={14} strokeWidth={2.5} />
+                          </a>
+                        ) : (
+                          <div className="p-2 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-gray-650 opacity-40 cursor-not-allowed">
+                            <MessageCircle size={14} strokeWidth={2.5} />
+                          </div>
+                        )}
+
+                        {lead.website_url ? (
+                          <a 
+                            href={lead.website_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="p-2 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 transition-colors"
+                            title="Visit Website"
+                          >
+                            <Globe size={14} strokeWidth={2.5} />
+                          </a>
+                        ) : (
+                          <div className="p-2 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-gray-650 opacity-40 cursor-not-allowed">
+                            <Globe size={14} strokeWidth={2.5} />
+                          </div>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Options Menu */}
+                    <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                      <button 
+                        onClick={(e) => toggleMenu(lead._id, e)}
+                        className="text-slate-400 hover:text-slate-700 dark:text-gray-500 dark:hover:text-white transition-colors p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10"
+                      >
+                        <MoreHorizontal size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+              </div>
+            );
+          })}
+        </div>
       )}
 
       {/* Lead Details Modal */}
@@ -465,6 +741,20 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
             alert(res.error || 'Failed to update lead');
           }
         }} 
+      />
+
+      {/* Outreach Email Composer Modal */}
+      <OutreachComposerModal
+        isOpen={isComposerOpen}
+        onClose={() => { setIsComposerOpen(false); setComposerLead(null); }}
+        lead={composerLead}
+        onEmailSent={(updatedLead) => {
+          setLeads(leads.map(l => l._id === updatedLead._id ? updatedLead : l));
+          if (selectedLead && selectedLead._id === updatedLead._id) {
+            setSelectedLead(updatedLead);
+          }
+          router.refresh();
+        }}
       />
 
       {/* Global Dropdown Menu - Fixed Position */}

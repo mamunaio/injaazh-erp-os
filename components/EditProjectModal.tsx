@@ -9,6 +9,7 @@ interface EditProjectModalProps {
   onClose: () => void;
   project: any;
   onUpdateProject: (projectId: string, data: any) => Promise<void>;
+  onDeleteProject?: (projectId: string) => Promise<void>;
 }
 
 const TECH_STACK_OPTIONS = [
@@ -27,7 +28,7 @@ const TECH_STACK_OPTIONS = [
   'SaaS',
 ];
 
-export default function EditProjectModal({ isOpen, onClose, project, onUpdateProject }: EditProjectModalProps) {
+export default function EditProjectModal({ isOpen, onClose, project, onUpdateProject, onDeleteProject }: EditProjectModalProps) {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -292,21 +293,35 @@ export default function EditProjectModal({ isOpen, onClose, project, onUpdatePro
           </form>
 
           {/* Footer */}
-          <div className="p-6 border-t border-slate-200 dark:border-purple-500/20 bg-white/50 dark:bg-black/20 flex justify-end gap-3">
-            <button 
-              type="button" 
-              onClick={onClose}
-              className="px-6 py-2.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 hover:bg-slate-200 dark:hover:text-white dark:hover:bg-white/5 transition-all"
-            >
-              Cancel
-            </button>
-            <button 
-              onClick={handleSubmit}
-              disabled={isSubmitting || !formData.title}
-              className="px-8 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
-            </button>
+          <div className="p-6 border-t border-slate-200 dark:border-purple-500/20 bg-white/50 dark:bg-black/20 flex justify-between items-center gap-3">
+            <div>
+              {onDeleteProject && (
+                <button 
+                  type="button"
+                  onClick={() => onDeleteProject(project._id)}
+                  disabled={isSubmitting}
+                  className="px-4 py-2.5 rounded-xl text-sm font-semibold text-red-500 hover:text-white hover:bg-red-500 dark:hover:bg-red-500/80 transition-all"
+                >
+                  Delete Project
+                </button>
+              )}
+            </div>
+            <div className="flex gap-3">
+              <button 
+                type="button" 
+                onClick={onClose}
+                className="px-6 py-2.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 hover:bg-slate-200 dark:hover:text-white dark:hover:bg-white/5 transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleSubmit}
+                disabled={isSubmitting || !formData.title}
+                className="px-8 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
           </div>
         </motion.div>
       </div>

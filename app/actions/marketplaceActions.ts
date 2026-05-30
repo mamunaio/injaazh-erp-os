@@ -1,6 +1,19 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+
+/**
+ * Safe revalidatePath helper
+ * Prevents throwing errors when running in environments where Next.js revalidation is not available
+ * (such as integration test scripts run via Node.js/tsx)
+ */
+function safeRevalidatePath(path: string, type?: 'layout' | 'page') {
+  try {
+    revalidatePath(path, type);
+  } catch (error) {
+    // Silent catch - allows actions to run outside Next.js request/static context
+  }
+}
 import connectToDatabase from '@/lib/mongodb';
 import MarketplaceProject from '@/models/MarketplaceProject';
 import { Project } from '@/models/Project';
@@ -60,6 +73,18 @@ async function createAutoTransaction(project: IMarketplaceProject): Promise<void
   try {
     const amount = parseBudgetAmount(project.budget);
     
+    // Check if an auto-transaction already exists for this project (without milestoneId)
+    const existingTransaction = await Transaction.findOne({
+      projectId: project._id,
+      category: 'Project Income',
+      milestoneId: { $exists: false }
+    });
+    
+    if (existingTransaction) {
+      console.log(`ℹ️ Auto-transaction already exists for project ${project._id}, skipping duplicate creation.`);
+      return;
+    }
+    
     const transaction = new Transaction({
       platform: project.platform,
       type: 'Income',
@@ -109,8 +134,8 @@ export async function createMarketplaceProject(data: any) {
     
     const newProject = await MarketplaceProject.create(data);
     
-    revalidatePath('/marketplace');
-    revalidatePath(`/marketplace/${data.platform?.toLowerCase()}`);
+    safeRevalidatePath('/marketplace');
+    safeRevalidatePath(`/marketplace/${data.platform?.toLowerCase()}`);
     
     return { success: true, data: JSON.parse(JSON.stringify(newProject)) };
   } catch (error: any) {
@@ -168,10 +193,54 @@ export async function updateMarketplaceProject(id: string, data: any) {
         });
       }
     }
+
+    // Detect and handle newly paid milestones
+    if (data.milestones && Array.isArray(data.milestones)) {
+      const existingMilestones = existingProject.milestones || [];
+      for (const newMilestone of data.milestones) {
+        if (newMilestone.status === 'Paid') {
+          // Check if this milestone was already Paid in existing project
+          const oldMilestone = existingMilestones.find((m: any) => String(m.id) === String(newMilestone.id));
+          const wasAlreadyPaid = oldMilestone && oldMilestone.status === 'Paid';
+          
+          if (!wasAlreadyPaid) {
+            // Check if there is already a transaction for this milestone to be safe
+            const existingMilestoneTx = await Transaction.findOne({
+              projectId: id,
+              milestoneId: String(newMilestone.id),
+              category: 'Project Income'
+            });
+            
+            if (!existingMilestoneTx) {
+              try {
+                const amount = Number(newMilestone.amount) || 0;
+                if (amount > 0) {
+                  const transaction = new Transaction({
+                    platform: existingProject.platform,
+                    type: 'Income',
+                    amount: amount,
+                    date: new Date(),
+                    category: 'Project Income',
+                    description: `Milestone: ${newMilestone.description} (Project: ${existingProject.title})`,
+                    projectId: existingProject._id,
+                    milestoneId: String(newMilestone.id),
+                  } as any);
+                  
+                  await transaction.save();
+                  console.log(`✅ Auto-created transaction for milestone ${newMilestone.id} of project ${id}`);
+                }
+              } catch (txError) {
+                console.error(`❌ Failed to auto-create transaction for milestone ${newMilestone.id} of project ${id}:`, txError);
+              }
+            }
+          }
+        }
+      }
+    }
     
-    revalidatePath('/marketplace');
-    revalidatePath(`/marketplace/${updatedProject.platform.toLowerCase()}`);
-    revalidatePath(`/marketplace/${updatedProject.platform.toLowerCase()}/${id}`);
+    safeRevalidatePath('/marketplace');
+    safeRevalidatePath(`/marketplace/${updatedProject.platform.toLowerCase()}`);
+    safeRevalidatePath(`/marketplace/${updatedProject.platform.toLowerCase()}/${id}`);
     
     return { success: true, data: JSON.parse(JSON.stringify(updatedProject)) };
   } catch (error: any) {
@@ -189,7 +258,7 @@ export async function deleteMarketplaceProject(id: string) {
 
     await MarketplaceProject.findByIdAndDelete(id);
     
-    revalidatePath(`/marketplace/${project.platform.toLowerCase()}`);
+    safeRevalidatePath(`/marketplace/${project.platform.toLowerCase()}`);
     
     return { success: true };
   } catch (error: any) {
@@ -325,8 +394,8 @@ export async function createTransactionFromProject(
     await transaction.save();
     
     // Revalidate /money path and project detail paths
-    revalidatePath('/money');
-    revalidatePath(`/marketplace/${project.platform.toLowerCase()}/${projectId}`);
+    safeRevalidatePath('/money');
+    safeRevalidatePath(`/marketplace/${project.platform.toLowerCase()}/${projectId}`);
     
     // Return success response with serialized data
     return { success: true, data: JSON.parse(JSON.stringify(transaction)) };

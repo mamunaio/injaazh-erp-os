@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import DailyExpensesClient from './DailyExpensesClient';
 import { getDailyExpenses } from '@/app/actions/dailyExpenseActions';
+import { getPersonalDebts } from '@/app/actions/personalDebtActions';
 
 export const metadata: Metadata = {
   title: 'Daily Expenses | Injaazh ERP',
@@ -10,7 +11,12 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function DailyExpensesPage() {
-  const expenses = await getDailyExpenses();
+  const [expenses, debtsResult] = await Promise.all([
+    getDailyExpenses(),
+    getPersonalDebts()
+  ]);
 
-  return <DailyExpensesClient initialExpenses={expenses} />;
+  const initialDebts = debtsResult.success ? debtsResult.data : [];
+
+  return <DailyExpensesClient initialExpenses={expenses} initialDebts={initialDebts} />;
 }

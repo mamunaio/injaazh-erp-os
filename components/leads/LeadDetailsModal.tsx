@@ -122,7 +122,7 @@ export default function LeadDetailsModal({
                       type="text" 
                       value={formData.company_name || ''}
                       onChange={e => setFormData({...formData, company_name: e.target.value})}
-                      className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                      className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                     />
                   </div>
                   <div>
@@ -131,7 +131,7 @@ export default function LeadDetailsModal({
                       type="text" 
                       value={formData.contact_person || ''}
                       onChange={e => setFormData({...formData, contact_person: e.target.value})}
-                      className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                      className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                     />
                   </div>
                 </div>
@@ -142,7 +142,7 @@ export default function LeadDetailsModal({
                     <select 
                       value={formData.outreach_status || 'New'}
                       onChange={e => setFormData({...formData, outreach_status: e.target.value})}
-                      className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
+                      className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
                     >
                       {['New', 'Contacted', 'Replied', 'Meeting Booked', 'Closed', 'Not Interested'].map(opt => (
                         <option key={opt} value={opt} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white">{opt}</option>
@@ -154,7 +154,7 @@ export default function LeadDetailsModal({
                     <select 
                       value={formData.targetService || 'High-end Web Development'}
                       onChange={e => setFormData({...formData, targetService: e.target.value})}
-                      className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
+                      className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
                     >
                       {['High-end Web Development', 'Next.js / Laravel App', 'WordPress Development', 'Custom ERP / SaaS', 'Technical SEO', 'Answer Engine Optimization (AEO)', 'Generative Engine Optimization (GEO)', 'UI/UX Design'].map(opt => (
                         <option key={opt} value={opt} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white">{opt}</option>
@@ -170,7 +170,7 @@ export default function LeadDetailsModal({
                       type="email" 
                       value={formData.email || ''}
                       onChange={e => setFormData({...formData, email: e.target.value})}
-                      className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                      className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                     />
                   </div>
                   <div>
@@ -179,7 +179,7 @@ export default function LeadDetailsModal({
                       type="tel" 
                       value={formData.phone || ''}
                       onChange={e => setFormData({...formData, phone: e.target.value})}
-                      className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                      className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                     />
                   </div>
                 </div>
@@ -193,7 +193,7 @@ export default function LeadDetailsModal({
                     value={formData.website_url || ''}
                     onChange={e => setFormData({...formData, website_url: e.target.value})}
                     placeholder="https://example.com"
-                    className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                    className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                   />
                 </div>
 
@@ -212,7 +212,7 @@ export default function LeadDetailsModal({
                         value={formData.facebook_url || ''}
                         onChange={e => setFormData({...formData, facebook_url: e.target.value})}
                         placeholder="https://facebook.com/..."
-                        className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-2.5 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                        className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-2.5 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
                       />
                     </div>
 
@@ -226,7 +226,7 @@ export default function LeadDetailsModal({
                         value={formData.instagram_url || ''}
                         onChange={e => setFormData({...formData, instagram_url: e.target.value})}
                         placeholder="https://instagram.com/..."
-                        className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-2.5 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all"
+                        className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-2.5 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all"
                       />
                     </div>
 
@@ -240,7 +240,7 @@ export default function LeadDetailsModal({
                         value={formData.linkedin_url || ''}
                         onChange={e => setFormData({...formData, linkedin_url: e.target.value})}
                         placeholder="https://linkedin.com/company/..."
-                        className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-2.5 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-700/50 transition-all"
+                        className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-2.5 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-700/50 transition-all"
                       />
                     </div>
 
@@ -254,7 +254,7 @@ export default function LeadDetailsModal({
                         value={formData.reportFileUrl || ''}
                         onChange={e => setFormData({...formData, reportFileUrl: e.target.value})}
                         placeholder="https://drive.google.com/..."
-                        className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-2.5 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all"
+                        className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-2.5 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all"
                       />
                     </div>
                   </div>
@@ -268,7 +268,7 @@ export default function LeadDetailsModal({
                     type="date" 
                     value={formData.nextFollowUpDate || ''}
                     onChange={e => setFormData({...formData, nextFollowUpDate: e.target.value})}
-                    className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                    className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                   />
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 ml-1">
                     Set when you plan to follow up with this lead

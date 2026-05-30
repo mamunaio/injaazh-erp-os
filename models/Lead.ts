@@ -56,5 +56,11 @@ const LeadSchema = new Schema<ILead>({
   nextFollowUpDate: { type: Date },
 }, { timestamps: true });
 
+// Create indexes for duplicate prevention
+// Sparse index allows multiple null values but prevents duplicate non-null values
+LeadSchema.index({ email: 1 }, { unique: true, sparse: true });
+LeadSchema.index({ phone: 1 }, { unique: true, sparse: true });
+LeadSchema.index({ company_name: 1 }, { unique: false }); // For faster lookups
+
 // Prevent overwrite model error in Next.js when hot-reloading
 export const Lead: Model<ILead> = mongoose.models.Lead || mongoose.model<ILead>('Lead', LeadSchema);

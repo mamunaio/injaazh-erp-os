@@ -123,9 +123,26 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
     }
   };
 
+  // Helper to generate a clean project code from title
+  const generateProjectCode = (title: string, id: string) => {
+    if (!title) return `PRJ-${id.slice(-4).toUpperCase()}`;
+    const words = title.split(/\s+/).filter(Boolean);
+    let code = '';
+    if (words.length >= 2) {
+      code = words.map(w => w[0].toUpperCase()).join('').replace(/[^A-Z]/g, '');
+    } else {
+      code = title.slice(0, 3).toUpperCase().replace(/[^A-Z]/g, '');
+    }
+    const prefix = code.slice(0, 5) || 'PRJ';
+    const suffix = id.slice(-4).toUpperCase();
+    return `${prefix}-${suffix}`;
+  };
+
   // Derived State
   const completedTasks = tasks.filter(t => t.completed).length;
-  const progressPercentage = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
+  const progressPercentage = tasks.length > 0
+    ? Math.round((completedTasks / tasks.length) * 100)
+    : (currentStatus === 'Completed' ? 100 : 0);
 
   const handleTaskToggle = (id: number | string) => {
     const newTasks = tasks.map(task => 
@@ -172,7 +189,13 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
   const updateStatus = (newStatus: string) => {
     setCurrentStatus(newStatus);
     setIsStatusOpen(false);
-    saveToServer({ status: newStatus }, true);
+    
+    const completedCount = tasks.filter(t => t.completed).length;
+    const progress = tasks.length > 0
+      ? Math.round((completedCount / tasks.length) * 100)
+      : (newStatus === 'Completed' ? 100 : 0);
+      
+    saveToServer({ status: newStatus, progress }, true);
   };
 
   const pConf = getPlatformConfig();
@@ -310,7 +333,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                 )}
               </AnimatePresence>
 
-              <span className="text-sm font-semibold text-slate-500 dark:text-gray-400">ID: {projectId.toUpperCase()}</span>
+              <span className="text-sm font-semibold text-slate-500 dark:text-gray-400">ID: {generateProjectCode(projectData.title, projectId)}</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-slate-800 dark:text-white leading-tight mb-2">
               {projectData.title}

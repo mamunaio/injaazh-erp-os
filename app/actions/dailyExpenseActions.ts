@@ -23,12 +23,10 @@ export async function createDailyExpense(data: any) {
     const expense = await DailyExpense.create(data);
     
     // Create automated notification
-    await createNotification({
-      title: 'New Daily Expense Logged',
-      message: `A new expense of $${data.amount} has been added under ${data.category}.`,
-      type: 'info',
-      link: '/daily-expenses',
-    });
+    await createNotification(
+      'system',
+      `A new expense of $${data.amount} has been added under ${data.category}.`
+    );
 
     revalidatePath('/daily-expenses');
     return { success: true, data: JSON.parse(JSON.stringify(expense)) };

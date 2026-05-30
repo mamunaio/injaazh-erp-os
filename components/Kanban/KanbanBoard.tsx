@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Column as ColumnType, ProjectCard, ProjectStatus, Assignee } from '@/types/kanban';
-import { BoardProvider } from './BoardContext';
+import { BoardProvider, useBoardContext } from './BoardContext';
 import Column from './Column';
 
 interface KanbanBoardProps {
@@ -29,13 +29,13 @@ function mapProjectToCard(project: any): ProjectCard {
 }
 
 export default function KanbanBoard({ initialProjects, onCardClick }: KanbanBoardProps) {
-  const [columns, setColumns] = useState<ColumnType[]>([]);
+  const [initialColumns, setInitialColumns] = useState<ColumnType[]>([]);
 
   useEffect(() => {
     // Initialize columns with projects
     const cards = initialProjects.map(mapProjectToCard);
 
-    const initialColumns: ColumnType[] = [
+    const cols: ColumnType[] = [
       {
         id: 'Planning',
         title: 'Planning',
@@ -66,16 +66,24 @@ export default function KanbanBoard({ initialProjects, onCardClick }: KanbanBoar
       },
     ];
 
-    setColumns(initialColumns);
+    setInitialColumns(cols);
   }, [initialProjects]);
 
   return (
-    <BoardProvider initialColumns={columns} onCardClick={onCardClick}>
-      <div className="flex flex-col md:flex-row gap-5 md:overflow-x-auto pb-8 snap-y md:snap-x snap-mandatory">
-        {columns.map((column) => (
-          <Column key={column.id} column={column} />
-        ))}
-      </div>
+    <BoardProvider initialColumns={initialColumns} onCardClick={onCardClick}>
+      <BoardRenderer />
     </BoardProvider>
+  );
+}
+
+function BoardRenderer() {
+  const { columns } = useBoardContext();
+  
+  return (
+    <div className="flex flex-col md:flex-row gap-5 md:overflow-x-auto pb-8 snap-y md:snap-x snap-mandatory">
+      {columns.map((column) => (
+        <Column key={column.id} column={column} />
+      ))}
+    </div>
   );
 }

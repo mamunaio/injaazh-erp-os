@@ -6,7 +6,8 @@ import {
   DragEndEvent,
   DragOverEvent,
   DragStartEvent,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   KeyboardSensor,
   useSensor,
   useSensors,
@@ -45,10 +46,21 @@ export function BoardProvider({ children, initialColumns, onCardClick }: BoardPr
   const [columns, setColumns] = useState<Column[]>(initialColumns);
   const [activeCard, setActiveCard] = useState<ProjectCard | null>(null);
 
+  // Sync state when props change
+  React.useEffect(() => {
+    setColumns(initialColumns);
+  }, [initialColumns]);
+
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    useSensor(MouseSensor, {
       activationConstraint: {
         distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 5,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -80,32 +92,42 @@ export function BoardProvider({ children, initialColumns, onCardClick }: BoardPr
 
     const activeId = active.id as string;
     const overId = over.id as string;
+    
+    if (activeId === overId) return;
 
-    // If dragging over a column
+    const activeResult = findCardAndColumn(activeId);
+    if (!activeResult) return;
+
+    const { card, column: sourceColumn } = activeResult;
+
+    // Determine target column (either dropped on a column or dropped on a card)
+    let targetStatus: ProjectStatus | null = null;
     if (overId === 'Planning' || overId === 'In Progress' || overId === 'In Review' || overId === 'Completed') {
-      const result = findCardAndColumn(activeId);
-      if (!result) return;
-
-      const { card, column: sourceColumn } = result;
-      const targetStatus = overId as ProjectStatus;
-
-      if (sourceColumn.id !== targetStatus) {
-        // Optimistic update
-        setColumns((prev) => {
-          const newColumns = prev.map((col) => ({
-            ...col,
-            cards: col.cards.filter((c) => c.id !== activeId),
-          }));
-
-          const targetColumn = newColumns.find((col) => col.id === targetStatus);
-          if (targetColumn) {
-            targetColumn.cards.push({ ...card, status: targetStatus });
-          }
-
-          return newColumns;
-        });
+      targetStatus = overId as ProjectStatus;
+    } else {
+      const overResult = findCardAndColumn(overId);
+      if (overResult) {
+        targetStatus = overResult.column.id as ProjectStatus;
       }
     }
+
+    if (!targetStatus || sourceColumn.id === targetStatus) return;
+
+    // Optimistic update
+    setColumns((prev) => {
+      const newColumns = prev.map((col) => ({
+        ...col,
+        cards: col.cards.filter((c) => c.id !== activeId),
+      }));
+
+      const targetColumn = newColumns.find((col) => col.id === targetStatus);
+      if (targetColumn) {
+        // Just push to the end for simplicity, or find index if needed
+        targetColumn.cards.push({ ...card, status: targetStatus });
+      }
+
+      return newColumns;
+    });
   }, [findCardAndColumn]);
 
   const handleDragEnd = useCallback(async (event: DragEndEvent) => {
@@ -137,7 +159,8 @@ export function BoardProvider({ children, initialColumns, onCardClick }: BoardPr
 
     const { card } = activeResult;
 
-    if (card.status !== targetStatus) {
+    // Use activeCard (which holds the state before drag started) to check if status actually changed
+    if (activeCard && activeCard.status !== targetStatus) {
       // Update server
       try {
         await updateProjectStatus(activeId, targetStatus);

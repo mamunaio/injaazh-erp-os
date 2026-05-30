@@ -27,6 +27,7 @@ export async function getTransactions() {
         title: t.projectId.title,
         platform: t.projectId.platform,
       } : null,
+      milestoneId: t.milestoneId || null,
       createdAt: t.createdAt ? new Date(t.createdAt).toISOString() : new Date().toISOString(),
       updatedAt: t.updatedAt ? new Date(t.updatedAt).toISOString() : new Date().toISOString(),
     }));

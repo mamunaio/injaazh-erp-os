@@ -150,7 +150,7 @@ export default function PlatformClient({ platform }: { platform: string }) {
         {/* Navigation Breadcrumb */}
         <Link 
           href="/marketplace"
-          className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors mb-8 group font-bold"
+          className="inline-flex items-center gap-2 text-sm font-jakarta font-bold text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors mb-8 group"
         >
           <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
           Back to Folders
@@ -177,14 +177,14 @@ export default function PlatformClient({ platform }: { platform: string }) {
               <input 
                 type="text" 
                 placeholder="Search projects..." 
-                className="w-full pl-11 pr-4 py-3 bg-white/50 dark:bg-black/20 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-inner text-slate-800 dark:text-slate-200 placeholder-slate-400 font-medium transition-all"
+                className="w-full pl-11 pr-4 py-3 bg-white/50 dark:bg-black/20 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-xl text-sm font-inter text-[15px] focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-inner text-slate-800 dark:text-slate-200 placeholder-slate-400 transition-all"
               />
             </div>
             
             {/* Action Button */}
             <button 
               onClick={() => setIsModalOpen(true)}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl hover:-translate-y-0.5 shadow-[0_4px_14px_0_rgba(79,70,229,0.39)] hover:shadow-[0_6px_20px_rgba(79,70,229,0.23)] transition-all text-sm w-full sm:w-auto flex-shrink-0"
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-jakarta font-bold rounded-xl hover:-translate-y-0.5 shadow-[0_4px_14px_0_rgba(79,70,229,0.39)] hover:shadow-[0_6px_20px_rgba(79,70,229,0.23)] transition-all text-sm w-full sm:w-auto flex-shrink-0"
             >
               <Plus size={18} /> New Project
             </button>
@@ -203,7 +203,7 @@ export default function PlatformClient({ platform }: { platform: string }) {
         ) : (
           <div className="space-y-4 pb-20">
             {/* Column Headers (Hidden on small screens) */}
-            <div className="hidden md:grid grid-cols-12 gap-6 px-8 py-2 text-xs font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-2">
+            <div className="hidden md:grid grid-cols-12 gap-6 px-8 py-2 text-xs font-jakarta font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-2">
               <div className="col-span-4">Project Name</div>
               <div className="col-span-2">Status</div>
               <div className="col-span-3">Progress</div>
@@ -232,17 +232,17 @@ export default function PlatformClient({ platform }: { platform: string }) {
                       
                       {/* Project Title & Client */}
                       <div className="col-span-4">
-                        <h3 className={`font-black text-lg text-slate-800 dark:text-white mb-2 group-hover:${pConf.accent} transition-colors line-clamp-1`}>
+                        <h3 className={`font-jakarta font-black text-xl text-slate-800 dark:text-white mb-2 group-hover:${pConf.accent} transition-colors line-clamp-1`}>
                           {project.title}
                         </h3>
-                        <p className="text-sm font-bold text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                        <p className="text-sm font-inter font-bold text-slate-500 dark:text-slate-400 flex items-center gap-2">
                           <Users size={14} className="opacity-70" /> {project.clientDetails?.clientName || 'Unknown Client'}
                         </p>
                       </div>
 
                       {/* Status */}
                       <div className="col-span-2 flex items-center">
-                        <span className={`px-4 py-1.5 text-[11px] uppercase tracking-widest font-black rounded-xl border ${getStatusBadge(project.status)} shadow-sm`}>
+                        <span className={`px-4 py-1.5 text-[11px] uppercase tracking-widest font-jakarta font-black rounded-xl border ${getStatusBadge(project.status)} shadow-sm`}>
                           {project.status}
                         </span>
                       </div>
@@ -250,9 +250,9 @@ export default function PlatformClient({ platform }: { platform: string }) {
                       {/* Progress */}
                       <div className="col-span-3 flex items-center">
                         <div className="flex flex-col w-full max-w-[180px] gap-2">
-                          <div className="flex justify-between items-center text-xs font-bold text-slate-500 dark:text-slate-400">
+                          <div className="flex justify-between items-center text-xs font-jakarta font-bold text-slate-500 dark:text-slate-400">
                             <span className="uppercase tracking-widest text-[10px]">Completion</span>
-                            <span>{project.progress}%</span>
+                            <span className="font-mono">{project.progress}%</span>
                           </div>
                           <div className="h-2.5 w-full bg-slate-100 dark:bg-black/40 rounded-full overflow-hidden shadow-inner">
                             <div 
@@ -265,14 +265,14 @@ export default function PlatformClient({ platform }: { platform: string }) {
 
                       {/* Budget */}
                       <div className="col-span-1 flex items-center">
-                        <span className="font-black text-slate-700 dark:text-slate-200 bg-white dark:bg-white/5 px-3.5 py-1.5 rounded-xl border border-slate-200/60 dark:border-white/10 shadow-sm">
+                        <span className="font-mono font-black text-slate-700 dark:text-slate-200 bg-white dark:bg-white/5 px-3.5 py-1.5 rounded-xl border border-slate-200/60 dark:border-white/10 shadow-sm">
                           {project.budget}
                         </span>
                       </div>
 
                       {/* Deadline */}
                       <div className="col-span-2 flex items-center md:justify-end">
-                        <div className="flex items-center gap-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-white/5 px-4 py-2.5 rounded-xl border border-slate-200/60 dark:border-white/10 group-hover:border-indigo-200 dark:group-hover:border-indigo-500/30 transition-colors shadow-sm">
+                        <div className="flex items-center gap-2.5 text-sm font-jakarta font-bold text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-white/5 px-4 py-2.5 rounded-xl border border-slate-200/60 dark:border-white/10 group-hover:border-indigo-200 dark:group-hover:border-indigo-500/30 transition-colors shadow-sm">
                           <Clock size={16} className={pConf.accent} />
                           {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(project.deadline))}
                         </div>

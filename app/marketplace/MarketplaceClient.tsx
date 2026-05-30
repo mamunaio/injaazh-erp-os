@@ -126,10 +126,10 @@ export default function MarketplaceClient({ allProjects = [] }: { allProjects?: 
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-6 max-w-7xl mx-auto">
         <div>
-          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400">
+          <h1 className="text-6xl md:text-7xl font-jakarta font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 mb-3">
             Marketplace Hub
           </h1>
-          <p className="text-slate-500 dark:text-gray-400 text-base mt-2 flex items-center gap-2">
+          <p className="text-[15px] font-inter leading-relaxed tracking-wide text-slate-500 dark:text-gray-400 flex items-center gap-2">
             <FolderOpen size={16} /> Directory Hierarchy
           </p>
         </div>
@@ -146,7 +146,7 @@ export default function MarketplaceClient({ allProjects = [] }: { allProjects?: 
           <Link key={folder.id} href={folder.href} className="block outline-none outline-0 focus:ring-0">
             <motion.div
               variants={itemVariants}
-              className={`group flex flex-col min-h-[380px] md:min-h-[480px] bg-white/80 dark:bg-purple-950/20 backdrop-blur-3xl border-2 border-slate-200 dark:border-purple-500/20 rounded-3xl p-6 md:p-10 shadow-xl transition-all duration-300 hover:-translate-y-3 hover:scale-[1.03] cursor-pointer relative overflow-hidden ${folder.glow} ${folder.borderGlow}`}
+              className={`group flex flex-col min-h-[380px] md:min-h-[480px] bg-white/80 dark:bg-[#151B2E]/80 backdrop-blur-3xl border-2 border-slate-200 dark:border-purple-500/20 rounded-3xl p-6 md:p-10 shadow-xl transition-all duration-300 hover:-translate-y-3 hover:scale-[1.03] cursor-pointer relative overflow-hidden ${folder.glow} ${folder.borderGlow}`}
             >
               
               {/* Folder Icon container */}
@@ -162,35 +162,35 @@ export default function MarketplaceClient({ allProjects = [] }: { allProjects?: 
 
               {/* Title & Stats */}
               <div className="mt-auto">
-                <h2 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white mb-6 md:mb-8">
+                <h2 className="text-3xl font-jakarta font-black text-slate-800 dark:text-white mb-6 md:mb-8">
                   {folder.title}
                 </h2>
                 
                 {/* Project Status Counts */}
                 <div className="grid grid-cols-3 gap-3 mb-6">
                   <div className="text-center p-3 bg-blue-50 dark:bg-blue-500/10 rounded-xl border-2 border-blue-200 dark:border-blue-500/20 shadow-sm">
-                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+                    <div className="text-2xl font-mono font-bold text-blue-600 dark:text-blue-400 mb-1">
                       {folder.stats.inProgress}
                     </div>
-                    <div className="text-[9px] font-bold text-blue-600/70 dark:text-blue-400/70 uppercase tracking-wide leading-tight">
+                    <div className="text-[9px] font-jakarta font-bold text-blue-600/70 dark:text-blue-400/70 uppercase tracking-wide leading-tight">
                       In<br/>Progress
                     </div>
                   </div>
                   
                   <div className="text-center p-3 bg-green-50 dark:bg-green-500/10 rounded-xl border-2 border-green-200 dark:border-green-500/20 shadow-sm">
-                    <div className="text-2xl font-bold text-green-600 dark:text-green-400 mb-1">
+                    <div className="text-2xl font-mono font-bold text-green-600 dark:text-green-400 mb-1">
                       {folder.stats.completed}
                     </div>
-                    <div className="text-[9px] font-bold text-green-600/70 dark:text-green-400/70 uppercase tracking-wide leading-tight">
+                    <div className="text-[9px] font-jakarta font-bold text-green-600/70 dark:text-green-400/70 uppercase tracking-wide leading-tight">
                       Completed
                     </div>
                   </div>
                   
                   <div className="text-center p-3 bg-red-50 dark:bg-red-500/10 rounded-xl border-2 border-red-200 dark:border-red-500/20 shadow-sm">
-                    <div className="text-2xl font-bold text-red-600 dark:text-red-400 mb-1">
+                    <div className="text-2xl font-mono font-bold text-red-600 dark:text-red-400 mb-1">
                       {folder.stats.cancelled}
                     </div>
-                    <div className="text-[9px] font-bold text-red-600/70 dark:text-red-400/70 uppercase tracking-wide leading-tight">
+                    <div className="text-[9px] font-jakarta font-bold text-red-600/70 dark:text-red-400/70 uppercase tracking-wide leading-tight">
                       Cancelled
                     </div>
                   </div>
@@ -199,8 +199,8 @@ export default function MarketplaceClient({ allProjects = [] }: { allProjects?: 
                 {/* Financial Stats */}
                 <div className="space-y-4 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/40 dark:to-slate-800/20 rounded-2xl p-5 border-2 border-slate-200 dark:border-slate-700 shadow-inner">
                   <div className="flex justify-between items-center gap-2">
-                    <span className="text-[10px] text-slate-600 dark:text-gray-400 font-bold uppercase tracking-wide">Total Earned</span>
-                    <span className={`text-xl font-extrabold ${folder.accentColor} whitespace-nowrap`}>
+                    <span className="text-[10px] text-slate-600 dark:text-gray-400 font-jakarta font-bold uppercase tracking-wide">Total Earned</span>
+                    <span className={`text-xl font-mono font-extrabold ${folder.accentColor} whitespace-nowrap`}>
                       ${folder.stats.totalEarned.toLocaleString()}
                     </span>
                   </div>
@@ -208,8 +208,8 @@ export default function MarketplaceClient({ allProjects = [] }: { allProjects?: 
                   <div className="h-px w-full bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-600 to-transparent" />
                   
                   <div className="flex justify-between items-center gap-2">
-                    <span className="text-[10px] text-slate-600 dark:text-gray-400 font-bold uppercase tracking-wide">Pipeline</span>
-                    <span className="text-lg font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                    <span className="text-[10px] text-slate-600 dark:text-gray-400 font-jakarta font-bold uppercase tracking-wide">Pipeline</span>
+                    <span className="text-lg font-mono font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">
                       ${folder.stats.pipeline.toLocaleString()}
                     </span>
                   </div>

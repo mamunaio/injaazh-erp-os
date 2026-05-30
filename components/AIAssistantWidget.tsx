@@ -49,21 +49,36 @@ export default function AIAssistantWidget() {
     try {
       const result = await askAssistant(userMessage.content);
       
+      let botContent = '';
+      
+      if (result.success && 'text' in result && result.text) {
+        botContent = result.text;
+      } else if ('error' in result && result.error) {
+        // Check for rate limit error
+        if (result.error.includes('quota') || result.error.includes('RESOURCE_EXHAUSTED') || result.error.includes('429')) {
+          botContent = `⚠️ **AI Service Temporarily Unavailable**\n\nThe AI assistant has reached its daily usage limit. Please try again:\n• In a few minutes, or\n• Tomorrow when the quota resets\n\nThank you for your patience! 🙏`;
+        } else if (result.error.includes('Invalid API Key') || result.error.includes('Unauthorized')) {
+          botContent = `⚠️ **API Key Issue**\n\nThere's a problem with the AI API configuration. The system tried multiple keys but all failed.\n\nPlease contact your administrator to check the API keys.`;
+        } else {
+          botContent = `❌ **Error**: ${result.error}`;
+        }
+      } else {
+        botContent = '❌ Failed to get response from AI assistant.';
+      }
+      
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: result.success && result.text 
-          ? result.text 
-          : `Error: ${result.error || 'Failed to get response'}`,
+        content: botContent,
         timestamp: new Date()
       };
       
       setMessages(prev => [...prev, botMessage]);
-    } catch (error) {
+    } catch (error: any) {
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'Sorry, I encountered an unexpected error while connecting to the server.',
+        content: '❌ **Connection Error**\n\nSorry, I encountered an unexpected error while connecting to the server. Please try again later.',
         timestamp: new Date()
       };
       setMessages(prev => [...prev, botMessage]);
@@ -232,7 +247,9 @@ export default function AIAssistantWidget() {
             </button>
           </form>
           <div className="text-center mt-2">
-            <span className="text-[9px] text-slate-400 font-medium">Powered by Gemini AI</span>
+            <span className="text-[9px] text-slate-400 font-medium">
+              Powered by {process.env.NEXT_PUBLIC_AI_PROVIDER || 'Saomir'} AI
+            </span>
           </div>
         </div>
       </div>

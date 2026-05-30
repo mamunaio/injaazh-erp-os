@@ -34,9 +34,11 @@ export default function Card({ card, onClick }: CardProps) {
   } = useSortable({ id: card.id });
 
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: CSS.Translate.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
+    touchAction: 'none',
+    zIndex: isDragging ? 50 : 1,
   };
 
   const formatDueDate = (dueDate: string) => {

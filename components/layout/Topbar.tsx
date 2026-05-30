@@ -5,6 +5,8 @@ import { Search, Bell, ChevronDown, User, Settings, LogOut, CheckCircle2, Dollar
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { getRecentNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '@/app/actions/notificationActions';
+import { logoutUser } from '@/app/actions/authActions';
+import toast from 'react-hot-toast';
 import { useSidebar } from './SidebarContext';
 
 export default function Topbar() {
@@ -51,6 +53,17 @@ export default function Topbar() {
   const handleMarkAllRead = async () => {
     await markAllNotificationsAsRead();
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+  };
+
+  const handleSignOut = async () => {
+    setShowProfile(false);
+    const result = await logoutUser();
+    if (result.success) {
+      toast.success('Signed out successfully');
+      router.push('/login');
+    } else {
+      toast.error('Failed to sign out');
+    }
   };
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
@@ -199,7 +212,7 @@ export default function Topbar() {
                 </div>
 
                 <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 text-sm font-medium group">
+                  <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 text-sm font-medium group">
                     <LogOut size={16} className="text-slate-400 group-hover:text-rose-500" />
                     Sign Out
                   </button>

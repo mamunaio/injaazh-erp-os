@@ -6,43 +6,62 @@ import { Project } from '@/models/Project';
 import { Proposal } from '@/models/Proposal';
 import { Transaction } from '@/models/Transaction';
 import MarketplaceProject from '@/models/MarketplaceProject';
+import SeoProject from '@/models/SeoProject';
 
 export async function getDashboardData() {
   try {
     await connectToDatabase();
 
     // Fetch all data in parallel
-    const [leads, projects, proposals, transactions, marketplaceProjects] = await Promise.all([
+    const [leads, projects, proposals, transactions, marketplaceProjects, seoProjects] = await Promise.all([
       Lead.find({}).lean(),
       Project.find({}).lean(),
       Proposal.find({}).lean(),
-      Transaction.find({}).sort({ date: -1 }).limit(10).lean(),
+      Transaction.find({}).sort({ date: -1 }).lean(),
       MarketplaceProject.find({}).lean(),
+      SeoProject.find({}).sort({ lastAudited: -1 }).limit(3).lean(),
     ]);
 
-    // Calculate stats
+    // Calculate lead stats
     const totalLeads = leads.length;
     const activeLeads = leads.filter((l: any) => 
-      l.outreach_status !== 'Closed' && l.outreach_status !== 'Lost'
+      l.outreach_status !== 'Closed' && l.outreach_status !== 'Lost' && l.outreach_status !== 'Not Interested'
     ).length;
+    const closedLeads = leads.filter((l: any) => l.outreach_status === 'Closed').length;
+    const leadConversionRate = totalLeads > 0 ? Math.round((closedLeads / totalLeads) * 100) : 0;
 
     // Combine regular projects and marketplace projects
     const totalProjects = projects.length + marketplaceProjects.length;
     const activeProjects = projects.filter((p: any) => 
-      p.status === 'In Progress' || p.status === 'Planning'
+      p.status === 'In Progress' || p.status === 'Planning' || p.status === 'In Review'
     ).length + marketplaceProjects.filter((mp: any) => 
-      mp.status === 'In Progress' || mp.status === 'Planning'
+      mp.status === 'In Progress' || mp.status === 'Planning' || mp.status === 'In Review'
     ).length;
 
     const totalProposals = proposals.length;
     const pendingProposals = proposals.filter((p: any) => 
-      p.status === 'Draft' || p.status === 'Sent'
+      p.status === 'Draft' || p.status === 'Sent' || p.status === 'Viewed'
     ).length;
 
-    // Calculate income (from transactions)
+    // Calculate proposal pipeline values
+    const outstandingPipelineValue = proposals
+      .filter((p: any) => p.status === 'Draft' || p.status === 'Sent' || p.status === 'Viewed')
+      .reduce((sum: number, p: any) => sum + (p.value || 0), 0);
+
+    const acceptedProposalsValue = proposals
+      .filter((p: any) => p.status === 'Accepted')
+      .reduce((sum: number, p: any) => sum + (p.value || 0), 0);
+
+    // Calculate income and expenses (from transactions)
     const totalIncome = transactions
       .filter((t: any) => t.type === 'Income')
       .reduce((sum: number, t: any) => sum + t.amount, 0);
+
+    const totalExpenses = transactions
+      .filter((t: any) => t.type === 'Expense')
+      .reduce((sum: number, t: any) => sum + t.amount, 0);
+
+    const netProfit = totalIncome - totalExpenses;
 
     const thisMonthIncome = transactions
       .filter((t: any) => {
@@ -53,6 +72,18 @@ export async function getDashboardData() {
                date.getFullYear() === now.getFullYear();
       })
       .reduce((sum: number, t: any) => sum + t.amount, 0);
+
+    // Pending marketplace milestone value
+    let pendingMilestoneValue = 0;
+    marketplaceProjects.forEach((mp: any) => {
+      if (mp.milestones && Array.isArray(mp.milestones)) {
+        mp.milestones.forEach((m: any) => {
+          if (m.status === 'Pending') {
+            pendingMilestoneValue += parseFloat(m.amount) || 0;
+          }
+        });
+      }
+    });
 
     // Get upcoming deadlines (projects with deadline in next 7 days)
     const now = new Date();
@@ -84,7 +115,7 @@ export async function getDashboardData() {
         title: mp.title || '',
         deadline: mp.deadline ? new Date(mp.deadline).toISOString() : '',
         status: mp.status || '',
-        progress: 0, // Marketplace projects don't have progress field
+        progress: 0,
       }));
 
     const upcomingDeadlines = [...regularProjectDeadlines, ...marketplaceProjectDeadlines]
@@ -92,7 +123,7 @@ export async function getDashboardData() {
       .slice(0, 5);
 
     // Get recent transactions
-    const recentTransactions = transactions.slice(0, 5).map((t: any) => ({
+    const recentTransactions = transactions.slice(0, 10).map((t: any) => ({
       _id: t._id?.toString() || '',
       platform: t.platform || '',
       type: t.type || '',
@@ -114,7 +145,7 @@ export async function getDashboardData() {
         createdAt: l.createdAt ? new Date(l.createdAt).toISOString() : '',
       }));
 
-    // Project status distribution (combine regular and marketplace projects)
+    // Project status distribution
     const projectStatusDistribution = {
       Planning: projects.filter((p: any) => p.status === 'Planning').length + 
                 marketplaceProjects.filter((mp: any) => mp.status === 'Planning').length,
@@ -133,6 +164,32 @@ export async function getDashboardData() {
       .forEach((t: any) => {
         platformIncome[t.platform] = (platformIncome[t.platform] || 0) + t.amount;
       });
+
+    const milestonePlatformIncome: any = {};
+    marketplaceProjects.forEach((mp: any) => {
+      let paidMilestonesSum = 0;
+      if (mp.milestones && Array.isArray(mp.milestones)) {
+        mp.milestones.forEach((m: any) => {
+          if (m.status === 'Paid') {
+            paidMilestonesSum += parseFloat(m.amount) || 0;
+          }
+        });
+      }
+      
+      const budgetValue = mp.budget ? parseFloat(mp.budget.replace(/[^0-9.-]+/g, '')) : 0;
+      const earned = paidMilestonesSum > 0 ? paidMilestonesSum : (mp.status === 'Completed' ? budgetValue : 0);
+      
+      if (earned > 0) {
+        milestonePlatformIncome[mp.platform] = (milestonePlatformIncome[mp.platform] || 0) + earned;
+      }
+    });
+
+    const marketplacePlatforms = ['Freelancer', 'Upwork', 'Fiverr', 'Direct'];
+    marketplacePlatforms.forEach(platform => {
+      if (milestonePlatformIncome[platform] !== undefined) {
+        platformIncome[platform] = milestonePlatformIncome[platform];
+      }
+    });
 
     // Income trend (last 6 months)
     const incomeTrend = [];
@@ -156,6 +213,24 @@ export async function getDashboardData() {
       });
     }
 
+    // Serialize SEO projects
+    const serializedSeo = (seoProjects || []).map((p: any) => ({
+      id: p._id?.toString() || '',
+      clientName: p.clientName || '',
+      url: p.url || '',
+      lastAudited: p.lastAudited || '',
+      lighthouse: {
+        performance: p.lighthouse?.performance || 0,
+        accessibility: p.lighthouse?.accessibility || 0,
+        bestPractices: p.lighthouse?.bestPractices || 0,
+        seo: p.lighthouse?.seo || 0,
+      },
+      aeo: {
+        chatgptMentions: p.aeo?.chatgptMentions || 0,
+        perplexityScore: p.aeo?.perplexityScore || 0,
+      }
+    }));
+
     return {
       success: true,
       data: {
@@ -168,6 +243,12 @@ export async function getDashboardData() {
           pendingProposals,
           totalIncome,
           thisMonthIncome,
+          totalExpenses,
+          netProfit,
+          outstandingPipelineValue,
+          acceptedProposalsValue,
+          leadConversionRate,
+          pendingMilestoneValue,
         },
         upcomingDeadlines,
         recentTransactions,
@@ -175,6 +256,7 @@ export async function getDashboardData() {
         projectStatusDistribution,
         platformIncome,
         incomeTrend,
+        seoProjects: serializedSeo,
       },
     };
   } catch (error: any) {

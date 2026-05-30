@@ -126,7 +126,7 @@ runner.test('Should automatically create transaction when project is marked as c
   assert(transactionsResult.success, 'Get transactions should succeed');
   
   const projectTransactions = transactionsResult.data.filter(
-    (t: any) => t.projectId?.toString() === projectId
+    (t: any) => (t.projectId?._id || t.projectId)?.toString() === projectId
   );
   
   assertEqual(projectTransactions.length, 1, 'Should have exactly 1 transaction');
@@ -195,7 +195,7 @@ runner.test('Should populate project details when fetching transactions', async 
   assert(transactionsResult.success, 'Get transactions should succeed');
 
   const linkedTransaction = transactionsResult.data.find(
-    (t: any) => t.projectId?._id === projectId
+    (t: any) => (t.projectId?._id || t.projectId)?.toString() === projectId
   );
 
   assertDefined(linkedTransaction, 'Linked transaction should exist');
@@ -262,7 +262,7 @@ runner.test('Should parse various budget formats correctly', async () => {
 
     const transactionsResult = await getTransactions();
     const transaction = transactionsResult.data.find(
-      (t: any) => t.projectId?.toString() === projectId
+      (t: any) => (t.projectId?._id || t.projectId)?.toString() === projectId
     );
 
     assertDefined(transaction, `Transaction should exist for budget: ${testCase.budget}`);
@@ -320,6 +320,94 @@ runner.test('Should handle deleted project references gracefully', async () => {
 
   assertDefined(orphanedTransaction, 'Transaction should still exist');
 });
+
+// Test 8: Duplicate protection on project completed
+runner.test('Should prevent duplicate transaction creation on multiple project updates', async () => {
+  await cleanup();
+
+  const projectData = {
+    title: 'Test Duplicate Completion Project',
+    platform: 'Fiverr',
+    budget: '$500',
+    status: 'Planning',
+    clientDetails: { clientName: 'Duplicate Test Client' },
+    scope: 'Test scope'
+  };
+
+  const createResult = await createMarketplaceProject(projectData);
+  const projectId = createResult.data._id;
+
+  // First completion
+  await updateMarketplaceProject(projectId, { status: 'Completed' });
+  await sleep(300);
+
+  // Second completion update (e.g. updating title or client details while remaining Completed)
+  await updateMarketplaceProject(projectId, { status: 'Completed', title: 'Test Duplicate Completion Project (Updated)' });
+  await sleep(300);
+
+  // Verify only 1 transaction exists for this project
+  const transactionsResult = await getTransactions();
+  const projectTransactions = transactionsResult.data.filter(
+    (t: any) => (t.projectId?._id || t.projectId)?.toString() === projectId
+  );
+
+  assertEqual(projectTransactions.length, 1, 'Should have exactly 1 transaction even after multiple completions');
+});
+
+// Test 9: Milestone payment tracking without duplication
+runner.test('Should track milestones automatically and prevent duplication', async () => {
+  await cleanup();
+
+  const projectData = {
+    title: 'Test Milestone Project',
+    platform: 'Direct',
+    budget: '$1,000',
+    status: 'In Progress',
+    clientDetails: { clientName: 'Milestone Test Client' },
+    scope: 'Test scope',
+    milestones: []
+  };
+
+  const createResult = await createMarketplaceProject(projectData);
+  const projectId = createResult.data._id;
+
+  // Add first Paid milestone
+  const milestones1 = [
+    { id: 'ms-101', description: 'Initial Milestone', date: '2026-05-30', status: 'Paid', amount: 400 }
+  ];
+  await updateMarketplaceProject(projectId, { milestones: milestones1 });
+  await sleep(300);
+
+  // Verify first milestone transaction exists
+  let transactionsResult = await getTransactions();
+  let milestoneTx = transactionsResult.data.filter(
+    (t: any) => (t.projectId?._id || t.projectId)?.toString() === projectId
+  );
+  assertEqual(milestoneTx.length, 1, 'Should have created exactly 1 transaction for the first paid milestone');
+  assertEqual(milestoneTx[0].amount, 400, 'Milestone amount should match');
+  assertEqual(milestoneTx[0].milestoneId, 'ms-101', 'Milestone ID should be stored');
+
+  // Add second Paid milestone and update first milestone details (keeping status Paid)
+  const milestones2 = [
+    { id: 'ms-101', description: 'Initial Milestone (Revised)', date: '2026-05-30', status: 'Paid', amount: 400 },
+    { id: 'ms-102', description: 'Second Milestone', date: '2026-06-15', status: 'Paid', amount: 600 }
+  ];
+  await updateMarketplaceProject(projectId, { milestones: milestones2 });
+  await sleep(300);
+
+  // Verify all transactions
+  transactionsResult = await getTransactions();
+  milestoneTx = transactionsResult.data.filter(
+    (t: any) => (t.projectId?._id || t.projectId)?.toString() === projectId
+  );
+  
+  assertEqual(milestoneTx.length, 2, 'Should have exactly 2 transactions total for the two paid milestones');
+  
+  const secondTx = milestoneTx.find((t: any) => t.milestoneId === 'ms-102');
+  assertDefined(secondTx, 'Second milestone transaction should exist');
+  assertEqual(secondTx!.amount, 600, 'Second milestone amount should match');
+});
+
 
 // Main execution
 async function main() {

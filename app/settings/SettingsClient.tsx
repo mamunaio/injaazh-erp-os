@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
+import TwoFactorSetupModal from '@/components/TwoFactorSetupModal';
+import { checkTwoFactorStatus } from '@/app/actions/twoFactorActions';
 import { 
   User, 
   Bell, 
@@ -19,8 +21,13 @@ import {
   Eye,
   EyeOff,
   Activity,
-  CreditCard
+  CreditCard,
+  Mail,
+  CheckCircle,
+  Send
 } from 'lucide-react';
+import { getSystemSettings, saveSystemSettings, testSmtpConnection } from '@/app/actions/settingsActions';
+import { sendTestEmail } from '@/app/actions/emailActions';
 
 const playSound = (type: 'success' | 'pop' | 'error' | 'cash') => {
   try {
@@ -132,6 +139,7 @@ const TABS = [
   { id: 'general', label: 'General & Profile', icon: User },
   { id: 'notifications', label: 'Notifications & Sounds', icon: Bell },
   { id: 'security', label: 'Security & Access', icon: ShieldCheck },
+  { id: 'smtp', label: 'SMTP Configurations', icon: Mail },
   { id: 'api', label: 'API & Webhooks', icon: Key },
   { id: 'billing', label: 'Usage & Billing', icon: CreditCard },
   { id: 'danger', label: 'Data & Danger Zone', icon: AlertTriangle, danger: true },
@@ -141,6 +149,39 @@ export default function SettingsClient() {
   const [activeTab, setActiveTab] = useState('general');
   const [isSaving, setIsSaving] = useState(false);
   const [showKey, setShowKey] = useState(false);
+  
+  // 2FA States
+  const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+  const [is2FAModalOpen, setIs2FAModalOpen] = useState(false);
+  const [isDisabling2FA, setIsDisabling2FA] = useState(false);
+
+  // SMTP Configuration States
+  const [smtpSettings, setSmtpSettings] = useState({
+    host: '',
+    port: 587,
+    user: '',
+    pass: '',
+    fromName: '',
+    fromEmail: '',
+  });
+  const [showSmtpPass, setShowSmtpPass] = useState(false);
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [isSendingTestEmail, setIsSendingTestEmail] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [testEmailAddress, setTestEmailAddress] = useState('');
+
+  useEffect(() => {
+    checkTwoFactorStatus().then(res => {
+      if (res.success) setIs2FAEnabled(res.enabled || false);
+    });
+
+    // Fetch dynamic SMTP settings
+    getSystemSettings('smtp').then(res => {
+      if (res.success && res.data) {
+        setSmtpSettings(res.data);
+      }
+    });
+  }, []);
   
   // Notification States
   const [masterSound, setMasterSound] = useState(true);
@@ -156,12 +197,99 @@ export default function SettingsClient() {
     setIsSaving(true);
     toast.loading('Saving preferences...', { id: 'save' });
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    toast.success('Settings saved successfully!', { id: 'save' });
-    if (masterSound) playSound('success');
-    setIsSaving(false);
+    try {
+      // Save SMTP settings dynamically
+      const res = await saveSystemSettings('smtp', smtpSettings);
+      if (!res.success) {
+        throw new Error(res.error || 'Failed to save SMTP configurations');
+      }
+
+      toast.success('Settings saved successfully!', { id: 'save' });
+      if (masterSound) playSound('success');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to save settings.', { id: 'save' });
+      if (masterSound) playSound('error');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleTestConnection = async () => {
+    if (!smtpSettings.host || !smtpSettings.user || !smtpSettings.pass) {
+      toast.error('Please fill in Host, Username, and Password first.');
+      return;
+    }
+
+    setIsTestingConnection(true);
+    setTestResult(null);
+    toast.loading('Testing SMTP connection...', { id: 'smtp-test' });
+
+    try {
+      const res = await testSmtpConnection(smtpSettings);
+      if (res.success) {
+        toast.success(res.message || 'SMTP Connection established!', { id: 'smtp-test' });
+        setTestResult({ success: true, message: res.message || 'SMTP Connection established successfully.' });
+        if (masterSound) playSound('success');
+      } else {
+        toast.error(res.error || 'SMTP Connection failed.', { id: 'smtp-test' });
+        setTestResult({ success: false, message: res.error || 'Failed to connect. Please check credentials.' });
+        if (masterSound) playSound('error');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to run connection test.', { id: 'smtp-test' });
+      setTestResult({ success: false, message: err.message || 'Unknown error occurred.' });
+      if (masterSound) playSound('error');
+    } finally {
+      setIsTestingConnection(false);
+    }
+  };
+
+  const handleSendTestEmail = async () => {
+    if (!testEmailAddress) {
+      toast.error('Please enter an email address to send test email.');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(testEmailAddress)) {
+      toast.error('Please enter a valid email address.');
+      return;
+    }
+
+    // Check if SMTP is configured
+    if (!smtpSettings.host || !smtpSettings.user || !smtpSettings.pass) {
+      toast.error('Please configure and save SMTP settings first.');
+      return;
+    }
+
+    // First, save the current settings to database
+    setIsSendingTestEmail(true);
+    toast.loading('Saving settings and sending test email...', { id: 'test-email' });
+
+    try {
+      // Save settings first
+      const saveRes = await saveSystemSettings('smtp', smtpSettings);
+      if (!saveRes.success) {
+        throw new Error('Failed to save SMTP settings. Please try again.');
+      }
+
+      // Then send test email
+      const res = await sendTestEmail({ to: testEmailAddress });
+      if (res.success) {
+        toast.success('Test email sent successfully! Check your inbox.', { id: 'test-email' });
+        if (masterSound) playSound('success');
+        setTestEmailAddress(''); // Clear input after success
+      } else {
+        toast.error(res.error || 'Failed to send test email.', { id: 'test-email' });
+        if (masterSound) playSound('error');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to send test email.', { id: 'test-email' });
+      if (masterSound) playSound('error');
+    } finally {
+      setIsSendingTestEmail(false);
+    }
   };
 
   const handleSoundToggle = (key: keyof typeof soundSettings) => {
@@ -177,17 +305,17 @@ export default function SettingsClient() {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 mb-2 drop-shadow-sm">
+          <h1 className="text-6xl md:text-7xl font-jakarta font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 mb-3 drop-shadow-sm">
             Settings
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
+          <p className="text-[15px] font-inter leading-relaxed tracking-wide text-slate-500 dark:text-slate-400">
             Manage your agency preferences and system configurations
           </p>
         </div>
         <button 
           onClick={handleSave}
           disabled={isSaving}
-          className={`flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-2xl hover:shadow-[0_0_20px_rgba(139,92,246,0.4)] transition-all text-sm group ${isSaving ? 'opacity-70' : ''}`}
+          className={`flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-jakarta font-bold rounded-2xl hover:shadow-[0_0_20px_rgba(139,92,246,0.4)] transition-all text-sm group ${isSaving ? 'opacity-70' : ''}`}
         >
           {isSaving ? <Activity size={18} className="animate-spin" /> : <Save size={18} className="group-hover:scale-110 transition-transform" />}
           {isSaving ? 'Saving...' : 'Save Changes'}
@@ -209,7 +337,7 @@ export default function SettingsClient() {
                     setActiveTab(tab.id);
                     if (masterSound) playSound('pop');
                   }}
-                  className={`flex items-center gap-3 px-5 py-4 rounded-2xl transition-all duration-300 font-bold text-sm relative overflow-hidden ${
+                  className={`flex items-center gap-3 px-5 py-4 rounded-2xl transition-all duration-300 font-jakarta font-bold text-sm relative overflow-hidden ${
                     isActive 
                       ? tab.danger 
                         ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' 
@@ -245,7 +373,7 @@ export default function SettingsClient() {
               {/* TAB: General */}
               {activeTab === 'general' && (
                 <GlassCard>
-                  <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 mb-8 flex items-center gap-3">
+                  <h2 className="text-3xl font-jakarta font-black text-slate-800 dark:text-slate-100 mb-8 flex items-center gap-3">
                     <User className="text-indigo-500" /> General & Profile
                   </h2>
                   <div className="space-y-6 max-w-2xl">
@@ -264,12 +392,12 @@ export default function SettingsClient() {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Agency Name</label>
-                        <input type="text" defaultValue="Injaazh Global" className="w-full px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-medium" />
+                        <label className="block text-sm font-jakarta font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 mb-2">Agency Name</label>
+                        <input type="text" defaultValue="Injaazh Global" className="w-full px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-inter text-[15px]" />
                       </div>
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Admin Name</label>
-                        <input type="text" defaultValue="System Admin" className="w-full px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-medium" />
+                        <label className="block text-sm font-jakarta font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 mb-2">Admin Name</label>
+                        <input type="text" defaultValue="System Admin" className="w-full px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-inter text-[15px]" />
                       </div>
                     </div>
                     <div>
@@ -284,12 +412,12 @@ export default function SettingsClient() {
               {activeTab === 'notifications' && (
                 <GlassCard>
                   <div className="flex justify-between items-center mb-8">
-                    <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-3">
+                    <h2 className="text-3xl font-jakarta font-black text-slate-800 dark:text-slate-100 flex items-center gap-3">
                       <Volume2 className="text-indigo-500" /> Notifications & Sounds
                     </h2>
                     
                     <label className="flex items-center gap-3 cursor-pointer">
-                      <span className="text-sm font-bold text-slate-500">Master Sound</span>
+                      <span className="text-sm font-jakarta font-bold text-slate-500">Master Sound</span>
                       <div className="relative">
                         <input type="checkbox" className="sr-only" checked={masterSound} onChange={() => {
                           setMasterSound(!masterSound);
@@ -318,8 +446,8 @@ export default function SettingsClient() {
                             <Play size={20} className="ml-1" />
                           </button>
                           <div>
-                            <h4 className="font-black text-slate-800 dark:text-slate-200">{item.label}</h4>
-                            <p className="text-xs font-medium text-slate-500">{item.desc}</p>
+                            <h4 className="font-jakarta font-black text-slate-800 dark:text-slate-200">{item.label}</h4>
+                            <p className="text-xs font-inter text-slate-500">{item.desc}</p>
                           </div>
                         </div>
                         <label className="relative cursor-pointer">
@@ -336,19 +464,48 @@ export default function SettingsClient() {
               {/* TAB: Security */}
               {activeTab === 'security' && (
                 <GlassCard>
-                  <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 mb-8 flex items-center gap-3">
+                  <h2 className="text-3xl font-jakarta font-black text-slate-800 dark:text-slate-100 mb-8 flex items-center gap-3">
                     <ShieldCheck className="text-indigo-500" /> Security & Access Control
                   </h2>
                   
                   <div className="mb-10 p-6 rounded-3xl bg-indigo-500/10 border border-indigo-500/20 flex flex-col md:flex-row justify-between items-center gap-6">
                     <div>
-                      <h3 className="font-black text-indigo-700 dark:text-indigo-400 mb-1">Two-Factor Authentication (2FA)</h3>
-                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Secure your account with an authenticator app.</p>
+                      <h3 className="font-jakarta font-black text-indigo-700 dark:text-indigo-400 mb-1">Two-Factor Authentication (2FA)</h3>
+                      <p className="text-sm font-inter text-slate-600 dark:text-slate-400">
+                        {is2FAEnabled ? 'Your account is secured with 2FA.' : 'Secure your account with an authenticator app.'}
+                      </p>
                     </div>
-                    <button className="px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors whitespace-nowrap">
-                      Enable 2FA
-                    </button>
+                    {is2FAEnabled ? (
+                      <button 
+                        onClick={() => {
+                          setIsDisabling2FA(true);
+                          setIs2FAModalOpen(true);
+                        }}
+                        className="px-6 py-3 bg-rose-600/10 text-rose-600 font-jakarta font-bold rounded-xl shadow-sm hover:bg-rose-600 hover:text-white transition-colors whitespace-nowrap"
+                      >
+                        Disable 2FA
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={() => {
+                          setIsDisabling2FA(false);
+                          setIs2FAModalOpen(true);
+                        }}
+                        className="px-6 py-3 bg-indigo-600 text-white font-jakarta font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors whitespace-nowrap"
+                      >
+                        Enable 2FA
+                      </button>
+                    )}
                   </div>
+
+                  <TwoFactorSetupModal 
+                    isOpen={is2FAModalOpen}
+                    onClose={() => setIs2FAModalOpen(false)}
+                    isDisabling={isDisabling2FA}
+                    onSuccess={() => {
+                      setIs2FAEnabled(!isDisabling2FA);
+                    }}
+                  />
 
                   <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest mb-6 flex items-center gap-2">
                     <MonitorSmartphone size={18} className="text-slate-400" /> Active Sessions
@@ -392,7 +549,7 @@ export default function SettingsClient() {
               {/* TAB: API */}
               {activeTab === 'api' && (
                 <GlassCard>
-                  <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 mb-8 flex items-center gap-3">
+                  <h2 className="text-3xl font-jakarta font-black text-slate-800 dark:text-slate-100 mb-8 flex items-center gap-3">
                     <Key className="text-indigo-500" /> API Keys & Webhooks
                   </h2>
                   
@@ -423,6 +580,188 @@ export default function SettingsClient() {
                         <p className="text-xs font-mono text-slate-500">No webhooks configured yet.</p>
                       </div>
                     </div>
+                  </div>
+                </GlassCard>
+              )}
+
+              {/* TAB: SMTP Configurations */}
+              {activeTab === 'smtp' && (
+                <GlassCard>
+                  <h2 className="text-3xl font-jakarta font-black text-slate-800 dark:text-slate-100 mb-8 flex items-center gap-3">
+                    <Mail className="text-indigo-500" /> SMTP Configurations
+                  </h2>
+                  
+                  <div className="space-y-6">
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-jakarta font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 mb-2">SMTP Host</label>
+                        <input 
+                          type="text" 
+                          placeholder="e.g. smtp.gmail.com" 
+                          value={smtpSettings.host} 
+                          onChange={(e) => setSmtpSettings(prev => ({ ...prev, host: e.target.value }))}
+                          className="w-full px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-inter text-[15px]" 
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">SMTP Port</label>
+                        <input 
+                          type="number" 
+                          placeholder="e.g. 587" 
+                          value={smtpSettings.port} 
+                          onChange={(e) => setSmtpSettings(prev => ({ ...prev, port: parseInt(e.target.value) || 587 }))}
+                          className="w-full px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-medium" 
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">SMTP Username / Email</label>
+                        <input 
+                          type="email" 
+                          placeholder="e.g. your-email@gmail.com" 
+                          value={smtpSettings.user} 
+                          onChange={(e) => setSmtpSettings(prev => ({ ...prev, user: e.target.value }))}
+                          className="w-full px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-medium" 
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">SMTP Password / App Password</label>
+                        <div className="relative">
+                          <input 
+                            type={showSmtpPass ? 'text' : 'password'} 
+                            placeholder="e.g. App Password" 
+                            value={smtpSettings.pass} 
+                            onChange={(e) => setSmtpSettings(prev => ({ ...prev, pass: e.target.value }))}
+                            className="w-full px-5 py-3.5 pr-12 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-medium font-mono text-sm" 
+                          />
+                          <button 
+                            type="button"
+                            onClick={() => setShowSmtpPass(!showSmtpPass)}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-500 transition-colors cursor-pointer"
+                          >
+                            {showSmtpPass ? <EyeOff size={20} /> : <Eye size={20} />}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Sender Name (From Name)</label>
+                        <input 
+                          type="text" 
+                          placeholder="e.g. Mamun" 
+                          value={smtpSettings.fromName} 
+                          onChange={(e) => setSmtpSettings(prev => ({ ...prev, fromName: e.target.value }))}
+                          className="w-full px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-medium" 
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Sender Email (From Email)</label>
+                        <input 
+                          type="email" 
+                          placeholder="e.g. mamun@injaazh.com" 
+                          value={smtpSettings.fromEmail} 
+                          onChange={(e) => setSmtpSettings(prev => ({ ...prev, fromEmail: e.target.value }))}
+                          className="w-full px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-medium" 
+                        />
+                      </div>
+                    </div>
+
+                    {/* Test Connection Button & Status Glow */}
+                    <div className="pt-6 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
+                      <div>
+                        <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block">Real SMTP Handshake Test</span>
+                        <p className="text-xs text-slate-400 mt-1">Nodemailer will run a quick verified handshake to confirm your configurations.</p>
+                        <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">💡 Tip: Test connection first, then click "Save Changes" at the top.</p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleTestConnection}
+                        disabled={isTestingConnection}
+                        className="px-6 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-650 dark:text-indigo-400 border border-indigo-500/20 font-bold rounded-2xl transition-all text-xs flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-95 disabled:opacity-40"
+                      >
+                        {isTestingConnection ? (
+                          <>
+                            <Activity size={14} className="animate-spin" />
+                            <span>Verifying...</span>
+                          </>
+                        ) : (
+                          <>
+                            <MonitorSmartphone size={14} />
+                            <span>Test Connection</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    {testResult && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`p-4 rounded-2xl text-xs flex items-start gap-3 border ${
+                          testResult.success 
+                            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400' 
+                            : 'bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400'
+                        }`}
+                      >
+                        {testResult.success ? <CheckCircle size={16} className="mt-0.5" /> : <AlertTriangle size={16} className="mt-0.5" />}
+                        <div>
+                          <div className="font-extrabold">{testResult.success ? 'Success!' : 'Configuration Error'}</div>
+                          <p className="mt-0.5 font-medium leading-relaxed">{testResult.message}</p>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Send Test Email Section */}
+                    <div className="pt-6 border-t border-slate-200 dark:border-slate-800">
+                      <div className="mb-4">
+                        <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block">Send Test Email</span>
+                        <p className="text-xs text-slate-400 mt-1">Send a beautifully designed test email to verify your SMTP configuration is working end-to-end.</p>
+                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 flex items-center gap-2">
+                          <AlertTriangle size={12} />
+                          <span>Settings will be automatically saved before sending test email.</span>
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <input 
+                          type="email" 
+                          placeholder="Enter email address to receive test email" 
+                          value={testEmailAddress}
+                          onChange={(e) => setTestEmailAddress(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !isSendingTestEmail) {
+                              handleSendTestEmail();
+                            }
+                          }}
+                          className="flex-1 px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-800 dark:text-slate-200 font-inter text-[15px]" 
+                        />
+                        <button
+                          type="button"
+                          onClick={handleSendTestEmail}
+                          disabled={isSendingTestEmail || !testEmailAddress}
+                          className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 font-jakarta font-bold rounded-2xl transition-all text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+                        >
+                          {isSendingTestEmail ? (
+                            <>
+                              <Activity size={16} className="animate-spin" />
+                              <span>Sending...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Send size={16} />
+                              <span>Send Test Email</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
                   </div>
                 </GlassCard>
               )}

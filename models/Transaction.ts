@@ -8,6 +8,7 @@ export interface ITransaction extends Document {
   category: string;
   description: string;
   projectId?: mongoose.Types.ObjectId;
+  milestoneId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -48,6 +49,10 @@ const TransactionSchema: Schema = new Schema(
       ref: 'MarketplaceProject',
       required: false,
     },
+    milestoneId: {
+      type: String,
+      required: false,
+    },
   },
   {
     timestamps: true,
@@ -59,6 +64,7 @@ TransactionSchema.index({ platform: 1, date: -1 });
 TransactionSchema.index({ type: 1, date: -1 });
 TransactionSchema.index({ date: -1 });
 TransactionSchema.index({ projectId: 1 });
+TransactionSchema.index({ projectId: 1, milestoneId: 1 });
 
 export const Transaction: Model<ITransaction> =
   mongoose.models.Transaction || mongoose.model<ITransaction>('Transaction', TransactionSchema);
