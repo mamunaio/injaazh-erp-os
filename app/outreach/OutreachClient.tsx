@@ -342,18 +342,23 @@ export default function OutreachClient({ initialLeads }: OutreachClientProps) {
                   .join('')
                   .toUpperCase();
 
-                const isSelected = selectedLead?._id === lead._id;
+                const isSelected = selectedLead && String(selectedLead._id) === String(lead._id);
 
                 return (
                   <div
                     key={lead._id}
-                    className={`p-4 rounded-xl border-2 transition-all cursor-pointer group hover:shadow-lg ${
+                    className={`relative overflow-hidden p-4 rounded-xl border-2 transition-all cursor-pointer group hover:shadow-lg ${
                       isSelected
-                        ? 'border-indigo-500 dark:border-indigo-400 bg-indigo-50/25 dark:bg-indigo-950/30 shadow-md shadow-indigo-500/5'
+                        ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/80 dark:bg-indigo-950/60 shadow-[0_0_20px_rgba(99,102,241,0.15)] ring-1 ring-indigo-600/30 dark:ring-indigo-500/30'
                         : 'border-slate-200 dark:border-slate-700/50 bg-white/50 dark:bg-slate-800/50 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-indigo-500/10 dark:hover:shadow-indigo-500/20'
                     }`}
                     onClick={() => setSelectedLead(lead)}
                   >
+                    {/* Active Accent Bar */}
+                    {isSelected && (
+                      <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-500 to-purple-600" />
+                    )}
+
                     <div className="flex items-start gap-3">
                       <div 
                         style={{ background: getAvatarGradient(lead.company_name) }}
@@ -363,9 +368,16 @@ export default function OutreachClient({ initialLeads }: OutreachClientProps) {
                       </div>
                       
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate mb-1">
-                          {lead.company_name}
-                        </h3>
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
+                            {lead.company_name}
+                          </h3>
+                          {isSelected && (
+                            <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white animate-pulse shadow-sm flex-shrink-0">
+                              Active
+                            </span>
+                          )}
+                        </div>
                         
                         <p className="text-xs text-slate-600 dark:text-slate-400 mb-2 truncate">
                           {lead.contact_person || 'No contact'}
