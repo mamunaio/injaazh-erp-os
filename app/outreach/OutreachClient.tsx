@@ -4,6 +4,7 @@ import React, { useState, useMemo, useRef } from 'react';
 import { Mail, Search, Send, Plus, Filter, User, Building2, Globe, Phone, Calendar, MessageSquare, CheckCircle, Clock, XCircle, AlertCircle, Sparkles, Paperclip, Image, FileText, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { generateOutreachEmailDraft } from '@/app/actions/aiActions';
+import { sendOutreachEmail } from '@/app/actions/leadActions';
 import { toast } from 'react-hot-toast';
 
 interface OutreachClientProps {
@@ -248,13 +249,24 @@ export default function OutreachClient({ initialLeads }: OutreachClientProps) {
     
     setIsSending(true);
     
-    // Simulate sending (replace with actual API call)
-    setTimeout(() => {
+    try {
+      const response = await sendOutreachEmail(selectedLead._id, subject, body);
+      if (response.success) {
+        toast.success(
+          response.isSimulated 
+            ? 'Simulated sandbox email logged successfully! 📧' 
+            : 'Outreach email sent successfully! 📧'
+        );
+        setShowComposer(false);
+        router.refresh();
+      } else {
+        toast.error(response.error || 'Failed to send outreach email');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'An error occurred while sending email');
+    } finally {
       setIsSending(false);
-      setShowComposer(false);
-      toast.success('Email sent successfully! 📧');
-      router.refresh();
-    }, 1500);
+    }
   };
 
   return (
@@ -344,6 +356,14 @@ export default function OutreachClient({ initialLeads }: OutreachClientProps) {
 
                 const isSelected = selectedLead && String(selectedLead._id) === String(lead._id);
 
+                let isFollowUpToday = false;
+                if (lead.nextFollowUpDate) {
+                  const followUpDate = new Date(lead.nextFollowUpDate);
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  isFollowUpToday = followUpDate <= today;
+                }
+
                 return (
                   <div
                     key={lead._id}
@@ -383,11 +403,21 @@ export default function OutreachClient({ initialLeads }: OutreachClientProps) {
                           {lead.contact_person || 'No contact'}
                         </p>
                         
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className={`text-[10px] font-bold px-2 py-1 rounded-md border flex items-center gap-1 ${status.bg} ${status.text} ${status.border}`}>
                             {status.icon}
                             {lead.outreach_status}
                           </span>
+                          
+                          {isFollowUpToday && (
+                            <div className="flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 px-2 py-1 rounded-md text-[10px] font-bold text-red-600 dark:text-red-400">
+                              <span className="relative flex h-1.5 w-1.5">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
+                              </span>
+                              <span>Follow-up</span>
+                            </div>
+                          )}
                           
                           {lead.email && (
                             <button
@@ -742,6 +772,22 @@ export default function OutreachClient({ initialLeads }: OutreachClientProps) {
                         <a href={selectedLead.website_url} target="_blank" rel="noreferrer" className="text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
                           Visit Site
                         </a>
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedLead.nextFollowUpDate && (
+                    <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                      <Calendar size={20} className="text-indigo-600 dark:text-indigo-400" />
+                      <div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">Next Follow-up</div>
+                        <div className="text-sm font-bold text-slate-800 dark:text-white">
+                          {new Date(selectedLead.nextFollowUpDate).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
+                          })}
+                        </div>
                       </div>
                     </div>
                   )}

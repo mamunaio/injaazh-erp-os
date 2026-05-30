@@ -247,6 +247,20 @@ export async function updateLead(id: string, updateData: any) {
     
     // Get the current lead to check previous status
     const currentLead = await Lead.findById(id).lean();
+
+    // Automatically set nextFollowUpDate to 3 days in the future if a new outreach log is added
+    if (updateData.outreach_logs && Array.isArray(updateData.outreach_logs)) {
+      const currentLogsCount = currentLead?.outreach_logs?.length || 0;
+      if (updateData.outreach_logs.length > currentLogsCount) {
+        // A new log was added (it is the first one in the list)
+        const newestLog = updateData.outreach_logs[0];
+        if (newestLog && ['Email', 'WhatsApp', 'Facebook', 'Phone'].includes(newestLog.method)) {
+          const followUpDate = new Date();
+          followUpDate.setDate(followUpDate.getDate() + 3);
+          updateData.nextFollowUpDate = followUpDate;
+        }
+      }
+    }
     
     // Clean up dates
     if (updateData.nextFollowUpDate === '') {
@@ -426,6 +440,11 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
     // Apply updates directly
     lead.outreach_status = newStatus;
     lead.outreach_logs = [newLog, ...lead.outreach_logs];
+    
+    // Automatically schedule a follow-up 3 days in the future
+    const followUpDate = new Date();
+    followUpDate.setDate(followUpDate.getDate() + 3);
+    lead.nextFollowUpDate = followUpDate;
     
     await lead.save();
     
