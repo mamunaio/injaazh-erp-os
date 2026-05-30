@@ -91,7 +91,7 @@ export async function loginUser(formData: FormData) {
     return { success: true, message: 'Login successful' };
   } catch (error: any) {
     console.error('Login error:', error);
-    return { success: false, message: 'Something went wrong during login' };
+    return { success: false, message: error.message || 'Something went wrong during login' };
   }
 }
 
