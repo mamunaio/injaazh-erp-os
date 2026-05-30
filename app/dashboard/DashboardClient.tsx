@@ -103,7 +103,19 @@ const itemVariants = {
 };
 
 export default function DashboardClient({ dashboardData, dailyInsights, islamicQuote }: DashboardClientProps) {
-  const { user } = useUser();
+  const { user, loading } = useUser();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0B0E1A] p-8 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-indigo-600 dark:border-indigo-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-500 dark:text-slate-400 font-jakarta font-bold text-xs tracking-widest animate-pulse">LOADING WORKSPACE...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!dashboardData) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-8 flex items-center justify-center">
@@ -152,7 +164,7 @@ export default function DashboardClient({ dashboardData, dailyInsights, islamicQ
     return `${diffDays}d ago`;
   };
 
-  if (user?.role === 'team_member') {
+  if (user?.role !== 'admin') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-[#0B0E1A] dark:via-[#0F1220] dark:to-[#0B0E1A] p-4 md:p-8 text-slate-800 dark:text-slate-200 overflow-hidden">
         <motion.div 
@@ -165,7 +177,7 @@ export default function DashboardClient({ dashboardData, dailyInsights, islamicQ
           <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
             <div>
               <h1 className="text-5xl md:text-6xl font-jakarta font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 mb-3 drop-shadow-sm tracking-tight leading-none">
-                Hello, {user.name}!
+                Hello, {user?.name || 'Team Member'}!
               </h1>
               <p className="text-slate-500 dark:text-slate-500 text-sm font-inter font-medium tracking-wide">
                 Welcome back to your workspace dashboard • {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
@@ -174,14 +186,14 @@ export default function DashboardClient({ dashboardData, dailyInsights, islamicQ
 
             {/* Quick Actions */}
             <div className="flex flex-wrap gap-3">
-              {user.permissions?.includes('leads') && (
+              {user?.permissions?.includes('leads') && (
                 <Link href="/leads">
                   <button className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-jakarta font-bold text-sm rounded-xl hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] transition-all">
                     <Plus size={18} /> Add Lead
                   </button>
                 </Link>
               )}
-              {user.permissions?.includes('outreach') && (
+              {user?.permissions?.includes('outreach') && (
                 <Link href="/outreach">
                   <button className="flex items-center gap-2 px-6 py-3 bg-white/85 dark:bg-[#1A2235]/85 border border-slate-200/50 dark:border-white/10 text-slate-700 dark:text-slate-200 font-jakarta font-bold text-sm rounded-xl hover:bg-white dark:hover:bg-[#1A2235] hover:shadow-lg transition-all">
                     <Plus size={18} /> Create Outreach
@@ -216,6 +228,54 @@ export default function DashboardClient({ dashboardData, dailyInsights, islamicQ
               </GlassCard>
             </motion.div>
           )}
+
+          {/* Today's Work Updates Section */}
+          <motion.div variants={itemVariants} className="mb-6">
+            <h2 className="text-lg font-jakarta font-black text-slate-850 dark:text-slate-200 mb-4 flex items-center gap-2">
+              <Zap size={18} className="text-amber-555 text-amber-500 animate-pulse" />
+              Today's Work Updates (আজকের কাজের আপডেট)
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <motion.div variants={itemVariants}>
+                <GlassCard className="relative overflow-hidden group flex flex-col justify-between h-full border-l-4 border-l-indigo-500 dark:border-l-indigo-400">
+                  <div className="absolute -top-10 -right-10 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/20 transition-all"></div>
+                  <div>
+                    <p className="text-xs font-jakarta font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1">New Leads Today</p>
+                    <h3 className="text-4xl font-jakarta font-black text-slate-850 dark:text-white mb-2">{stats.newLeadsToday || 0}</h3>
+                  </div>
+                  <div className="pt-2 border-t border-slate-200/50 dark:border-white/5 text-[11px] text-slate-405 dark:text-slate-500 font-medium">
+                    Leads created in the last 24 hours
+                  </div>
+                </GlassCard>
+              </motion.div>
+
+              <motion.div variants={itemVariants}>
+                <GlassCard className="relative overflow-hidden group flex flex-col justify-between h-full border-l-4 border-l-teal-500 dark:border-l-teal-400">
+                  <div className="absolute -top-10 -right-10 w-24 h-24 bg-teal-500/10 rounded-full blur-2xl group-hover:bg-teal-500/20 transition-all"></div>
+                  <div>
+                    <p className="text-xs font-jakarta font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1">Leads Updated Today</p>
+                    <h3 className="text-4xl font-jakarta font-black text-slate-855 dark:text-white mb-2">{stats.leadsUpdatedToday || 0}</h3>
+                  </div>
+                  <div className="pt-2 border-t border-slate-200/50 dark:border-white/5 text-[11px] text-slate-405 dark:text-slate-500 font-medium">
+                    Leads modified or followed up today
+                  </div>
+                </GlassCard>
+              </motion.div>
+
+              <motion.div variants={itemVariants}>
+                <GlassCard className="relative overflow-hidden group flex flex-col justify-between h-full border-l-4 border-l-pink-500 dark:border-l-pink-400">
+                  <div className="absolute -top-10 -right-10 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl group-hover:bg-pink-500/20 transition-all"></div>
+                  <div>
+                    <p className="text-xs font-jakarta font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1">Outreach Conducted Today</p>
+                    <h3 className="text-4xl font-jakarta font-black text-slate-855 dark:text-white mb-2">{stats.outreachAddedToday || 0}</h3>
+                  </div>
+                  <div className="pt-2 border-t border-slate-200/50 dark:border-white/5 text-[11px] text-slate-405 dark:text-slate-500 font-medium">
+                    Log entries recorded today
+                  </div>
+                </GlassCard>
+              </motion.div>
+            </div>
+          </motion.div>
 
           {/* Statistics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -332,7 +392,7 @@ export default function DashboardClient({ dashboardData, dailyInsights, islamicQ
         </motion.div>
         
         {/* Custom AI Widget only if they have outreach/leads permissions */}
-        {(user.permissions?.includes('leads') || user.permissions?.includes('outreach')) && (
+        {(user?.permissions?.includes('leads') || user?.permissions?.includes('outreach')) && (
           <AIAssistantWidget />
         )}
       </div>

@@ -30,6 +30,32 @@ export async function getDashboardData() {
     const closedLeads = leads.filter((l: any) => l.outreach_status === 'Closed').length;
     const leadConversionRate = totalLeads > 0 ? Math.round((closedLeads / totalLeads) * 100) : 0;
 
+    // Calculate today's updates
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const leadsUpdatedToday = leads.filter((l: any) => {
+      const updatedAt = new Date(l.updatedAt);
+      return updatedAt >= startOfToday;
+    }).length;
+
+    const newLeadsToday = leads.filter((l: any) => {
+      const createdAt = new Date(l.createdAt);
+      return createdAt >= startOfToday;
+    }).length;
+
+    let outreachAddedToday = 0;
+    leads.forEach((l: any) => {
+      if (l.outreach_logs && Array.isArray(l.outreach_logs)) {
+        l.outreach_logs.forEach((log: any) => {
+          const logDate = new Date(log.date);
+          if (logDate >= startOfToday) {
+            outreachAddedToday++;
+          }
+        });
+      }
+    });
+
     // Combine regular projects and marketplace projects
     const totalProjects = projects.length + marketplaceProjects.length;
     const activeProjects = projects.filter((p: any) => 
@@ -249,6 +275,9 @@ export async function getDashboardData() {
           acceptedProposalsValue,
           leadConversionRate,
           pendingMilestoneValue,
+          leadsUpdatedToday,
+          newLeadsToday,
+          outreachAddedToday,
         },
         upcomingDeadlines,
         recentTransactions,
