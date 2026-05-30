@@ -7,7 +7,12 @@ import { getAuthUser } from '@/lib/auth';
 // Middleware helper to check if logged in user is admin
 async function requireAdmin() {
   const authUser = await getAuthUser();
-  if (!authUser || authUser.role !== 'admin') {
+  if (!authUser) {
+    throw new Error('Unauthorized. Admin access required.');
+  }
+  await connectToDatabase();
+  const dbUser = await User.findById(authUser.id);
+  if (!dbUser || dbUser.role !== 'admin') {
     throw new Error('Unauthorized. Admin access required.');
   }
   return authUser;
