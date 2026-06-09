@@ -20,7 +20,7 @@ async function seed() {
         await RoadmapProject.create({
           title: project.name,
           category: category.category,
-          status: project.status,
+          status: project.status as any,
           orderIndex: orderIndex++,
           logs: []
         });

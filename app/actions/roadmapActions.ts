@@ -15,7 +15,7 @@ export async function getRoadmapProjects() {
   }
 }
 
-export async function createRoadmapProject(data: { title: string; category: string; status: string }) {
+export async function createRoadmapProject(data: { title: string; category: string; status: 'Planning' | 'In Progress' | 'On Hold' | 'Completed' }) {
   try {
     await connectToDatabase();
     const count = await RoadmapProject.countDocuments({ category: data.category });

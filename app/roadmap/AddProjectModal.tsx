@@ -17,7 +17,7 @@ export const AddProjectModal = ({
 }) => {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Core Business Systems');
-  const [status, setStatus] = useState('Planning');
+  const [status, setStatus] = useState<'Planning' | 'In Progress' | 'On Hold' | 'Completed'>('Planning');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -101,7 +101,7 @@ export const AddProjectModal = ({
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Initial Status</label>
                 <select
                   value={status}
-                  onChange={(e) => setStatus(e.target.value)}
+                  onChange={(e) => setStatus(e.target.value as any)}
                   className="w-full appearance-none bg-black/40 border border-white/10 text-white px-5 py-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all cursor-pointer"
                 >
                   <option value="Planning" className="bg-[#0a0a0a]">Planning</option>
