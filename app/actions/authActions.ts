@@ -127,7 +127,7 @@ export async function verifyTwoFactorLogin(tempToken: string, code: string) {
     return { success: true, message: 'Login successful' };
   } catch (error: any) {
     console.error('2FA Login error:', error);
-    return { success: false, message: error.message || 'Invalid or expired 2FA session' };
+    return { success: false, message: `2FA Error: ${error.message}` };
   }
 }
 

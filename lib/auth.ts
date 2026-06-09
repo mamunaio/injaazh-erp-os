@@ -56,8 +56,9 @@ export const verify2FATempToken = async (token: string) => {
     );
     if (!verified.payload.is2FA) throw new Error('Invalid token type');
     return verified.payload.id as string;
-  } catch (err) {
-    throw new Error('Your 2FA session has expired or is invalid.');
+  } catch (err: any) {
+    console.error('verify2FATempToken error:', err);
+    throw new Error(`JWT Verify Error: ${err.message}`);
   }
 };
 

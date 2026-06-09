@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { LayoutDashboard, Users, FileText, Briefcase, Store, DollarSign, Settings, Globe, Activity, X, Wallet, Mail } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Briefcase, Store, DollarSign, Settings, Globe, Activity, X, Wallet, Mail, Map } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import { useSidebar } from './SidebarContext';
 import { useUser } from './UserContext';
@@ -15,6 +15,7 @@ const navItems = [
   { name: 'Email Outreach', href: '/outreach', icon: Mail },
   { name: 'Proposals', href: '/proposals', icon: FileText },
   { name: 'Projects', href: '/projects', icon: Briefcase },
+  { name: 'Roadmap', href: '/roadmap', icon: Map },
   { name: 'Marketplace', href: '/marketplace', icon: Store },
   { name: 'Market Clients', href: '/marketplace/clients', icon: Users },
   { name: 'Money', href: '/money', icon: DollarSign },
