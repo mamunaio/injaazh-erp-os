@@ -42,7 +42,19 @@ export async function getMarketplaceClientById(id: string) {
     if (!client) {
       return { success: false, error: 'Client not found' };
     }
-    return { success: true, data: JSON.parse(JSON.stringify(client)) };
+    
+    let parsed = JSON.parse(JSON.stringify(client));
+    const authUser = await getAuthUser();
+    
+    if (authUser && authUser.role === 'admin' && parsed.platform === 'Direct') {
+      parsed.name = 'Confidential Client';
+      parsed.company = parsed.company ? 'Confidential Company' : parsed.company;
+      parsed.email = parsed.email ? 'hidden@example.com' : parsed.email;
+      parsed.profileLink = '';
+      parsed.notes = 'Confidential';
+    }
+    
+    return { success: true, data: parsed };
   } catch (error: any) {
     console.error('Error fetching client by id:', error);
     return { success: false, error: error.message || 'Failed to fetch client' };

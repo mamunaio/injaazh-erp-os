@@ -167,7 +167,20 @@ export async function getMarketplaceProjectById(id: string) {
     await connectToDatabase();
     const project = await MarketplaceProject.findById(id).lean().exec();
     if (!project) return null;
-    return JSON.parse(JSON.stringify(project));
+    
+    let parsed = JSON.parse(JSON.stringify(project));
+    
+    const authUser = await getAuthUser();
+    if (authUser && authUser.role === 'admin' && parsed.platform === 'Direct') {
+      parsed.title = 'Confidential Direct Project';
+      if (parsed.clientDetails) {
+        parsed.clientDetails.clientName = 'Confidential Client';
+      }
+      parsed.notes = 'Confidential';
+      parsed.url = '';
+    }
+    
+    return parsed;
   } catch (error) {
     console.error('Failed to fetch marketplace project details:', error);
     throw new Error('Failed to fetch marketplace project details');
