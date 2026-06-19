@@ -118,7 +118,10 @@ export async function generateQuickAction(actionType: string, leadData: any) {
         model: 'gemini-2.5-flash',
         contents: prompt,
     });
-    return { success: true, data: response.text };
+    const text = response.text;
+    if (!text) throw new Error('Gemini returned empty response');
+    
+    return { success: true, data: text };
   } catch(error: any) {
     console.error('Quick action error:', error);
     return { success: false, error: error.message };

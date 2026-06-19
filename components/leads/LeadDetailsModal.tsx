@@ -62,7 +62,7 @@ export default function LeadDetailsModal({
       const { generateQuickAction } = await import('@/app/actions/aiActions');
       const result = await generateQuickAction(actionType, formData);
       if (result.success && result.data) {
-        setNewLog(prev => ({ ...prev, note: result.data }));
+        setNewLog(prev => ({ ...prev, note: result.data || '' }));
       } else {
         alert(result.error || 'Failed to generate action');
       }
