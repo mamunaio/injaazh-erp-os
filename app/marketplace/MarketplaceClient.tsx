@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Briefcase, ShoppingCart, Globe, Users, ArrowRight, FolderOpen } from 'lucide-react';
 import { IMarketplaceProject } from '@/models/MarketplaceProject';
+import { useUser } from '@/components/layout/UserContext';
 
 export default function MarketplaceClient({ allProjects = [] }: { allProjects?: IMarketplaceProject[] }) {
+  const { user } = useUser();
   
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -108,6 +110,10 @@ export default function MarketplaceClient({ allProjects = [] }: { allProjects?: 
     }
   ];
 
+  const visibleFolders = user?.role === 'owner' 
+    ? platformFolders 
+    : platformFolders.filter(f => f.id !== 'direct');
+
   return (
     <div className="min-h-screen p-4 md:p-8 neu-base-bg text-slate-800 dark:text-slate-200">
       
@@ -130,7 +136,7 @@ export default function MarketplaceClient({ allProjects = [] }: { allProjects?: 
         animate="show"
         className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 max-w-[1600px] mx-auto"
       >
-        {platformFolders.map((folder) => (
+        {visibleFolders.map((folder) => (
           <Link key={folder.id} href={folder.href} className="block outline-none outline-0 focus:ring-0">
             <motion.div
               variants={itemVariants}

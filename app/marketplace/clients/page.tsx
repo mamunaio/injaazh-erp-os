@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function MarketplaceClientsPage() {
   const authUser = await getAuthUser();
-  if (!authUser || !['owner', 'admin', 'marketplace_team'].includes(authUser.role)) {
+  if (!authUser || !['owner', 'marketplace_team'].includes(authUser.role)) {
     redirect('/dashboard');
   }
 
