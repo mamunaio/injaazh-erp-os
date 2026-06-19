@@ -19,8 +19,17 @@ export interface ILead extends Document {
   linkedin_url?: string;
   targetService?: 'High-end Web Development' | 'Next.js / Laravel App' | 'WordPress Development' | 'Custom ERP / SaaS' | 'Technical SEO' | 'Answer Engine Optimization (AEO)' | 'Generative Engine Optimization (GEO)' | 'UI/UX Design';
   reportFileUrl?: string;
+  lead_context?: string;
+  email_draft?: string;
+  email_subject_draft?: string;
   outreach_logs: IOutreachLog[];
   nextFollowUpDate?: Date;
+  timezone?: string;
+  outreach_scheduled_for?: Date;
+  follow_up_count: number;
+  last_contacted_date?: Date;
+  is_replied: boolean;
+  last_reply_subject?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -52,8 +61,17 @@ const LeadSchema = new Schema<ILead>({
     default: 'High-end Web Development'
   },
   reportFileUrl: { type: String, trim: true },
+  lead_context: { type: String, trim: true },
+  email_draft: { type: String },
+  email_subject_draft: { type: String },
   outreach_logs: [OutreachLogSchema],
   nextFollowUpDate: { type: Date },
+  timezone: { type: String, default: 'EST' },
+  outreach_scheduled_for: { type: Date },
+  follow_up_count: { type: Number, default: 0 },
+  last_contacted_date: { type: Date },
+  is_replied: { type: Boolean, default: false },
+  last_reply_subject: { type: String },
 }, { timestamps: true });
 
 // Create indexes for duplicate prevention

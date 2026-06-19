@@ -189,7 +189,7 @@ export default function MoneyAnalytics({ transactions, viewPeriod }: MoneyAnalyt
       )}
 
       {/* Income vs Expense Trend with Profit Line */}
-      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-2 border-purple-200/40 dark:border-purple-500/20 rounded-2xl p-6 shadow-lg">
+      <div className="neu-flat rounded-[2rem] p-6">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">
             Income vs Expense Trend
@@ -261,7 +261,7 @@ export default function MoneyAnalytics({ transactions, viewPeriod }: MoneyAnalyt
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Platform Comparison */}
-        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-2 border-purple-200/40 dark:border-purple-500/20 rounded-2xl p-6 shadow-lg">
+        <div className="neu-flat rounded-[2rem] p-6">
           <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-6">
             Platform Comparison
           </h3>
@@ -301,7 +301,7 @@ export default function MoneyAnalytics({ transactions, viewPeriod }: MoneyAnalyt
         </div>
 
         {/* Income Distribution */}
-        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-2 border-purple-200/40 dark:border-purple-500/20 rounded-2xl p-6 shadow-lg">
+        <div className="neu-flat rounded-[2rem] p-6">
           <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-6">
             Income Distribution
           </h3>
@@ -346,7 +346,7 @@ export default function MoneyAnalytics({ transactions, viewPeriod }: MoneyAnalyt
 
       {/* Expense Breakdown */}
       {expenseBreakdownData.length > 0 && (
-        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-2 border-purple-200/40 dark:border-purple-500/20 rounded-2xl p-6 shadow-lg">
+        <div className="neu-flat rounded-[2rem] p-6">
           <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-6">
             Expense Breakdown by Category
           </h3>

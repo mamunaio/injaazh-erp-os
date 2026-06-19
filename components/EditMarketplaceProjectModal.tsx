@@ -116,7 +116,7 @@ export default function EditMarketplaceProjectModal({
     setIsSubmitting(false);
   };
 
-  const inputClasses = "w-full bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white rounded-xl px-11 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all placeholder:text-slate-400 backdrop-blur-sm shadow-sm hover:border-slate-300 dark:hover:border-white/20";
+  const inputClasses = "w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-11 py-3.5 text-sm font-medium focus:outline-none transition-all placeholder:text-slate-400";
   const labelClasses = "block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2";
   const iconClasses = "absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none";
 
@@ -136,17 +136,14 @@ export default function EditMarketplaceProjectModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: "spring", damping: 30, stiffness: 300 }}
-          className="relative w-full max-w-4xl h-[90vh] sm:h-auto max-h-[90vh] bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-2xl rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-white/20 dark:border-white/10"
+          className="relative w-full max-w-4xl h-[90vh] sm:h-auto max-h-[90vh] neu-flat rounded-[2.5rem] flex flex-col overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Decorative Background Elements */}
-          <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20 blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
           
           {/* Header */}
           <div className="relative flex justify-between items-start p-8 border-b border-slate-200/50 dark:border-white/10">
             <div className="flex gap-5 items-center">
-              <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+              <div className="w-14 h-14 neu-pressed rounded-2xl flex items-center justify-center text-indigo-500">
                 <Sparkles size={28} />
               </div>
               <div>
@@ -160,7 +157,7 @@ export default function EditMarketplaceProjectModal({
             </div>
             <button 
               onClick={onClose} 
-              className="text-slate-400 hover:text-slate-700 dark:text-gray-500 dark:hover:text-white transition-all bg-white/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 p-2.5 rounded-xl shadow-sm border border-slate-200/50 dark:border-white/5"
+              className="text-slate-400 hover:text-red-500 transition-all neu-flat p-2.5 rounded-xl hover:-translate-y-1"
             >
               <X size={20} />
             </button>
@@ -180,8 +177,8 @@ export default function EditMarketplaceProjectModal({
                     onClick={() => setActiveSection(item.id)}
                     className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-bold transition-all ${
                       activeSection === item.id 
-                        ? 'bg-white dark:bg-white/10 text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/50 dark:border-white/5' 
-                        : 'text-slate-500 dark:text-gray-400 hover:bg-slate-200/50 dark:hover:bg-white/5 hover:text-slate-800 dark:hover:text-gray-200 border border-transparent'
+                        ? 'neu-pressed text-indigo-600 dark:text-indigo-400' 
+                        : 'text-slate-500 dark:text-gray-400 hover:neu-flat'
                     }`}
                   >
                     {item.icon} {item.label}
@@ -249,7 +246,7 @@ export default function EditMarketplaceProjectModal({
                                     setFormData({ ...formData, clientId: c._id, clientName: c.name });
                                     setShowClientDropdown(false);
                                   }}
-                                  className="w-full text-left px-4 py-3 hover:bg-slate-100 dark:hover:bg-white/5 flex items-center justify-between border-b border-slate-100 dark:border-white/5 last:border-0"
+                                  className="w-full text-left px-4 py-3 hover:neu-pressed flex items-center justify-between border-b border-slate-100 dark:border-white/5 last:border-0"
                                 >
                                   <div>
                                     <div className="font-bold text-slate-800 dark:text-white text-sm">{c.name}</div>
@@ -264,7 +261,7 @@ export default function EditMarketplaceProjectModal({
                                 <button 
                                   type="button"
                                   onClick={handleCreateClient}
-                                  className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-bold rounded-lg text-sm hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors"
+                                  className="flex items-center justify-center gap-2 w-full px-4 py-2 neu-button text-indigo-500 font-bold rounded-lg text-sm transition-all"
                                 >
                                   <Plus size={16} /> Create "{clientSearch}"
                                 </button>
@@ -286,7 +283,7 @@ export default function EditMarketplaceProjectModal({
                           onChange={e => setFormData({...formData, scope: e.target.value})}
                           rows={8}
                           placeholder="Detailed project scope and requirements..."
-                          className="w-full bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white rounded-2xl px-5 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all resize-none placeholder:text-slate-400 backdrop-blur-sm shadow-sm leading-relaxed"
+                          className="w-full neu-pressed text-slate-800 dark:text-white rounded-2xl px-5 py-4 text-sm focus:outline-none transition-all resize-none placeholder:text-slate-400 leading-relaxed"
                         />
                       </div>
                     </div>
@@ -302,7 +299,7 @@ export default function EditMarketplaceProjectModal({
                           onChange={e => setFormData({...formData, tasks: e.target.value})}
                           rows={5}
                           placeholder="1. Setup repository&#10;2. Design homepage&#10;3. Integrate API"
-                          className="w-full bg-slate-900/5 dark:bg-black/30 border border-slate-200 dark:border-white/5 text-slate-800 dark:text-white rounded-2xl px-5 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all resize-none placeholder:text-slate-400 font-mono shadow-inner leading-relaxed"
+                          className="w-full neu-pressed text-slate-800 dark:text-white rounded-2xl px-5 py-4 text-sm focus:outline-none transition-all resize-none placeholder:text-slate-400 font-mono leading-relaxed"
                         />
                         <p className="absolute bottom-3 right-4 text-xs font-bold text-slate-400 pointer-events-none">One task per line</p>
                       </div>
@@ -375,7 +372,7 @@ export default function EditMarketplaceProjectModal({
                     onClick={() => {
                       if (activeSection === 'timeline') setActiveSection('general');
                     }}
-                    className={`px-5 py-2.5 rounded-xl text-sm font-bold border border-slate-200 dark:border-white/10 ${activeSection === 'general' ? 'opacity-0 pointer-events-none' : 'text-slate-600 dark:text-slate-300'}`}
+                    className={`px-5 py-2.5 neu-button text-sm font-bold ${activeSection === 'general' ? 'opacity-0 pointer-events-none' : 'text-slate-600 dark:text-slate-300'}`}
                   >
                     Previous
                   </button>
@@ -384,7 +381,7 @@ export default function EditMarketplaceProjectModal({
                     onClick={() => {
                       if (activeSection === 'general') setActiveSection('timeline');
                     }}
-                    className={`px-5 py-2.5 rounded-xl text-sm font-bold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 ${activeSection === 'timeline' ? 'opacity-0 pointer-events-none' : ''}`}
+                    className={`px-5 py-2.5 neu-button text-sm font-bold text-indigo-500 ${activeSection === 'timeline' ? 'opacity-0 pointer-events-none' : ''}`}
                   >
                     Next
                   </button>
@@ -394,11 +391,11 @@ export default function EditMarketplaceProjectModal({
           </div>
 
           {/* Footer */}
-          <div className="p-6 md:px-10 md:py-6 border-t border-slate-200/50 dark:border-white/10 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md flex flex-col-reverse sm:flex-row justify-end gap-4 z-20">
+          <div className="p-6 md:px-10 md:py-6 flex flex-col-reverse sm:flex-row justify-end gap-4 z-20">
             <button 
               type="button" 
               onClick={onClose}
-              className="w-full sm:w-auto px-8 py-3.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 hover:bg-slate-200/50 dark:hover:text-white dark:hover:bg-slate-800 transition-all border border-transparent hover:border-slate-300 dark:hover:border-slate-700"
+              className="w-full sm:w-auto px-8 py-3.5 neu-button text-sm font-bold text-slate-600 dark:text-slate-300 transition-all"
             >
               Cancel
             </button>
@@ -406,9 +403,8 @@ export default function EditMarketplaceProjectModal({
               type="submit"
               form="edit-project-form"
               disabled={isSubmitting || !formData.title}
-              className="w-full sm:w-auto relative group overflow-hidden px-10 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-bold rounded-xl hover:shadow-xl hover:shadow-indigo-500/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto px-10 py-3.5 neu-button text-indigo-500 text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <div className="absolute inset-0 w-full h-full bg-white/20 group-hover:translate-x-full transition-transform duration-500 ease-out -skew-x-12 -translate-x-full" />
               <span className="relative flex items-center justify-center gap-2">
                 {isSubmitting ? (
                   <>

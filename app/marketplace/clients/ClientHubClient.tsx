@@ -6,12 +6,14 @@ import { Plus, Search, MoreVertical, Building2, Mail, Globe, Clock, User as User
 import { createMarketplaceClient, deleteMarketplaceClient, updateMarketplaceClient } from '@/actions/marketplaceClientActions';
 import { countryToTimezoneMap } from '@/lib/countryToTimezone';
 import toast from 'react-hot-toast';
+import { useUser } from '@/components/layout/UserContext';
 
 interface ClientHubClientProps {
   initialClients: any[];
 }
 
 export default function ClientHubClient({ initialClients }: ClientHubClientProps) {
+  const { user } = useUser();
   const [clients, setClients] = useState(initialClients);
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -31,10 +33,11 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
     totalSpent: 0,
   });
 
-  const filteredClients = clients.filter(client => 
-    client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (client.company && client.company.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredClients = clients.filter(client => {
+    if (user?.role === 'marketplace_team' && client.platform === 'Direct') return false;
+    return client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (client.company && client.company.toLowerCase().includes(searchQuery.toLowerCase()));
+  });
 
   const handleSaveClient = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,20 +128,10 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
       {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-200/50 dark:border-white/10">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-jakarta font-bold mb-3 border border-indigo-100 dark:border-indigo-500/20">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl neu-pressed text-indigo-500 text-xs font-jakarta font-bold mb-3">
             <Globe size={14} /> Global Network
           </div>
-          <h1 
-            className="text-6xl md:text-7xl font-jakarta font-black tracking-tight leading-none mb-3"
-            style={{
-              background: 'linear-gradient(to right, #6366f1, #a855f7, #ec4899)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              color: 'transparent',
-              filter: 'drop-shadow(0 1px 2px rgb(0 0 0 / 0.1))',
-            }}
-          >
+          <h1 className="mb-3">
             Client Hub
           </h1>
           <p className="text-[15px] font-inter leading-relaxed tracking-wide text-slate-500 dark:text-slate-400 max-w-xl">
@@ -154,13 +147,13 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
               placeholder="Search clients..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl pl-12 pr-4 py-3 text-sm font-inter text-[15px] focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm text-slate-800 dark:text-white transition-all placeholder:text-slate-400"
+              className="w-full neu-pressed rounded-2xl pl-12 pr-4 py-3 text-sm font-inter text-[15px] focus:outline-none text-slate-800 dark:text-white transition-all placeholder:text-slate-400"
             />
           </div>
           
           <button 
             onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-jakarta font-bold rounded-2xl shadow-[0_4px_14px_0_rgba(79,70,229,0.39)] hover:shadow-[0_6px_20px_rgba(79,70,229,0.23)] hover:-translate-y-0.5 transition-all duration-300 w-full sm:w-auto"
+            className="flex items-center justify-center gap-2 px-6 py-3 neu-button text-indigo-500 font-jakarta font-bold rounded-2xl transition-all duration-300 w-full sm:w-auto"
           >
             <Plus size={18} /> Add Client
           </button>
@@ -169,9 +162,9 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
 
       {/* Grid of Clients */}
       {filteredClients.length === 0 ? (
-        <div className="text-center py-20 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-[2rem]">
+        <div className="text-center py-20 neu-flat rounded-[2rem]">
           <UserIcon size={48} className="mx-auto text-slate-300 dark:text-slate-600 mb-4" />
-          <h3 className="text-xl font-jakarta font-black text-slate-700 dark:text-slate-300">No clients found</h3>
+          <h3 className="">No clients found</h3>
           <p className="text-[15px] font-inter text-slate-500 dark:text-slate-400 mt-1">Add a new client to get started.</p>
         </div>
       ) : (
@@ -182,13 +175,8 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               onClick={() => openEditModal(client)}
-              className="group bg-white/80 dark:bg-slate-900/40 backdrop-blur-3xl border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-2 transition-all duration-300 relative flex flex-col cursor-pointer overflow-hidden"
+              className="group neu-flat rounded-3xl hover:-translate-y-2 transition-all duration-300 relative flex flex-col cursor-pointer overflow-hidden"
             >
-              {/* Dynamic Glow background */}
-              <div className="absolute -right-20 -top-20 w-40 h-40 bg-indigo-500/10 dark:bg-indigo-500/20 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
-              
-              {/* Top color accent */}
-              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               
               <div className="p-6 flex-1 relative z-10">
                 <div className="flex justify-between items-start mb-6">
@@ -197,7 +185,7 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
                       {client.profilePic ? (
                         <img src={client.profilePic} alt={client.name} className="w-14 h-14 rounded-2xl object-cover shadow-md border border-slate-200 dark:border-white/10" />
                       ) : (
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-black text-2xl shadow-sm border border-indigo-100 dark:border-indigo-500/20">
+                        <div className="w-14 h-14 rounded-2xl neu-pressed flex items-center justify-center text-indigo-500 font-black text-2xl">
                           {client.name.charAt(0).toUpperCase()}
                         </div>
                       )}
@@ -212,7 +200,7 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
                       </div>
                     </div>
                     <div>
-                      <h3 className="font-jakarta font-black text-xl text-slate-800 dark:text-white leading-tight">
+                      <h3 className="">
                         {client.profileLink ? (
                           <a href={client.profileLink} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                             {client.name}
@@ -240,7 +228,7 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
 
                 <div className="space-y-4">
                   {(client.country || client.timezone) && (
-                    <div className="flex items-center gap-4 p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
+                    <div className="flex items-center gap-4 p-3 rounded-xl neu-pressed">
                       {client.country && (
                         <div className="flex items-center gap-2 text-sm font-jakarta font-bold text-slate-700 dark:text-slate-300 flex-1">
                           <Globe size={16} className="text-indigo-500" /> {client.country}
@@ -265,9 +253,9 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
                 </div>
               </div>
 
-              <div className="px-6 py-5 bg-gradient-to-r from-slate-50 to-white dark:from-slate-950 dark:to-slate-900 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center rounded-b-3xl">
+              <div className="mx-4 mb-4 px-6 py-5 neu-pressed flex justify-between items-center rounded-2xl">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-500/20 flex items-center justify-center border border-green-200 dark:border-green-500/30">
+                  <div className="w-8 h-8 rounded-full neu-pressed flex items-center justify-center">
                     <DollarSign size={16} className="text-green-600 dark:text-green-400" />
                   </div>
                   <span className="text-xs font-jakarta font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Total Spent</span>
@@ -297,18 +285,18 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-white/80 dark:bg-slate-900/80 backdrop-blur-3xl border border-white/50 dark:border-white/10 rounded-[2rem] shadow-2xl flex flex-col overflow-hidden"
+              className="relative w-full max-w-md neu-flat rounded-[2.5rem] flex flex-col overflow-hidden"
             >
-              <div className="p-6 md:p-8 border-b border-slate-200/50 dark:border-white/10 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 dark:from-indigo-500/10 dark:to-purple-500/10">
-                <h2 className="text-3xl font-jakarta font-black text-slate-800 dark:text-white flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+              <div className="p-6 md:p-8 border-b border-slate-200/50 dark:border-white/10">
+                <h2 className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl neu-pressed flex items-center justify-center text-indigo-500">
                     {editingClient ? <Edit2 size={20} /> : <UserIcon size={20} />}
                   </div>
                   {editingClient ? 'Edit Client' : 'Add New Client'}
                 </h2>
               </div>
               
-              <form onSubmit={handleSaveClient} className="p-6 md:p-8 space-y-6 overflow-y-auto max-h-[70vh] bg-slate-50/50 dark:bg-black/20">
+              <form onSubmit={handleSaveClient} className="p-6 md:p-8 space-y-6 overflow-y-auto max-h-[70vh]">
                 
                 {/* Client Name */}
                 <div className="group relative">
@@ -321,7 +309,7 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
                       value={formData.name}
                       onChange={e => setFormData({...formData, name: e.target.value})}
                       placeholder="e.g. John Doe"
-                      className="w-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white rounded-xl pl-11 pr-4 py-3.5 text-sm font-inter text-[15px] focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all placeholder:text-slate-400 shadow-sm hover:border-slate-300 dark:hover:border-white/20" 
+                      className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl pl-11 pr-4 py-3.5 text-sm font-inter text-[15px] focus:outline-none transition-all placeholder:text-slate-400" 
                     />
                   </div>
                 </div>
@@ -334,9 +322,9 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
                     <select 
                       value={formData.platform}
                       onChange={e => setFormData({...formData, platform: e.target.value})}
-                      className="w-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white rounded-xl pl-11 pr-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm hover:border-slate-300 dark:hover:border-white/20 appearance-none"
+                      className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl pl-11 pr-4 py-3.5 text-sm font-medium focus:outline-none transition-all appearance-none"
                     >
-                      <option value="Direct">Direct</option>
+                      {user?.role !== 'marketplace_team' && <option value="Direct">Direct</option>}
                       <option value="Upwork">Upwork</option>
                       <option value="Freelancer">Freelancer</option>
                       <option value="Fiverr">Fiverr</option>
@@ -355,7 +343,7 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
                       value={formData.company}
                       onChange={e => setFormData({...formData, company: e.target.value})}
                       placeholder="e.g. Acme Corp"
-                      className="w-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white rounded-xl pl-11 pr-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all placeholder:text-slate-400 shadow-sm hover:border-slate-300 dark:hover:border-white/20" 
+                      className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl pl-11 pr-4 py-3.5 text-sm font-medium focus:outline-none transition-all placeholder:text-slate-400" 
                     />
                   </div>
                 </div>
@@ -370,7 +358,7 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
                         value={formData.country}
                         onChange={handleCountryChange}
                         placeholder="e.g. USA"
-                        className="w-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white rounded-xl pl-11 pr-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all placeholder:text-slate-400 shadow-sm hover:border-slate-300 dark:hover:border-white/20" 
+                        className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl pl-11 pr-4 py-3.5 text-sm font-medium focus:outline-none transition-all placeholder:text-slate-400" 
                       />
                     </div>
                   </div>
@@ -383,7 +371,7 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
                         value={formData.timezone}
                         onChange={e => setFormData({...formData, timezone: e.target.value})}
                         placeholder="e.g. EST"
-                        className="w-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white rounded-xl pl-11 pr-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all placeholder:text-slate-400 shadow-sm hover:border-slate-300 dark:hover:border-white/20" 
+                        className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl pl-11 pr-4 py-3.5 text-sm font-medium focus:outline-none transition-all placeholder:text-slate-400" 
                       />
                     </div>
                   </div>
@@ -399,7 +387,7 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
                         value={formData.profileLink}
                         onChange={e => setFormData({...formData, profileLink: e.target.value})}
                         placeholder="https://..."
-                        className="w-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white rounded-xl pl-11 pr-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all placeholder:text-slate-400 shadow-sm hover:border-slate-300 dark:hover:border-white/20" 
+                        className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl pl-11 pr-4 py-3.5 text-sm font-medium focus:outline-none transition-all placeholder:text-slate-400" 
                       />
                     </div>
                   </div>
@@ -412,7 +400,7 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
                         value={formData.profilePic}
                         onChange={e => setFormData({...formData, profilePic: e.target.value})}
                         placeholder="https://..."
-                        className="w-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white rounded-xl pl-11 pr-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all placeholder:text-slate-400 shadow-sm hover:border-slate-300 dark:hover:border-white/20" 
+                        className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl pl-11 pr-4 py-3.5 text-sm font-medium focus:outline-none transition-all placeholder:text-slate-400" 
                       />
                     </div>
                   </div>
@@ -422,14 +410,14 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
                   <button 
                     type="button" 
                     onClick={closeModal}
-                    className="px-6 py-3 rounded-xl text-sm font-jakarta font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-white/10 transition-colors"
+                    className="px-6 py-3 neu-button text-sm font-jakarta font-bold text-slate-600 dark:text-slate-300 transition-all"
                   >
                     Cancel
                   </button>
                   <button 
                     type="submit" 
                     disabled={isSubmitting || !formData.name}
-                    className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:shadow-lg hover:shadow-indigo-500/30 text-white font-jakarta font-bold rounded-xl transition-all disabled:opacity-50"
+                    className="px-8 py-3 neu-button text-indigo-500 font-jakarta font-bold rounded-xl transition-all disabled:opacity-50"
                   >
                     {isSubmitting ? 'Saving...' : (editingClient ? 'Update Client' : 'Save Client')}
                   </button>

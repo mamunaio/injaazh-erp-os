@@ -66,7 +66,7 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ token:
       >
         <div className="bg-white/5 backdrop-blur-2xl border border-white/10 p-8 rounded-3xl shadow-2xl">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-fuchsia-400 tracking-tight drop-shadow-sm mb-2">
+            <h1 className="mb-2">
               Set New Password
             </h1>
             <p className="text-slate-400 font-medium">

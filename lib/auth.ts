@@ -1,10 +1,13 @@
 import { jwtVerify, SignJWT } from 'jose';
 import { cookies } from 'next/headers';
+import connectToDatabase from '@/lib/mongodb';
+import Session from '@/models/Session';
 
-interface UserJwtPayload {
+export interface UserJwtPayload {
   id: string;
   email: string;
   role: string;
+  sessionId?: string;
   [key: string]: any;
 }
 
@@ -87,6 +90,20 @@ export const getAuthUser = async (): Promise<UserJwtPayload | null> => {
   
   try {
     const verified = await verifyAuth(token);
+    
+    // Check session validity in database if sessionId exists
+    if (verified.sessionId) {
+      await connectToDatabase();
+      const session = await Session.findOne({ sessionId: verified.sessionId });
+      if (!session || !session.isValid) {
+        return null; // Session revoked or invalid
+      }
+      
+      // Optionally update lastActive
+      // session.lastActive = new Date();
+      // await session.save();
+    }
+    
     return verified;
   } catch (err) {
     return null;

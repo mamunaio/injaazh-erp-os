@@ -56,27 +56,27 @@ export default function PlatformProjectAnalytics({ analytics }: PlatformProjectA
     { 
       name: 'Freelancer', 
       count: analytics.Freelancer, 
-      color: 'from-blue-500 to-cyan-500' 
+      color: 'text-blue-500' 
     },
     { 
       name: 'Direct', 
       count: analytics.Direct, 
-      color: 'from-purple-500 to-pink-500' 
+      color: 'text-purple-500' 
     },
     { 
       name: 'Upwork', 
       count: analytics.Upwork, 
-      color: 'from-green-500 to-emerald-500' 
+      color: 'text-green-500' 
     },
     { 
       name: 'Fiverr', 
       count: analytics.Fiverr, 
-      color: 'from-teal-500 to-cyan-500' 
+      color: 'text-teal-500' 
     },
   ];
 
   return (
-    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-2 border-purple-200/40 dark:border-purple-500/20 rounded-2xl p-6 shadow-lg">
+    <div className="neu-flat rounded-[2rem] p-6 mb-8">
       <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-6">
         Project Count by Platform
       </h2>
@@ -84,7 +84,7 @@ export default function PlatformProjectAnalytics({ analytics }: PlatformProjectA
         {platforms.map((platform) => (
           <div key={platform.name} className="text-center">
             <div 
-              className={`w-16 h-16 mx-auto rounded-full bg-gradient-to-r ${platform.color} flex items-center justify-center text-white text-2xl font-bold mb-2 shadow-lg`}
+              className={`w-16 h-16 mx-auto rounded-full neu-pressed flex items-center justify-center ${platform.color} text-2xl font-bold mb-2`}
             >
               {platform.count}
             </div>

@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Calendar, MessageCircle, Mail, Globe, Phone, FileText } from 'lucide-react';
+import { X, Calendar, MessageCircle, Mail, Globe, Phone, FileText, Sparkles, Loader2, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 export default function LeadDetailsModal({ 
   isOpen, 
@@ -18,6 +20,58 @@ export default function LeadDetailsModal({
   const [formData, setFormData] = useState<any>({});
   const [newLog, setNewLog] = useState({ type: 'Note', note: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEnriching, setIsEnriching] = useState(false);
+  const [activeQuickAction, setActiveQuickAction] = useState<string | null>(null);
+
+  // Calculate Lead Quality Score
+  const getLeadScore = () => {
+    let score = 20; // Base score
+    if (formData.contact_person) score += 15;
+    if (formData.email) score += 20;
+    if (formData.phone) score += 15;
+    if (formData.website_url) score += 10;
+    if (formData.linkedin_url) score += 10;
+    if (formData.outreach_status === 'Replied') score += 10;
+    return score;
+  };
+  const leadScore = getLeadScore();
+
+  const handleAutoEnrich = async () => {
+    setIsEnriching(true);
+    try {
+      const { enrichLeadData } = await import('@/app/actions/aiActions');
+      const result = await enrichLeadData(formData.company_name || lead.company_name, formData.website_url || lead.website_url);
+      if (result.success && result.data) {
+        setFormData((prev: any) => ({
+          ...prev,
+          ...result.data
+        }));
+      } else {
+        alert(result.error || 'Failed to enrich data');
+      }
+    } catch (err) {
+      console.error("Enrichment failed", err);
+    } finally {
+      setIsEnriching(false);
+    }
+  };
+
+  const handleQuickAction = async (actionType: string) => {
+    setActiveQuickAction(actionType);
+    try {
+      const { generateQuickAction } = await import('@/app/actions/aiActions');
+      const result = await generateQuickAction(actionType, formData);
+      if (result.success && result.data) {
+        setNewLog(prev => ({ ...prev, note: result.data }));
+      } else {
+        alert(result.error || 'Failed to generate action');
+      }
+    } catch(err) {
+      console.error("Action failed", err);
+    } finally {
+      setActiveQuickAction(null);
+    }
+  };
 
   useEffect(() => {
     if (lead) {
@@ -96,23 +150,47 @@ export default function LeadDetailsModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-5xl h-[85vh] bg-white/80 dark:bg-purple-950/20 backdrop-blur-2xl border border-slate-200 dark:border-purple-500/10 shadow-xl dark:shadow-[0_0_50px_rgba(0,0,0,0.7)] rounded-2xl flex flex-col overflow-hidden"
+          className="relative w-full max-w-5xl h-[85vh] neu-flat rounded-[2rem] flex flex-col overflow-hidden"
         >
           {/* Header */}
-          <div className="flex justify-between items-center p-6 border-b border-slate-200 dark:border-purple-500/10 bg-white/50 dark:bg-black/20">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-800 dark:text-white">{lead.company_name}</h2>
-              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Lead Details & Activity Tracking</p>
+          <div className="flex justify-between items-center p-6 border-b border-slate-200/50 dark:border-white/5 bg-transparent">
+            <div className="flex items-center gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
+                  {lead.company_name}
+                  {/* Lead Score Badge */}
+                  <span className={`px-2.5 py-1 text-[10px] uppercase font-black rounded-lg flex items-center gap-1.5 ${
+                    leadScore >= 80 ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20 shadow-[0_0_10px_rgba(249,115,22,0.2)]' : 
+                    leadScore >= 50 ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20' : 
+                    'bg-slate-500/10 text-slate-500 border border-slate-500/20'
+                  }`}>
+                    {leadScore >= 80 ? <span className="animate-pulse">🔥</span> : <Zap size={10} />} 
+                    Score ({leadScore})
+                  </span>
+                </h2>
+                <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Lead Details & Activity Tracking</p>
+              </div>
             </div>
-            <button onClick={onClose} className="text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-white transition-colors bg-slate-100 dark:bg-white/5 p-2 rounded-full hover:bg-slate-200 dark:hover:bg-white/10">
+            <button onClick={onClose} className="text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-white transition-colors neu-button p-2 rounded-full hover:bg-slate-200 dark:hover:bg-white/10">
               <X size={18} />
             </button>
           </div>
           
           <div className="flex flex-1 overflow-hidden">
             {/* Left Column: Lead Info */}
-            <div className="w-1/2 p-6 overflow-y-auto border-r border-slate-200 dark:border-purple-500/10 bg-white/50 dark:bg-transparent">
-              <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-300 uppercase tracking-wider mb-6">Lead Information</h3>
+            <div className="w-1/2 p-6 overflow-y-auto border-r border-slate-200/50 dark:border-white/5 bg-transparent custom-scrollbar">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-300 uppercase tracking-wider">Lead Information</h3>
+                <button
+                  type="button"
+                  onClick={handleAutoEnrich}
+                  disabled={isEnriching}
+                  className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 hover:from-purple-500/20 hover:to-indigo-500/20 text-purple-600 dark:text-purple-400 text-[10px] font-bold rounded-lg transition-colors border border-purple-500/20 disabled:opacity-50 shadow-inner"
+                >
+                  {isEnriching ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                  {isEnriching ? 'Enriching...' : '✨ Auto-Enrich'}
+                </button>
+              </div>
               
               <form id="lead-details-form" onSubmit={handleSave} className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
@@ -122,7 +200,7 @@ export default function LeadDetailsModal({
                       type="text" 
                       value={formData.company_name || ''}
                       onChange={e => setFormData({...formData, company_name: e.target.value})}
-                      className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                      className="w-full neu-pressed rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                     />
                   </div>
                   <div>
@@ -131,7 +209,7 @@ export default function LeadDetailsModal({
                       type="text" 
                       value={formData.contact_person || ''}
                       onChange={e => setFormData({...formData, contact_person: e.target.value})}
-                      className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                      className="w-full neu-pressed rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                     />
                   </div>
                 </div>
@@ -142,7 +220,7 @@ export default function LeadDetailsModal({
                     <select 
                       value={formData.outreach_status || 'New'}
                       onChange={e => setFormData({...formData, outreach_status: e.target.value})}
-                      className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
+                      className="w-full neu-pressed rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
                     >
                       {['New', 'Contacted', 'Replied', 'Meeting Booked', 'Closed', 'Not Interested'].map(opt => (
                         <option key={opt} value={opt} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white">{opt}</option>
@@ -154,7 +232,7 @@ export default function LeadDetailsModal({
                     <select 
                       value={formData.targetService || 'High-end Web Development'}
                       onChange={e => setFormData({...formData, targetService: e.target.value})}
-                      className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
+                      className="w-full neu-pressed rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
                     >
                       {['High-end Web Development', 'Next.js / Laravel App', 'WordPress Development', 'Custom ERP / SaaS', 'Technical SEO', 'Answer Engine Optimization (AEO)', 'Generative Engine Optimization (GEO)', 'UI/UX Design'].map(opt => (
                         <option key={opt} value={opt} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white">{opt}</option>
@@ -170,7 +248,7 @@ export default function LeadDetailsModal({
                       type="email" 
                       value={formData.email || ''}
                       onChange={e => setFormData({...formData, email: e.target.value})}
-                      className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                      className="w-full neu-pressed rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                     />
                   </div>
                   <div>
@@ -179,7 +257,7 @@ export default function LeadDetailsModal({
                       type="tel" 
                       value={formData.phone || ''}
                       onChange={e => setFormData({...formData, phone: e.target.value})}
-                      className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                      className="w-full neu-pressed rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                     />
                   </div>
                 </div>
@@ -193,7 +271,7 @@ export default function LeadDetailsModal({
                     value={formData.website_url || ''}
                     onChange={e => setFormData({...formData, website_url: e.target.value})}
                     placeholder="https://example.com"
-                    className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                    className="w-full neu-pressed rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                   />
                 </div>
 
@@ -212,7 +290,7 @@ export default function LeadDetailsModal({
                         value={formData.facebook_url || ''}
                         onChange={e => setFormData({...formData, facebook_url: e.target.value})}
                         placeholder="https://facebook.com/..."
-                        className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-2.5 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                        className="w-full neu-pressed rounded-xl px-4 py-2.5 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
                       />
                     </div>
 
@@ -226,7 +304,7 @@ export default function LeadDetailsModal({
                         value={formData.instagram_url || ''}
                         onChange={e => setFormData({...formData, instagram_url: e.target.value})}
                         placeholder="https://instagram.com/..."
-                        className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-2.5 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all"
+                        className="w-full neu-pressed rounded-xl px-4 py-2.5 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all"
                       />
                     </div>
 
@@ -240,7 +318,7 @@ export default function LeadDetailsModal({
                         value={formData.linkedin_url || ''}
                         onChange={e => setFormData({...formData, linkedin_url: e.target.value})}
                         placeholder="https://linkedin.com/company/..."
-                        className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-2.5 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-700/50 transition-all"
+                        className="w-full neu-pressed rounded-xl px-4 py-2.5 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-700/50 transition-all"
                       />
                     </div>
 
@@ -254,7 +332,7 @@ export default function LeadDetailsModal({
                         value={formData.reportFileUrl || ''}
                         onChange={e => setFormData({...formData, reportFileUrl: e.target.value})}
                         placeholder="https://drive.google.com/..."
-                        className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-2.5 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all"
+                        className="w-full neu-pressed rounded-xl px-4 py-2.5 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all"
                       />
                     </div>
                   </div>
@@ -264,11 +342,13 @@ export default function LeadDetailsModal({
                   <label className="block text-xs font-semibold text-slate-400 tracking-wider mb-1.5 uppercase flex items-center gap-2">
                     <Calendar size={14} /> Next Follow-up Date
                   </label>
-                  <input 
-                    type="date" 
-                    value={formData.nextFollowUpDate || ''}
-                    onChange={e => setFormData({...formData, nextFollowUpDate: e.target.value})}
-                    className="w-full bg-slate-50 border-slate-300 text-slate-800 focus:bg-white dark:focus:bg-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                  <DatePicker 
+                    selected={formData.nextFollowUpDate ? new Date(formData.nextFollowUpDate) : null}
+                    onChange={(date: Date | null) => setFormData({...formData, nextFollowUpDate: date ? date.toISOString().split('T')[0] : ''})}
+                    className="w-full neu-pressed rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                    placeholderText="Select Schedule Date"
+                    dateFormat="MMM d, yyyy"
+                    showPopperArrow={false}
                   />
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 ml-1">
                     Set when you plan to follow up with this lead
@@ -279,21 +359,41 @@ export default function LeadDetailsModal({
             </div>
 
             {/* Right Column: Activity Timeline */}
-            <div className="w-1/2 flex flex-col bg-white/20 dark:bg-black/20">
-              <div className="p-6 border-b border-slate-200 dark:border-purple-500/10">
-                <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-300 uppercase tracking-wider mb-4">Log Activity</h3>
+            <div className="w-1/2 flex flex-col bg-transparent">
+              <div className="p-6 border-b border-slate-200/50 dark:border-white/5">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-300 uppercase tracking-wider">Log Activity</h3>
+                  <div className="flex gap-2">
+                    <button 
+                      type="button"
+                      onClick={() => handleQuickAction('linkedin')}
+                      disabled={activeQuickAction !== null}
+                      className="px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider neu-button text-blue-400 rounded-lg flex items-center gap-1 hover:text-blue-300 transition-colors disabled:opacity-50"
+                    >
+                      {activeQuickAction === 'linkedin' ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />} LinkedIn
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => handleQuickAction('summarize')}
+                      disabled={activeQuickAction !== null}
+                      className="px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider neu-button text-purple-400 rounded-lg flex items-center gap-1 hover:text-purple-300 transition-colors disabled:opacity-50"
+                    >
+                      {activeQuickAction === 'summarize' ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />} Summarize
+                    </button>
+                  </div>
+                </div>
                 <div className="flex flex-col gap-3">
                   <textarea 
                     value={newLog.note}
                     onChange={e => setNewLog({...newLog, note: e.target.value})}
                     placeholder="Write a note about your outreach..."
-                    className="w-full bg-white border-slate-300 text-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all min-h-[80px] resize-none"
+                    className="w-full neu-pressed rounded-xl px-4 py-3 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all min-h-[80px] resize-none"
                   />
                   <div className="flex gap-3">
                     <select 
                       value={newLog.type}
                       onChange={e => setNewLog({...newLog, type: e.target.value})}
-                      className="flex-1 bg-white border-slate-300 text-slate-800 dark:bg-slate-800/60 dark:border-slate-700/50 border rounded-xl px-4 py-2 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
+                      className="flex-1 neu-pressed rounded-xl px-4 py-2 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
                     >
                       {['Note', 'Email', 'WhatsApp', 'Facebook', 'Phone'].map(opt => (
                         <option key={opt} value={opt} className="bg-white text-slate-800 dark:bg-slate-900 dark:text-white">{opt}</option>
@@ -303,7 +403,7 @@ export default function LeadDetailsModal({
                       type="button"
                       onClick={handleAddLog}
                       disabled={isSubmitting || !newLog.note.trim()}
-                      className="px-6 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/40 transition-all duration-300 disabled:opacity-50"
+                      className="px-6 neu-button text-indigo-500 font-bold rounded-xl hover:-translate-y-0.5 hover:shadow-lg  transition-all duration-300 disabled:opacity-50"
                     >
                       Add Log
                     </button>
@@ -311,8 +411,15 @@ export default function LeadDetailsModal({
                 </div>
               </div>
 
-              <div className="flex-1 p-6 overflow-y-auto">
-                <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-300 uppercase tracking-wider mb-6">Timeline</h3>
+              <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-300 uppercase tracking-wider">Timeline</h3>
+                  {formData.nextFollowUpDate && (
+                    <span className="text-[10px] px-2.5 py-1 bg-green-500/10 text-green-500 border border-green-500/20 rounded-md font-bold uppercase flex items-center gap-1.5 shadow-[0_0_10px_rgba(34,197,94,0.1)]">
+                      🎯 Next: {new Date(formData.nextFollowUpDate).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
                 
                 <div className="relative border-l border-slate-200 dark:border-white/10 ml-3 space-y-6 pb-6">
                   {(!formData.outreach_logs || formData.outreach_logs.length === 0) ? (
@@ -320,17 +427,17 @@ export default function LeadDetailsModal({
                   ) : (
                     formData.outreach_logs.map((log: any, idx: number) => (
                       <div key={idx} className="relative ml-6 group">
-                        <span className="absolute -left-8 top-1 flex items-center justify-center w-5 h-5 rounded-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 group-hover:border-indigo-400 transition-colors">
+                        <span className="absolute -left-8 top-1 flex items-center justify-center w-5 h-5 rounded-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 group-hover:border-indigo-400 transition-colors shadow-sm">
                           {getLogIcon(log.method)}
                         </span>
-                        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl p-4 backdrop-blur-sm shadow-sm dark:shadow-none group-hover:bg-slate-50 dark:group-hover:bg-white/10 group-hover:border-slate-300 dark:group-hover:border-white/10 transition-all">
+                        <div className="neu-flat rounded-xl p-4 group-hover:shadow-lg transition-all border border-transparent group-hover:border-indigo-500/20">
                           <div className="flex justify-between items-start mb-2">
-                            <span className="text-xs font-bold text-indigo-600 dark:text-indigo-300">{log.method}</span>
-                            <span className="text-[10px] text-slate-400 dark:text-slate-500">
+                            <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">{log.method}</span>
+                            <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500">
                               {new Date(log.date).toLocaleString()}
                             </span>
                           </div>
-                          <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{log.notes}</p>
+                          <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">{log.notes}</p>
                         </div>
                       </div>
                     ))
@@ -341,7 +448,7 @@ export default function LeadDetailsModal({
           </div>
 
           {/* Footer */}
-          <div className="p-6 border-t border-slate-200 dark:border-purple-500/10 bg-white/50 dark:bg-black/40 flex justify-end gap-3">
+          <div className="p-6 border-t border-slate-200/50 dark:border-white/5 bg-transparent flex justify-end gap-3">
             <button 
               type="button" 
               onClick={onClose}
@@ -353,7 +460,7 @@ export default function LeadDetailsModal({
               form="lead-details-form"
               type="submit" 
               disabled={isSubmitting}
-              className="px-8 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/40 transition-all duration-300 disabled:opacity-50"
+              className="px-8 py-2.5 neu-button text-indigo-500 font-bold rounded-xl hover:-translate-y-0.5 hover:shadow-lg  transition-all duration-300 disabled:opacity-50"
             >
               {isSubmitting ? 'Saving...' : 'Save Changes'}
             </button>
@@ -363,3 +470,4 @@ export default function LeadDetailsModal({
     </AnimatePresence>
   );
 }
+

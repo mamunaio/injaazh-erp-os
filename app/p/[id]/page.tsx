@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { notFound, useParams } from 'next/navigation';
-import { CheckCircle, Loader2, Sparkles, DollarSign } from 'lucide-react';
+import { CheckCircle, Loader2, Sparkles, DollarSign, FileText } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { getProposalById, acceptProposal } from '@/app/actions/proposalActions';
 
@@ -151,7 +151,7 @@ export default function PublicProposalView() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-indigo-50 dark:from-slate-950 dark:via-purple-950/20 dark:to-slate-950 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-slate-800 dark:text-white mb-2">
+          <h1 className="mb-2">
             {error || 'Proposal Not Found'}
           </h1>
           <p className="text-slate-600 dark:text-gray-400">
@@ -165,9 +165,9 @@ export default function PublicProposalView() {
   const isAccepted = proposal.status === 'Accepted';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-indigo-50 dark:from-slate-950 dark:via-purple-950/20 dark:to-slate-950">
+    <div className="min-h-screen neu-base-bg text-slate-800 dark:text-slate-200">
       {/* Hero Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-20">
+      <div className="relative neu-flat mx-4 md:mx-8 mt-8 rounded-[2rem] overflow-hidden py-20 border border-slate-200 dark:border-white/10">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIxLTEuNzktNC00LTRzLTQgMS43OS00IDQgMS43OSA0IDQgNCA0LTEuNzkgNC00em0wLTEwYzAtMi4yMS0xLjc5LTQtNC00cy00IDEuNzktNCA0IDEuNzkgNCA0IDQgNC0xLjc5IDQtNHptMC0xMGMwLTIuMjEtMS43OS00LTQtNHMtNCAxLjc5LTQgNCAxLjc5IDQgNCA0IDQtMS43OSA0LTR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
         <div className="max-w-4xl mx-auto px-8 relative z-10">
           <motion.div
@@ -175,12 +175,14 @@ export default function PublicProposalView() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">{proposal.title}</h1>
-            <p className="text-xl text-indigo-100 mb-6">Prepared for {proposal.clientName}</p>
-            <div className="flex items-center gap-6 text-indigo-100">
+            <h1 className="mb-4">{proposal.title}</h1>
+            <p className="text-xl text-slate-500 dark:text-gray-400 mb-6">Prepared for {proposal.clientName}</p>
+            <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
-                <DollarSign size={20} />
-                <span className="text-2xl font-bold text-white">{formatCurrency(proposal.value)}</span>
+                <div className="w-10 h-10 rounded-full neu-pressed flex items-center justify-center text-indigo-500">
+                  <DollarSign size={20} />
+                </div>
+                <span className="text-3xl font-black text-slate-800 dark:text-white">{formatCurrency(proposal.value)}</span>
               </div>
               {isAccepted && (
                 <div className="flex items-center gap-2 px-4 py-2 bg-green-500/20 border border-green-300/30 rounded-full">
@@ -203,10 +205,10 @@ export default function PublicProposalView() {
         >
           {/* Introduction */}
           {proposal.introduction && (
-            <div className="bg-white/80 dark:bg-purple-950/30 backdrop-blur-xl border border-slate-200 dark:border-purple-500/20 rounded-3xl p-8 shadow-lg">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Introduction</h2>
+            <div className="neu-flat p-8 rounded-[2rem]">
+              <h2 className="mb-6 flex items-center gap-3"><Sparkles className="text-indigo-500" /> Introduction</h2>
               <div
-                className="prose dark:prose-invert prose-lg max-w-none text-slate-700 dark:text-gray-300"
+                className="prose dark:prose-invert prose-lg max-w-none text-slate-700 dark:text-gray-300 leading-relaxed font-inter"
                 dangerouslySetInnerHTML={{ __html: proposal.introduction }}
               />
             </div>
@@ -214,15 +216,15 @@ export default function PublicProposalView() {
 
           {/* Phases */}
           {proposal.phases && proposal.phases.length > 0 && (
-            <div className="bg-white/80 dark:bg-purple-950/30 backdrop-blur-xl border border-slate-200 dark:border-purple-500/20 rounded-3xl p-8 shadow-lg">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Scope of Work</h2>
+            <div className="neu-flat p-8 rounded-[2rem]">
+              <h2 className="mb-8 flex items-center gap-3"><FileText className="text-indigo-500" /> Scope of Work</h2>
               <div className="space-y-6">
                 {proposal.phases.map((phase, index) => (
                   <div
                     key={phase.id}
-                    className="bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl p-6"
+                    className="neu-pressed rounded-3xl p-8"
                   >
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                    <h3 className="mb-2">
                       Phase {index + 1}: {phase.title}
                     </h3>
                     {phase.description && (
@@ -230,7 +232,7 @@ export default function PublicProposalView() {
                     )}
                     {phase.deliverables.length > 0 && (
                       <div>
-                        <h4 className="text-sm font-semibold text-slate-700 dark:text-gray-300 mb-2">
+                        <h4 className="mb-2">
                           Deliverables:
                         </h4>
                         <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-gray-400">
@@ -248,8 +250,8 @@ export default function PublicProposalView() {
 
           {/* Investment Breakdown */}
           {proposal.investment && proposal.investment.length > 0 && (
-            <div className="bg-white/80 dark:bg-purple-950/30 backdrop-blur-xl border border-slate-200 dark:border-purple-500/20 rounded-3xl p-8 shadow-lg">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Investment</h2>
+            <div className="neu-flat p-8 rounded-[2rem]">
+              <h2 className="mb-8 flex items-center gap-3"><DollarSign className="text-indigo-500" /> Investment</h2>
               <div className="space-y-3">
                 {proposal.investment.map((item) => (
                   <div
@@ -278,16 +280,16 @@ export default function PublicProposalView() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl p-8 text-center shadow-2xl"
+              className="neu-flat rounded-[2rem] p-12 text-center"
             >
-              <h3 className="text-2xl font-bold text-white mb-3">Ready to Get Started?</h3>
-              <p className="text-indigo-100 mb-6">
+              <h3 className="mb-4 text-3xl">Ready to Get Started?</h3>
+              <p className="text-slate-500 dark:text-gray-400 mb-8 text-lg max-w-xl mx-auto">
                 Accept this proposal to begin your project journey with us.
               </p>
               <button
                 onClick={handleAccept}
                 disabled={accepting}
-                className="inline-flex items-center gap-3 px-8 py-4 bg-white text-indigo-600 font-bold text-lg rounded-xl hover:shadow-2xl hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                className="inline-flex items-center gap-3 px-10 py-5 neu-button text-indigo-500 font-bold text-lg rounded-2xl transition-all disabled:opacity-50"
               >
                 {accepting ? (
                   <>
@@ -307,11 +309,13 @@ export default function PublicProposalView() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
-              className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-3xl p-8 text-center shadow-2xl"
+              className="neu-flat border-2 border-green-500/50 rounded-[2rem] p-12 text-center"
             >
-              <CheckCircle size={64} className="text-white mx-auto mb-4" />
-              <h3 className="text-3xl font-bold text-white mb-3">Proposal Accepted!</h3>
-              <p className="text-green-100 text-lg">
+              <div className="w-24 h-24 neu-pressed rounded-full flex items-center justify-center mx-auto mb-6 text-green-500">
+                <CheckCircle size={48} />
+              </div>
+              <h3 className="mb-4 text-3xl">Proposal Accepted!</h3>
+              <p className="text-slate-500 dark:text-gray-400 text-lg max-w-xl mx-auto">
                 Thank you for accepting this proposal. We'll be in touch shortly to begin the project.
               </p>
             </motion.div>
@@ -320,9 +324,9 @@ export default function PublicProposalView() {
       </div>
 
       {/* Footer */}
-      <div className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 py-8 mt-16">
+      <div className="py-8 mt-8 border-t border-slate-200 dark:border-white/5">
         <div className="max-w-4xl mx-auto px-8 text-center">
-          <p className="text-slate-600 dark:text-gray-400">
+          <p className="text-slate-500 dark:text-gray-500 font-inter text-sm">
             © 2026 Injaazh Global. All rights reserved.
           </p>
         </div>

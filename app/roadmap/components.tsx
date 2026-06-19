@@ -54,17 +54,17 @@ export const CategoryCard = ({
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-xl"
+      className="neu-flat rounded-2xl overflow-hidden mb-6"
     >
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-6 bg-black/20 hover:bg-black/30 transition-colors"
+        className="w-full flex items-center justify-between p-6 neu-pressed text-slate-800 dark:text-white transition-all rounded-2xl"
       >
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center text-violet-400">
             <FolderGit2 size={20} />
           </div>
-          <h2 className="text-xl font-bold text-white tracking-wide">{categoryData.category}</h2>
+          <h2 className="">{categoryData.category}</h2>
           <span className="bg-white/10 text-slate-300 text-xs font-medium px-2 py-1 rounded-full">
             {filteredProjects.length}
           </span>
@@ -96,7 +96,7 @@ export const CategoryCard = ({
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
                     onClick={() => onProjectClick(project)}
-                    className="group flex items-center justify-between p-4 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/5 cursor-pointer transition-all"
+                    className="group flex items-center justify-between p-4 rounded-xl hover:neu-pressed border border-transparent cursor-pointer transition-all"
                   >
                     <div className="flex items-center gap-4">
                       <span className="text-slate-500 font-mono text-sm w-6 text-right">

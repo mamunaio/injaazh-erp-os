@@ -7,7 +7,7 @@ export interface User {
   _id: string;
   name: string;
   email: string;
-  role: 'admin' | 'user' | 'team_member';
+  role: 'owner' | 'admin' | 'editor' | 'marketplace_team';
   permissions: string[];
   image?: string;
   twoFactorEnabled?: boolean;

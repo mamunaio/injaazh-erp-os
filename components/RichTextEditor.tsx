@@ -4,6 +4,10 @@ import React, { useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
+import Link from '@tiptap/extension-link';
+import Underline from '@tiptap/extension-underline';
+import TextAlign from '@tiptap/extension-text-align';
+import Highlight from '@tiptap/extension-highlight';
 import {
   Bold,
   Italic,
@@ -14,7 +18,13 @@ import {
   Heading2,
   Quote,
   Undo,
-  Redo
+  Redo,
+  Underline as UnderlineIcon,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Highlighter,
+  Link as LinkIcon
 } from 'lucide-react';
 
 interface RichTextEditorProps {
@@ -31,13 +41,13 @@ const MenuBar = ({ editor }: { editor: any }) => {
   const getButtonClass = (isActive: boolean) => {
     return `p-2 rounded-lg transition-all ${
       isActive
-        ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 shadow-sm'
-        : 'text-slate-500 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-200'
+        ? 'neu-pressed text-indigo-500 dark:text-indigo-400'
+        : 'text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-white hover:neu-pressed'
     }`;
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-1 p-2 bg-white/50 dark:bg-black/20 border-b border-slate-200 dark:border-white/10 backdrop-blur-md rounded-t-xl z-10 sticky top-0">
+    <div className="flex flex-wrap items-center gap-1 p-2 border-b border-slate-200 dark:border-white/5 z-10 sticky top-0">
       <button
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
         className={getButtonClass(editor.isActive('heading', { level: 1 }))}
@@ -84,6 +94,42 @@ const MenuBar = ({ editor }: { editor: any }) => {
       >
         <Strikethrough size={18} />
       </button>
+      <button
+        onClick={() => editor.chain().focus().toggleUnderline().run()}
+        disabled={!editor.can().chain().focus().toggleUnderline().run()}
+        className={getButtonClass(editor.isActive('underline'))}
+        type="button"
+        title="Underline"
+      >
+        <UnderlineIcon size={18} />
+      </button>
+
+      <div className="w-px h-6 bg-slate-200 dark:bg-white/10 mx-1" />
+
+      <button
+        onClick={() => editor.chain().focus().setTextAlign('left').run()}
+        className={getButtonClass(editor.isActive({ textAlign: 'left' }))}
+        type="button"
+        title="Align Left"
+      >
+        <AlignLeft size={18} />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().setTextAlign('center').run()}
+        className={getButtonClass(editor.isActive({ textAlign: 'center' }))}
+        type="button"
+        title="Align Center"
+      >
+        <AlignCenter size={18} />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().setTextAlign('right').run()}
+        className={getButtonClass(editor.isActive({ textAlign: 'right' }))}
+        type="button"
+        title="Align Right"
+      >
+        <AlignRight size={18} />
+      </button>
 
       <div className="w-px h-6 bg-slate-200 dark:bg-white/10 mx-1" />
 
@@ -110,6 +156,34 @@ const MenuBar = ({ editor }: { editor: any }) => {
         title="Blockquote"
       >
         <Quote size={18} />
+      </button>
+
+      <div className="w-px h-6 bg-slate-200 dark:bg-white/10 mx-1" />
+
+      <button
+        onClick={() => {
+          const url = window.prompt('URL');
+          if (url === null) return;
+          if (url === '') {
+            editor.chain().focus().extendMarkRange('link').unsetLink().run();
+            return;
+          }
+          editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+        }}
+        className={getButtonClass(editor.isActive('link'))}
+        type="button"
+        title="Link"
+      >
+        <LinkIcon size={18} />
+      </button>
+
+      <button
+        onClick={() => editor.chain().focus().toggleHighlight().run()}
+        className={getButtonClass(editor.isActive('highlight'))}
+        type="button"
+        title="Highlight"
+      >
+        <Highlighter size={18} />
       </button>
 
       <div className="flex-1" />
@@ -148,6 +222,17 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Write s
         placeholder,
         emptyEditorClass: 'is-editor-empty',
       }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: 'text-indigo-500 underline cursor-pointer',
+        },
+      }),
+      Underline,
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
+      Highlight.configure({ multicolor: true }),
     ],
     content: value,
     editorProps: {
@@ -167,7 +252,7 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Write s
   }, [value, editor]);
 
   return (
-    <div className="bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 transition-all shadow-sm">
+    <div className="bg-transparent rounded-xl overflow-hidden transition-all flex flex-col h-full">
       <MenuBar editor={editor} />
       <div className="relative">
         <EditorContent editor={editor} />

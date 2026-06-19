@@ -58,11 +58,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#050505]">
-      {/* Dynamic Background Elements */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-violet-600/20 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-fuchsia-600/20 rounded-full blur-[120px] pointer-events-none" />
-      
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden neu-base-bg">
       {/* Grid Pattern */}
       <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-5 pointer-events-none" />
 
@@ -72,12 +68,12 @@ export default function LoginPage() {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="w-full max-w-md p-8 relative z-10"
       >
-        <div className="bg-white/5 backdrop-blur-2xl border border-white/10 p-8 rounded-3xl shadow-2xl">
+        <div className="neu-flat p-8 rounded-3xl">
           <div className="text-center mb-10">
-            <h1 className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-fuchsia-400 tracking-tight drop-shadow-sm mb-2">
+            <h1 className="mb-2 text-slate-800 dark:text-white">
               {requires2FA ? 'Two-Factor Auth' : 'Welcome Back'}
             </h1>
-            <p className="text-slate-400 font-medium">
+            <p className="text-slate-500 font-medium">
               {requires2FA ? 'Enter the 6-digit code from your authenticator app' : 'Enter your credentials to access your workspace'}
             </p>
           </div>
@@ -105,7 +101,7 @@ export default function LoginPage() {
                       name="email"
                       required
                       placeholder="Email address"
-                      className="w-full bg-black/20 border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all"
+                      className="w-full neu-pressed rounded-2xl pl-12 pr-4 py-4 text-slate-800 dark:text-white placeholder:text-slate-500 focus:outline-none transition-all"
                     />
                   </div>
 
@@ -116,7 +112,7 @@ export default function LoginPage() {
                       name="password"
                       required
                       placeholder="Password"
-                      className="w-full bg-black/20 border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all"
+                      className="w-full neu-pressed rounded-2xl pl-12 pr-4 py-4 text-slate-800 dark:text-white placeholder:text-slate-500 focus:outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -136,22 +132,19 @@ export default function LoginPage() {
             <button 
               type="submit"
               disabled={isLoading}
-              className="w-full relative group overflow-hidden rounded-2xl bg-white/5 border border-white/10 p-[1px]"
+              className="w-full relative neu-button flex items-center justify-center gap-2 px-6 py-4 rounded-2xl transition-all"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-violet-600 to-fuchsia-600 opacity-80 group-hover:opacity-100 transition-opacity" />
-              <div className="relative flex items-center justify-center gap-2 bg-black/40 backdrop-blur-md px-6 py-4 rounded-2xl group-hover:bg-black/20 transition-all">
-                <span className="text-white font-bold text-lg">
-                  {isLoading ? (requires2FA ? 'Verifying...' : 'Signing in...') : (requires2FA ? 'Verify Code' : 'Sign In')}
-                </span>
-                {!isLoading && <ArrowRight size={20} className="text-white group-hover:translate-x-1 transition-transform" />}
-              </div>
+              <span className="text-indigo-600 dark:text-indigo-400 font-bold text-lg">
+                {isLoading ? (requires2FA ? 'Verifying...' : 'Signing in...') : (requires2FA ? 'Verify Code' : 'Sign In')}
+              </span>
+              {!isLoading && <ArrowRight size={20} className="text-indigo-600 dark:text-indigo-400" />}
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-white/10">
-            <p className="text-center text-slate-400 text-sm">
+          <div className="mt-8 pt-6">
+            <p className="text-center text-slate-500 text-sm">
               Don't have an account?{' '}
-              <Link href="/register" className="text-white font-bold hover:text-violet-400 transition-colors">
+              <Link href="/register" className="text-indigo-600 dark:text-indigo-400 font-bold transition-colors">
                 Create one now
               </Link>
             </p>

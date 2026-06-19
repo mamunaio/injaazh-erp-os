@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { X, Calendar, DollarSign } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -103,19 +105,19 @@ export default function CreateProjectModal({ isOpen, onClose, onCreateProject }:
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-3xl max-h-[90vh] bg-white/90 dark:bg-purple-950/30 backdrop-blur-2xl border border-slate-200 dark:border-purple-500/20 shadow-2xl dark:shadow-[0_0_50px_rgba(168,85,247,0.3)] rounded-2xl flex flex-col overflow-hidden"
+          className="relative w-full max-w-3xl max-h-[90vh] neu-flat rounded-2xl flex flex-col overflow-hidden"
         >
           {/* Header */}
-          <div className="flex justify-between items-center p-6 border-b border-slate-200 dark:border-purple-500/20 bg-gradient-to-r from-indigo-500/10 to-purple-500/10">
+          <div className="flex justify-between items-center p-6 border-b border-slate-200 dark:border-white/5">
             <div>
-              <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
+              <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
                 Create New Project
               </h2>
               <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Add a project manually to the board</p>
             </div>
             <button 
               onClick={onClose} 
-              className="text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-white transition-colors bg-slate-100 dark:bg-white/5 p-2 rounded-full hover:bg-slate-200 dark:hover:bg-white/10"
+              className="text-slate-500 dark:text-gray-400 neu-button p-2 rounded-full transition-all"
             >
               <X size={18} />
             </button>
@@ -136,7 +138,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreateProject }:
                   value={formData.title}
                   onChange={e => setFormData({...formData, title: e.target.value})}
                   placeholder="e.g., Website Redesign for Acme Corp"
-                  className="w-full bg-white dark:bg-slate-800/60 border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                  className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
                 />
               </div>
 
@@ -151,7 +153,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreateProject }:
                     value={formData.clientName}
                     onChange={e => setFormData({...formData, clientName: e.target.value})}
                     placeholder="Client or company name"
-                    className="w-full bg-white dark:bg-slate-800/60 border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                    className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
                   />
                 </div>
                 <div>
@@ -161,7 +163,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreateProject }:
                   <select 
                     value={formData.status}
                     onChange={e => setFormData({...formData, status: e.target.value})}
-                    className="w-full bg-white dark:bg-slate-800/60 border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
+                    className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none transition-all appearance-none cursor-pointer"
                   >
                     <option value="Planning">Planning</option>
                     <option value="In Progress">In Progress</option>
@@ -181,7 +183,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreateProject }:
                   onChange={e => setFormData({...formData, description: e.target.value})}
                   placeholder="Brief description of the project..."
                   rows={3}
-                  className="w-full bg-white dark:bg-slate-800/60 border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all resize-none"
+                  className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none transition-all resize-none"
                 />
               </div>
 
@@ -196,10 +198,10 @@ export default function CreateProjectModal({ isOpen, onClose, onCreateProject }:
                       key={tech}
                       type="button"
                       onClick={() => toggleTechStack(tech)}
-                      className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg border-2 transition-all ${
+                      className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${
                         formData.techStack.includes(tech)
-                          ? 'bg-indigo-500 text-white border-indigo-500'
-                          : 'bg-white dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700 hover:border-indigo-400'
+                          ? 'neu-pressed text-indigo-500 dark:text-indigo-400'
+                          : 'neu-button text-slate-600 dark:text-slate-400'
                       }`}
                     >
                       {tech}
@@ -219,7 +221,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreateProject }:
                     value={formData.assignees}
                     onChange={e => setFormData({...formData, assignees: e.target.value})}
                     placeholder="John, Jane, Bob"
-                    className="w-full bg-white dark:bg-slate-800/60 border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                    className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
                   />
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Comma separated</p>
                 </div>
@@ -233,7 +235,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreateProject }:
                     max="100"
                     value={formData.progress}
                     onChange={e => setFormData({...formData, progress: parseInt(e.target.value) || 0})}
-                    className="w-full bg-white dark:bg-slate-800/60 border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                    className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
                   />
                 </div>
                 <div>
@@ -243,7 +245,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreateProject }:
                   <select 
                     value={formData.priority}
                     onChange={e => setFormData({...formData, priority: e.target.value})}
-                    className="w-full bg-white dark:bg-slate-800/60 border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
+                    className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none transition-all appearance-none cursor-pointer"
                   >
                     <option value="Low">Low</option>
                     <option value="Medium">Medium</option>
@@ -259,22 +261,24 @@ export default function CreateProjectModal({ isOpen, onClose, onCreateProject }:
                   <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
                     <Calendar size={14} /> Start Date
                   </label>
-                  <input 
-                    type="date" 
-                    value={formData.startDate}
-                    onChange={e => setFormData({...formData, startDate: e.target.value})}
-                    className="w-full bg-white dark:bg-slate-800/60 border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                  <DatePicker 
+                    selected={formData.startDate ? new Date(formData.startDate) : null}
+                    onChange={(date: Date | null) => setFormData({...formData, startDate: date ? date.toISOString().split('T')[0] : ''})}
+                    className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none transition-all bg-transparent"
+                    placeholderText="mm/dd/yyyy"
+                    dateFormat="MM/dd/yyyy"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
                     <Calendar size={14} /> Deadline
                   </label>
-                  <input 
-                    type="date" 
-                    value={formData.deadline}
-                    onChange={e => setFormData({...formData, deadline: e.target.value})}
-                    className="w-full bg-white dark:bg-slate-800/60 border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                  <DatePicker 
+                    selected={formData.deadline ? new Date(formData.deadline) : null}
+                    onChange={(date: Date | null) => setFormData({...formData, deadline: date ? date.toISOString().split('T')[0] : ''})}
+                    className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none transition-all bg-transparent"
+                    placeholderText="mm/dd/yyyy"
+                    dateFormat="MM/dd/yyyy"
                   />
                 </div>
                 <div>
@@ -288,7 +292,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreateProject }:
                     value={formData.budget}
                     onChange={e => setFormData({...formData, budget: e.target.value})}
                     placeholder="5000"
-                    className="w-full bg-white dark:bg-slate-800/60 border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                    className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
                   />
                 </div>
               </div>
@@ -297,18 +301,18 @@ export default function CreateProjectModal({ isOpen, onClose, onCreateProject }:
           </form>
 
           {/* Footer */}
-          <div className="p-6 border-t border-slate-200 dark:border-purple-500/20 bg-white/50 dark:bg-black/20 flex justify-end gap-3">
+          <div className="p-6 border-t border-slate-200 dark:border-white/5 flex justify-end gap-3">
             <button 
               type="button" 
               onClick={onClose}
-              className="px-6 py-2.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 hover:bg-slate-200 dark:hover:text-white dark:hover:bg-white/5 transition-all"
+              className="px-6 py-2.5 neu-button text-sm font-semibold text-slate-600 dark:text-slate-300 transition-all"
             >
               Cancel
             </button>
             <button 
               onClick={handleSubmit}
               disabled={isSubmitting || !formData.title}
-              className="px-8 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-8 py-2.5 neu-button text-indigo-500 dark:text-indigo-400 font-bold rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Creating...' : 'Create Project'}
             </button>

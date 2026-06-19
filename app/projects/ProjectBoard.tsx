@@ -53,7 +53,7 @@ function DroppableColumn({ column, projects, isDragging, onEdit, onDelete, onRes
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center gap-3">
             <div className={`w-4 h-4 rounded-full bg-gradient-to-r ${column.color} shadow-lg`} />
-            <h2 className="font-bold text-lg text-slate-800 dark:text-slate-200">
+            <h2 className="">
               {column.title}
             </h2>
             <span className="flex items-center justify-center min-w-[28px] h-7 px-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold shadow-md">

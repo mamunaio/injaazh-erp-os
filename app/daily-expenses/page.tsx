@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import DailyExpensesClient from './DailyExpensesClient';
 import { getDailyExpenses } from '@/app/actions/dailyExpenseActions';
 import { getPersonalDebts } from '@/app/actions/personalDebtActions';
-import { getAuthUser } from '@/lib/auth';
+import { getCurrentUser } from '@/app/actions/authActions';
 import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
@@ -13,8 +13,10 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function DailyExpensesPage() {
-  const authUser = await getAuthUser();
-  if (!authUser || authUser.role === 'team_member') {
+  const result = await getCurrentUser();
+  const dbUser = result.success ? result.data : null;
+  
+  if (!dbUser || dbUser.role !== 'owner') {
     redirect('/dashboard');
   }
 

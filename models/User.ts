@@ -6,7 +6,7 @@ export interface IUser extends Document {
   email: string;
   password?: string;
   image?: string;
-  role: 'admin' | 'user' | 'team_member';
+  role: 'owner' | 'admin' | 'editor' | 'marketplace_team';
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
   createdAt: Date;
@@ -23,7 +23,7 @@ const UserSchema = new Schema<IUser>(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, select: false }, // Do not return password by default
     image: { type: String },
-    role: { type: String, enum: ['admin', 'user', 'team_member'], default: 'team_member' },
+    role: { type: String, enum: ['owner', 'admin', 'editor', 'marketplace_team'], default: 'editor' },
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
     twoFactorSecret: { type: String, select: false },

@@ -237,7 +237,7 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
   }, [dateFilteredTransactions]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-pink-50/30 dark:from-slate-950 dark:via-purple-950/20 dark:to-slate-950 p-4 md:p-8 text-slate-800 dark:text-slate-200">
+    <div className="min-h-screen neu-base-bg p-4 md:p-8 text-slate-800 dark:text-slate-200">
       
       {/* Export Status Notification */}
       {exportStatus && (
@@ -253,7 +253,7 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
         <div>
-          <h1 className="text-6xl md:text-7xl font-jakarta font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 mb-3">
+          <h1 className="mb-3">
             💰 Money Management
           </h1>
           <p className="text-[15px] font-inter leading-relaxed tracking-wide text-slate-600 dark:text-gray-400">Track income, expenses, and profits across platforms</p>
@@ -261,7 +261,7 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
 
         <div className="flex flex-wrap items-center gap-3">
           {/* Date Range Filter */}
-          <div className="flex bg-white/80 dark:bg-[#151B2E]/80 backdrop-blur-xl border-2 border-purple-200/50 dark:border-purple-500/20 rounded-xl overflow-hidden shadow-lg">
+          <div className="flex neu-pressed rounded-xl overflow-hidden">
             <select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value as any)}
@@ -277,7 +277,7 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
           {/* Custom Date Range Inputs */}
           {dateRange === 'custom' && (
             <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 bg-white/80 dark:bg-purple-950/20 backdrop-blur-xl border-2 border-purple-200/50 dark:border-purple-500/20 rounded-xl px-3 py-2 shadow-lg">
+              <div className="flex items-center gap-2 neu-pressed rounded-xl px-3 py-2">
                 <input
                   type="date"
                   value={customStartDate}
@@ -301,16 +301,16 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
           )}
 
           {/* View Mode Toggle */}
-          <div className="flex bg-white/80 dark:bg-[#151B2E]/80 backdrop-blur-xl border-2 border-purple-200/50 dark:border-purple-500/20 rounded-xl overflow-hidden p-1 shadow-lg">
+          <div className="flex neu-pressed rounded-xl overflow-hidden p-1">
             <button 
               onClick={() => setViewMode('list')}
-              className={`px-6 py-3 rounded-lg flex items-center gap-2 text-sm font-jakarta font-bold transition-all ${viewMode === 'list' ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5'}`}
+              className={`px-6 py-3 rounded-lg flex items-center gap-2 text-sm font-jakarta font-bold transition-all ${viewMode === 'list' ? 'neu-button text-indigo-500' : 'text-slate-600 dark:text-gray-400 hover:neu-flat'}`}
             >
               <FileText size={16} /> List
             </button>
             <button 
               onClick={() => setViewMode('analytics')}
-              className={`px-6 py-3 rounded-lg flex items-center gap-2 text-sm font-jakarta font-bold transition-all ${viewMode === 'analytics' ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5'}`}
+              className={`px-6 py-3 rounded-lg flex items-center gap-2 text-sm font-jakarta font-bold transition-all ${viewMode === 'analytics' ? 'neu-button text-indigo-500' : 'text-slate-600 dark:text-gray-400 hover:neu-flat'}`}
             >
               <BarChart3 size={16} /> Analytics
             </button>
@@ -318,16 +318,16 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
 
           {/* Period Toggle (only show in analytics mode) */}
           {viewMode === 'analytics' && (
-            <div className="flex bg-white/80 dark:bg-[#151B2E]/80 backdrop-blur-xl border-2 border-purple-200/50 dark:border-purple-500/20 rounded-xl overflow-hidden p-1 shadow-lg">
+            <div className="flex neu-pressed rounded-xl overflow-hidden p-1">
               <button 
                 onClick={() => setViewPeriod('monthly')}
-                className={`px-6 py-3 rounded-lg flex items-center gap-2 text-sm font-jakarta font-bold transition-all ${viewPeriod === 'monthly' ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5'}`}
+                className={`px-6 py-3 rounded-lg flex items-center gap-2 text-sm font-jakarta font-bold transition-all ${viewPeriod === 'monthly' ? 'neu-button text-indigo-500' : 'text-slate-600 dark:text-gray-400 hover:neu-flat'}`}
               >
                 <Calendar size={16} /> Monthly
               </button>
               <button 
                 onClick={() => setViewPeriod('yearly')}
-                className={`px-6 py-3 rounded-lg flex items-center gap-2 text-sm font-jakarta font-bold transition-all ${viewPeriod === 'yearly' ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5'}`}
+                className={`px-6 py-3 rounded-lg flex items-center gap-2 text-sm font-jakarta font-bold transition-all ${viewPeriod === 'yearly' ? 'neu-button text-indigo-500' : 'text-slate-600 dark:text-gray-400 hover:neu-flat'}`}
               >
                 <Calendar size={16} /> Yearly
               </button>
@@ -336,10 +336,10 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
 
           {/* Export Dropdown */}
           <div className="relative group">
-            <button className="flex items-center gap-2 px-6 py-3 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-2 border-purple-200/50 dark:border-purple-500/20 text-slate-700 dark:text-slate-300 font-jakarta font-bold rounded-xl hover:shadow-lg transition-all text-sm">
+            <button className="flex items-center gap-2 px-6 py-3 neu-button text-slate-700 dark:text-slate-300 font-jakarta font-bold rounded-xl hover:-translate-y-1 transition-all text-sm">
               <Download size={18} /> Export
             </button>
-            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+            <div className="absolute right-0 mt-2 w-48 neu-flat rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 p-2">
               <button
                 onClick={handleExportCSV}
                 className="w-full px-4 py-3 text-left text-sm font-inter text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-t-xl transition-colors flex items-center gap-2"
@@ -357,7 +357,7 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
 
           <button 
             onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-jakarta font-bold rounded-xl hover:-translate-y-1 hover:shadow-2xl hover:shadow-purple-500/40 transition-all text-sm"
+            className="flex items-center gap-2 px-6 py-3 neu-button text-indigo-500 dark:text-indigo-400 font-jakarta font-bold rounded-xl hover:-translate-y-1 hover:shadow-2xl hover:shadow-purple-500/40 transition-all text-sm"
           >
             <Plus size={20} /> Add Transaction
           </button>
@@ -367,48 +367,48 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
         {/* Total Income */}
-        <div className="bg-white/80 dark:bg-[#151B2E]/80 backdrop-blur-xl border-2 border-green-200/40 dark:border-green-500/20 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
+        <div className="neu-flat rounded-[2rem] p-6 hover:-translate-y-1 transition-all">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 neu-pressed rounded-2xl flex items-center justify-center text-green-500">
               <TrendingUp size={24} className="text-white" />
             </div>
             <span className="text-xs font-jakarta font-bold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-500/20 px-3 py-1 rounded-full">
               Income
             </span>
           </div>
-          <h3 className="text-4xl font-mono font-bold text-slate-800 dark:text-slate-100 mb-1">
+          <h3 className="mb-1">
             {formatCurrency(totals.income)}
           </h3>
           <p className="text-sm font-inter text-slate-600 dark:text-slate-400">Total earnings</p>
         </div>
 
         {/* Total Expense */}
-        <div className="bg-white/80 dark:bg-[#151B2E]/80 backdrop-blur-xl border-2 border-red-200/40 dark:border-red-500/20 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
+        <div className="neu-flat rounded-[2rem] p-6 hover:-translate-y-1 transition-all">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-pink-500 flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 neu-pressed rounded-2xl flex items-center justify-center text-red-500">
               <TrendingDown size={24} className="text-white" />
             </div>
             <span className="text-xs font-jakarta font-bold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-500/20 px-3 py-1 rounded-full">
               Expense
             </span>
           </div>
-          <h3 className="text-4xl font-mono font-bold text-slate-800 dark:text-slate-100 mb-1">
+          <h3 className="mb-1">
             {formatCurrency(totals.expense)}
           </h3>
           <p className="text-sm font-inter text-slate-600 dark:text-slate-400">Total spending</p>
         </div>
 
         {/* Net Profit */}
-        <div className="bg-white/80 dark:bg-[#151B2E]/80 backdrop-blur-xl border-2 border-purple-200/40 dark:border-purple-500/20 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
+        <div className="neu-flat rounded-[2rem] p-6 hover:-translate-y-1 transition-all">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 neu-pressed rounded-2xl flex items-center justify-center text-purple-500">
               <DollarSign size={24} className="text-white" />
             </div>
             <span className="text-xs font-jakarta font-bold text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-500/20 px-3 py-1 rounded-full">
               Profit
             </span>
           </div>
-          <h3 className="text-4xl font-mono font-bold text-slate-800 dark:text-slate-100 mb-1">
+          <h3 className="mb-1">
             {formatCurrency(totals.profit)}
           </h3>
           <p className="text-sm font-inter text-slate-600 dark:text-slate-400">Net earnings</p>
@@ -417,7 +417,7 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
 
       {/* Platform Breakdown */}
       <div className="mb-10">
-        <h2 className="text-3xl font-jakarta font-black text-slate-800 dark:text-slate-100 mb-6">Platform Breakdown</h2>
+        <h2 className="mb-6">Platform Breakdown</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {['Freelancer', 'Direct', 'Upwork', 'Fiverr'].map(platform => {
             const data = platformBreakdown.find(p => p.platform === platform) || {
@@ -428,11 +428,11 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
             return (
               <div
                 key={platform}
-                className="bg-white/80 dark:bg-[#151B2E]/80 backdrop-blur-xl border-2 border-purple-200/40 dark:border-purple-500/20 rounded-2xl p-6 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all"
+                className="neu-flat rounded-3xl p-6 hover:-translate-y-1 transition-all"
               >
                 <div className="flex items-center gap-3 mb-4">
                   <div className={`w-4 h-4 rounded-full ${PLATFORM_DOTS[platform as keyof typeof PLATFORM_DOTS] || 'bg-slate-400'} shadow-md`} />
-                  <h3 className="text-lg font-jakarta font-black text-slate-800 dark:text-slate-100">{platform}</h3>
+                  <h3 className="">{platform}</h3>
                 </div>
                 
                 <div className="space-y-3">
@@ -465,9 +465,9 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
 
       {/* Transactions List */}
       {viewMode === 'list' && (
-        <div className="bg-white/80 dark:bg-[#151B2E]/80 backdrop-blur-xl border-2 border-purple-200/40 dark:border-purple-500/20 rounded-2xl p-6 shadow-lg">
+        <div className="neu-flat rounded-[2rem] p-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-          <h2 className="text-3xl font-jakarta font-black text-slate-800 dark:text-slate-100">Recent Transactions</h2>
+          <h2 className="">Recent Transactions</h2>
           
           {/* Filters */}
           <div className="flex flex-wrap gap-3">
@@ -475,7 +475,7 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
             <select
               value={filterPlatform}
               onChange={(e) => setFilterPlatform(e.target.value)}
-              className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-4 py-2 text-sm focus:outline-none transition-all placeholder:text-slate-400 appearance-none"
             >
               <option value="All">All Platforms</option>
               <option value="Freelancer">Freelancer</option>
@@ -488,7 +488,7 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-4 py-2 text-sm focus:outline-none transition-all placeholder:text-slate-400 appearance-none"
             >
               <option value="All">All Types</option>
               <option value="Income">Income</option>
@@ -503,7 +503,7 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="pl-10 pr-4 py-2 neu-pressed text-slate-800 dark:text-white rounded-xl text-sm focus:outline-none transition-all placeholder:text-slate-400"
               />
             </div>
           </div>
@@ -646,8 +646,8 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
           />
 
           {/* Monthly Summary Table */}
-          <div className="mt-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-2 border-purple-200/40 dark:border-purple-500/20 rounded-2xl p-6 shadow-lg">
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-6">Monthly Summary</h2>
+          <div className="mt-10 neu-flat rounded-[2rem] p-6">
+            <h2 className="mb-6">Monthly Summary</h2>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>

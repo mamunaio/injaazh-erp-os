@@ -53,14 +53,14 @@ export const AddProjectModal = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-md bg-[#0a0a0a]/90 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-[0_0_50px_rgba(139,92,246,0.15)] flex flex-col overflow-hidden"
+            className="relative w-full max-w-md neu-flat rounded-3xl flex flex-col overflow-hidden"
           >
             {/* Header */}
-            <div className="p-6 border-b border-white/10 flex items-center justify-between bg-white/5">
-              <h2 className="text-xl font-bold text-white tracking-tight">Add New Project</h2>
+            <div className="p-6 border-b border-slate-200 dark:border-white/5 flex items-center justify-between">
+              <h2 className="text-slate-800 dark:text-white font-bold text-xl">Add New Project</h2>
               <button 
                 onClick={onClose}
-                className="p-2 bg-white/5 hover:bg-white/10 rounded-xl transition-all hover:rotate-90 text-slate-400 hover:text-white"
+                className="p-2 neu-button rounded-xl transition-all hover:rotate-90 text-slate-500 dark:text-slate-400"
               >
                 <X size={20} />
               </button>
@@ -75,7 +75,7 @@ export const AddProjectModal = ({
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. Full ERP System"
-                  className="w-full bg-black/40 border border-white/10 text-white px-5 py-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all placeholder:text-slate-600"
+                  className="w-full neu-pressed text-slate-800 dark:text-white px-5 py-3.5 rounded-xl focus:outline-none transition-all"
                 />
               </div>
 
@@ -87,7 +87,7 @@ export const AddProjectModal = ({
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                   placeholder="e.g. Core Business Systems"
-                  className="w-full bg-black/40 border border-white/10 text-white px-5 py-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all placeholder:text-slate-600"
+                  className="w-full neu-pressed text-slate-800 dark:text-white px-5 py-3.5 rounded-xl focus:outline-none transition-all"
                   list="categories"
                 />
                 <datalist id="categories">
@@ -114,7 +114,7 @@ export const AddProjectModal = ({
               <button 
                 type="submit"
                 disabled={isLoading}
-                className="w-full mt-4 flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-bold py-3.5 rounded-xl transition-all disabled:opacity-50"
+                className="w-full mt-4 flex items-center justify-center gap-2 neu-button text-violet-500 font-bold py-3.5 rounded-xl transition-all disabled:opacity-50"
               >
                 {isLoading ? <Loader2 size={20} className="animate-spin" /> : <Plus size={20} />}
                 {isLoading ? 'Adding...' : 'Add Project'}

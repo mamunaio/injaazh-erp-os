@@ -108,9 +108,9 @@ export default function PartialPaymentModal({ isOpen, onClose, onSubmit, debt }:
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-              className="pointer-events-auto w-full max-w-lg bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800 rounded-2xl sm:rounded-[28px] shadow-2xl flex flex-col overflow-hidden max-h-[95vh] sm:max-h-[90vh]"
+              className="pointer-events-auto w-full max-w-lg neu-flat rounded-2xl sm:rounded-[28px] shadow-2xl flex flex-col overflow-hidden max-h-[95vh] sm:max-h-[90vh]"
             >
-              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800/80 bg-white/50 dark:bg-slate-900/50">
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-800/50">
                 <div>
                   <h2 className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-gray-400">
                     Record Payment
@@ -121,7 +121,7 @@ export default function PartialPaymentModal({ isOpen, onClose, onSubmit, debt }:
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-1.5 sm:p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+                  className="p-1.5 sm:p-2 text-slate-400 hover:text-red-500 rounded-full transition-colors"
                 >
                   <X size={18} className="sm:w-5 sm:h-5" />
                 </button>
@@ -129,7 +129,7 @@ export default function PartialPaymentModal({ isOpen, onClose, onSubmit, debt }:
 
               <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
                 {/* Debt Summary */}
-                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 border border-indigo-100 dark:border-indigo-900/50 rounded-2xl p-4 space-y-3">
+                <div className="neu-pressed rounded-2xl p-4 space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Original Amount</span>
                     <span className="text-sm font-mono font-bold text-slate-800 dark:text-white">{formatCurrency(safeDebt.originalAmount)}</span>
@@ -162,9 +162,7 @@ export default function PartialPaymentModal({ isOpen, onClose, onSubmit, debt }:
                         required
                         value={paymentAmount}
                         onChange={(e) => handleAmountChange(e.target.value)}
-                        className={`w-full pl-10 pr-4 py-2.5 sm:py-3 bg-slate-50 dark:bg-slate-800/50 border ${
-                          error ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
-                        } rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-900 dark:text-white transition-all font-semibold text-sm sm:text-base`}
+                        className={`w-full pl-10 pr-4 py-2.5 sm:py-3 neu-pressed rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-900 dark:text-white transition-all font-semibold text-sm sm:text-base ${error ? 'border border-red-500' : ''}`}
                         placeholder="0.00"
                       />
                     </div>
@@ -184,28 +182,28 @@ export default function PartialPaymentModal({ isOpen, onClose, onSubmit, debt }:
                       <button
                         type="button"
                         onClick={() => setQuickAmount(25)}
-                        className="py-2 px-3 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 transition-all"
+                        className="py-2 px-3 neu-button rounded-lg text-xs font-bold text-slate-500 transition-all"
                       >
                         25%
                       </button>
                       <button
                         type="button"
                         onClick={() => setQuickAmount(50)}
-                        className="py-2 px-3 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 transition-all"
+                        className="py-2 px-3 neu-button rounded-lg text-xs font-bold text-slate-500 transition-all"
                       >
                         50%
                       </button>
                       <button
                         type="button"
                         onClick={() => setQuickAmount(75)}
-                        className="py-2 px-3 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 transition-all"
+                        className="py-2 px-3 neu-button rounded-lg text-xs font-bold text-slate-500 transition-all"
                       >
                         75%
                       </button>
                       <button
                         type="button"
                         onClick={() => setQuickAmount(100)}
-                        className="py-2 px-3 bg-slate-100 dark:bg-slate-800 hover:bg-green-100 dark:hover:bg-green-900/30 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 transition-all"
+                        className="py-2 px-3 neu-button rounded-lg text-xs font-bold text-slate-500 transition-all"
                       >
                         Full
                       </button>
@@ -224,7 +222,7 @@ export default function PartialPaymentModal({ isOpen, onClose, onSubmit, debt }:
                       <textarea
                         value={note}
                         onChange={(e) => setNote(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-900 dark:text-white transition-all min-h-[80px] sm:min-h-[100px] resize-none font-medium text-sm sm:text-base"
+                        className="w-full pl-10 pr-4 py-2.5 sm:py-3 neu-pressed rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-900 dark:text-white transition-all min-h-[80px] sm:min-h-[100px] resize-none font-medium text-sm sm:text-base"
                         placeholder="e.g. Partial payment via bank transfer..."
                       />
                     </div>
@@ -232,12 +230,12 @@ export default function PartialPaymentModal({ isOpen, onClose, onSubmit, debt }:
                 </form>
               </div>
 
-              <div className="p-4 sm:p-6 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50">
+              <div className="p-4 sm:p-6 border-t border-slate-800/50">
                 <button
                   type="submit"
                   form="paymentForm"
                   disabled={isSubmitting || !!error || !paymentAmount}
-                  className="w-full flex items-center justify-center gap-2 py-3 sm:py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl sm:rounded-2xl font-bold shadow-lg shadow-indigo-500/25 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                  className="w-full flex items-center justify-center gap-2 py-3 sm:py-3.5 neu-button text-indigo-500 rounded-xl sm:rounded-2xl font-bold transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                 >
                   {isSubmitting ? (
                     <><Loader2 size={18} className="animate-spin" /> Recording Payment...</>

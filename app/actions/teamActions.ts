@@ -12,7 +12,7 @@ async function requireAdmin() {
   }
   await connectToDatabase();
   const dbUser = await User.findById(authUser.id);
-  if (!dbUser || dbUser.role !== 'admin') {
+  if (!dbUser || (dbUser.role !== 'admin' && dbUser.role !== 'owner')) {
     throw new Error('Unauthorized. Admin access required.');
   }
   return authUser;
@@ -32,7 +32,7 @@ export async function getTeamMembers() {
     await requireAdmin();
     await connectToDatabase();
     
-    const members = await User.find({ role: 'team_member' }).select('-password').sort({ createdAt: -1 }).lean();
+    const members = await User.find({ role: { $in: ['admin', 'editor', 'marketplace_team', 'team_member'] } }).select('-password').sort({ createdAt: -1 }).lean();
     return {
       success: true,
       data: JSON.parse(JSON.stringify(members))
@@ -42,12 +42,12 @@ export async function getTeamMembers() {
   }
 }
 
-export async function createTeamMember(data: { name: string; email: string; password?: string; permissions: string[] }) {
+export async function createTeamMember(data: { name: string; email: string; password?: string; role: string }) {
   try {
     await requireAdmin();
     await connectToDatabase();
 
-    const { name, email, password, permissions } = data;
+    const { name, email, password, role } = data;
 
     if (!name || !email || !password) {
       return { success: false, error: 'Name, email and password are required' };
@@ -62,8 +62,8 @@ export async function createTeamMember(data: { name: string; email: string; pass
       name,
       email,
       password,
-      role: 'team_member',
-      permissions
+      role: role || 'editor',
+      permissions: []
     });
 
     return {
@@ -81,17 +81,17 @@ export async function createTeamMember(data: { name: string; email: string; pass
   }
 }
 
-export async function updateTeamMemberPermissions(memberId: string, permissions: string[]) {
+export async function updateTeamMemberRole(memberId: string, role: string) {
   try {
     await requireAdmin();
     await connectToDatabase();
 
     const member = await User.findById(memberId);
-    if (!member || member.role !== 'team_member') {
+    if (!member) {
       return { success: false, error: 'Team member not found' };
     }
 
-    member.permissions = permissions;
+    member.role = role;
     await member.save();
 
     return {
@@ -131,12 +131,13 @@ export async function updateUserProfile(data: {
   email: string;
   currentPassword?: string;
   newPassword?: string;
+  image?: string;
 }) {
   try {
     const authUser = await requireAuth();
     await connectToDatabase();
 
-    const { name, email, currentPassword, newPassword } = data;
+    const { name, email, currentPassword, newPassword, image } = data;
 
     if (!name || !email) {
       return { success: false, error: 'Name and email are required' };
@@ -157,6 +158,9 @@ export async function updateUserProfile(data: {
     }
 
     user.name = name;
+    if (image !== undefined) {
+      user.image = image;
+    }
 
     // Handle password update if requested
     if (currentPassword && newPassword) {

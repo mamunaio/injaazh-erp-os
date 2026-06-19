@@ -1,114 +1,80 @@
 'use client';
 
-import React, { useState, useMemo, useRef } from 'react';
-import { Mail, Search, Send, Plus, Filter, User, Building2, Globe, Phone, Calendar, MessageSquare, CheckCircle, Clock, XCircle, AlertCircle, Sparkles, Paperclip, Image, FileText, X } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Mail, Send, Activity, MessageSquare, CheckCircle, Clock, AlertCircle, Sparkles, User, Building2, Globe, Phone, ExternalLink, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { generateOutreachEmailDraft } from '@/app/actions/aiActions';
-import { sendOutreachEmail } from '@/app/actions/leadActions';
-import { toast } from 'react-hot-toast';
+import { createProposal } from '@/app/actions/proposalActions';
 
 interface OutreachClientProps {
   initialLeads: any[];
+  initialAnalytics: any;
 }
 
-export default function OutreachClient({ initialLeads }: OutreachClientProps) {
+export default function OutreachClient({ initialLeads, initialAnalytics }: OutreachClientProps) {
   const router = useRouter();
   const [leads] = useState(initialLeads);
-  const [selectedLead, setSelectedLead] = useState<any>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [showComposer, setShowComposer] = useState(false);
+  const [activeTab, setActiveTab] = useState<'inbox' | 'pipeline'>('inbox');
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [isCreatingProposalFor, setIsCreatingProposalFor] = useState<string | null>(null);
 
-  // Email composer state
-  const [subject, setSubject] = useState('');
-  const [body, setBody] = useState('');
-  const [isSending, setIsSending] = useState(false);
-
-  // AI Assistant state
-  const [showAIPanel, setShowAIPanel] = useState(false);
-  const [aiPrompt, setAiPrompt] = useState('');
-  const [aiHistory, setAiHistory] = useState<{ role: 'user' | 'model'; text: string }[]>([]);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [attachedFile, setAttachedFile] = useState<{ name: string; data: string; mimeType: string } | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Filter leads
-  const filteredLeads = useMemo(() => {
-    return leads.filter((lead) => {
-      const matchesSearch = 
-        lead.company_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (lead.contact_person && lead.contact_person.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (lead.email && lead.email.toLowerCase().includes(searchQuery.toLowerCase()));
-      
-      const matchesStatus = statusFilter === 'All' || lead.outreach_status === statusFilter;
-      
-      return matchesSearch && matchesStatus;
-    });
-  }, [leads, searchQuery, statusFilter]);
-
-  // Get status configuration
-  const getStatusConfig = (status: string) => {
-    switch (status) {
-      case 'New':
-        return { 
-          color: 'blue', 
-          icon: <AlertCircle size={16} />,
-          bg: 'bg-blue-100 dark:bg-blue-900/20',
-          text: 'text-blue-700 dark:text-blue-400',
-          border: 'border-blue-200 dark:border-blue-800'
-        };
-      case 'Contacted':
-        return { 
-          color: 'amber', 
-          icon: <Clock size={16} />,
-          bg: 'bg-amber-100 dark:bg-amber-900/20',
-          text: 'text-amber-700 dark:text-amber-400',
-          border: 'border-amber-200 dark:border-amber-800'
-        };
-      case 'Replied':
-        return { 
-          color: 'purple', 
-          icon: <MessageSquare size={16} />,
-          bg: 'bg-purple-100 dark:bg-purple-900/20',
-          text: 'text-purple-700 dark:text-purple-400',
-          border: 'border-purple-200 dark:border-purple-800'
-        };
-      case 'Meeting Booked':
-        return { 
-          color: 'green', 
-          icon: <Calendar size={16} />,
-          bg: 'bg-green-100 dark:bg-green-900/20',
-          text: 'text-green-700 dark:text-green-400',
-          border: 'border-green-200 dark:border-green-800'
-        };
-      case 'Closed':
-        return { 
-          color: 'teal', 
-          icon: <CheckCircle size={16} />,
-          bg: 'bg-teal-100 dark:bg-teal-900/20',
-          text: 'text-teal-700 dark:text-teal-400',
-          border: 'border-teal-200 dark:border-teal-800'
-        };
-      case 'Not Interested':
-        return { 
-          color: 'red', 
-          icon: <XCircle size={16} />,
-          bg: 'bg-red-100 dark:bg-red-900/20',
-          text: 'text-red-700 dark:text-red-400',
-          border: 'border-red-200 dark:border-red-800'
-        };
-      default:
-        return { 
-          color: 'gray', 
-          icon: <AlertCircle size={16} />,
-          bg: 'bg-gray-100 dark:bg-gray-900/20',
-          text: 'text-gray-700 dark:text-gray-400',
-          border: 'border-gray-200 dark:border-gray-800'
-        };
+  const handleCreateProposal = async (lead: any) => {
+    setIsCreatingProposalFor(lead._id);
+    try {
+      const result = await createProposal({
+        clientName: lead.company_name,
+        title: `Proposal for ${lead.targetService || 'Custom Service'}`,
+      });
+      if (result.success && result.data) {
+        router.push(`/proposals/${result.data._id}`);
+      } else {
+        alert('Failed to create proposal.');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Error creating proposal.');
+    } finally {
+      setIsCreatingProposalFor(null);
     }
   };
 
-  // Generate avatar gradient
+  const analytics = initialAnalytics || {
+    totalSent: 0,
+    totalReplies: 0,
+    totalDailyQuota: 0,
+    totalSentToday: 0,
+    queuedCount: 0,
+  };
+
+  // Hot Inbox: Leads that have replied
+  const hotInboxLeads = useMemo(() => {
+    return leads.filter(lead => lead.is_replied === true).sort((a, b) => {
+      // Sort by last_contacted_date descending
+      const dateA = a.last_contacted_date ? new Date(a.last_contacted_date).getTime() : 0;
+      const dateB = b.last_contacted_date ? new Date(b.last_contacted_date).getTime() : 0;
+      return dateB - dateA;
+    });
+  }, [leads]);
+
+  // Active Pipeline: Leads currently being processed or scheduled
+  const activePipelineLeads = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return leads.filter(lead => {
+      if (lead.is_replied) return false;
+      if (lead.outreach_status === 'Closed' || lead.outreach_status === 'Not Interested') return false;
+      
+      const isScheduledForFuture = lead.outreach_scheduled_for && new Date(lead.outreach_scheduled_for) >= today;
+      const isFollowUpDue = lead.nextFollowUpDate && new Date(lead.nextFollowUpDate) >= today;
+      
+      return isScheduledForFuture || isFollowUpDue || lead.outreach_status === 'Contacted';
+    }).sort((a, b) => {
+      // Sort by follow-up date ascending
+      const dateA = a.nextFollowUpDate ? new Date(a.nextFollowUpDate).getTime() : Infinity;
+      const dateB = b.nextFollowUpDate ? new Date(b.nextFollowUpDate).getTime() : Infinity;
+      return dateA - dateB;
+    });
+  }, [leads]);
+
   const getAvatarGradient = (name: string) => {
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
@@ -119,699 +85,222 @@ export default function OutreachClient({ initialLeads }: OutreachClientProps) {
     return `linear-gradient(135deg, hsl(${h1}, 70%, 55%) 0%, hsl(${h2}, 80%, 45%) 100%)`;
   };
 
-  // Handle compose email
-  const handleCompose = (lead: any) => {
-    setSelectedLead(lead);
-    setSubject(`Proposal for ${lead.company_name}`);
-    setBody(`Hi ${lead.contact_person || 'there'},\n\nI hope this email finds you well.\n\nI was recently reviewing ${lead.company_name} and was impressed by your business.\n\nBest regards,\nInjaazh Global`);
-    setShowComposer(true);
-    setShowAIPanel(false);
-    setAiHistory([]);
-    setAttachedFile(null);
-  };
-
-  // Handle file attachment
-  const handleFileAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Check file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf', 'text/plain'];
-    if (!validTypes.includes(file.type)) {
-      toast.error('Only images (JPEG, PNG, GIF, WEBP), PDF, and text files are supported');
-      return;
-    }
-
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('File size must be less than 5MB');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64 = (reader.result as string).split(',')[1];
-      setAttachedFile({
-        name: file.name,
-        data: base64,
-        mimeType: file.type
-      });
-    };
-    reader.readAsDataURL(file);
-  };
-
-  // Handle AI generation
-  const handleAIGenerate = async () => {
-    if (!aiPrompt.trim() || !selectedLead) return;
-
-    setIsGenerating(true);
-
-    try {
-      const result = await generateOutreachEmailDraft(
-        selectedLead._id,
-        aiPrompt,
-        aiHistory,
-        attachedFile ? { data: attachedFile.data, mimeType: attachedFile.mimeType } : undefined
-      );
-
-      if (result.success && result.text) {
-        // Add to history
-        setAiHistory([
-          ...aiHistory,
-          { role: 'user', text: aiPrompt },
-          { role: 'model', text: result.text }
-        ]);
-
-        // Parse subject and body from AI response
-        const lines = result.text.split('\n');
-        let subjectLine = '';
-        let bodyText = '';
-        let foundSubject = false;
-
-        for (let i = 0; i < lines.length; i++) {
-          if (lines[i].startsWith('Subject:')) {
-            subjectLine = lines[i].replace('Subject:', '').trim();
-            foundSubject = true;
-            // Body starts after subject and empty line
-            bodyText = lines.slice(i + 2).join('\n').trim();
-            break;
-          }
-        }
-
-        if (foundSubject) {
-          setSubject(subjectLine);
-          setBody(bodyText);
-        } else {
-          // If no subject found, use entire response as body
-          setBody(result.text);
-        }
-
-        setAiPrompt('');
-      } else {
-        // Check for rate limit error
-        const isRateLimited = 
-          result.error?.includes('429') ||
-          result.error?.includes('quota') ||
-          result.error?.includes('RESOURCE_EXHAUSTED');
-        
-        if (isRateLimited) {
-          toast.error(
-            '⚠️ AI Service Temporarily Unavailable\n\nThe AI assistant has reached its daily usage limit. Please try again in a few minutes or tomorrow when the quota resets.',
-            { duration: 6000 }
-          );
-        } else {
-          toast.error(result.error || 'Failed to generate email');
-        }
-      }
-    } catch (error: any) {
-      // Check for rate limit error in exception
-      const isRateLimited = 
-        error.message?.includes('429') ||
-        error.message?.includes('quota') ||
-        error.message?.includes('RESOURCE_EXHAUSTED');
-      
-      if (isRateLimited) {
-        toast.error(
-          '⚠️ AI Service Temporarily Unavailable\n\nThe AI assistant has reached its daily usage limit. Please try again in a few minutes or tomorrow when the quota resets.',
-          { duration: 6000 }
-        );
-      } else {
-        toast.error(error.message || 'An error occurred');
-      }
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  // Handle send email
-  const handleSend = async () => {
-    if (!selectedLead || !subject || !body) return;
-    
-    setIsSending(true);
-    
-    try {
-      const response = await sendOutreachEmail(selectedLead._id, subject, body);
-      if (response.success) {
-        toast.success(
-          response.isSimulated 
-            ? 'Simulated sandbox email logged successfully! 📧' 
-            : 'Outreach email sent successfully! 📧'
-        );
-        setShowComposer(false);
-        router.refresh();
-      } else {
-        toast.error(response.error || 'Failed to send outreach email');
-      }
-    } catch (err: any) {
-      toast.error(err.message || 'An error occurred while sending email');
-    } finally {
-      setIsSending(false);
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/30 dark:from-[#0B0E1A] dark:via-[#0F1220] dark:to-[#0B0E1A] p-4 md:p-8 text-slate-800 dark:text-slate-200">
+    <div className="min-h-screen neu-base-bg p-4 md:p-8 text-slate-800 dark:text-slate-200">
       
       {/* Page Header */}
       <div className="mb-8">
-        <h1 
-          className="text-6xl md:text-7xl font-jakarta font-black tracking-tight leading-none mb-3"
-          style={{
-            background: 'linear-gradient(to right, #6366f1, #a855f7, #ec4899)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            color: 'transparent',
-            filter: 'drop-shadow(0 1px 2px rgb(0 0 0 / 0.1))',
-          }}
-        >
-          Email Outreach
+        <h1 className="mb-3">
+          Outreach Analytics
         </h1>
         <p className="text-[15px] font-inter leading-relaxed tracking-wide text-slate-600 dark:text-gray-400">
-          Manage your email campaigns and connect with leads
+          Monitor your automated campaigns, track quotas, and respond to hot leads.
         </p>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-12rem)]">
-        
-        {/* LEFT PANEL: LEADS LIST */}
-        <div className="w-full lg:w-[400px] flex flex-col bg-white/80 dark:bg-[#151B2E]/80 backdrop-blur-xl border-2 border-purple-200/40 dark:border-purple-500/20 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)] overflow-hidden flex-shrink-0">
-          
-          {/* Search & Filter */}
-          <div className="p-6 border-b-2 border-slate-200 dark:border-slate-700 space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-sm font-jakarta font-black uppercase tracking-widest text-slate-800 dark:text-white flex items-center gap-2">
-                <Mail size={20} className="text-indigo-600 dark:text-indigo-400" />
-                Leads Pipeline
-              </h2>
-              <span className="text-xs font-jakarta font-bold px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
-                {filteredLeads.length} leads
-              </span>
-            </div>
-
-            <div className="relative">
-              <Search className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search leads..."
-                className="w-full pl-11 pr-4 py-3 text-[15px] font-inter bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-indigo-500 text-slate-800 dark:text-white transition-all"
-              />
-            </div>
-
-            <div className="flex bg-white dark:bg-slate-800 p-1.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 gap-1">
-              {['All', 'New', 'Contacted', 'Replied'].map((filter) => (
-                <button
-                  key={filter}
-                  onClick={() => setStatusFilter(filter)}
-                  className={`flex-1 py-2 rounded-lg text-xs font-jakarta font-bold transition-all ${
-                    statusFilter === filter
-                      ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg'
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
-                  }`}
-                >
-                  {filter}
-                </button>
-              ))}
-            </div>
+      {/* Top Stat Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Card 1: Total Sent */}
+        <div className="neu-flat p-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10 text-indigo-500">
+            <Send size={80} />
           </div>
-
-          {/* Leads List */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {filteredLeads.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-                <Mail size={48} className="opacity-20 mb-4" />
-                <span className="text-sm font-bold">No matching leads</span>
-              </div>
-            ) : (
-              filteredLeads.map((lead) => {
-                const status = getStatusConfig(lead.outreach_status);
-                const initials = lead.company_name
-                  .split(' ')
-                  .slice(0, 2)
-                  .map((w: string) => w[0])
-                  .join('')
-                  .toUpperCase();
-
-                const isSelected = selectedLead && String(selectedLead._id) === String(lead._id);
-
-                let isFollowUpToday = false;
-                if (lead.nextFollowUpDate) {
-                  const followUpDate = new Date(lead.nextFollowUpDate);
-                  const today = new Date();
-                  today.setHours(0, 0, 0, 0);
-                  isFollowUpToday = followUpDate <= today;
-                }
-
-                return (
-                  <div
-                    key={lead._id}
-                    className={`relative overflow-hidden p-4 rounded-xl border-2 transition-all cursor-pointer group hover:shadow-lg ${
-                      isSelected
-                        ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/80 dark:bg-indigo-950/60 shadow-[0_0_20px_rgba(99,102,241,0.15)] ring-1 ring-indigo-600/30 dark:ring-indigo-500/30'
-                        : 'border-slate-200 dark:border-slate-700/50 bg-white/50 dark:bg-slate-800/50 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-indigo-500/10 dark:hover:shadow-indigo-500/20'
-                    }`}
-                    onClick={() => setSelectedLead(lead)}
-                  >
-                    {/* Active Accent Bar */}
-                    {isSelected && (
-                      <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-500 to-purple-600" />
-                    )}
-
-                    <div className="flex items-start gap-3">
-                      <div 
-                        style={{ background: getAvatarGradient(lead.company_name) }}
-                        className="h-12 w-12 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-lg flex-shrink-0"
-                      >
-                        {initials}
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2 mb-1">
-                          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
-                            {lead.company_name}
-                          </h3>
-                          {isSelected && (
-                            <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white animate-pulse shadow-sm flex-shrink-0">
-                              Active
-                            </span>
-                          )}
-                        </div>
-                        
-                        <p className="text-xs text-slate-600 dark:text-slate-400 mb-2 truncate">
-                          {lead.contact_person || 'No contact'}
-                        </p>
-                        
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className={`text-[10px] font-bold px-2 py-1 rounded-md border flex items-center gap-1 ${status.bg} ${status.text} ${status.border}`}>
-                            {status.icon}
-                            {lead.outreach_status}
-                          </span>
-                          
-                          {isFollowUpToday && (
-                            <div className="flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 px-2 py-1 rounded-md text-[10px] font-bold text-red-600 dark:text-red-400">
-                              <span className="relative flex h-1.5 w-1.5">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
-                              </span>
-                              <span>Follow-up</span>
-                            </div>
-                          )}
-                          
-                          {lead.email && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleCompose(lead);
-                              }}
-                              className="text-[10px] font-bold px-2 py-1 rounded-md bg-indigo-500 text-white hover:bg-indigo-600 transition-colors flex items-center gap-1"
-                            >
-                              <Send size={10} />
-                              Email
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            )}
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+              <Send size={14} />
+            </div>
+            <h3 className="">Total Sent</h3>
           </div>
+          <p className="text-4xl font-black text-slate-800 dark:text-white mt-4">{analytics.totalSent}</p>
+          <p className="text-[10px] font-bold text-slate-400 uppercase mt-2">All time automated emails</p>
         </div>
 
-        {/* RIGHT PANEL: LEAD DETAILS / EMAIL COMPOSER */}
-        <div className="flex-1 flex flex-col bg-white/80 dark:bg-[#151B2E]/80 backdrop-blur-xl border-2 border-purple-200/40 dark:border-purple-500/20 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)] overflow-hidden">
-          
-          {!selectedLead ? (
-            /* EMPTY STATE */
-            <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
-              <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white shadow-2xl shadow-indigo-500/30 dark:shadow-indigo-500/50 mb-6 transform hover:scale-105 transition-transform">
-                <Mail size={48} />
+        {/* Card 2: Total Replies */}
+        <div className="neu-flat p-6 transition-all duration-300">
+          <div className="absolute top-0 right-0 w-1 h-full bg-emerald-500 rounded-r-2xl" />
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+              <MessageSquare size={14} />
+            </div>
+            <h3 className="">Hot Replies</h3>
+          </div>
+          <p className="text-4xl font-black text-slate-800 dark:text-white mt-4 text-emerald-600 dark:text-emerald-400">{analytics.totalReplies}</p>
+          <p className="text-[10px] font-bold text-slate-400 uppercase mt-2">Leads waiting for manual action</p>
+        </div>
+
+        {/* Card 3: Queued For Today */}
+        <div className="neu-flat p-6 relative overflow-hidden">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400">
+              <Clock size={14} />
+            </div>
+            <h3 className="">Queued / Active</h3>
+          </div>
+          <p className="text-4xl font-black text-slate-800 dark:text-white mt-4">{analytics.queuedCount}</p>
+          <p className="text-[10px] font-bold text-slate-400 uppercase mt-2">Scheduled & Pending Follow-ups</p>
+        </div>
+
+        {/* Card 4: Quota Usage Today */}
+        <div className="neu-flat p-6 relative overflow-hidden">
+          <div className="flex justify-between items-start mb-2">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center text-purple-600 dark:text-purple-400">
+                <Activity size={14} />
               </div>
-              
-              <h3 className="text-3xl font-jakarta font-black text-slate-800 dark:text-white mb-3">
-                Select a Lead
-              </h3>
-              
-              <p className="text-[15px] font-inter leading-relaxed tracking-wide text-slate-600 dark:text-slate-400 max-w-md">
-                Choose a lead from the list to view details and send personalized outreach emails.
+              <h3 className="">Quota Today</h3>
+            </div>
+          </div>
+          <div className="mt-4">
+            <div className="flex justify-between items-end mb-1">
+              <p className="text-3xl font-black text-slate-800 dark:text-white">
+                {analytics.totalSentToday} <span className="text-sm text-slate-400 font-bold">/ {analytics.totalDailyQuota}</span>
               </p>
             </div>
-          ) : showComposer ? (
-            /* EMAIL COMPOSER */
-            <div className="flex-1 flex flex-col lg:flex-row gap-4">
-              {/* Main Composer */}
-              <div className="flex-1 flex flex-col">
-                {/* Composer Header */}
-                <div className="px-6 py-4 border-b-2 border-slate-200 dark:border-slate-700 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-slate-800 dark:to-purple-900/20">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-sm font-jakarta font-black uppercase tracking-widest text-slate-800 dark:text-white flex items-center gap-2">
-                        <Send size={20} className="text-indigo-600 dark:text-indigo-400" />
-                        Compose Email
-                      </h3>
-                      <p className="text-[15px] font-inter text-slate-600 dark:text-slate-400 mt-1">
-                        To: {selectedLead.email}
-                      </p>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => setShowAIPanel(!showAIPanel)}
-                        className={`px-6 py-3 text-sm font-jakarta font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg ${
-                          showAIPanel
-                            ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-purple-500/30 dark:shadow-purple-500/50'
-                            : 'bg-white dark:bg-slate-800 text-purple-600 dark:text-purple-400 border-2 border-purple-200 dark:border-purple-800 hover:border-purple-400 hover:shadow-purple-500/20'
-                        }`}
-                      >
-                        <Sparkles size={16} />
-                        AI Assistant
-                      </button>
-                      
-                      <button
-                        onClick={() => setShowComposer(false)}
-                        className="px-6 py-3 text-sm font-jakarta font-bold text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    </div>
+            <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mt-3">
+              <div 
+                className="h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500"
+                style={{ width: `${analytics.totalDailyQuota > 0 ? Math.min(100, (analytics.totalSentToday / analytics.totalDailyQuota) * 100) : 0}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="neu-flat overflow-hidden">
+        
+        {/* Tabs */}
+        <div className="flex border-b border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-slate-900/50">
+          <button
+            onClick={() => setActiveTab('inbox')}
+            className={`flex-1 py-5 flex items-center justify-center gap-3 font-black tracking-widest uppercase text-sm transition-all ${activeTab === 'inbox' ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-500' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+          >
+            <MessageSquare size={18} />
+            Hot Inbox <span className="bg-emerald-500 text-white px-2 py-0.5 rounded-full text-[10px] ml-1">{hotInboxLeads.length}</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('pipeline')}
+            className={`flex-1 py-5 flex items-center justify-center gap-3 font-black tracking-widest uppercase text-sm transition-all ${activeTab === 'pipeline' ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-500' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+          >
+            <Clock size={18} />
+            Active Pipeline
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        <div className="p-6">
+          
+          {/* INBOX TAB */}
+          {activeTab === 'inbox' && (
+            <div>
+              {hotInboxLeads.length === 0 ? (
+                <div className="py-20 flex flex-col items-center justify-center text-slate-400">
+                  <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+                    <CheckCircle size={32} className="text-slate-300 dark:text-slate-600" />
                   </div>
+                  <h3 className="mb-2">Inbox Zero</h3>
+                  <p className="text-sm text-center max-w-sm">No new replies to action right now. When clients reply to your automated emails, they will appear here so you can manually close the deal.</p>
                 </div>
-
-                {/* Composer Body */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                  <div>
-                    <label className="text-sm font-jakarta font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 mb-2 block">
-                      Subject
-                    </label>
-                    <input
-                      type="text"
-                      value={subject}
-                      onChange={(e) => setSubject(e.target.value)}
-                      className="w-full px-4 py-3 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-indigo-500 text-[15px] font-inter"
-                      placeholder="Email subject..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-jakarta font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 mb-2 block">
-                      Message
-                    </label>
-                    <textarea
-                      value={body}
-                      onChange={(e) => setBody(e.target.value)}
-                      rows={12}
-                      className="w-full px-4 py-3 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-indigo-500 text-[15px] font-inter leading-relaxed resize-none"
-                      placeholder="Write your message..."
-                    />
-                  </div>
-                </div>
-
-                {/* Composer Footer */}
-                <div className="px-6 py-4 border-t-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                  <button
-                    onClick={handleSend}
-                    disabled={isSending || !subject || !body}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-jakarta font-bold text-sm rounded-xl hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] dark:hover:shadow-[0_0_20px_rgba(99,102,241,0.6)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSending ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        Sending...
-                      </>
-                    ) : (
-                      <>
-                        <Send size={18} />
-                        Send Email
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* AI Assistant Panel */}
-              {showAIPanel && (
-                <div className="w-full lg:w-[400px] flex flex-col bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-2 border-purple-300 dark:border-purple-700 rounded-2xl overflow-hidden flex-shrink-0">
-                  {/* AI Panel Header */}
-                  <div className="px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Sparkles size={20} />
-                        <h3 className="text-lg font-bold">Gemini AI Assistant</h3>
-                      </div>
-                      <button
-                        onClick={() => setShowAIPanel(false)}
-                        className="p-1 hover:bg-white/20 rounded-lg transition-colors"
-                      >
-                        <X size={18} />
-                      </button>
-                    </div>
-                    <p className="text-xs text-purple-100 mt-1">
-                      Generate emails with custom commands & file attachments
-                    </p>
-                  </div>
-
-                  {/* AI Chat History */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                    {aiHistory.length === 0 ? (
-                      <div className="text-center py-8 text-slate-500 dark:text-slate-400">
-                        <Sparkles size={32} className="mx-auto mb-3 opacity-30" />
-                        <p className="text-sm font-bold">Start a conversation</p>
-                        <p className="text-xs mt-1">Ask AI to generate or refine your email</p>
-                        
-                        <div className="mt-6 space-y-2 text-left">
-                          <p className="text-xs font-bold text-purple-600 dark:text-purple-400">Quick Commands:</p>
-                          <button
-                            onClick={() => setAiPrompt('Write a cold email pitch')}
-                            className="w-full text-left px-3 py-2 bg-white dark:bg-slate-800 rounded-lg text-xs hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
-                          >
-                            💡 Write a cold email pitch
-                          </button>
-                          <button
-                            onClick={() => setAiPrompt('Write a follow-up email')}
-                            className="w-full text-left px-3 py-2 bg-white dark:bg-slate-800 rounded-lg text-xs hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
-                          >
-                            📧 Write a follow-up email
-                          </button>
-                          <button
-                            onClick={() => setAiPrompt('Make it shorter and more direct')}
-                            className="w-full text-left px-3 py-2 bg-white dark:bg-slate-800 rounded-lg text-xs hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
-                          >
-                            ✂️ Make it shorter
-                          </button>
-                          <button
-                            onClick={() => setAiPrompt('Write in Bengali')}
-                            className="w-full text-left px-3 py-2 bg-white dark:bg-slate-800 rounded-lg text-xs hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
-                          >
-                            🇧🇩 Write in Bengali
-                          </button>
+              ) : (
+                <div className="grid grid-cols-1 gap-4">
+                  {hotInboxLeads.map(lead => (
+                    <div key={lead._id} className="p-5 rounded-2xl border-2 border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/50 dark:bg-emerald-900/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <div 
+                          style={{ background: getAvatarGradient(lead.company_name) }}
+                          className="h-14 w-14 rounded-2xl flex items-center justify-center text-white text-lg font-bold shadow-lg flex-shrink-0"
+                        >
+                          {lead.company_name.substring(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                            <h4 className="">{lead.company_name}</h4>
+                            {lead.targetService && (
+                              <span className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-400 text-[9px] font-black uppercase px-2 py-0.5 rounded-md border border-indigo-200 dark:border-indigo-800/50">
+                                {lead.targetService}
+                              </span>
+                            )}
+                            <span className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400 text-[9px] font-black uppercase px-2 py-0.5 rounded-md">Automations Paused</span>
+                          </div>
+                          <p className="text-sm font-medium text-slate-600 dark:text-slate-400 flex items-center gap-2 mb-1">
+                            <User size={14} /> {lead.contact_person || 'No Contact Person'} • {lead.email}
+                          </p>
+                          {lead.last_reply_subject && (
+                            <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 mt-1">
+                              <MessageSquare size={12} className="text-emerald-500" />
+                              <span className="opacity-70">Subject:</span> {lead.last_reply_subject}
+                            </p>
+                          )}
                         </div>
                       </div>
-                    ) : (
-                      aiHistory.map((msg, idx) => (
-                        <div
-                          key={idx}
-                          className={`p-3 rounded-xl text-sm ${
-                            msg.role === 'user'
-                              ? 'bg-purple-600 text-white ml-8'
-                              : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 mr-8'
-                          }`}
+                      <div className="flex items-center gap-3 w-full md:w-auto">
+                        <button 
+                          onClick={() => handleCreateProposal(lead)}
+                          disabled={isCreatingProposalFor === lead._id}
+                          className="flex items-center gap-2.5 px-6 py-3 neu-button text-slate-800 dark:text-slate-200 font-jakarta font-bold rounded-xl text-sm disabled:opacity-50"
                         >
-                          <div className="font-bold text-xs mb-1 opacity-70">
-                            {msg.role === 'user' ? 'You' : 'Gemini AI'}
-                          </div>
-                          <div className="whitespace-pre-wrap text-xs leading-relaxed">
-                            {msg.text}
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  {/* File Attachment Display */}
-                  {attachedFile && (
-                    <div className="px-4 py-2 bg-white dark:bg-slate-800 border-t-2 border-purple-200 dark:border-purple-800">
-                      <div className="flex items-center gap-2 p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                        {attachedFile.mimeType.startsWith('image/') ? (
-                          <Image size={16} className="text-purple-600 dark:text-purple-400" />
-                        ) : (
-                          <FileText size={16} className="text-purple-600 dark:text-purple-400" />
-                        )}
-                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex-1 truncate">
-                          {attachedFile.name}
-                        </span>
-                        <button
-                          onClick={() => setAttachedFile(null)}
-                          className="p-1 hover:bg-purple-200 dark:hover:bg-purple-800 rounded transition-colors"
-                        >
-                          <X size={14} />
+                          {isCreatingProposalFor === lead._id ? (
+                            <span className="animate-pulse">Creating...</span>
+                          ) : (
+                            <>
+                              <Plus size={20} strokeWidth={2.5} className="text-indigo-500" /> Create Proposal
+                            </>
+                          )}
                         </button>
                       </div>
                     </div>
-                  )}
-
-                  {/* AI Input */}
-                  <div className="p-4 bg-white dark:bg-slate-800 border-t-2 border-purple-200 dark:border-purple-800">
-                    <div className="flex gap-2 mb-2">
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*,.pdf,.txt"
-                        onChange={handleFileAttach}
-                        className="hidden"
-                      />
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
-                        className="p-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors"
-                        title="Attach file (Image, PDF, Text)"
-                      >
-                        <Paperclip size={18} />
-                      </button>
-                      
-                      <input
-                        type="text"
-                        value={aiPrompt}
-                        onChange={(e) => setAiPrompt(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && !isGenerating && handleAIGenerate()}
-                        placeholder="Ask AI to generate or refine..."
-                        className="flex-1 px-4 py-2 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:border-purple-500 text-sm"
-                        disabled={isGenerating}
-                      />
-                      
-                      <button
-                        onClick={handleAIGenerate}
-                        disabled={isGenerating || !aiPrompt.trim()}
-                        className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                      >
-                        {isGenerating ? (
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <Sparkles size={16} />
-                        )}
-                      </button>
-                    </div>
-                    
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                      💡 Attach images, PDFs, or text files for AI analysis
-                    </p>
-                  </div>
+                  ))}
                 </div>
               )}
             </div>
-          ) : (
-            /* LEAD DETAILS */
-            <div className="flex-1 overflow-y-auto">
-              {/* Lead Header */}
-              <div className="px-6 py-6 border-b-2 border-slate-200 dark:border-slate-700 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-slate-800 dark:to-purple-900/20">
-                <div className="flex items-start gap-4">
-                  <div 
-                    style={{ background: getAvatarGradient(selectedLead.company_name) }}
-                    className="h-16 w-16 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-xl flex-shrink-0"
-                  >
-                    {selectedLead.company_name.split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase()}
-                  </div>
-                  
-                  <div className="flex-1">
-                    <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">
-                      {selectedLead.company_name}
-                    </h2>
-                    
-                    {(() => {
-                      const status = getStatusConfig(selectedLead.outreach_status);
-                      return (
-                        <span className={`inline-flex items-center gap-2 text-sm font-bold px-3 py-1.5 rounded-lg border ${status.bg} ${status.text} ${status.border}`}>
-                          {status.icon}
-                          {selectedLead.outreach_status}
-                        </span>
-                      );
-                    })()}
-                  </div>
+          )}
+
+          {/* PIPELINE TAB */}
+          {activeTab === 'pipeline' && (
+            <div>
+              {activePipelineLeads.length === 0 ? (
+                <div className="py-20 flex flex-col items-center justify-center text-slate-400">
+                  <Clock size={48} className="opacity-20 mb-4" />
+                  <h3 className="mb-2">Pipeline Empty</h3>
+                  <p className="text-sm">Go to Leads to schedule new automated outreach.</p>
                 </div>
-              </div>
-
-              {/* Lead Info */}
-              <div className="p-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {selectedLead.contact_person && (
-                    <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
-                      <User size={20} className="text-indigo-600 dark:text-indigo-400" />
-                      <div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">Contact Person</div>
-                        <div className="text-sm font-bold text-slate-800 dark:text-white">{selectedLead.contact_person}</div>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {activePipelineLeads.map(lead => (
+                    <div key={lead._id} className="p-4 rounded-xl border border-slate-200 dark:border-slate-700/50 bg-white/50 dark:bg-slate-800/30 flex items-start gap-4">
+                      <div 
+                        style={{ background: getAvatarGradient(lead.company_name) }}
+                        className="h-10 w-10 rounded-xl flex items-center justify-center text-white text-xs font-bold shadow-md flex-shrink-0"
+                      >
+                        {lead.company_name.substring(0, 2).toUpperCase()}
                       </div>
-                    </div>
-                  )}
-
-                  {selectedLead.email && (
-                    <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
-                      <Mail size={20} className="text-indigo-600 dark:text-indigo-400" />
-                      <div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">Email</div>
-                        <div className="text-sm font-bold text-slate-800 dark:text-white">{selectedLead.email}</div>
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedLead.phone && (
-                    <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
-                      <Phone size={20} className="text-indigo-600 dark:text-indigo-400" />
-                      <div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">Phone</div>
-                        <div className="text-sm font-bold text-slate-800 dark:text-white">{selectedLead.phone}</div>
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedLead.website_url && (
-                    <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
-                      <Globe size={20} className="text-indigo-600 dark:text-indigo-400" />
-                      <div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">Website</div>
-                        <a href={selectedLead.website_url} target="_blank" rel="noreferrer" className="text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
-                          Visit Site
-                        </a>
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedLead.nextFollowUpDate && (
-                    <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
-                      <Calendar size={20} className="text-indigo-600 dark:text-indigo-400" />
-                      <div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">Next Follow-up</div>
-                        <div className="text-sm font-bold text-slate-800 dark:text-white">
-                          {new Date(selectedLead.nextFollowUpDate).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric'
-                          })}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start mb-1">
+                          <h4 className="truncate">{lead.company_name}</h4>
+                          <span className="text-[10px] font-black uppercase text-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-0.5 rounded-md border border-indigo-100 dark:border-indigo-800">
+                            {lead.outreach_status}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-4 mt-2">
+                          <div className="flex flex-col">
+                            <span className="text-[9px] font-bold text-slate-400 uppercase">Follow-ups Sent</span>
+                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{lead.follow_up_count} / 3</span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[9px] font-bold text-slate-400 uppercase">Next Action Due</span>
+                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                              {lead.nextFollowUpDate ? new Date(lead.nextFollowUpDate).toLocaleDateString() : (lead.outreach_scheduled_for ? new Date(lead.outreach_scheduled_for).toLocaleDateString() : 'Not Scheduled')}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  )}
+                  ))}
                 </div>
-
-                {selectedLead.targetService && (
-                  <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border-2 border-indigo-200 dark:border-indigo-800">
-                    <div className="text-xs text-indigo-600 dark:text-indigo-400 font-bold mb-1">Target Service</div>
-                    <div className="text-sm font-bold text-slate-800 dark:text-white">{selectedLead.targetService}</div>
-                  </div>
-                )}
-
-                {selectedLead.email && (
-                  <button
-                    onClick={() => handleCompose(selectedLead)}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:shadow-lg transition-all"
-                  >
-                    <Send size={18} />
-                    Compose Email
-                  </button>
-                )}
-              </div>
+              )}
             </div>
           )}
+
         </div>
       </div>
     </div>

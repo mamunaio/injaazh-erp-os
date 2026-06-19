@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function MarketplaceClientsPage() {
   const authUser = await getAuthUser();
-  if (!authUser || authUser.role === 'team_member') {
+  if (!authUser || !['owner', 'admin', 'marketplace_team'].includes(authUser.role)) {
     redirect('/dashboard');
   }
 
@@ -63,7 +63,7 @@ export default async function MarketplaceClientsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0a0f1c] p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen neu-base-bg p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
         <ClientHubClient initialClients={clientsWithSpending} />
       </div>

@@ -1,0 +1,228 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { Mail, Plus, Trash2, CheckCircle, XCircle, Activity, AlertTriangle } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { addEmailAccount, getEmailAccounts, deleteEmailAccount, updateEmailAccountStatus } from '@/app/actions/emailAccountActions';
+
+export default function EmailAccountsManager() {
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAdding, setIsAdding] = useState(false);
+  const [email, setEmail] = useState('');
+  const [appPassword, setAppPassword] = useState('');
+  const [dailyLimit, setDailyLimit] = useState(15);
+  const [showGuide, setShowGuide] = useState(false);
+
+  const fetchAccounts = async () => {
+    setIsLoading(true);
+    const res = await getEmailAccounts();
+    if (res.success && res.accounts) {
+      setAccounts(res.accounts);
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    fetchAccounts();
+  }, []);
+
+  const handleAddAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !appPassword) {
+      toast.error('Email and App Password are required');
+      return;
+    }
+
+    setIsAdding(true);
+    toast.loading('Verifying and adding account...', { id: 'add-acc' });
+
+    const res = await addEmailAccount({ email, appPassword, dailyLimit });
+    
+    if (res.success && res.account) {
+      toast.success('Account added successfully!', { id: 'add-acc' });
+      setEmail('');
+      setAppPassword('');
+      setDailyLimit(15);
+      setAccounts([res.account, ...accounts]);
+    } else {
+      toast.error(res.error || 'Failed to add account', { id: 'add-acc' });
+    }
+    setIsAdding(false);
+  };
+
+  const handleToggleStatus = async (id: string, currentStatus: boolean) => {
+    const res = await updateEmailAccountStatus(id, !currentStatus);
+    if (res.success) {
+      setAccounts(accounts.map(acc => acc._id === id ? { ...acc, isActive: !currentStatus } : acc));
+      toast.success(`Account ${!currentStatus ? 'activated' : 'paused'} successfully`);
+    } else {
+      toast.error('Failed to update status');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to remove this email account?')) return;
+    
+    const res = await deleteEmailAccount(id);
+    if (res.success) {
+      setAccounts(accounts.filter(acc => acc._id !== id));
+      toast.success('Account removed successfully');
+    } else {
+      toast.error('Failed to remove account');
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Add New Account Form */}
+      <div className="p-6 rounded-3xl bg-indigo-500/5 border border-indigo-500/10">
+        <h3 className="mb-4 flex items-center gap-2">
+          <Mail className="text-indigo-500" size={20} />
+          Add New Gmail Account
+        </h3>
+        <p className="text-sm text-slate-500 mb-6">
+          Connect your Google accounts using an App Password. These accounts will be used in rotation for automated outreach.
+        </p>
+
+        <form onSubmit={handleAddAccount} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+          <div className="md:col-span-1">
+            <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Gmail Address</label>
+            <input 
+              type="email" 
+              placeholder="team@gmail.com"
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              className="w-full px-4 py-3 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+            />
+          </div>
+          <div className="md:col-span-1">
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">App Password</label>
+              <button 
+                type="button" 
+                onClick={() => setShowGuide(!showGuide)}
+                className="text-xs font-black text-indigo-500 hover:text-indigo-600 transition-colors underline decoration-indigo-500/30 underline-offset-2"
+              >
+                {showGuide ? 'Hide Guide' : 'How to get this?'}
+              </button>
+            </div>
+            <input 
+              type="password" 
+              placeholder="16-digit code"
+              value={appPassword} 
+              onChange={(e) => setAppPassword(e.target.value)} 
+              className="w-full px-4 py-3 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+            />
+          </div>
+          <div className="md:col-span-1">
+            <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Daily Limit</label>
+            <input 
+              type="number" 
+              min="1"
+              value={dailyLimit} 
+              onChange={(e) => setDailyLimit(parseInt(e.target.value) || 15)} 
+              className="w-full px-4 py-3 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+            />
+          </div>
+          <div className="md:col-span-1">
+            <button 
+              type="submit" 
+              disabled={isAdding}
+              className="w-full flex justify-center items-center gap-2 px-6 py-3 neu-button text-indigo-500 dark:text-indigo-400 font-bold rounded-2xl transition-all text-sm disabled:opacity-70"
+            >
+              {isAdding ? <Activity size={16} className="animate-spin" /> : <Plus size={16} />}
+              {isAdding ? 'Verifying...' : 'Add Account'}
+            </button>
+          </div>
+        </form>
+
+        {showGuide && (
+          <div className="mt-6 p-5 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-indigo-200 dark:border-indigo-500/20 text-sm">
+            <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-3 text-base">কীভাবে 16-digit App Password পাবেন?</h4>
+            <ol className="list-decimal pl-5 space-y-2 text-slate-600 dark:text-slate-400">
+              <li>আপনার জিমেইলে লগ-ইন করে <a href="https://myaccount.google.com/" target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:text-indigo-600 underline decoration-indigo-500/30 underline-offset-2 font-bold">Manage your Google Account</a>-এ যান।</li>
+              <li>বামদিকের মেনু থেকে <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:text-indigo-600 underline decoration-indigo-500/30 underline-offset-2 font-bold">Security</a>-তে ক্লিক করুন।</li>
+              <li>নিশ্চিত করুন যে আপনার <b>2-Step Verification</b> চালু (On) করা আছে।</li>
+              <li>Security পেজের সার্চ বারে <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:text-indigo-600 underline decoration-indigo-500/30 underline-offset-2 font-bold">"App passwords"</a> লিখে সার্চ করুন এবং ওপেন করুন (অথবা সরাসরি এই লিংকে ক্লিক করুন)।</li>
+              <li><b>Select app</b>-এ ক্লিক করে <b>Other</b> সিলেক্ট করুন এবং নাম দিন <b>Injaazh ERP</b>।</li>
+              <li><b>Generate</b>-এ ক্লিক করলে হলুদ বক্সে <b>১৬-ডিজিটের একটি কোড</b> পাবেন। ওই কোডটিই হলো আপনার App Password, যেটি এখানে পেস্ট করতে হবে!</li>
+            </ol>
+          </div>
+        )}
+      </div>
+
+      {/* Accounts List */}
+      <div>
+        <h3 className="mb-4">
+          Connected Accounts
+        </h3>
+        {isLoading ? (
+          <div className="flex justify-center p-8 text-indigo-500">
+            <Activity className="animate-spin" />
+          </div>
+        ) : accounts.length === 0 ? (
+          <div className="p-8 text-center text-slate-500 bg-white/30 dark:bg-slate-800/30 rounded-3xl border border-slate-200 dark:border-slate-800">
+            No accounts connected yet. Add one above to start sending automated emails.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {accounts.map(account => (
+              <div key={account._id} className={`p-5 rounded-2xl border ${account.isActive ? 'bg-white/80 dark:bg-slate-800/80 border-indigo-500/20' : 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800'} relative overflow-hidden transition-all`}>
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${account.isActive ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400' : 'bg-slate-200 text-slate-500 dark:bg-slate-800'}`}>
+                      <Mail size={18} />
+                    </div>
+                    <div>
+                      <h4 className="truncate max-w-[150px]" title={account.email}>
+                        {account.email}
+                      </h4>
+                      <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${account.isActive ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400' : 'bg-slate-200 text-slate-500 dark:bg-slate-800'}`}>
+                        {account.isActive ? 'Active' : 'Paused'}
+                      </span>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => handleDelete(account._id)}
+                    className="p-1.5 text-rose-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+
+                {/* Quota Progress */}
+                <div className="mb-4">
+                  <div className="flex justify-between items-end mb-1">
+                    <span className="text-xs font-semibold text-slate-500">Daily Quota</span>
+                    <span className="text-xs font-black text-slate-700 dark:text-slate-300">
+                      {account.sentToday} / {account.dailyLimit}
+                    </span>
+                  </div>
+                  <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full ${account.sentToday >= account.dailyLimit ? 'bg-rose-500' : 'bg-gradient-to-r from-indigo-500 to-purple-500'}`}
+                      style={{ width: `${Math.min(100, (account.sentToday / account.dailyLimit) * 100)}%` }}
+                    />
+                  </div>
+                  {account.sentToday >= account.dailyLimit && (
+                    <p className="text-[10px] font-semibold text-rose-500 mt-1 flex items-center gap-1">
+                      <AlertTriangle size={10} /> Quota Exhausted for today
+                    </p>
+                  )}
+                </div>
+
+                <button 
+                  onClick={() => handleToggleStatus(account._id, account.isActive)}
+                  className={`w-full py-2 rounded-xl text-xs font-bold border transition-colors ${account.isActive ? 'border-amber-200 text-amber-600 hover:bg-amber-50 dark:border-amber-500/30 dark:text-amber-400 dark:hover:bg-amber-500/10' : 'border-indigo-200 text-indigo-600 hover:bg-indigo-50 dark:border-indigo-500/30 dark:text-indigo-400 dark:hover:bg-indigo-500/10'}`}
+                >
+                  {account.isActive ? 'Pause Account' : 'Activate Account'}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

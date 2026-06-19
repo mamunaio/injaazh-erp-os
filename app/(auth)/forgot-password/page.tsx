@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
       >
         <div className="bg-white/5 backdrop-blur-2xl border border-white/10 p-8 rounded-3xl shadow-2xl">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-fuchsia-400 tracking-tight drop-shadow-sm mb-2">
+            <h1 className="mb-2">
               Forgot Password
             </h1>
             <p className="text-slate-400 font-medium">
@@ -89,7 +89,7 @@ export default function ForgotPasswordPage() {
               <div className="w-16 h-16 bg-violet-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-violet-500/30">
                 <Mail className="text-violet-400" size={32} />
               </div>
-              <h3 className="text-white font-bold text-xl mb-2">Check your email</h3>
+              <h3 className="mb-2">Check your email</h3>
               <p className="text-slate-400 text-sm mb-6">
                 If an account exists for that email, we have sent password reset instructions. (Check your terminal console for the mock link!)
               </p>

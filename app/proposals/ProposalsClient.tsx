@@ -152,11 +152,11 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
   };
 
   return (
-    <div className="min-h-screen p-8 text-slate-800 dark:text-slate-200">
+    <div className="min-h-screen neu-base-bg p-8 text-slate-800 dark:text-slate-200">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
         <div>
-          <h1 className="text-6xl md:text-7xl font-jakarta font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 mb-3">
+          <h1 className="mb-3">
             Smart Proposals
           </h1>
           <p className="text-[15px] font-inter leading-relaxed tracking-wide text-slate-500 dark:text-gray-400">Design, send, and track stunning client proposals</p>
@@ -164,7 +164,7 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
 
         <div className="flex items-center gap-4 flex-wrap">
           {/* Dynamic Stat Badges */}
-          <div className="flex bg-white/70 dark:bg-purple-950/10 backdrop-blur-md border border-slate-200 dark:border-purple-500/10 rounded-xl overflow-hidden shadow-sm dark:shadow-none">
+          <div className="flex neu-flat overflow-hidden">
             <div className="px-4 py-2 border-r border-slate-200 dark:border-purple-500/10">
               <span className="text-xs font-inter text-slate-500 dark:text-gray-400 block mb-0.5">Active</span>
               <span className="text-sm font-mono font-bold text-slate-800 dark:text-white">{stats.activeCount}</span>
@@ -194,7 +194,7 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
           <button 
             onClick={handleCreateProposal}
             disabled={isCreating}
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-xl hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/30 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+            className="flex items-center gap-2 px-5 py-2.5 neu-button text-indigo-500 font-medium rounded-xl transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isCreating ? (
               <>
@@ -211,14 +211,14 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
 
       {/* Empty State */}
       {proposals.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white/70 dark:bg-purple-950/10 backdrop-blur-3xl border border-slate-200 dark:border-purple-500/10 rounded-3xl shadow-sm">
+        <div className="flex flex-col items-center justify-center py-20 neu-flat">
           <FileText size={64} className="text-slate-300 dark:text-slate-700 mb-4" />
-          <h3 className="text-2xl font-jakarta font-black text-slate-600 dark:text-slate-400 mb-2">No proposals found</h3>
+          <h3 className="mb-2">No proposals found</h3>
           <p className="text-[15px] font-inter leading-relaxed tracking-wide text-slate-500 dark:text-slate-500 mb-6">Create your first proposal to get started</p>
           <button 
             onClick={handleCreateProposal}
             disabled={isCreating}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-jakarta font-bold text-sm rounded-xl hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+            className="flex items-center gap-2 px-6 py-3 neu-button text-indigo-500 font-jakarta font-bold text-sm rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isCreating ? (
               <>
@@ -250,7 +250,7 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
               >
                 <div className="relative">
                   <Link href={`/proposals/${proposal._id}`} className="block">
-                    <div className="group bg-white/80 dark:bg-[#151B2E]/80 backdrop-blur-2xl border border-slate-200 dark:border-purple-500/10 rounded-2xl p-6 shadow-sm dark:shadow-none hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-[0_0_30px_-5px_rgba(168,85,247,0.15)] hover:border-indigo-200 dark:hover:border-purple-500/30 transition-all duration-300 flex flex-col cursor-pointer relative overflow-hidden h-full">
+                    <div className="group neu-flat p-6 transition-all duration-300 flex flex-col cursor-pointer relative overflow-hidden h-full hover:-translate-y-1">
                       {/* Top Row: Client & Options */}
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center gap-3">
@@ -258,7 +258,7 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
                             <FileText size={20} />
                           </div>
                           <div>
-                            <h3 className="text-sm font-jakarta font-bold text-slate-800 dark:text-white line-clamp-1">{proposal.clientName}</h3>
+                            <h3 className="line-clamp-1">{proposal.clientName}</h3>
                             <p className="text-xs font-inter text-slate-500 dark:text-gray-400">Client</p>
                           </div>
                         </div>
@@ -278,7 +278,7 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, y: -10 }}
                                 transition={{ duration: 0.15 }}
-                                className="absolute right-0 top-8 z-50 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden"
+                                className="absolute right-0 top-8 z-50 w-48 neu-flat overflow-hidden"
                               >
                                 <button
                                   onClick={(e) => handleEditClick(proposal._id, e)}
@@ -301,7 +301,7 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
                       </div>
 
                     {/* Title */}
-                    <h2 className="text-xl font-jakarta font-black text-slate-900 dark:text-slate-100 mb-6 line-clamp-2 leading-tight">
+                    <h2 className="mb-6 line-clamp-2">
                       {proposal.title}
                     </h2>
 
@@ -345,14 +345,14 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2 }}
-              className="relative w-full max-w-md bg-white dark:bg-slate-900 backdrop-blur-2xl border border-red-200 dark:border-red-500/30 rounded-3xl p-8 shadow-2xl"
+              className="relative w-full max-w-md neu-flat rounded-3xl p-8"
             >
               <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center mb-4">
-                  <Trash2 size={32} className="text-red-600 dark:text-red-400" />
+                <div className="w-16 h-16 rounded-full neu-pressed flex items-center justify-center mb-4">
+                  <Trash2 size={32} className="text-red-500" />
                 </div>
                 
-                <h3 className="text-3xl font-jakarta font-black text-slate-900 dark:text-white mb-2">
+                <h3 className="mb-2">
                   Delete Proposal?
                 </h3>
                 
@@ -374,14 +374,14 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
                       setProposalToDelete(null);
                     }}
                     disabled={deletingId !== null}
-                    className="flex-1 px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-gray-300 font-jakarta font-bold text-sm rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+                    className="flex-1 px-6 py-3 neu-button text-slate-700 dark:text-gray-300 font-jakarta font-bold text-sm rounded-xl transition-all disabled:opacity-50"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleDeleteConfirm}
                     disabled={deletingId !== null}
-                    className="flex-1 px-6 py-3 bg-red-600 text-white font-jakarta font-bold text-sm rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex-1 px-6 py-3 neu-button text-red-500 font-jakarta font-bold text-sm rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {deletingId ? (
                       <>

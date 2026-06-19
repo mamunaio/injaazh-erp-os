@@ -173,16 +173,16 @@ export default function AddTransactionModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md">
+      <div className="neu-flat rounded-[2.5rem] shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-slate-200 dark:border-slate-700">
           <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Add Transaction</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            className="text-slate-400 hover:text-red-500 transition-all neu-flat p-2.5 rounded-xl hover:-translate-y-1"
           >
-            <X size={24} className="text-slate-600 dark:text-slate-400" />
+            <X size={20} />
           </button>
         </div>
 
@@ -198,7 +198,7 @@ export default function AddTransactionModal({
               <select
                 value={formData.platform}
                 onChange={(e) => setFormData({ ...formData, platform: e.target.value })}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-800 dark:text-slate-200"
+                className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm font-medium focus:outline-none transition-all appearance-none"
                 required
               >
                 <option value="Freelancer">Freelancer</option>
@@ -216,7 +216,7 @@ export default function AddTransactionModal({
               <select
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-800 dark:text-slate-200"
+                className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm font-medium focus:outline-none transition-all appearance-none"
                 required
               >
                 <option value="Income">Income</option>
@@ -239,7 +239,7 @@ export default function AddTransactionModal({
                 value={formData.amount}
                 onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                 placeholder="0.00"
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-800 dark:text-slate-200"
+                className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm font-medium focus:outline-none transition-all"
                 required
               />
             </div>
@@ -253,7 +253,7 @@ export default function AddTransactionModal({
                 type="date"
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-800 dark:text-slate-200"
+                className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm font-medium focus:outline-none transition-all"
                 required
               />
             </div>
@@ -267,7 +267,7 @@ export default function AddTransactionModal({
             <select
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-800 dark:text-slate-200"
+              className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm font-medium focus:outline-none transition-all appearance-none"
               required
             >
               {CATEGORIES.map((cat) => (
@@ -286,7 +286,7 @@ export default function AddTransactionModal({
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Add notes about this transaction..."
               rows={3}
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-800 dark:text-slate-200 resize-none"
+              className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-4 py-3 text-sm font-medium focus:outline-none transition-all resize-none"
             />
           </div>
 
@@ -295,13 +295,13 @@ export default function AddTransactionModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-6 py-3 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+              className="flex-1 px-6 py-3 neu-button text-slate-600 dark:text-slate-300 font-semibold rounded-xl transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-purple-500/50 transition-all"
+              className="flex-1 px-6 py-3 neu-button text-indigo-500 font-semibold rounded-xl transition-all"
             >
               Add Transaction
             </button>

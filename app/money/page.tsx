@@ -24,11 +24,11 @@ export default async function MoneyPage() {
     : { Freelancer: 0, Direct: 0, Upwork: 0, Fiverr: 0 };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-pink-50/30 dark:from-slate-950 dark:via-purple-950/20 dark:to-slate-950 p-4 md:p-8">
+    <div className="min-h-screen neu-base-bg p-4 md:p-8">
       {/* Project Analytics Section */}
       <div className="mb-8">
         {analyticsResult.error ? (
-          <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-500/20 rounded-2xl p-6 text-red-700 dark:text-red-400">
+          <div className="neu-flat rounded-[2rem] p-6 text-red-500">
             <p className="font-semibold">Failed to load project analytics</p>
             <p className="text-sm mt-1">{analyticsResult.error}</p>
           </div>

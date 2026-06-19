@@ -269,19 +269,19 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-6xl md:text-7xl font-jakarta font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-gray-400 mb-3">
+          <h1 className="mb-3">
             Personal Finances
           </h1>
           <p className="text-[15px] font-inter leading-relaxed tracking-wide text-slate-600 dark:text-gray-400">Track day-to-day expenditures and personal debts</p>
         </div>
         
-        <div className="flex bg-slate-200/50 dark:bg-slate-800/50 p-1 rounded-xl">
+        <div className="flex neu-pressed p-1 rounded-xl">
           <button
             onClick={() => setActiveTab('expenses')}
             className={`px-6 py-3 rounded-lg text-sm font-jakarta font-bold transition-all ${
               activeTab === 'expenses'
-                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'neu-button text-indigo-500'
+                : 'text-slate-500 hover:neu-flat'
             }`}
           >
             Daily Expenses
@@ -290,8 +290,8 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
             onClick={() => setActiveTab('debts')}
             className={`px-6 py-3 rounded-lg text-sm font-jakarta font-bold transition-all ${
               activeTab === 'debts'
-                ? 'bg-white dark:bg-slate-700 text-rose-600 dark:text-rose-400 shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'neu-button text-rose-500'
+                : 'text-slate-500 hover:neu-flat'
             }`}
           >
             Loans & Debts
@@ -300,14 +300,14 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
       </div>
 
       {/* Unified Controls Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-2 bg-slate-100/40 dark:bg-slate-900/30 backdrop-blur-md rounded-2xl border border-slate-200/50 dark:border-slate-800/80">
-        <div className="flex bg-slate-200/40 dark:bg-slate-800/30 p-1 rounded-xl overflow-x-auto whitespace-nowrap scrollbar-hide">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 neu-flat rounded-2xl p-4">
+        <div className="flex neu-pressed p-1 rounded-xl overflow-x-auto whitespace-nowrap scrollbar-hide">
           <button
             onClick={() => setTimeFilter('7days')}
             className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs font-jakarta font-bold transition-all ${
               timeFilter === '7days'
-                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'neu-button text-indigo-500'
+                : 'text-slate-500 hover:neu-flat'
             }`}
           >
             Last 7 Days
@@ -316,8 +316,8 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
             onClick={() => setTimeFilter('month')}
             className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs font-jakarta font-bold transition-all ${
               timeFilter === 'month'
-                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'neu-button text-indigo-500'
+                : 'text-slate-500 hover:neu-flat'
             }`}
           >
             This Month
@@ -326,8 +326,8 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
             onClick={() => setTimeFilter('year')}
             className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs font-jakarta font-bold transition-all ${
               timeFilter === 'year'
-                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'neu-button text-indigo-500'
+                : 'text-slate-500 hover:neu-flat'
             }`}
           >
             This Year
@@ -336,8 +336,8 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
             onClick={() => setTimeFilter('all')}
             className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs font-jakarta font-bold transition-all ${
               timeFilter === 'all'
-                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'neu-button text-indigo-500'
+                : 'text-slate-500 hover:neu-flat'
             }`}
           >
             All Time
@@ -350,7 +350,7 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
               setEditingExpense(null);
               setIsExpenseModalOpen(true);
             }}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl text-sm font-jakarta font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-[0.98]"
+            className="flex items-center justify-center gap-2 px-6 py-3 neu-button text-indigo-500 rounded-xl text-sm font-jakarta font-bold transition-all"
           >
             <Plus size={16} />
             <span>Log Expense</span>
@@ -361,7 +361,7 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
               setEditingDebt(null);
               setIsDebtModalOpen(true);
             }}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white rounded-xl text-sm font-jakarta font-bold shadow-lg shadow-rose-500/20 transition-all active:scale-[0.98]"
+            className="flex items-center justify-center gap-2 px-6 py-3 neu-button text-rose-500 rounded-xl text-sm font-jakarta font-bold transition-all"
           >
             <Plus size={16} />
             <span>Add Record</span>
@@ -381,7 +381,7 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
           >
             {/* Metrics Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white/80 dark:bg-[#151B2E]/80 backdrop-blur-3xl border border-slate-200 dark:border-purple-500/20 rounded-2xl p-6 shadow-xl flex items-center justify-between">
+              <div className="neu-flat rounded-[2rem] p-6 flex items-center justify-between">
                 <div>
                   <p className="text-slate-500 dark:text-gray-400 text-sm font-jakarta font-bold uppercase tracking-wider mb-1">
                     {timeFilter === '7days' && 'Spent (Last 7 Days)'}
@@ -389,22 +389,22 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
                     {timeFilter === 'year' && 'Spent (This Year)'}
                     {timeFilter === 'all' && 'Spent (All Time)'}
                   </p>
-                  <h3 className="text-4xl font-mono font-bold text-slate-800 dark:text-white">{formatCurrency(totalSpent)}</h3>
+                  <h3 className="">{formatCurrency(totalSpent)}</h3>
                 </div>
-                <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 border-2 border-indigo-100 dark:border-indigo-500/20 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-2xl neu-pressed flex items-center justify-center">
                   <Wallet size={24} className="text-indigo-500 dark:text-indigo-400" />
                 </div>
               </div>
-              <div className="bg-white/80 dark:bg-[#151B2E]/80 backdrop-blur-3xl border border-slate-200 dark:border-purple-500/20 rounded-2xl p-6 shadow-xl flex items-center justify-between">
+              <div className="neu-flat rounded-[2rem] p-6 flex items-center justify-between">
                 <div>
                   <p className="text-slate-500 dark:text-gray-400 text-sm font-jakarta font-bold uppercase tracking-wider mb-1">
                     {timeFilter === 'all' ? 'Spent (This Month)' : 'Spent (All Time)'}
                   </p>
-                  <h3 className="text-4xl font-mono font-bold text-slate-800 dark:text-white">
+                  <h3 className="">
                     {formatCurrency(timeFilter === 'all' ? currentMonthSpent : allTimeTotal)}
                   </h3>
                 </div>
-                <div className="w-14 h-14 rounded-2xl bg-pink-50 dark:bg-pink-500/10 border-2 border-pink-100 dark:border-pink-500/20 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-2xl neu-pressed flex items-center justify-center">
                   <Calendar size={24} className="text-pink-500 dark:text-pink-400" />
                 </div>
               </div>
@@ -412,8 +412,8 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Main Expenses Table */}
-              <div className="lg:col-span-2 bg-white/80 dark:bg-slate-900/50 backdrop-blur-3xl border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl overflow-hidden flex flex-col">
-                <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white/50 dark:bg-black/20">
+              <div className="neu-flat rounded-[2rem] overflow-hidden flex flex-col lg:col-span-2">
+                <div className="p-6 border-b border-slate-200 dark:border-slate-800/50 flex flex-col sm:flex-row gap-4 justify-between items-center">
                   <div className="relative w-full sm:max-w-xs group">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <Search size={16} className="text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
@@ -423,7 +423,7 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
                       placeholder="Search expenses..."
                       value={expenseSearchQuery}
                       onChange={(e) => setExpenseSearchQuery(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all text-sm text-slate-700 dark:text-slate-200"
+                      className="w-full pl-10 pr-4 py-2 neu-pressed text-slate-700 dark:text-slate-200 rounded-xl focus:outline-none transition-all text-sm placeholder:text-slate-500"
                     />
                   </div>
                   
@@ -432,7 +432,7 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
                     <select
                       value={selectedCategory}
                       onChange={(e) => setSelectedCategory(e.target.value)}
-                      className="w-full sm:w-auto pl-3 pr-8 py-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-sm text-slate-700 dark:text-slate-200 appearance-none"
+                      className="w-full sm:w-auto pl-3 pr-8 py-2 neu-pressed text-slate-700 dark:text-slate-200 rounded-xl focus:outline-none transition-all text-sm appearance-none"
                     >
                       <option value="All">All Categories</option>
                       {Object.keys(CATEGORY_COLORS).map(cat => (
@@ -445,7 +445,7 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
                 <div className="overflow-x-auto flex-1">
                   <table className="w-full whitespace-nowrap">
                     <thead>
-                      <tr className="bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-200 dark:border-slate-800">
+                      <tr className="border-b border-slate-200 dark:border-slate-800/50">
                         <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</th>
                         <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Category</th>
                         <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Description</th>
@@ -502,8 +502,8 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
               </div>
 
               {/* Expense Breakdown Chart */}
-              <div className="bg-white/80 dark:bg-[#151B2E]/80 backdrop-blur-3xl border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xl flex flex-col h-full">
-                <h2 className="text-xl font-jakarta font-black text-slate-800 dark:text-white mb-6">Expense Breakdown</h2>
+              <div className="neu-flat rounded-[2rem] p-6 flex flex-col h-full">
+                <h2 className="mb-6">Expense Breakdown</h2>
                 
                 {categoryData.length > 0 ? (
                   <div className="flex-1 flex flex-col items-center">
@@ -563,7 +563,7 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
           >
             {/* Metrics Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white/80 dark:bg-rose-950/20 backdrop-blur-3xl border border-rose-200/50 dark:border-rose-500/20 rounded-2xl p-6 shadow-xl flex items-center justify-between">
+              <div className="neu-flat rounded-[2rem] p-6 flex items-center justify-between">
                 <div>
                   <p className="text-slate-500 dark:text-gray-400 text-sm font-semibold uppercase tracking-wider mb-1">
                     {timeFilter === '7days' && 'I Owe (Last 7 Days)'}
@@ -571,13 +571,13 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
                     {timeFilter === 'year' && 'I Owe (This Year)'}
                     {timeFilter === 'all' && 'Total I Owe'}
                   </p>
-                  <h3 className="text-3xl font-bold text-slate-800 dark:text-white">{formatCurrency(totalBorrowed)}</h3>
+                  <h3 className="">{formatCurrency(totalBorrowed)}</h3>
                 </div>
-                <div className="w-14 h-14 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border-2 border-rose-100 dark:border-rose-500/20 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-2xl neu-pressed flex items-center justify-center">
                   <ArrowRightLeft size={24} className="text-rose-500 dark:text-rose-400" />
                 </div>
               </div>
-              <div className="bg-white/80 dark:bg-teal-950/20 backdrop-blur-3xl border border-teal-200/50 dark:border-teal-500/20 rounded-2xl p-6 shadow-xl flex items-center justify-between">
+              <div className="neu-flat rounded-[2rem] p-6 flex items-center justify-between">
                 <div>
                   <p className="text-slate-500 dark:text-gray-400 text-sm font-semibold uppercase tracking-wider mb-1">
                     {timeFilter === '7days' && 'Owed to Me (Last 7 Days)'}
@@ -585,17 +585,17 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
                     {timeFilter === 'year' && 'Owed to Me (This Year)'}
                     {timeFilter === 'all' && 'Total Owed To Me'}
                   </p>
-                  <h3 className="text-3xl font-bold text-slate-800 dark:text-white">{formatCurrency(totalLent)}</h3>
+                  <h3 className="">{formatCurrency(totalLent)}</h3>
                 </div>
-                <div className="w-14 h-14 rounded-2xl bg-teal-50 dark:bg-teal-500/10 border-2 border-teal-100 dark:border-teal-500/20 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-2xl neu-pressed flex items-center justify-center">
                   <Wallet size={24} className="text-teal-500 dark:text-teal-400" />
                 </div>
               </div>
             </div>
 
             {/* Main Debts Table */}
-            <div className="bg-white/80 dark:bg-slate-900/50 backdrop-blur-3xl border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl overflow-hidden flex flex-col">
-              <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white/50 dark:bg-black/20">
+            <div className="neu-flat rounded-[2rem] overflow-hidden flex flex-col">
+              <div className="p-6 border-b border-slate-200 dark:border-slate-800/50 flex flex-col sm:flex-row gap-4 justify-between items-center">
                 <div className="relative w-full sm:max-w-xs group">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Search size={16} className="text-slate-400 group-focus-within:text-rose-500 transition-colors" />
@@ -605,7 +605,7 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
                     placeholder="Search by name or description..."
                     value={debtSearchQuery}
                     onChange={(e) => setDebtSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500/50 transition-all text-sm text-slate-700 dark:text-slate-200"
+                    className="w-full pl-10 pr-4 py-2 neu-pressed text-slate-700 dark:text-slate-200 rounded-xl focus:outline-none transition-all text-sm placeholder:text-slate-500"
                   />
                 </div>
               </div>
@@ -613,7 +613,7 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
               <div className="overflow-x-auto flex-1">
                 <table className="w-full whitespace-nowrap">
                   <thead>
-                    <tr className="bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-200 dark:border-slate-800">
+                    <tr className="border-b border-slate-200 dark:border-slate-800/50">
                       <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</th>
                       <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Person</th>
                       <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Type</th>

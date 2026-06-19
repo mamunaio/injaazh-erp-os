@@ -1,226 +1,293 @@
 'use server';
 
-import { GoogleGenAI } from '@google/genai';
-
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || '',
-});
-
-// Islamic Hadith/Quotes Database
-const islamicQuotes = [
+// Rich Islamic Insights Database (20+ Days Rotation)
+const dailyIslamicInsights = [
   {
-    text: "إِنَّ اللَّهَ مَعَ الصَّابِرِينَ",
-    translation: "নিশ্চয়ই আল্লাহ ধৈর্যশীলদের সাথে আছেন।",
-    reference: "সূরা আল-বাকারা, ২:১৫৩",
-    category: "patience"
+    ayah: {
+      arabic: "لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا",
+      translation: "আল্লাহ কাউকে তার সাধ্যাতীত কোনো কাজের ভার দেন না...",
+      reference: "সূরা আল-বাকারা, ২:২৮৬",
+      asbabAlNuzul: "সাহাবীরা যখন সূরা বাকারার ২৮৪ নম্বর আয়াতটি শুনে অত্যন্ত চিন্তিত ও ভীত হয়ে পড়েছিলেন, তখন তাদের সান্ত্বনা দিতে আল্লাহ এই আয়াতটি নাজিল করেন।"
+    },
+    hadith: {
+      arabic: "الآيَتَانِ مِنْ آخِرِ سُورَةِ الْبَقَرَةِ مَنْ قَرَأَهُمَا فِي لَيْلَةٍ كَفَتَاهُ",
+      translation: "যে ব্যক্তি রাতে সূরা বাকারার শেষ দুটি আয়াত পাঠ করবে, তা তার জন্য যথেষ্ট হবে।",
+      reference: "সহীহ বুখারী: ৫০৪০"
+    }
   },
   {
-    text: "وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا",
-    translation: "যে আল্লাহকে ভয় করে, তিনি তার জন্য পথ বের করে দেন।",
-    reference: "সূরা আত-তালাক, ৬৫:২",
-    category: "taqwa"
+    ayah: {
+      arabic: "وَمَا كَانَ اللَّهُ لِيُعَذِّبَهُمْ وَأَنتَ فِيهِمْ",
+      translation: "কিন্তু আল্লাহ এমন নন যে, আপনি তাদের মাঝে থাকা অবস্থায় তিনি তাদের শাস্তি দেবেন।",
+      reference: "সূরা আল-আনফাল, ৮:৩৩",
+      asbabAlNuzul: "মক্কার কুরাইশরা অহংকার করে আসমান থেকে পাথর বর্ষণের শাস্তি চাইলে আল্লাহ জানান যে, রাসূল (সা.) তাদের মাঝে থাকায় তাৎক্ষণিক আযাব দেওয়া হয়নি।"
+    },
+    hadith: {
+      arabic: "التَّائِبُ مِنَ الذَّنْبِ كَمَنْ لَا ذَنْبَ لَهُ",
+      translation: "গুনাহ থেকে তওবাকারী ব্যক্তি এমন, যেন তার কোনো গুনাহই নেই।",
+      reference: "সুনান ইবনে মাজাহ: ৪২৫০"
+    }
   },
   {
-    text: "إِنَّ مَعَ الْعُسْرِ يُسْرًا",
-    translation: "নিশ্চয়ই কষ্টের সাথে সুখ আছে।",
-    reference: "সূরা আশ-শারহ, ৯৪:৬",
-    category: "hope"
+    ayah: {
+      arabic: "فَاذْكُرُونِي أَذْكُرْكُمْ وَاشْكُرُوا لِي وَلَا تَكْفُرُونِ",
+      translation: "সুতরাং তোমরা আমাকে স্মরণ করো, আমিও তোমাদের স্মরণ করবো। আর আমার প্রতি কৃতজ্ঞ হও এবং অকৃতজ্ঞ হয়ো না।",
+      reference: "সূরা আল-বাকারা, ২:১৫২",
+      asbabAlNuzul: "কিবলা পরিবর্তনের পর মুসলমানদের মনে যেন কোনো সংশয় না থাকে, সেজন্য এই আয়াত নাজিল হয়।"
+    },
+    hadith: {
+      arabic: "أَنَا عِنْدَ ظَنِّ عَبْدِي بِي، وَأَنَا مَعَهُ إِذَا ذَكَرَنِي",
+      translation: "আমার বান্দা আমার সম্পর্কে যেমন ধারণা রাখে, আমি তার সাথে তেমনই আচরণ করি।",
+      reference: "সহীহ বুখারী: ৭৪০৫"
+    }
   },
   {
-    text: "الدُّنْيَا سِجْنُ الْمُؤْمِنِ وَجَنَّةُ الْكَافِرِ",
-    translation: "দুনিয়া মুমিনের জন্য কারাগার এবং কাফিরের জন্য জান্নাত।",
-    reference: "সহীহ মুসলিম",
-    category: "worldview"
+    ayah: {
+      arabic: "قُلْ يَا عِبَادِيَ الَّذِينَ أَسْرَفُوا عَلَىٰ أَنفُسِهِمْ لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ",
+      translation: "বলুন, হে আমার বান্দাগণ! যারা নিজেদের ওপর অবিচার করেছ, তোমরা আল্লাহর রহমত থেকে নিরাশ হয়ো না।",
+      reference: "সূরা আয-যুমার, ৩۹:৫৩",
+      asbabAlNuzul: "মক্কার কিছু মুশরিক ইসলাম গ্রহণ করতে চেয়ে নিজেদের অতীতের পাপ নিয়ে চিন্তিত ছিল। তাদের সান্ত্বনা দিয়ে এই আয়াতটি নাজিল হয়।"
+    },
+    hadith: {
+      arabic: "إِنَّ اللَّهَ يَبْسُطُ يَدَهُ بِاللَّيْلِ لِيَتُوبَ مُسِيءُ النَّهَارِ",
+      translation: "নিশ্চয়ই আল্লাহ রাতে তাঁর ক্ষমার হাত প্রসারিত করেন, যেন দিনে পাপকারী তওবা করতে পারে।",
+      reference: "সহীহ মুসলিম: ২৭৫৯"
+    }
   },
   {
-    text: "مَنْ عَمِلَ صَالِحًا فَلِنَفْسِهِ",
-    translation: "যে সৎকর্ম করে, সে নিজের জন্যই করে।",
-    reference: "সূরা ফুসসিলাত, ৪১:৪৬",
-    category: "deeds"
+    ayah: {
+      arabic: "إِنَّ مَعَ الْعُسْرِ يُسْرًا",
+      translation: "নিশ্চয়ই কষ্টের সাথেই স্বস্তি রয়েছে।",
+      reference: "সূরা আশ-শারহ, ৯৪:৬",
+      asbabAlNuzul: "মক্কায় প্রাথমিক যুগে মুসলিমরা যখন কাফিরদের চরম নির্যাতনের শিকার হচ্ছিলেন, তখন রাসূল (সা.) ও মুমিনদের সাহস যোগাতে এই আয়াত নাজিল হয়।"
+    },
+    hadith: {
+      arabic: "عَجَبًا لِأَمْرِ الْمُؤْمِنِ إِنَّ أَمْرَهُ كُلَّهُ خَيْرٌ",
+      translation: "মুমিনের বিষয়টি কতই না বিস্ময়কর! তার সবকিছুতেই কল্যাণ রয়েছে।",
+      reference: "সহীহ মুসলিম: ২৯৯৯"
+    }
   },
   {
-    text: "خَيْرُ النَّاسِ أَنْفَعُهُمْ لِلنَّاسِ",
-    translation: "সর্বোত্তম মানুষ সে, যে মানুষের জন্য সবচেয়ে উপকারী।",
-    reference: "হাদিস - মুসনাদ আহমাদ",
-    category: "service"
+    ayah: {
+      arabic: "أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ",
+      translation: "জেনে রাখো, আল্লাহর স্মরণেই অন্তরসমূহ প্রশান্তি লাভ করে।",
+      reference: "সূরা আর-রাদ, ১৩:২৮",
+      asbabAlNuzul: "কাফিররা যখন রাসূল (সা.)-এর কাছে বিভিন্ন অলৌকিক নিদর্শন চাচ্ছিল, তখন আল্লাহ জানান যে প্রকৃত নিদর্শন হলো আল্লাহর স্মরণে প্রশান্তি লাভ করা।"
+    },
+    hadith: {
+      arabic: "مَثَلُ الَّذِي يَذْكُرُ رَبَّهُ وَالَّذِي لَا يَذْكُرُ رَبَّهُ، مَثَلُ الْحَيِّ وَالْمَيِّتِ",
+      translation: "যে ব্যক্তি তার রবকে স্মরণ করে আর যে করে না, তাদের দৃষ্টান্ত হলো জীবিত ও মৃত ব্যক্তির মতো।",
+      reference: "সহীহ বুখারী: ৬৪০৭"
+    }
   },
   {
-    text: "اطْلُبُوا الْعِلْمَ مِنَ الْمَهْدِ إِلَى اللَّحْدِ",
-    translation: "দোলনা থেকে কবর পর্যন্ত জ্ঞান অর্জন করো।",
-    reference: "হাদিস",
-    category: "knowledge"
+    ayah: {
+      arabic: "يَا أَيُّهَا الَّذِينَ آمَنُوا اجْتَنِبُوا كَثِيرًا مِّنَ الظَّنِّ",
+      translation: "হে মুমিনগণ! তোমরা অনেক ধারণা থেকে বেঁচে থাকো; নিশ্চয়ই কতক ধারণা গুনাহ।",
+      reference: "সূরা আল-হুজুরাত, ৪৯:১২",
+      asbabAlNuzul: "সাহাবীদের মাঝে গীবত ও অন্যের ব্যাপারে নেতিবাচক ধারণা পোষণের কারণে এই আয়াত নাজিল হয়।"
+    },
+    hadith: {
+      arabic: "إِيَّاكُمْ وَالظَّنَّ، فَإِنَّ الظَّنَّ أَكْذَبُ الْحَدِيثِ",
+      translation: "তোমরা কুধারণা থেকে বেঁচে থাকো, কেননা কুধারণা হলো সবচেয়ে বড় মিথ্যা কথা।",
+      reference: "সহীহ বুখারী: ৬০৬৬"
+    }
   },
   {
-    text: "إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ",
-    translation: "নিশ্চয়ই কাজ নিয়তের উপর নির্ভরশীল।",
-    reference: "সহীহ বুখারী",
-    category: "intention"
+    ayah: {
+      arabic: "وَقَضَىٰ رَبُّكَ أَلَّا تَعْبُدُوا إِلَّا إِيَّاهُ وَبِالْوَالِدَيْنِ إِحْسَانًا",
+      translation: "তোমার রব নির্দেশ দিয়েছেন যে, তাঁকে ছাড়া অন্য কারো ইবাদত করো না এবং পিতা-মাতার সাথে সদ্ব্যবহার করো।",
+      reference: "সূরা আল-ইসরা, ১৭:২৩",
+      asbabAlNuzul: "তওহীদের পর সবচেয়ে গুরুত্বপূর্ণ দায়িত্ব হিসেবে পিতা-মাতার প্রতি সন্তানের দায়িত্ববোধ স্মরণ করিয়ে দিতে এটি নাজিল হয়।"
+    },
+    hadith: {
+      arabic: "رِضَا الرَّبِّ فِي رِضَا الْوَالِدِ، وَسَخَطُ الرَّبِّ فِي سَخَطِ الْوَالِدِ",
+      translation: "পিতা-মাতার সন্তুষ্টিতেই আল্লাহর সন্তুষ্টি, আর পিতা-মাতার অসন্তুষ্টিতেই আল্লাহর অসন্তুষ্টি।",
+      reference: "সুনান আত-তিরমিযী: ১৮৯৯"
+    }
   },
   {
-    text: "تَفَكَّرُوا فِي آلَاءِ اللَّهِ وَلَا تَفَكَّرُوا فِي اللَّهِ",
-    translation: "আল্লাহর সৃষ্টি নিয়ে চিন্তা করো, আল্লাহর সত্তা নিয়ে নয়।",
-    reference: "হাদিস",
-    category: "reflection"
+    ayah: {
+      arabic: "وَقُل رَّبِّ زِدْنِي عِلْمًا",
+      translation: "আর বলুন, 'হে আমার রব! আমার জ্ঞান বৃদ্ধি করে দিন।'",
+      reference: "সূরা ত্বহা, ২০:১১৪",
+      asbabAlNuzul: "ওহী নাজিল হওয়ার সময় রাসূল (সা.) ভুলে যাওয়ার ভয়ে দ্রুত পড়ার চেষ্টা করতেন। আল্লাহ তাঁকে দ্রুত পড়তে নিষেধ করে এই দোয়াটি শিখিয়ে দেন।"
+    },
+    hadith: {
+      arabic: "مَنْ سَلَكَ طَرِيقًا يَلْتَمِسُ فِيهِ عِلْمًا سَهَّلَ اللَّهُ لَهُ بِهِ طَرِيقًا إِلَى الْجَنَّةِ",
+      translation: "যে ব্যক্তি জ্ঞান অর্জনের উদ্দেশ্যে কোনো পথ অবলম্বন করে, আল্লাহ তার জন্য জান্নাতের পথ সহজ করে দেন।",
+      reference: "সহীহ মুসলিম: ২৬৯৯"
+    }
   },
   {
-    text: "الْمُؤْمِنُ الْقَوِيُّ خَيْرٌ وَأَحَبُّ إِلَى اللَّهِ مِنَ الْمُؤْمِنِ الضَّعِيفِ",
-    translation: "শক্তিশালী মুমিন দুর্বল মুমিনের চেয়ে উত্তম এবং আল্লাহর কাছে অধিক প্রিয়।",
-    reference: "সহীহ মুসলিম",
-    category: "strength"
+    ayah: {
+      arabic: "لَئِن شَكَرْتُمْ لَأَزِيدَنَّكُمْ",
+      translation: "যদি তোমরা কৃতজ্ঞতা স্বীকার করো, তবে আমি অবশ্যই তোমাদের (নিয়ামত) বাড়িয়ে দেব।",
+      reference: "সূরা ইবরাহীম, ১৪:৭",
+      asbabAlNuzul: "মুসা (আ.) যখন তাঁর কওমকে ফেরাউনের দাসত্ব থেকে মুক্তির নিয়ামত স্মরণ করিয়ে দিচ্ছিলেন, তখন কৃতজ্ঞতার গুরুত্ব বোঝাতে এই আয়াত নাজিল হয়।"
+    },
+    hadith: {
+      arabic: "مَنْ لَمْ يَشْكُرِ النَّاسَ لَمْ يَشْكُرِ اللَّهَ",
+      translation: "যে ব্যক্তি মানুষের প্রতি কৃতজ্ঞ হয় না, সে আল্লাহর প্রতিও কৃতজ্ঞ হয় না।",
+      reference: "সুনান আবু দাউদ: ৪৮১১"
+    }
   },
   {
-    text: "لَا يُؤْمِنُ أَحَدُكُمْ حَتَّى يُحِبَّ لِأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ",
-    translation: "তোমাদের কেউ ততক্ষণ পর্যন্ত মুমিন হতে পারবে না, যতক্ষণ না সে তার ভাইয়ের জন্য তা পছন্দ করে যা সে নিজের জন্য পছন্দ করে।",
-    reference: "সহীহ বুখারী",
-    category: "brotherhood"
+    ayah: {
+      arabic: "إِنَّمَا الْمُؤْمِنُونَ إِخْوَةٌ فَأَصْلِحُوا بَيْنَ أَخَوَيْكُمْ",
+      translation: "মুমিনরা তো পরস্পর ভাই ভাই। সুতরাং তোমরা তোমাদের ভাইদের মাঝে মীমাংসা করে দাও।",
+      reference: "সূরা আল-হুজুরাত, ৪৯:১০",
+      asbabAlNuzul: "মদীনায় আনসারদের দুটি গোত্র আউস ও খাযরাজের মধ্যে একবার সংঘর্ষ বেধে যায়, তখন তাদের মাঝে শান্তি স্থাপনের নির্দেশ দিয়ে এই আয়াত নাজিল হয়।"
+    },
+    hadith: {
+      arabic: "الْمُسْلِمُ أَخُو الْمُسْلِمِ لَا يَظْلِمُهُ وَلَا يُسْلِمُهُ",
+      translation: "এক মুসলিম আরেক মুসলিমের ভাই। সে তার ওপর জুলুম করবে না এবং তাকে শত্রুর হাতে তুলেও দেবে না।",
+      reference: "সহীহ বুখারী: ২৪৪২"
+    }
   },
   {
-    text: "الصَّبْرُ ضِيَاءٌ",
-    translation: "ধৈর্য হলো আলো।",
-    reference: "সহীহ মুসলিম",
-    category: "patience"
+    ayah: {
+      arabic: "وَعَسَىٰ أَن تَكْرَهُوا شَيْئًا وَهُوَ خَيْرٌ لَّكُمْ",
+      translation: "হতে পারে কোনো বিষয় তোমরা অপছন্দ করছ, অথচ তা তোমাদের জন্য কল্যাণকর।",
+      reference: "সূরা আল-বাকারা, ২:২১৬",
+      asbabAlNuzul: "জিহাদের বিধান নাজিল হওয়ার পর কিছু মানুষের কাছে তা কষ্টকর মনে হচ্ছিল। আল্লাহ বোঝালেন যে মানুষের অপছন্দের মাঝেও আল্লাহর কল্যাণ লুকিয়ে থাকতে পারে।"
+    },
+    hadith: {
+      arabic: "مَا يُصِيبُ الْمُسْلِمَ مِنْ نَصَبٍ وَلَا وَصَبٍ... إِلَّا كَفَّرَ اللَّهُ بِهَا مِنْ خَطَايَاهُ",
+      translation: "মুসলমানের ওপর যে ক্লান্তি, রোগ, শোক, কষ্ট বা দুশ্চিন্তা আসে... এর বিনিময়ে আল্লাহ তার গুনাহসমূহ ক্ষমা করে দেন।",
+      reference: "সহীহ বুখারী: ৫৬৪১"
+    }
+  },
+  {
+    ayah: {
+      arabic: "وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا",
+      translation: "আর যে আল্লাহকে ভয় করে, তিনি তার জন্য উত্তরণের পথ তৈরি করে দেন।",
+      reference: "সূরা আত-তালাক, ৬৫:২",
+      asbabAlNuzul: "আউফ বিন মালিক (রা.)-এর ছেলে শত্রুদের হাতে বন্দী হওয়ার পর তিনি রাসূল (সা.)-এর কাছে অভিযোগ করলে তাঁকে ধৈর্য ধরতে বলা হয়। এরপর তাঁর ছেলে মুক্ত হয়ে ফিরে এলে এই আয়াত নাজিল হয়।"
+    },
+    hadith: {
+      arabic: "اتَّقِ اللَّهَ حَيْثُمَا كُنْتَ",
+      translation: "তুমি যেখানেই থাকো না কেন, আল্লাহকে ভয় করো।",
+      reference: "সুনান আত-তিরমিযী: ১৯৮৭"
+    }
+  },
+  {
+    ayah: {
+      arabic: "وَاسْتَعِينُوا بِالصَّبْرِ وَالصَّلَاةِ",
+      translation: "তোমরা ধৈর্য ও নামাজের মাধ্যমে সাহায্য প্রার্থনা করো।",
+      reference: "সূরা আল-বাকারা, ২:৪৫",
+      asbabAlNuzul: "বনী ইসরাইলকে লক্ষ্য করে বলা হলেও এটি সব মুমিনের জন্য প্রযোজ্য। যেকোনো বিপদে নামাজ ও ধৈর্যের মাধ্যমে আল্লাহর সাহায্য চাইতে বলা হয়েছে।"
+    },
+    hadith: {
+      arabic: "كَانَ النَّبِيُّ ﷺ إِذَا حَزَبَهُ أَمْرٌ صَلَّى",
+      translation: "রাসূল (সা.) যখন কোনো কঠিন সমস্যার সম্মুখীন হতেন, তখন তিনি নামাজে দাঁড়িয়ে যেতেন।",
+      reference: "সুনান আবু দাউদ: ১৩১৯"
+    }
+  },
+  {
+    ayah: {
+      arabic: "وَأَن لَّيْسَ لِلْإِنسَانِ إِلَّا مَا سَعَىٰ",
+      translation: "আর মানুষ তা-ই পায়, যার জন্য সে চেষ্টা করে।",
+      reference: "সূরা আন-নাজম, ৫৩:৩৯",
+      asbabAlNuzul: "পৌত্তলিকদের ভ্রান্ত বিশ্বাস খণ্ডন করতে নাজিল হয় যে, একজনের পাপের বোঝা অন্যজন বইবে না এবং মানুষের নিজের কর্মই তার আসল অর্জন।"
+    },
+    hadith: {
+      arabic: "إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ",
+      translation: "নিশ্চয়ই সমস্ত কাজ নিয়তের ওপর নির্ভরশীল।",
+      reference: "সহীহ বুখারী: ১"
+    }
+  },
+  {
+    ayah: {
+      arabic: "إِنَّ اللَّهَ يَأْمُرُ بِالْعَدْلِ وَالْإِحْسَانِ",
+      translation: "নিশ্চয়ই আল্লাহ ন্যায়পরায়ণতা, সদাচরণ এবং আত্মীয়-স্বজনকে দানের নির্দেশ দেন।",
+      reference: "সূরা আন-নাহল, ১৬:৯০",
+      asbabAlNuzul: "এই আয়াতটিকে কোরআনের সবচেয়ে ব্যাপক অর্থবোধক আয়াত বলা হয়, যেখানে সব ধরনের ভালো কাজের নির্দেশ ও মন্দ কাজের নিষেধ একসাথে করা হয়েছে।"
+    },
+    hadith: {
+      arabic: "كُلُّ مَعْرُوفٍ صَدَقَةٌ",
+      translation: "প্রতিটি ভালো কাজই একটি সদকা (দান)।",
+      reference: "সহীহ মুসলিম: ১০০৫"
+    }
+  },
+  {
+    ayah: {
+      arabic: "فَبِمَا رَحْمَةٍ مِّنَ اللَّهِ لِنتَ لَهُمْ",
+      translation: "আল্লাহর দয়াতেই আপনি তাদের প্রতি কোমল-হৃদয় হয়েছেন।",
+      reference: "সূরা আল-ইমরান, ৩:১৫৯",
+      asbabAlNuzul: "উহুদের যুদ্ধে কিছু সাহাবীর ভুলের কারণে বিপর্যয় নেমে এলেও রাসূল (সা.) তাদের প্রতি কঠোর হননি। তাঁর এই কোমল আচরণের প্রশংসায় আয়াতটি নাজিল হয়।"
+    },
+    hadith: {
+      arabic: "إِنَّ الرِّفْقَ لَا يَكُونُ فِي شَيْءٍ إِلَّا زَانَهُ",
+      translation: "নম্রতা ও কোমলতা যে জিনিসের সাথেই থাকে, তা সেটিকে সৌন্দর্যমণ্ডিত করে তোলে।",
+      reference: "সহীহ মুসলিম: २५৯৪"
+    }
+  },
+  {
+    ayah: {
+      arabic: "إِنَّ الصَّلَاةَ تَنْهَىٰ عَنِ الْفَحْشَاءِ وَالْمُنكَرِ",
+      translation: "নিশ্চয়ই নামাজ অশ্লীল ও গর্হিত কাজ থেকে বিরত রাখে।",
+      reference: "সূরা আল-আনকাবুত, ২৯:৪৫",
+      asbabAlNuzul: "মুমিনদের নামাজের প্রকৃত উদ্দেশ্য বোঝাতে এটি নাজিল হয়। অর্থাৎ শুধু ওঠা-বসা নয়, নামাজ মানুষের চরিত্র সংশোধন করে।"
+    },
+    hadith: {
+      arabic: "مَنْ لَمْ تَنْهَهُ صَلَاتُهُ عَنِ الْفَحْشَاءِ وَالْمُنْكَرِ، لَمْ يَزْدَدْ مِنَ اللَّهِ إِلَّا بُعْدًا",
+      translation: "যাকে তার নামাজ অশ্লীল ও খারাপ কাজ থেকে বিরত রাখতে পারল না, সে আল্লাহর কাছ থেকে দূরে সরে যাওয়া ছাড়া আর কিছুই পেল না।",
+      reference: "আল-মু'জামুল কাবির, তাবারানি"
+    }
+  },
+  {
+    ayah: {
+      arabic: "الَّذِينَ يُنفِقُونَ فِي السَّرَّاءِ وَالضَّرَّاءِ وَالْكَاظِمِينَ الْغَيْظَ",
+      translation: "যারা সচ্ছল ও অসচ্ছল উভয় অবস্থায় ব্যয় করে এবং রাগ সংবরণ করে ও মানুষকে ক্ষমা করে।",
+      reference: "সূরা আল-ইমরান, ৩:১৩৪",
+      asbabAlNuzul: "প্রকৃত মুমিনদের বৈশিষ্ট্য বর্ণনা করার জন্য এই আয়াতটি নাজিল হয়।"
+    },
+    hadith: {
+      arabic: "لَيْسَ الشَّدِيدُ بِالصُّرَعَةِ، إِنَّمَا الشَّدِيدُ الَّذِي يَمْلِكُ نَفْسَهُ عِنْدَ الْغَضَبِ",
+      translation: "প্রকৃত শক্তিশালী সে নয় যে কুস্তিতে জয়লাভ করে, বরং শক্তিশালী সে-ই, যে রাগের সময় নিজেকে নিয়ন্ত্রণ করতে পারে।",
+      reference: "সহীহ বুখারী: ৬১১৪"
+    }
+  },
+  {
+    ayah: {
+      arabic: "الْيَوْمَ أَكْمَلْتُ لَكُمْ دِينَكُمْ",
+      translation: "আজ আমি তোমাদের জন্য তোমাদের দ্বীনকে পূর্ণাঙ্গ করে দিলাম।",
+      reference: "সূরা আল-মায়িদাহ, ৫:৩",
+      asbabAlNuzul: "বিদায় হজের দিন আরাফাতের ময়দানে জুমার দিনে এই আয়াত নাজিল হয়।"
+    },
+    hadith: {
+      arabic: "إِنَّ الدِّينَ يُسْرٌ",
+      translation: "নিশ্চয়ই দ্বীন অনেক সহজ।",
+      reference: "সহীহ বুখারী: ৩৯"
+    }
   }
 ];
 
 /**
- * Get daily Islamic quote/hadith
+ * Get daily Islamic insight (Ayah, Asbab al-Nuzul, and Hadith)
  */
 export async function getDailyIslamicQuote() {
   try {
-    // Get quote based on day of year (so it changes daily but is consistent throughout the day)
+    // Get quote based on day of year
     const now = new Date();
     const start = new Date(now.getFullYear(), 0, 0);
     const diff = now.getTime() - start.getTime();
     const oneDay = 1000 * 60 * 60 * 24;
     const dayOfYear = Math.floor(diff / oneDay);
     
-    const quoteIndex = dayOfYear % islamicQuotes.length;
-    const quote = islamicQuotes[quoteIndex];
+    const index = dayOfYear % dailyIslamicInsights.length;
+    const insight = dailyIslamicInsights[index];
     
     return {
       success: true,
-      quote
+      data: insight
     };
   } catch (error: any) {
-    console.error('❌ Error fetching Islamic quote:', error);
+    console.error('❌ Error fetching Islamic insight:', error);
     return {
       success: false,
-      error: error.message,
-      quote: islamicQuotes[0] // Fallback to first quote
-    };
-  }
-}
-
-/**
- * Generate AI daily insights based on dashboard data
- */
-export async function generateDailyInsights(dashboardData: any) {
-  // Helper function to generate fallback insights
-  const getFallbackInsights = (isRateLimited = false) => {
-    const { stats } = dashboardData;
-    return {
-      summary: isRateLimited 
-        ? "⚠️ AI insights temporarily unavailable due to daily quota limit. Using standard business summary instead."
-        : "Your business operations are running smoothly today. Review your project pipeline and revenue trends for optimization opportunities.",
-      highlights: [
-        `Your total income is ${stats.totalIncome > 0 ? 'positive' : 'needs review'}`,
-        `${stats.activeProjects} projects are currently active`,
-        `${stats.pendingProposals} proposals awaiting decision`
-      ],
-      recommendations: [
-        "Follow up on pending proposals today",
-        "Reach out to new leads in your pipeline",
-        "Review project deadlines and milestones"
-      ],
-      mood: "positive"
-    };
-  };
-
-  try {
-    if (!process.env.GEMINI_API_KEY) {
-      // Fallback insights when API key is not configured
-      return {
-        success: true,
-        insights: getFallbackInsights()
-      };
-    }
-
-    const { stats } = dashboardData;
-    
-    // Build context for AI
-    const context = `
-Today's Date: ${new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-
-Business Data:
-- Total Income: $${stats.totalIncome}
-- Net Profit: $${stats.netProfit}
-- Active Projects: ${stats.activeProjects}
-- Pending Proposals: ${stats.pendingProposals}
-- Total Leads: ${stats.totalLeads}
-- This Month's Income: $${stats.thisMonthIncome}
-
-You are an AI Business Advisor. Analyze the above data and provide a brief daily insight for today.
-
-Respond in the following JSON format:
-{
-  "summary": "A brief summary (2-3 sentences, in English)",
-  "highlights": ["Highlight 1", "Highlight 2", "Highlight 3"],
-  "recommendations": ["Recommendation 1", "Recommendation 2", "Recommendation 3"],
-  "mood": "positive/neutral/attention" (based on business status)
-}
-
-Important:
-- Write in English
-- Keep it concise and actionable
-- Use professional tone
-- Return only JSON, nothing else
-    `.trim();
-
-    try {
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: context,
-        config: {
-          temperature: 0.7,
-          responseMimeType: 'application/json'
-        }
-      });
-
-      const insights = JSON.parse(response.text || '{}');
-
-      return {
-        success: true,
-        insights
-      };
-    } catch (apiError: any) {
-      // If Gemini API fails (quota, network, etc.), use fallback
-      console.warn('⚠️ Gemini API failed, using fallback insights:', apiError.message);
-      return {
-        success: true,
-        insights: getFallbackInsights()
-      };
-    }
-  } catch (error: any) {
-    console.error('❌ Error generating daily insights:', error);
-    
-    // Check if it's a rate limit error
-    const isRateLimited = 
-      error.message?.includes('429') ||
-      error.message?.includes('quota') ||
-      error.message?.includes('RESOURCE_EXHAUSTED') ||
-      error.status === 429 ||
-      error.code === 429;
-    
-    if (isRateLimited) {
-      console.warn('⚠️ Gemini API rate limit reached. Using fallback insights.');
-    }
-    
-    // Return fallback insights (always successful to prevent page crash)
-    return {
-      success: true, // Changed to true so page doesn't crash
-      isRateLimited,
-      error: error.message,
-      insights: getFallbackInsights(isRateLimited)
+      error: 'Failed to fetch Islamic insight'
     };
   }
 }

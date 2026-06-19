@@ -86,26 +86,26 @@ export const ProjectDrawer = ({
             onClick={onClose}
             className="absolute inset-0 bg-black/60 backdrop-blur-md"
           />
-          <motion.div
+            <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-lg bg-[#0a0a0a]/90 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-[0_0_50px_rgba(139,92,246,0.15)] flex flex-col max-h-[85vh] overflow-hidden"
+            className="relative w-full max-w-lg neu-flat rounded-3xl flex flex-col max-h-[85vh] overflow-hidden"
           >
             {/* Header */}
-            <div className="p-6 border-b border-white/10 flex items-start justify-between bg-white/5 relative overflow-hidden">
+            <div className="p-6 border-b border-slate-200 dark:border-white/5 flex items-start justify-between relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 bg-violet-500/10 rounded-full blur-[80px] pointer-events-none" />
               <div className="relative z-10">
                 <span className="text-violet-400 text-xs font-bold tracking-widest uppercase mb-2 block flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
                   {project.category}
                 </span>
-                <h2 className="text-2xl font-bold text-white tracking-tight">{project.title}</h2>
+                <h2 className="text-slate-800 dark:text-white font-bold text-2xl">{project.title}</h2>
               </div>
               <button 
                 onClick={onClose}
-                className="relative z-10 p-2 bg-white/5 hover:bg-white/10 rounded-xl transition-all hover:rotate-90 text-slate-400 hover:text-white"
+                className="relative z-10 p-2 neu-button rounded-xl transition-all hover:rotate-90 text-slate-500 dark:text-slate-400"
               >
                 <X size={20} />
               </button>
@@ -114,13 +114,13 @@ export const ProjectDrawer = ({
             <div className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-hide relative">
               {/* Status Section */}
               <div className="space-y-3 relative z-10">
-                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Current Status</h3>
+                <h3 className="text-slate-800 dark:text-white font-bold">Current Status</h3>
                 <div className="relative">
                   <select
                     value={project.status}
                     onChange={handleStatusChange}
                     disabled={isUpdatingStatus}
-                    className="w-full appearance-none bg-black/40 border border-white/10 text-white px-5 py-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all font-medium cursor-pointer hover:bg-black/60"
+                    className="w-full appearance-none neu-pressed text-slate-800 dark:text-white px-5 py-3.5 rounded-xl focus:outline-none transition-all font-bold cursor-pointer"
                   >
                     <option value="Planning" className="bg-[#0a0a0a]">Planning</option>
                     <option value="In Progress" className="bg-[#0a0a0a]">In Progress</option>
@@ -137,7 +137,7 @@ export const ProjectDrawer = ({
 
               {/* Task Checklist / Activity Log */}
               <div className="space-y-4 relative z-10">
-                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center justify-between">
+                <h3 className="flex items-center justify-between">
                   <span>Task Checklist</span>
                   <span className="bg-violet-500/20 text-violet-300 text-xs font-bold px-2.5 py-0.5 rounded-full border border-violet-500/20">
                     {project.logs.filter(l => l.completed).length} / {project.logs.length}
@@ -150,12 +150,12 @@ export const ProjectDrawer = ({
                     value={newLogText}
                     onChange={(e) => setNewLogText(e.target.value)}
                     placeholder="Add a new task..."
-                    className="w-full bg-black/40 border border-white/10 text-white pl-5 pr-14 py-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 placeholder:text-slate-600 transition-all group-hover:border-white/20"
+                    className="w-full neu-pressed text-slate-800 dark:text-white pl-5 pr-14 py-3.5 rounded-xl focus:outline-none placeholder:text-slate-500 transition-all"
                   />
                   <button 
                     type="submit"
                     disabled={isAddingLog || !newLogText.trim()}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-violet-600/80 text-white rounded-lg hover:bg-violet-500 disabled:opacity-50 transition-all hover:scale-105 active:scale-95"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 neu-button text-violet-500 rounded-lg disabled:opacity-50 transition-all hover:scale-105 active:scale-95"
                   >
                     {isAddingLog ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
                   </button>
@@ -163,7 +163,7 @@ export const ProjectDrawer = ({
 
                 <div className="space-y-2.5 mt-6">
                   {project.logs.length === 0 ? (
-                    <div className="text-center py-10 bg-black/20 rounded-2xl border border-white/5 border-dashed">
+                    <div className="text-center py-10 neu-pressed rounded-2xl">
                       <p className="text-slate-500 text-sm font-medium">No tasks added yet.</p>
                       <p className="text-slate-600 text-xs mt-1">Add a task above to get started</p>
                     </div>
@@ -173,7 +173,7 @@ export const ProjectDrawer = ({
                         key={log._id} 
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="group flex items-start gap-3 p-4 bg-white/5 rounded-xl border border-white/5 hover:border-white/10 hover:bg-white/10 transition-all"
+                        className="group flex items-start gap-3 p-4 neu-flat rounded-xl hover:neu-pressed transition-all mb-3"
                       >
                         <button 
                           onClick={() => handleToggleLog(log._id, log.completed)}

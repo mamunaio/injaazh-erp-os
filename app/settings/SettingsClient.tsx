@@ -32,11 +32,13 @@ import { useUser } from '@/components/layout/UserContext';
 import { 
   getTeamMembers, 
   createTeamMember, 
-  updateTeamMemberPermissions, 
+  updateTeamMemberRole, 
   deleteTeamMember, 
   updateUserProfile 
 } from '@/app/actions/teamActions';
+import { getActiveSessions, revokeSession } from '@/app/actions/sessionActions';
 import { Users } from 'lucide-react';
+import EmailAccountsManager from './EmailAccountsManager';
 
 const playSound = (type: 'success' | 'pop' | 'error' | 'cash') => {
   try {
@@ -139,7 +141,7 @@ const playSound = (type: 'success' | 'pop' | 'error' | 'cash') => {
 };
 
 const GlassCard = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => (
-  <div className={`bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl border border-white/20 dark:border-purple-500/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(167,139,250,0.05)] rounded-3xl p-8 ${className}`}>
+  <div className={`neu-flat p-8 ${className}`}>
     {children}
   </div>
 );
@@ -148,6 +150,7 @@ const TABS = [
   { id: 'general', label: 'General & Profile', icon: User },
   { id: 'notifications', label: 'Notifications & Sounds', icon: Bell },
   { id: 'security', label: 'Security & Access', icon: ShieldCheck },
+  { id: 'email_accounts', label: 'Outreach Emails', icon: Mail },
   { id: 'smtp', label: 'SMTP Configurations', icon: Mail },
   { id: 'api', label: 'API & Webhooks', icon: Key },
   { id: 'billing', label: 'Usage & Billing', icon: CreditCard },
@@ -163,6 +166,8 @@ export default function SettingsClient() {
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
   const [is2FAModalOpen, setIs2FAModalOpen] = useState(false);
   const [isDisabling2FA, setIsDisabling2FA] = useState(false);
+  const [activeSessions, setActiveSessions] = useState<any[]>([]);
+  const [isLoadingSessions, setIsLoadingSessions] = useState(false);
 
   // SMTP Configuration States
   const [smtpSettings, setSmtpSettings] = useState({
@@ -183,6 +188,7 @@ export default function SettingsClient() {
   const { user, refreshUser } = useUser();
   const [profileName, setProfileName] = useState('');
   const [profileEmail, setProfileEmail] = useState('');
+  const [profileImage, setProfileImage] = useState<string | undefined>(undefined);
 
   // Own Password Change States
   const [currentPassword, setCurrentPassword] = useState('');
@@ -195,17 +201,17 @@ export default function SettingsClient() {
   const [inviteName, setInviteName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
   const [invitePassword, setInvitePassword] = useState('');
-  const [invitePermissions, setInvitePermissions] = useState<string[]>(['leads', 'outreach']);
+  const [inviteRole, setInviteRole] = useState<string>('editor');
   const [isInviting, setIsInviting] = useState(false);
 
   // Dynamic Tabs list
-  const tabsToRender = user?.role === 'admin' 
+  const tabsToRender = (user?.role === 'admin' || user?.role === 'owner')
     ? [
         ...TABS.slice(0, 3), // general, notifications, security
         { id: 'team', label: 'Manage Team', icon: Users },
-        ...TABS.slice(3) // smtp, api, billing, danger
+        ...TABS.slice(3) // email_accounts, smtp, api, billing, danger
       ]
-    : TABS.filter(t => t.id === 'general' || t.id === 'security');
+    : TABS.filter(t => t.id === 'general' || t.id === 'security' || t.id === 'email_accounts');
 
   useEffect(() => {
     checkTwoFactorStatus().then(res => {
@@ -224,8 +230,9 @@ export default function SettingsClient() {
     if (user) {
       setProfileName(user.name);
       setProfileEmail(user.email);
+      setProfileImage(user.image);
     }
-    if (user?.role === 'admin') {
+    if (user?.role === 'admin' || user?.role === 'owner') {
       getTeamMembers().then(res => {
         if (res.success && res.data) {
           setTeamMembers(res.data);
@@ -233,6 +240,18 @@ export default function SettingsClient() {
       });
     }
   }, [user]);
+
+  useEffect(() => {
+    if (activeTab === 'security') {
+      setIsLoadingSessions(true);
+      getActiveSessions().then(res => {
+        if (res.success && res.sessions) {
+          setActiveSessions(res.sessions);
+        }
+        setIsLoadingSessions(false);
+      });
+    }
+  }, [activeTab]);
   
   // Notification States
   const [masterSound, setMasterSound] = useState(true);
@@ -250,7 +269,7 @@ export default function SettingsClient() {
     
     try {
       if (activeTab === 'general') {
-        const res = await updateUserProfile({ name: profileName, email: profileEmail });
+        const res = await updateUserProfile({ name: profileName, email: profileEmail, image: profileImage });
         if (!res.success) {
           throw new Error(res.error || 'Failed to update profile');
         }
@@ -274,6 +293,22 @@ export default function SettingsClient() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Image size must be less than 2MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setProfileImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
@@ -331,14 +366,14 @@ export default function SettingsClient() {
         name: inviteName,
         email: inviteEmail,
         password: invitePassword,
-        permissions: invitePermissions
+        role: inviteRole
       });
       if (res.success && res.data) {
         toast.success('Team member added successfully!', { id: 'invite' });
         setInviteName('');
         setInviteEmail('');
         setInvitePassword('');
-        setInvitePermissions(['leads', 'outreach']);
+        setInviteRole('editor');
         const updated = await getTeamMembers();
         if (updated.success && updated.data) setTeamMembers(updated.data);
         if (masterSound) playSound('success');
@@ -354,30 +389,20 @@ export default function SettingsClient() {
     }
   };
 
-  const handleTogglePermission = async (memberId: string, moduleKey: string, isChecked: boolean) => {
-    const member = teamMembers.find(m => m._id === memberId);
-    if (!member) return;
-
-    let updatedPermissions = [...(member.permissions || [])];
-    if (isChecked) {
-      if (!updatedPermissions.includes(moduleKey)) updatedPermissions.push(moduleKey);
-    } else {
-      updatedPermissions = updatedPermissions.filter(p => p !== moduleKey);
-    }
-
-    toast.loading('Updating permissions...', { id: 'perm-update' });
+  const handleToggleRole = async (memberId: string, role: string) => {
+    toast.loading('Updating role...', { id: 'role-update' });
     try {
-      const res = await updateTeamMemberPermissions(memberId, updatedPermissions);
+      const res = await updateTeamMemberRole(memberId, role);
       if (res.success) {
-        toast.success('Permissions updated!', { id: 'perm-update' });
-        setTeamMembers(prev => prev.map(m => m._id === memberId ? { ...m, permissions: updatedPermissions } : m));
+        toast.success('Role updated!', { id: 'role-update' });
+        setTeamMembers(prev => prev.map(m => m._id === memberId ? { ...m, role } : m));
         if (masterSound) playSound('success');
       } else {
-        toast.error(res.error || 'Failed to update permissions', { id: 'perm-update' });
+        toast.error(res.error || 'Failed to update role', { id: 'role-update' });
         if (masterSound) playSound('error');
       }
     } catch (err: any) {
-      toast.error(err.message || 'Error occurred', { id: 'perm-update' });
+      toast.error(err.message || 'Error occurred', { id: 'role-update' });
       if (masterSound) playSound('error');
     }
   };
@@ -493,7 +518,7 @@ export default function SettingsClient() {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-6xl md:text-7xl font-jakarta font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 mb-3 drop-shadow-sm">
+          <h1 className="mb-3">
             Settings
           </h1>
           <p className="text-[15px] font-inter leading-relaxed tracking-wide text-slate-500 dark:text-slate-400">
@@ -503,7 +528,7 @@ export default function SettingsClient() {
         <button 
           onClick={handleSave}
           disabled={isSaving}
-          className={`flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-jakarta font-bold rounded-2xl hover:shadow-[0_0_20px_rgba(139,92,246,0.4)] transition-all text-sm group ${isSaving ? 'opacity-70' : ''}`}
+          className={`flex items-center gap-2 px-8 py-3 neu-button text-indigo-500 font-bold transition-all text-sm group ${isSaving ? 'opacity-70' : ''}`}
         >
           {isSaving ? <Activity size={18} className="animate-spin" /> : <Save size={18} className="group-hover:scale-110 transition-transform" />}
           {isSaving ? 'Saving...' : 'Save Changes'}
@@ -514,7 +539,7 @@ export default function SettingsClient() {
         
         {/* Sidebar Menu */}
         <div className="w-full lg:w-72 flex-shrink-0">
-          <div className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl border border-white/20 dark:border-purple-500/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(167,139,250,0.05)] rounded-3xl p-4 flex flex-col gap-2">
+          <div className="neu-flat p-4 flex flex-col gap-2">
             {tabsToRender.map(tab => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -525,20 +550,14 @@ export default function SettingsClient() {
                     setActiveTab(tab.id);
                     if (masterSound) playSound('pop');
                   }}
-                  className={`flex items-center gap-3 px-5 py-4 rounded-2xl transition-all duration-300 font-jakarta font-bold text-sm relative overflow-hidden ${
+                  className={`flex items-center gap-3 px-5 py-4 rounded-2xl transition-all duration-300 font-bold text-sm relative overflow-hidden ${
                     isActive 
                       ? tab.danger 
-                        ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' 
-                        : 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
-                      : 'text-slate-600 hover:bg-white/50 dark:text-slate-400 dark:hover:bg-slate-800/50'
+                        ? 'neu-button text-rose-500' 
+                        : 'neu-button text-indigo-500'
+                      : 'text-slate-500 hover:neu-flat'
                   }`}
                 >
-                  {isActive && (
-                    <motion.div 
-                      layoutId="activeTab" 
-                      className={`absolute left-0 w-1.5 h-8 rounded-r-full ${tab.danger ? 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]' : 'bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]'}`} 
-                    />
-                  )}
                   <Icon size={20} className={isActive ? '' : 'opacity-70'} />
                   {tab.label}
                 </button>
@@ -561,19 +580,24 @@ export default function SettingsClient() {
               {/* TAB: General */}
               {activeTab === 'general' && (
                 <GlassCard>
-                  <h2 className="text-3xl font-jakarta font-black text-slate-800 dark:text-slate-100 mb-8 flex items-center gap-3">
+                  <h2 className="mb-8 flex items-center gap-3">
                     <User className="text-indigo-500" /> General & Profile
                   </h2>
                   <div className="space-y-6 max-w-2xl">
                     <div className="flex items-center gap-6 mb-8">
-                      <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/50 dark:to-purple-900/50 border border-white/50 dark:border-white/10 flex items-center justify-center cursor-pointer hover:shadow-lg transition-all group relative overflow-hidden">
-                        <User size={32} className="text-indigo-500 group-hover:scale-110 transition-transform" />
+                      <label className="w-24 h-24 rounded-3xl neu-pressed flex items-center justify-center cursor-pointer hover:neu-flat transition-all group relative overflow-hidden">
+                        {profileImage ? (
+                          <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                          <User size={32} className="text-indigo-500 group-hover:scale-110 transition-transform" />
+                        )}
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                           <span className="text-white text-xs font-bold">Upload</span>
                         </div>
-                      </div>
+                        <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                      </label>
                       <div>
-                        <h3 className="font-bold text-slate-800 dark:text-slate-200">Profile Picture</h3>
+                        <h3 className="">Profile Picture</h3>
                         <p className="text-xs text-slate-500 mt-1">Recommended size: 500x500px</p>
                       </div>
                     </div>
@@ -581,19 +605,19 @@ export default function SettingsClient() {
                       {user?.role === 'admin' && (
                         <div>
                           <label className="block text-sm font-jakarta font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 mb-2">Agency Name</label>
-                          <input type="text" defaultValue="Injaazh Global" disabled className="w-full px-5 py-3.5 bg-white/30 dark:bg-slate-800/30 backdrop-blur-xl border border-white/10 dark:border-slate-800 rounded-2xl text-slate-400 dark:text-slate-500 font-inter text-[15px] cursor-not-allowed" />
+                          <input type="text" defaultValue="Injaazh Global" disabled className="w-full px-5 py-3.5 neu-pressed rounded-2xl text-slate-400 dark:text-slate-500 font-inter text-[15px] cursor-not-allowed opacity-70" />
                         </div>
                       )}
                       <div className={user?.role === 'admin' ? '' : 'md:col-span-2'}>
                         <label className="block text-sm font-jakarta font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 mb-2">
                           {user?.role === 'admin' ? 'Admin Name' : 'Your Name'}
                         </label>
-                        <input type="text" value={profileName} onChange={(e) => setProfileName(e.target.value)} className="w-full px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-inter text-[15px]" />
+                        <input type="text" value={profileName} onChange={(e) => setProfileName(e.target.value)} className="w-full px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 font-inter text-[15px]" />
                       </div>
                     </div>
                     <div>
                       <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Email Address</label>
-                      <input type="email" value={profileEmail} onChange={(e) => setProfileEmail(e.target.value)} className="w-full px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-medium" />
+                      <input type="email" value={profileEmail} onChange={(e) => setProfileEmail(e.target.value)} className="w-full px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 font-medium" />
                     </div>
                   </div>
                 </GlassCard>
@@ -603,7 +627,7 @@ export default function SettingsClient() {
               {activeTab === 'notifications' && (
                 <GlassCard>
                   <div className="flex justify-between items-center mb-8">
-                    <h2 className="text-3xl font-jakarta font-black text-slate-800 dark:text-slate-100 flex items-center gap-3">
+                    <h2 className="flex items-center gap-3">
                       <Volume2 className="text-indigo-500" /> Notifications & Sounds
                     </h2>
                     
@@ -627,17 +651,17 @@ export default function SettingsClient() {
                       { id: 'leadConverted', label: 'Lead Converted to Client', desc: 'Plays a success chime when a deal is won.', sound: 'success' as const },
                       { id: 'paymentReceived', label: 'Payment Received', desc: 'Plays a distinct coin chime when income is logged.', sound: 'cash' as const },
                     ].map(item => (
-                      <div key={item.id} className={`flex items-center justify-between p-6 rounded-3xl border transition-all ${soundSettings[item.id as keyof typeof soundSettings] && masterSound ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-white/30 dark:bg-slate-800/30 border-white/20 dark:border-slate-700/50'}`}>
+                      <div key={item.id} className={`flex items-center justify-between p-6 rounded-3xl transition-all ${soundSettings[item.id as keyof typeof soundSettings] && masterSound ? 'neu-pressed' : 'neu-flat'}`}>
                         <div className="flex items-center gap-4">
                           <button 
                             onClick={() => masterSound ? playSound(item.sound) : toast.error("Master sound is muted")}
-                            className="w-12 h-12 rounded-full bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center text-indigo-500 hover:scale-110 hover:shadow-lg hover:shadow-indigo-500/20 transition-all border border-slate-100 dark:border-slate-700"
+                            className="w-12 h-12 rounded-full neu-button flex items-center justify-center text-indigo-500 hover:scale-110 transition-all"
                             title="Preview Sound"
                           >
                             <Play size={20} className="ml-1" />
                           </button>
                           <div>
-                            <h4 className="font-jakarta font-black text-slate-800 dark:text-slate-200">{item.label}</h4>
+                            <h4 className="">{item.label}</h4>
                             <p className="text-xs font-inter text-slate-500">{item.desc}</p>
                           </div>
                         </div>
@@ -655,13 +679,13 @@ export default function SettingsClient() {
               {/* TAB: Security */}
               {activeTab === 'security' && (
                 <GlassCard>
-                  <h2 className="text-3xl font-jakarta font-black text-slate-800 dark:text-slate-100 mb-8 flex items-center gap-3">
+                  <h2 className="mb-8 flex items-center gap-3">
                     <ShieldCheck className="text-indigo-500" /> Security & Access Control
                   </h2>
                   
-                  <div className="mb-10 p-6 rounded-3xl bg-indigo-500/10 border border-indigo-500/20 flex flex-col md:flex-row justify-between items-center gap-6">
+                  <div className="mb-10 p-6 rounded-3xl neu-pressed flex flex-col md:flex-row justify-between items-center gap-6">
                     <div>
-                      <h3 className="font-jakarta font-black text-indigo-700 dark:text-indigo-400 mb-1">Two-Factor Authentication (2FA)</h3>
+                      <h3 className="mb-1">Two-Factor Authentication (2FA)</h3>
                       <p className="text-sm font-inter text-slate-600 dark:text-slate-400">
                         {is2FAEnabled ? 'Your account is secured with 2FA.' : 'Secure your account with an authenticator app.'}
                       </p>
@@ -672,7 +696,7 @@ export default function SettingsClient() {
                           setIsDisabling2FA(true);
                           setIs2FAModalOpen(true);
                         }}
-                        className="px-6 py-3 bg-rose-600/10 text-rose-600 font-jakarta font-bold rounded-xl shadow-sm hover:bg-rose-600 hover:text-white transition-colors whitespace-nowrap"
+                        className="px-6 py-3 neu-button text-rose-500 font-bold rounded-xl transition-all whitespace-nowrap"
                       >
                         Disable 2FA
                       </button>
@@ -682,7 +706,7 @@ export default function SettingsClient() {
                           setIsDisabling2FA(false);
                           setIs2FAModalOpen(true);
                         }}
-                        className="px-6 py-3 bg-indigo-600 text-white font-jakarta font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors whitespace-nowrap"
+                        className="px-6 py-3 neu-button text-indigo-500 font-bold rounded-xl transition-all whitespace-nowrap"
                       >
                         Enable 2FA
                       </button>
@@ -698,35 +722,45 @@ export default function SettingsClient() {
                     }}
                   />
 
-                  <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest mb-6 flex items-center gap-2">
+                  <h3 className="mb-6 flex items-center gap-2">
                     <MonitorSmartphone size={18} className="text-slate-400" /> Active Sessions
                   </h3>
                   
                   <div className="space-y-4">
-                    {[
-                      { device: 'MacBook Pro 16"', browser: 'Chrome', location: 'Dhaka, BD', current: true },
-                      { device: 'iPhone 14 Pro', browser: 'Safari', location: 'Dhaka, BD', current: false },
-                    ].map((session, idx) => (
-                      <div key={idx} className="flex flex-col md:flex-row justify-between items-start md:items-center p-6 rounded-2xl bg-white/30 dark:bg-slate-800/30 border border-white/20 dark:border-slate-700/50 hover:bg-white/50 dark:hover:bg-slate-800/50 transition-colors gap-4">
+                    {isLoadingSessions ? (
+                      <div className="p-6 text-center text-slate-500 flex justify-center">
+                        <Activity className="animate-spin text-indigo-500" />
+                      </div>
+                    ) : activeSessions.length === 0 ? (
+                      <div className="p-6 text-center text-slate-500 text-sm">No active sessions found.</div>
+                    ) : activeSessions.map((session) => (
+                      <div key={session._id} className="flex flex-col md:flex-row justify-between items-start md:items-center p-6 rounded-2xl neu-flat hover:neu-pressed transition-all gap-4">
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
+                          <div className="w-12 h-12 rounded-xl neu-pressed flex items-center justify-center">
                             <MonitorSmartphone size={20} className="text-slate-500" />
                           </div>
                           <div>
-                            <h4 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                            <h4 className="flex items-center gap-2">
                               {session.device} 
-                              {session.current && <span className="text-[10px] bg-teal-500/20 text-teal-600 px-2 py-0.5 rounded-full uppercase tracking-wider">Current</span>}
+                              {session.isCurrent && <span className="text-[10px] bg-teal-500/20 text-teal-600 px-2 py-0.5 rounded-full uppercase tracking-wider">Current</span>}
                             </h4>
-                            <p className="text-xs font-medium text-slate-500">{session.browser} • {session.location}</p>
+                            <p className="text-xs font-medium text-slate-500">{session.browser} • {session.os} • {session.location}</p>
+                            <p className="text-[10px] text-slate-400 mt-1">IP: {session.ip} • Last Active: {new Date(session.lastActive).toLocaleString()}</p>
                           </div>
                         </div>
-                        {!session.current && (
+                        {!session.isCurrent && (
                           <button 
-                            onClick={() => {
-                              toast.success('Session revoked successfully');
-                              if (masterSound) playSound('success');
+                            onClick={async () => {
+                              const res = await revokeSession(session.sessionId);
+                              if (res.success) {
+                                toast.success('Session revoked successfully');
+                                setActiveSessions(prev => prev.filter(s => s._id !== session._id));
+                                if (masterSound) playSound('success');
+                              } else {
+                                toast.error(res.error || 'Failed to revoke session');
+                              }
                             }}
-                            className="flex items-center gap-2 px-4 py-2 bg-rose-500/10 text-rose-600 font-bold rounded-xl hover:bg-rose-500 hover:text-white transition-all text-xs"
+                            className="flex items-center gap-2 px-4 py-2 neu-button text-rose-500 font-bold rounded-xl transition-all text-xs"
                           >
                             <LogOut size={14} /> Revoke Access
                           </button>
@@ -736,7 +770,7 @@ export default function SettingsClient() {
                   </div>
 
                   <div className="mt-10 pt-8 border-t border-slate-200 dark:border-slate-800">
-                    <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <h3 className="mb-6 flex items-center gap-2">
                       <Key size={18} className="text-slate-400" /> Change Password
                     </h3>
                     <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
@@ -756,7 +790,7 @@ export default function SettingsClient() {
                             type="password" 
                             value={newPassword} 
                             onChange={(e) => setNewPassword(e.target.value)} 
-                            className="w-full px-5 py-3 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 text-sm font-medium" 
+                            className="w-full px-5 py-3 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 text-sm font-medium" 
                           />
                         </div>
                         <div>
@@ -765,14 +799,14 @@ export default function SettingsClient() {
                             type="password" 
                             value={confirmNewPassword} 
                             onChange={(e) => setConfirmNewPassword(e.target.value)} 
-                            className="w-full px-5 py-3 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 text-sm font-medium" 
+                            className="w-full px-5 py-3 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 text-sm font-medium" 
                           />
                         </div>
                       </div>
                       <button 
                         type="submit" 
                         disabled={isChangingPassword}
-                        className="px-6 py-3 bg-indigo-600 text-white font-jakarta font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors text-xs disabled:opacity-50"
+                        className="px-6 py-3 neu-button text-indigo-500 font-bold rounded-xl transition-all text-xs disabled:opacity-50"
                       >
                         {isChangingPassword ? 'Updating...' : 'Update Password'}
                       </button>
@@ -782,15 +816,15 @@ export default function SettingsClient() {
               )}
 
               {/* TAB: Manage Team (Admin Only) */}
-              {activeTab === 'team' && user?.role === 'admin' && (
+              {activeTab === 'team' && (user?.role === 'admin' || user?.role === 'owner') && (
                 <GlassCard>
-                  <h2 className="text-3xl font-jakarta font-black text-slate-800 dark:text-slate-100 mb-8 flex items-center gap-3">
+                  <h2 className="mb-8 flex items-center gap-3">
                     <Users className="text-indigo-500" /> Manage Team
                   </h2>
 
                   {/* Invite Form */}
-                  <div className="mb-10 p-6 rounded-3xl bg-indigo-500/5 border border-indigo-500/10">
-                    <h3 className="text-base font-bold text-slate-800 dark:text-white mb-4">Invite New Team Member</h3>
+                  <div className="mb-10 p-6 rounded-3xl neu-pressed">
+                    <h3 className="mb-4">Invite New Team Member</h3>
                     <form onSubmit={handleInviteMember} className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
                       <div>
                         <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Name</label>
@@ -799,7 +833,7 @@ export default function SettingsClient() {
                           placeholder="e.g. John Doe"
                           value={inviteName} 
                           onChange={(e) => setInviteName(e.target.value)} 
-                          className="w-full px-5 py-3.5 bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 text-sm font-medium" 
+                          className="w-full px-5 py-3.5 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 text-sm font-medium" 
                         />
                       </div>
                       <div>
@@ -809,7 +843,7 @@ export default function SettingsClient() {
                           placeholder="e.g. john@injaazh.com"
                           value={inviteEmail} 
                           onChange={(e) => setInviteEmail(e.target.value)} 
-                          className="w-full px-5 py-3.5 bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 text-sm font-medium" 
+                          className="w-full px-5 py-3.5 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 text-sm font-medium" 
                         />
                       </div>
                       <div>
@@ -819,41 +853,26 @@ export default function SettingsClient() {
                           placeholder="••••••••"
                           value={invitePassword} 
                           onChange={(e) => setInvitePassword(e.target.value)} 
-                          className="w-full px-5 py-3.5 bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 text-sm font-medium" 
+                          className="w-full px-5 py-3.5 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 text-sm font-medium" 
                         />
                       </div>
                       <div className="md:col-span-2 flex items-center gap-6 py-2">
-                        <span className="text-xs font-bold text-slate-500">Assign Permissions:</span>
-                        <label className="flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-400 cursor-pointer">
-                          <input 
-                            type="checkbox" 
-                            checked={invitePermissions.includes('leads')} 
-                            onChange={(e) => {
-                              if (e.target.checked) setInvitePermissions([...invitePermissions, 'leads']);
-                              else setInvitePermissions(invitePermissions.filter(p => p !== 'leads'));
-                            }} 
-                            className="rounded border-slate-300 text-indigo-650 focus:ring-indigo-500"
-                          />
-                          Leads Management
-                        </label>
-                        <label className="flex items-center gap-2 text-sm font-semibold text-slate-650 cursor-pointer">
-                          <input 
-                            type="checkbox" 
-                            checked={invitePermissions.includes('outreach')} 
-                            onChange={(e) => {
-                              if (e.target.checked) setInvitePermissions([...invitePermissions, 'outreach']);
-                              else setInvitePermissions(invitePermissions.filter(p => p !== 'outreach'));
-                            }} 
-                            className="rounded border-slate-300 text-indigo-650 focus:ring-indigo-500"
-                          />
-                          Email Outreach
-                        </label>
+                        <span className="text-xs font-bold text-slate-500">Assign Role:</span>
+                        <select 
+                          value={inviteRole}
+                          onChange={(e) => setInviteRole(e.target.value)}
+                          className="w-48 px-4 py-2.5 neu-flat rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 text-sm font-semibold"
+                        >
+                          <option value="admin">Admin (Manager)</option>
+                          <option value="editor">Editor (Leads & Projects)</option>
+                          <option value="marketplace_team">Marketplace Team</option>
+                        </select>
                       </div>
                       <div className="text-right">
                         <button 
                           type="submit" 
                           disabled={isInviting}
-                          className="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-jakarta font-bold rounded-2xl shadow-lg transition-all text-sm w-full md:w-auto"
+                          className="px-8 py-3.5 neu-button text-indigo-500 font-bold rounded-2xl transition-all text-sm w-full md:w-auto"
                         >
                           {isInviting ? 'Inviting...' : 'Invite Member'}
                         </button>
@@ -862,7 +881,7 @@ export default function SettingsClient() {
                   </div>
 
                   {/* Members List */}
-                  <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest mb-6">
+                  <h3 className="mb-6">
                     Team Members list
                   </h3>
                   <div className="overflow-x-auto">
@@ -871,8 +890,8 @@ export default function SettingsClient() {
                         <tr className="border-b border-slate-200/50 dark:border-white/5 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                           <th className="py-3 px-4">Name</th>
                           <th className="py-3 px-4">Email</th>
-                          <th className="py-3 px-4">Role</th>
-                          <th className="py-3 px-4">Permissions</th>
+                          <th className="py-3 px-4">Role Badge</th>
+                          <th className="py-3 px-4">Change Role</th>
                           <th className="py-3 px-4 text-right">Actions</th>
                         </tr>
                       </thead>
@@ -892,25 +911,17 @@ export default function SettingsClient() {
                                 </span>
                               </td>
                               <td className="py-4 px-4">
-                                <div className="flex items-center gap-4 text-xs font-semibold text-slate-600 dark:text-slate-400">
-                                  <label className="flex items-center gap-1.5 cursor-pointer">
-                                    <input 
-                                      type="checkbox" 
-                                      checked={member.permissions?.includes('leads')} 
-                                      onChange={(e) => handleTogglePermission(member._id, 'leads', e.target.checked)}
-                                      className="rounded text-indigo-605 focus:ring-indigo-500 border-slate-300"
-                                    />
-                                    Leads
-                                  </label>
-                                  <label className="flex items-center gap-1.5 cursor-pointer">
-                                    <input 
-                                      type="checkbox" 
-                                      checked={member.permissions?.includes('outreach')} 
-                                      onChange={(e) => handleTogglePermission(member._id, 'outreach', e.target.checked)}
-                                      className="rounded text-indigo-605 focus:ring-indigo-500 border-slate-300"
-                                    />
-                                    Outreach
-                                  </label>
+                                <div className="flex items-center">
+                                  <select 
+                                    value={member.role}
+                                    onChange={(e) => handleToggleRole(member._id, e.target.value)}
+                                    className="w-40 px-3 py-1.5 neu-pressed rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 text-xs font-semibold"
+                                  >
+                                    <option value="owner">Owner</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="editor">Editor</option>
+                                    <option value="marketplace_team">Marketplace Team</option>
+                                  </select>
                                 </div>
                               </td>
                               <td className="py-4 px-4 text-right">
@@ -934,7 +945,7 @@ export default function SettingsClient() {
               {/* TAB: API */}
               {activeTab === 'api' && (
                 <GlassCard>
-                  <h2 className="text-3xl font-jakarta font-black text-slate-800 dark:text-slate-100 mb-8 flex items-center gap-3">
+                  <h2 className="mb-8 flex items-center gap-3">
                     <Key className="text-indigo-500" /> API Keys & Webhooks
                   </h2>
                   
@@ -945,7 +956,7 @@ export default function SettingsClient() {
                         <input 
                           type={showKey ? 'text' : 'password'} 
                           defaultValue="AIzaSyB_f-XVZOMwGgD1kUxm1Q44wCMjqqIuKtY" 
-                          className="w-full px-5 py-3.5 pr-12 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-medium font-mono text-sm" 
+                          className="w-full px-5 py-3.5 pr-12 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 font-medium font-mono text-sm" 
                         />
                         <button 
                           onClick={() => setShowKey(!showKey)}
@@ -957,11 +968,11 @@ export default function SettingsClient() {
                     </div>
 
                     <div className="pt-8 border-t border-slate-200 dark:border-slate-800">
-                      <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest mb-4 flex items-center justify-between">
+                      <h3 className="mb-4 flex items-center justify-between">
                         <span>Webhook Endpoints</span>
                         <button className="text-xs font-bold text-indigo-500 hover:text-indigo-600">+ Add Webhook</button>
                       </h3>
-                      <div className="p-4 rounded-2xl bg-white/30 dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700 flex items-center justify-between opacity-50">
+                      <div className="p-4 rounded-2xl neu-flat flex items-center justify-between opacity-50">
                         <p className="text-xs font-mono text-slate-500">No webhooks configured yet.</p>
                       </div>
                     </div>
@@ -969,10 +980,20 @@ export default function SettingsClient() {
                 </GlassCard>
               )}
 
+              {/* TAB: Email Accounts */}
+              {activeTab === 'email_accounts' && (
+                <GlassCard>
+                  <h2 className="mb-8 flex items-center gap-3">
+                    <Mail className="text-indigo-500" /> Outreach Email Accounts
+                  </h2>
+                  <EmailAccountsManager />
+                </GlassCard>
+              )}
+
               {/* TAB: SMTP Configurations */}
               {activeTab === 'smtp' && (
                 <GlassCard>
-                  <h2 className="text-3xl font-jakarta font-black text-slate-800 dark:text-slate-100 mb-8 flex items-center gap-3">
+                  <h2 className="mb-8 flex items-center gap-3">
                     <Mail className="text-indigo-500" /> SMTP Configurations
                   </h2>
                   
@@ -986,7 +1007,7 @@ export default function SettingsClient() {
                           placeholder="e.g. smtp.gmail.com" 
                           value={smtpSettings.host} 
                           onChange={(e) => setSmtpSettings(prev => ({ ...prev, host: e.target.value }))}
-                          className="w-full px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-inter text-[15px]" 
+                          className="w-full px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 font-inter text-[15px]" 
                         />
                       </div>
                       <div>
@@ -996,7 +1017,7 @@ export default function SettingsClient() {
                           placeholder="e.g. 587" 
                           value={smtpSettings.port} 
                           onChange={(e) => setSmtpSettings(prev => ({ ...prev, port: parseInt(e.target.value) || 587 }))}
-                          className="w-full px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-medium" 
+                          className="w-full px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 font-medium" 
                         />
                       </div>
                     </div>
@@ -1009,7 +1030,7 @@ export default function SettingsClient() {
                           placeholder="e.g. your-email@gmail.com" 
                           value={smtpSettings.user} 
                           onChange={(e) => setSmtpSettings(prev => ({ ...prev, user: e.target.value }))}
-                          className="w-full px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-medium" 
+                          className="w-full px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 font-medium" 
                         />
                       </div>
                       <div>
@@ -1020,7 +1041,7 @@ export default function SettingsClient() {
                             placeholder="e.g. App Password" 
                             value={smtpSettings.pass} 
                             onChange={(e) => setSmtpSettings(prev => ({ ...prev, pass: e.target.value }))}
-                            className="w-full px-5 py-3.5 pr-12 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-medium font-mono text-sm" 
+                            className="w-full px-5 py-3.5 pr-12 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 font-medium font-mono text-sm" 
                           />
                           <button 
                             type="button"
@@ -1041,7 +1062,7 @@ export default function SettingsClient() {
                           placeholder="e.g. Mamun" 
                           value={smtpSettings.fromName} 
                           onChange={(e) => setSmtpSettings(prev => ({ ...prev, fromName: e.target.value }))}
-                          className="w-full px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-medium" 
+                          className="w-full px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 font-medium" 
                         />
                       </div>
                       <div>
@@ -1051,7 +1072,7 @@ export default function SettingsClient() {
                           placeholder="e.g. mamun@injaazh.com" 
                           value={smtpSettings.fromEmail} 
                           onChange={(e) => setSmtpSettings(prev => ({ ...prev, fromEmail: e.target.value }))}
-                          className="w-full px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 font-medium" 
+                          className="w-full px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 font-medium" 
                         />
                       </div>
                     </div>
@@ -1068,7 +1089,7 @@ export default function SettingsClient() {
                         type="button"
                         onClick={handleTestConnection}
                         disabled={isTestingConnection}
-                        className="px-6 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-650 dark:text-indigo-400 border border-indigo-500/20 font-bold rounded-2xl transition-all text-xs flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-95 disabled:opacity-40"
+                        className="px-6 py-3 neu-button text-indigo-500 font-bold rounded-2xl transition-all text-xs flex items-center justify-center gap-2 disabled:opacity-40"
                       >
                         {isTestingConnection ? (
                           <>
@@ -1124,13 +1145,13 @@ export default function SettingsClient() {
                               handleSendTestEmail();
                             }
                           }}
-                          className="flex-1 px-5 py-3.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-800 dark:text-slate-200 font-inter text-[15px]" 
+                          className="flex-1 px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 font-inter text-[15px]" 
                         />
                         <button
                           type="button"
                           onClick={handleSendTestEmail}
                           disabled={isSendingTestEmail || !testEmailAddress}
-                          className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 font-jakarta font-bold rounded-2xl transition-all text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+                          className="px-6 py-3 neu-button text-purple-500 font-bold rounded-2xl transition-all text-sm flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
                         >
                           {isSendingTestEmail ? (
                             <>
@@ -1154,25 +1175,25 @@ export default function SettingsClient() {
               {/* TAB: Billing */}
               {activeTab === 'billing' && (
                 <GlassCard>
-                  <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 mb-8 flex items-center gap-3">
+                  <h2 className="mb-8 flex items-center gap-3">
                     <CreditCard className="text-indigo-500" /> Usage & Billing
                   </h2>
                   
-                  <div className="mb-10 p-8 rounded-3xl bg-gradient-to-br from-indigo-600 to-purple-700 text-white relative overflow-hidden shadow-2xl shadow-indigo-500/30">
+                  <div className="mb-10 p-8 rounded-3xl neu-pressed relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
                     <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                       <div>
                         <span className="px-3 py-1 bg-white/20 rounded-full text-xs font-black uppercase tracking-widest mb-4 inline-block backdrop-blur-md">Current Plan</span>
-                        <h3 className="text-4xl font-black mb-1">Agency Pro</h3>
-                        <p className="text-indigo-100 font-medium">$99.00 / month</p>
+                        <h3 className="mb-1">Agency Pro</h3>
+                        <p className="font-medium text-slate-500">$99.00 / month</p>
                       </div>
-                      <button className="px-8 py-3 bg-white text-indigo-600 font-black rounded-2xl hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] transition-all">
+                      <button className="px-8 py-3 neu-button text-indigo-500 font-black rounded-2xl transition-all">
                         Manage Billing
                       </button>
                     </div>
                   </div>
 
-                  <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest mb-6">Resource Limits</h3>
+                  <h3 className="mb-6">Resource Limits</h3>
                   
                   <div className="space-y-8">
                     {/* Progress 1 */}
@@ -1213,23 +1234,23 @@ export default function SettingsClient() {
               {/* TAB: Danger Zone */}
               {activeTab === 'danger' && (
                 <GlassCard className="border-rose-500/20 dark:border-rose-500/20">
-                  <h2 className="text-2xl font-black text-rose-600 dark:text-rose-400 mb-8 flex items-center gap-3">
+                  <h2 className="mb-8 flex items-center gap-3">
                     <AlertTriangle className="text-rose-500" /> Data & Danger Zone
                   </h2>
 
                   <div className="space-y-6">
-                    <div className="p-6 rounded-2xl bg-white/30 dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="p-6 rounded-2xl neu-flat flex flex-col md:flex-row justify-between items-center gap-4">
                       <div>
-                        <h4 className="font-black text-slate-800 dark:text-slate-200">Export All Data</h4>
+                        <h4 className="">Export All Data</h4>
                         <p className="text-xs font-medium text-slate-500 mt-1">Download a JSON/CSV copy of all your agency data.</p>
                       </div>
-                      <button className="flex items-center gap-2 px-6 py-3 bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 font-bold rounded-xl hover:scale-105 transition-transform text-sm whitespace-nowrap">
+                      <button className="flex items-center gap-2 px-6 py-3 neu-button font-bold rounded-xl transition-all text-sm whitespace-nowrap">
                         <Download size={16} /> Request Export
                       </button>
                     </div>
 
-                    <div className="p-8 rounded-3xl bg-rose-500/5 border-2 border-rose-500/20">
-                      <h4 className="font-black text-rose-600 dark:text-rose-400 text-xl mb-2">Factory Reset Database</h4>
+                    <div className="p-8 rounded-3xl neu-pressed">
+                      <h4 className="mb-2">Factory Reset Database</h4>
                       <p className="text-sm font-medium text-rose-500/70 mb-6">This will permanently delete all leads, projects, transactions, and proposals. This action cannot be undone.</p>
                       
                       <div className="max-w-md">
@@ -1240,7 +1261,7 @@ export default function SettingsClient() {
                             value={dangerConfirm}
                             onChange={(e) => setDangerConfirm(e.target.value)}
                             placeholder="CONFIRM" 
-                            className="flex-1 px-5 py-3 bg-white dark:bg-slate-900 border border-rose-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 text-rose-600 font-black tracking-widest placeholder-rose-300" 
+                            className="flex-1 px-5 py-3 neu-pressed rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500/50 focus:border-transparent text-rose-500 font-black tracking-widest placeholder-rose-300" 
                           />
                           <button 
                             disabled={dangerConfirm !== 'CONFIRM'}
@@ -1249,7 +1270,7 @@ export default function SettingsClient() {
                               if (masterSound) playSound('error');
                               setDangerConfirm('');
                             }}
-                            className={`flex items-center gap-2 px-6 py-3 bg-rose-600 text-white font-black rounded-xl transition-all ${dangerConfirm === 'CONFIRM' ? 'hover:bg-rose-700 hover:shadow-[0_0_20px_rgba(225,29,72,0.4)]' : 'opacity-50 cursor-not-allowed'}`}
+                            className={`flex items-center gap-2 px-6 py-3 neu-button text-rose-500 font-black rounded-xl transition-all ${dangerConfirm === 'CONFIRM' ? '' : 'opacity-50 cursor-not-allowed'}`}
                           >
                             <Trash2 size={18} /> Reset
                           </button>

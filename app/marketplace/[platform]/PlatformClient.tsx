@@ -137,13 +137,8 @@ export default function PlatformClient({ platform }: { platform: string }) {
   const pConf = getPlatformConfig();
 
   return (
-    <div className="min-h-screen p-4 md:p-8 text-slate-800 dark:text-slate-200 relative overflow-hidden bg-slate-50/50 dark:bg-slate-950/50">
-      
-      {/* Ambient Backgrounds */}
-      <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
-        <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-indigo-500/10 dark:bg-indigo-600/10 blur-[120px] rounded-full" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-purple-500/10 dark:bg-purple-600/10 blur-[120px] rounded-full" />
-      </div>
+    <div className="min-h-screen p-4 md:p-8 neu-base-bg text-slate-800 dark:text-slate-200 relative overflow-hidden">
+
 
       <div className="max-w-7xl mx-auto relative z-10">
         
@@ -157,13 +152,13 @@ export default function PlatformClient({ platform }: { platform: string }) {
         </Link>
 
         {/* Dynamic Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6 bg-white/60 dark:bg-slate-900/60 backdrop-blur-3xl border border-white/50 dark:border-white/10 rounded-[2rem] p-6 md:p-8 shadow-xl shadow-slate-200/50 dark:shadow-black/40">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6 neu-flat rounded-[2rem] p-6 md:p-8">
           <div className="flex items-center gap-5">
-            <div className="w-14 h-14 bg-white dark:bg-white/5 backdrop-blur-xl border border-slate-200/50 dark:border-white/10 rounded-2xl shadow-sm flex items-center justify-center">
+            <div className="w-14 h-14 neu-pressed rounded-2xl flex items-center justify-center">
               {pConf.icon}
             </div>
             <div>
-              <h1 className="text-3xl font-black text-slate-800 dark:text-white capitalize flex items-center gap-3">
+              <h1 className="flex items-center gap-3">
                 {pConf.name} Projects
               </h1>
               <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 font-medium">Manage active pipeline and deliverables</p>
@@ -177,14 +172,14 @@ export default function PlatformClient({ platform }: { platform: string }) {
               <input 
                 type="text" 
                 placeholder="Search projects..." 
-                className="w-full pl-11 pr-4 py-3 bg-white/50 dark:bg-black/20 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-xl text-sm font-inter text-[15px] focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-inner text-slate-800 dark:text-slate-200 placeholder-slate-400 transition-all"
+                className="w-full pl-11 pr-4 py-3 neu-pressed rounded-xl text-sm font-inter text-[15px] focus:outline-none text-slate-800 dark:text-slate-200 placeholder-slate-400 transition-all"
               />
             </div>
             
             {/* Action Button */}
             <button 
               onClick={() => setIsModalOpen(true)}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-jakarta font-bold rounded-xl hover:-translate-y-0.5 shadow-[0_4px_14px_0_rgba(79,70,229,0.39)] hover:shadow-[0_6px_20px_rgba(79,70,229,0.23)] transition-all text-sm w-full sm:w-auto flex-shrink-0"
+              className="flex items-center justify-center gap-2 px-6 py-3 neu-button text-indigo-500 font-jakarta font-bold rounded-xl hover:-translate-y-0.5 transition-all text-sm w-full sm:w-auto flex-shrink-0"
             >
               <Plus size={18} /> New Project
             </button>
@@ -197,7 +192,7 @@ export default function PlatformClient({ platform }: { platform: string }) {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
           </div>
         ) : projects.length === 0 ? (
-          <div className="text-center py-20 bg-white/70 dark:bg-purple-950/10 backdrop-blur-3xl border border-slate-200 dark:border-purple-500/10 rounded-3xl shadow-sm">
+          <div className="text-center py-20 neu-pressed rounded-3xl">
             <p className="text-slate-500 dark:text-gray-400">No projects found. Create one to get started!</p>
           </div>
         ) : (
@@ -223,16 +218,16 @@ export default function PlatformClient({ platform }: { platform: string }) {
                   variants={itemVariants}
                   className="group block relative"
                 >
-                  <Link href={`/marketplace/${platform.toLowerCase()}/${project._id}`} className="block relative z-10 bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl border border-white/50 dark:border-white/10 rounded-[1.5rem] p-6 md:p-7 shadow-lg shadow-slate-200/40 dark:shadow-black/20 hover:shadow-2xl hover:shadow-indigo-500/10 dark:hover:shadow-indigo-500/10 hover:-translate-y-1.5 hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all duration-300">
+                  <Link href={`/marketplace/${platform.toLowerCase()}/${project._id}`} className="block relative z-10 neu-flat rounded-[1.5rem] p-6 md:p-7 hover:-translate-y-1.5 transition-all duration-300">
                     
                     {/* Hover Glow Effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-purple-500/0 to-pink-500/0 group-hover:from-indigo-500/5 group-hover:via-purple-500/5 group-hover:to-pink-500/5 rounded-[1.5rem] pointer-events-none transition-all duration-500" />
+                    <div className="absolute inset-0 neu-pressed opacity-0 group-hover:opacity-100 rounded-[1.5rem] pointer-events-none transition-all duration-500" />
                     
                     <div className="flex flex-col md:grid md:grid-cols-12 gap-6 md:items-center relative z-10">
                       
                       {/* Project Title & Client */}
                       <div className="col-span-4">
-                        <h3 className={`font-jakarta font-black text-xl text-slate-800 dark:text-white mb-2 group-hover:${pConf.accent} transition-colors line-clamp-1`}>
+                        <h3 className={`mb-2 group-hover:${pConf.accent} transition-colors line-clamp-1`}>
                           {project.title}
                         </h3>
                         <p className="text-sm font-inter font-bold text-slate-500 dark:text-slate-400 flex items-center gap-2">
@@ -254,7 +249,7 @@ export default function PlatformClient({ platform }: { platform: string }) {
                             <span className="uppercase tracking-widest text-[10px]">Completion</span>
                             <span className="font-mono">{project.progress}%</span>
                           </div>
-                          <div className="h-2.5 w-full bg-slate-100 dark:bg-black/40 rounded-full overflow-hidden shadow-inner">
+                          <div className="h-2.5 w-full neu-pressed rounded-full overflow-hidden">
                             <div 
                               className={`h-full rounded-full ${pConf.bgAccent} shadow-sm transition-all duration-1000 ease-out`}
                               style={{ width: `${project.progress}%` }}
@@ -265,14 +260,14 @@ export default function PlatformClient({ platform }: { platform: string }) {
 
                       {/* Budget */}
                       <div className="col-span-1 flex items-center">
-                        <span className="font-mono font-black text-slate-700 dark:text-slate-200 bg-white dark:bg-white/5 px-3.5 py-1.5 rounded-xl border border-slate-200/60 dark:border-white/10 shadow-sm">
+                        <span className="font-mono font-black text-slate-700 dark:text-slate-200 neu-pressed px-3.5 py-1.5 rounded-xl">
                           {project.budget}
                         </span>
                       </div>
 
                       {/* Deadline */}
                       <div className="col-span-2 flex items-center md:justify-end">
-                        <div className="flex items-center gap-2.5 text-sm font-jakarta font-bold text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-white/5 px-4 py-2.5 rounded-xl border border-slate-200/60 dark:border-white/10 group-hover:border-indigo-200 dark:group-hover:border-indigo-500/30 transition-colors shadow-sm">
+                        <div className="flex items-center gap-2.5 text-sm font-jakarta font-bold text-slate-600 dark:text-slate-300 neu-pressed px-4 py-2.5 rounded-xl transition-colors">
                           <Clock size={16} className={pConf.accent} />
                           {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(project.deadline))}
                         </div>

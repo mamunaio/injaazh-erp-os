@@ -31,7 +31,7 @@ export default function MigrateDebtsPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-8">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8">
-          <h1 className="text-3xl font-bold text-slate-800 dark:text-white mb-4">
+          <h1 className="mb-4">
             Migrate Personal Debts
           </h1>
           <p className="text-slate-600 dark:text-slate-400 mb-6">
@@ -74,7 +74,7 @@ export default function MigrateDebtsPage() {
 
               {result.details && result.details.length > 0 && (
                 <div className="mt-4 max-h-60 overflow-y-auto">
-                  <h4 className="font-semibold text-sm mb-2">Migration Details:</h4>
+                  <h4 className="mb-2">Migration Details:</h4>
                   <ul className="text-xs space-y-1">
                     {result.details.map((detail: string, index: number) => (
                       <li key={index} className="text-slate-600 dark:text-slate-400">

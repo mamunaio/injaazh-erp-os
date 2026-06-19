@@ -49,11 +49,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#050505] py-12">
-      {/* Dynamic Background Elements */}
-      <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-violet-600/20 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-1/3 left-1/4 w-[500px] h-[500px] bg-fuchsia-600/20 rounded-full blur-[120px] pointer-events-none" />
-      
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden neu-base-bg py-12">
       {/* Grid Pattern */}
       <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-5 pointer-events-none" />
 
@@ -63,12 +59,12 @@ export default function RegisterPage() {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="w-full max-w-md p-6 relative z-10"
       >
-        <div className="bg-white/5 backdrop-blur-2xl border border-white/10 p-8 rounded-3xl shadow-2xl">
+        <div className="neu-flat p-8 rounded-3xl">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-fuchsia-400 tracking-tight drop-shadow-sm mb-2">
+            <h1 className="mb-2 text-slate-800 dark:text-white">
               Create Account
             </h1>
-            <p className="text-slate-400 font-medium">
+            <p className="text-slate-500 font-medium">
               Join Injaazh ERP and streamline your workflow
             </p>
           </div>
@@ -82,7 +78,7 @@ export default function RegisterPage() {
                   name="name"
                   required
                   placeholder="Full Name"
-                  className="w-full bg-black/20 border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all"
+                  className="w-full neu-pressed rounded-2xl pl-12 pr-4 py-4 text-slate-800 dark:text-white placeholder:text-slate-500 focus:outline-none transition-all"
                 />
               </div>
 
@@ -93,7 +89,7 @@ export default function RegisterPage() {
                   name="email"
                   required
                   placeholder="Email address"
-                  className="w-full bg-black/20 border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all"
+                  className="w-full neu-pressed rounded-2xl pl-12 pr-4 py-4 text-slate-800 dark:text-white placeholder:text-slate-500 focus:outline-none transition-all"
                 />
               </div>
 
@@ -106,7 +102,7 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password"
-                  className="w-full bg-black/20 border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all"
+                  className="w-full neu-pressed rounded-2xl pl-12 pr-4 py-4 text-slate-800 dark:text-white placeholder:text-slate-500 focus:outline-none transition-all"
                 />
               </div>
 
@@ -129,7 +125,7 @@ export default function RegisterPage() {
                   name="confirmPassword"
                   required
                   placeholder="Confirm Password"
-                  className="w-full bg-black/20 border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all"
+                  className="w-full neu-pressed rounded-2xl pl-12 pr-4 py-4 text-slate-800 dark:text-white placeholder:text-slate-500 focus:outline-none transition-all"
                 />
               </div>
             </div>
@@ -137,22 +133,19 @@ export default function RegisterPage() {
             <button 
               type="submit"
               disabled={isLoading}
-              className="w-full relative group overflow-hidden rounded-2xl bg-white/5 border border-white/10 p-[1px] mt-4"
+              className="w-full relative neu-button flex items-center justify-center gap-2 px-6 py-4 rounded-2xl mt-4 transition-all"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-violet-600 to-fuchsia-600 opacity-80 group-hover:opacity-100 transition-opacity" />
-              <div className="relative flex items-center justify-center gap-2 bg-black/40 backdrop-blur-md px-6 py-4 rounded-2xl group-hover:bg-black/20 transition-all">
-                <span className="text-white font-bold text-lg">
-                  {isLoading ? 'Creating Account...' : 'Sign Up'}
-                </span>
-                {!isLoading && <ArrowRight size={20} className="text-white group-hover:translate-x-1 transition-transform" />}
-              </div>
+              <span className="text-indigo-600 dark:text-indigo-400 font-bold text-lg">
+                {isLoading ? 'Creating Account...' : 'Sign Up'}
+              </span>
+              {!isLoading && <ArrowRight size={20} className="text-indigo-600 dark:text-indigo-400" />}
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-white/10">
-            <p className="text-center text-slate-400 text-sm">
+          <div className="mt-8 pt-6">
+            <p className="text-center text-slate-500 text-sm">
               Already have an account?{' '}
-              <Link href="/login" className="text-white font-bold hover:text-violet-400 transition-colors">
+              <Link href="/login" className="text-indigo-600 dark:text-indigo-400 font-bold transition-colors">
                 Sign in here
               </Link>
             </p>

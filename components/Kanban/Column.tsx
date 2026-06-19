@@ -22,14 +22,12 @@ export default function Column({ column }: ColumnProps) {
   return (
     <div
       ref={setNodeRef}
-      className={`w-full md:w-80 flex-shrink-0 flex flex-col rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-2 ${
-        isOver
-          ? 'border-purple-400 dark:border-purple-500 bg-purple-50/50 dark:bg-purple-500/10'
-          : 'border-purple-200/40 dark:border-purple-500/20'
-      } overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300`}
+      className={`w-full md:w-80 flex-shrink-0 flex flex-col neu-pressed ${
+        isOver ? 'ring-2 ring-indigo-500' : ''
+      } overflow-hidden transition-all duration-300`}
     >
       {/* Column Header */}
-      <div className="p-4 border-b-2 border-purple-200/40 dark:border-purple-500/20 bg-gradient-to-br from-white/90 to-purple-50/30 dark:from-black/20 dark:to-purple-950/20">
+      <div className="p-4 border-b border-slate-200 dark:border-white/5">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2.5">
             {/* Status Dot */}
@@ -41,7 +39,7 @@ export default function Column({ column }: ColumnProps) {
               {column.title}
             </h2>
             {/* Count Pill */}
-            <span className="flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300 text-xs font-bold">
+            <span className="flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 text-xs font-bold">
               {column.cards.length}
             </span>
           </div>

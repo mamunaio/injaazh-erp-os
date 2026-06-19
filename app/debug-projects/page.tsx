@@ -15,7 +15,7 @@ export default async function DebugProjectsPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Debug: Projects in Database</h1>
+      <h1 className="mb-4">Debug: Projects in Database</h1>
       
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -24,7 +24,7 @@ export default async function DebugProjectsPage() {
       )}
 
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-4">
-        <h2 className="text-lg font-semibold mb-2">Total Projects: {projects.length}</h2>
+        <h2 className="mb-2">Total Projects: {projects.length}</h2>
         
         {projects.length === 0 ? (
           <p className="text-gray-500">No projects found in database</p>
@@ -32,7 +32,7 @@ export default async function DebugProjectsPage() {
           <div className="space-y-4">
             {projects.map((project: any) => (
               <div key={project._id} className="border border-gray-200 dark:border-gray-700 rounded p-4">
-                <h3 className="font-bold text-lg">{project.title}</h3>
+                <h3 className="">{project.title}</h3>
                 <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
                   <div><strong>Status:</strong> {project.status}</div>
                   <div><strong>Progress:</strong> {project.progress}%</div>

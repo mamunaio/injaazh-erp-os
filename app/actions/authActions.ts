@@ -5,6 +5,43 @@ import User from '@/models/User';
 import { generateAuthToken, setAuthCookie, removeAuthCookie, generate2FATempToken, verify2FATempToken, getAuthUser } from '@/lib/auth';
 import { verifySync } from 'otplib';
 import crypto from 'crypto';
+import { headers } from 'next/headers';
+import Session from '@/models/Session';
+
+async function createDbSession(userId: string) {
+  const headersList = await headers();
+  const ua = headersList.get('user-agent') || '';
+  const ip = headersList.get('x-forwarded-for') || headersList.get('x-real-ip') || 'Unknown IP';
+  
+  let browser = 'Unknown Browser';
+  let os = 'Unknown OS';
+  let device = 'Desktop';
+
+  if (ua.includes('Windows')) os = 'Windows';
+  else if (ua.includes('Mac OS') || ua.includes('Macintosh')) os = 'macOS';
+  else if (ua.includes('Linux')) os = 'Linux';
+  else if (ua.includes('Android')) { os = 'Android'; device = 'Mobile'; }
+  else if (ua.includes('iPhone') || ua.includes('iPad')) { os = 'iOS'; device = 'Mobile'; }
+
+  if (ua.includes('Edge') || ua.includes('Edg')) browser = 'Edge';
+  else if (ua.includes('Chrome')) browser = 'Chrome';
+  else if (ua.includes('Safari') && !ua.includes('Chrome')) browser = 'Safari';
+  else if (ua.includes('Firefox')) browser = 'Firefox';
+
+  const sessionId = crypto.randomUUID();
+  
+  await Session.create({
+    userId,
+    sessionId,
+    device,
+    browser,
+    os,
+    ip,
+    isValid: true,
+  });
+
+  return sessionId;
+}
 
 export async function registerUser(formData: FormData) {
   try {
@@ -39,10 +76,13 @@ export async function registerUser(formData: FormData) {
       role: 'user'
     });
 
+    const sessionId = await createDbSession(newUser._id.toString());
+
     const token = await generateAuthToken({
       id: newUser._id.toString(),
       email: newUser.email,
-      role: newUser.role
+      role: newUser.role,
+      sessionId
     });
 
     await setAuthCookie(token);
@@ -80,10 +120,13 @@ export async function loginUser(formData: FormData) {
       return { success: true, requires2FA: true, tempToken };
     }
 
+    const sessionId = await createDbSession(user._id.toString());
+
     const token = await generateAuthToken({
       id: user._id.toString(),
       email: user.email,
-      role: user.role
+      role: user.role,
+      sessionId
     });
 
     await setAuthCookie(token);
@@ -116,10 +159,13 @@ export async function verifyTwoFactorLogin(tempToken: string, code: string) {
       return { success: false, message: 'Invalid verification code' };
     }
 
+    const sessionId = await createDbSession(user._id.toString());
+
     const token = await generateAuthToken({
       id: user._id.toString(),
       email: user.email,
-      role: user.role
+      role: user.role,
+      sessionId
     });
 
     await setAuthCookie(token);

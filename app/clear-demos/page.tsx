@@ -56,14 +56,14 @@ export default function ClearDemosPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-8">
+    <div className="min-h-screen flex items-center justify-center neu-base-bg p-8">
       <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 shadow-lg max-w-2xl w-full">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center">
             <Trash2 size={24} className="text-red-600 dark:text-red-400" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+            <h1 className="">
               Clear Demo Data
             </h1>
             <p className="text-sm text-slate-600 dark:text-gray-400">
@@ -75,7 +75,7 @@ export default function ClearDemosPage() {
         <div className="space-y-4 mb-6">
           {/* Clear Demo Proposals */}
           <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+            <h3 className="mb-2">
               Clear Demo Proposals Only
             </h3>
             <p className="text-sm text-slate-600 dark:text-gray-400 mb-4">
@@ -97,7 +97,7 @@ export default function ClearDemosPage() {
             <div className="flex items-start gap-3 mb-3">
               <AlertTriangle size={20} className="text-red-600 dark:text-red-400 mt-0.5" />
               <div>
-                <h3 className="text-lg font-semibold text-red-900 dark:text-red-300 mb-2">
+                <h3 className="mb-2">
                   Clear ALL Proposals (Danger Zone)
                 </h3>
                 <p className="text-sm text-red-700 dark:text-red-400 mb-4">
@@ -125,7 +125,7 @@ export default function ClearDemosPage() {
                   <AlertTriangle size={32} className="text-red-600 dark:text-red-400" />
                 </div>
                 
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+                <h3 className="mb-2">
                   Are You Sure?
                 </h3>
                 

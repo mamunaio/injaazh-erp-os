@@ -264,13 +264,8 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-8 text-slate-800 dark:text-slate-200 flex flex-col items-center relative overflow-hidden bg-slate-50/50 dark:bg-slate-950/50">
-      
-      {/* Ambient Backgrounds */}
-      <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/10 dark:bg-indigo-600/10 blur-[120px] rounded-full" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 dark:bg-purple-600/10 blur-[120px] rounded-full" />
-      </div>
+    <div className="min-h-screen p-4 md:p-8 neu-base-bg text-slate-800 dark:text-slate-200 flex flex-col items-center relative overflow-hidden">
+
       
       <div className="w-full max-w-6xl relative z-10">
         {/* Navigation Breadcrumb */}
@@ -283,14 +278,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
         </Link>
 
         {/* Dynamic Header & Overview Panel */}
-        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-3xl border border-white/50 dark:border-white/10 rounded-[2.5rem] p-8 md:p-10 mb-8 shadow-xl shadow-slate-200/50 dark:shadow-black/40 relative flex flex-col md:flex-row gap-8 justify-between">
-          
-          {/* Decorative Background Wrapper */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[2.5rem]">
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-indigo-500/20 via-purple-500/10 to-transparent blur-3xl -translate-y-1/2 translate-x-1/3 rounded-full" />
-            <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-gradient-to-tr from-pink-500/10 to-transparent blur-2xl translate-y-1/3 -translate-x-1/3 rounded-full" />
-            <div className="absolute inset-0 bg-gradient-to-b from-white/40 to-transparent dark:from-white/5 dark:to-transparent opacity-50" />
-          </div>
+        <div className="neu-flat rounded-[2.5rem] p-8 md:p-10 mb-8 relative flex flex-col md:flex-row gap-8 justify-between">
           
           {/* Left: Info */}
           <div className="flex-1 relative z-10">
@@ -309,23 +297,23 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 5, scale: 0.95 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute top-full left-0 mt-2 w-48 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200 dark:border-purple-500/20 rounded-xl shadow-xl overflow-hidden z-[100]"
+                    className="absolute top-full left-0 mt-2 w-48 neu-flat rounded-xl z-[100] p-1.5"
                   >
-                    <div className="py-1">
-                      <button onClick={() => updateStatus('Planning')} className="w-full px-4 py-2 text-left text-sm font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 flex items-center gap-2 transition-colors">
+                    <div className="flex flex-col gap-1">
+                      <button onClick={() => updateStatus('Planning')} className="w-full px-3 py-2 rounded-lg text-left text-sm font-medium text-amber-600 dark:text-amber-400 hover:neu-pressed flex items-center gap-2 transition-all">
                         <Clock size={14} /> Planning
                       </button>
-                      <button onClick={() => updateStatus('In Progress')} className="w-full px-4 py-2 text-left text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 flex items-center gap-2 transition-colors">
+                      <button onClick={() => updateStatus('In Progress')} className="w-full px-3 py-2 rounded-lg text-left text-sm font-medium text-blue-600 dark:text-blue-400 hover:neu-pressed flex items-center gap-2 transition-all">
                         <Circle size={14} /> In Progress
                       </button>
-                      <button onClick={() => updateStatus('Completed')} className="w-full px-4 py-2 text-left text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 flex items-center gap-2 transition-colors">
+                      <button onClick={() => updateStatus('Completed')} className="w-full px-3 py-2 rounded-lg text-left text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:neu-pressed flex items-center gap-2 transition-all">
                         <CheckCircle2 size={14} /> Completed
                       </button>
-                      <button onClick={() => updateStatus('Cancelled')} className="w-full px-4 py-2 text-left text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2 transition-colors">
+                      <button onClick={() => updateStatus('Cancelled')} className="w-full px-3 py-2 rounded-lg text-left text-sm font-medium text-red-600 dark:text-red-400 hover:neu-pressed flex items-center gap-2 transition-all">
                         <XCircle size={14} /> Cancelled
                       </button>
-                      <div className="h-px w-full bg-slate-100 dark:bg-white/10 my-1" />
-                      <button onClick={() => updateStatus('Private')} className="w-full px-4 py-2 text-left text-sm font-medium text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5 flex items-center gap-2 transition-colors">
+                      <div className="h-px w-full bg-slate-200/50 dark:bg-white/5 my-0.5" />
+                      <button onClick={() => updateStatus('Private')} className="w-full px-3 py-2 rounded-lg text-left text-sm font-medium text-slate-600 dark:text-gray-400 hover:neu-pressed flex items-center gap-2 transition-all">
                         <Lock size={14} /> Private
                       </button>
                     </div>
@@ -335,7 +323,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
 
               <span className="text-sm font-semibold text-slate-500 dark:text-gray-400">ID: {generateProjectCode(projectData.title, projectId)}</span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-slate-800 dark:text-white leading-tight mb-2">
+            <h1 className="mb-2">
               {projectData.title}
             </h1>
             <p className="text-xl font-medium text-slate-600 dark:text-gray-300 flex items-center gap-1.5">
@@ -346,8 +334,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
           {/* Right: Client & Progress Widgets */}
           <div className="flex items-center gap-4 sm:gap-6 relative z-10 min-w-min justify-end">
             {/* Client Profile Widget */}
-            <div className="bg-white/60 dark:bg-white/5 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl p-5 min-w-[160px] shadow-sm flex flex-col justify-center relative overflow-hidden group hover:border-indigo-200 dark:hover:border-indigo-500/30 transition-all">
-              <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/0 to-indigo-500/0 group-hover:from-indigo-500/5 group-hover:to-transparent transition-all" />
+            <div className="neu-pressed rounded-2xl p-5 min-w-[160px] flex flex-col justify-center relative overflow-hidden group transition-all">
               <p className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
                 <User size={12} /> Client Details
               </p>
@@ -363,8 +350,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
             </div>
 
             {/* Global Progress Widget */}
-            <div className="bg-white/60 dark:bg-white/5 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl p-5 flex flex-col items-center justify-center min-w-[140px] shadow-sm relative overflow-hidden group hover:border-indigo-200 dark:hover:border-indigo-500/30 transition-all hidden sm:flex">
-              <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/0 to-indigo-500/0 group-hover:from-indigo-500/5 group-hover:to-transparent transition-all" />
+            <div className="neu-pressed rounded-2xl p-5 flex flex-col items-center justify-center min-w-[140px] relative overflow-hidden group transition-all hidden sm:flex">
               <p className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">Progress</p>
               
               <div className="relative w-16 h-16 flex items-center justify-center">
@@ -401,7 +387,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
             <div className="relative z-50" ref={actionsRef}>
               <button 
                 onClick={() => setIsActionsOpen(!isActionsOpen)}
-                className="h-8 w-8 rounded-full flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-gray-400 transition-colors outline-none"
+                className="h-8 w-8 rounded-full flex items-center justify-center hover:neu-pressed text-slate-500 dark:text-gray-400 transition-all outline-none"
               >
                 <MoreHorizontal size={18} />
               </button>
@@ -413,17 +399,17 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 5, scale: 0.95 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute top-full right-0 mt-2 w-56 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200 dark:border-purple-500/20 rounded-xl shadow-xl overflow-hidden z-[100]"
+                    className="absolute top-full right-0 mt-2 w-56 neu-flat rounded-xl z-[100] p-1.5"
                   >
-                    <div className="py-1">
-                      <button onClick={() => { setIsEditModalOpen(true); setIsActionsOpen(false); }} className="w-full px-4 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-white/5 flex items-center gap-3 transition-colors">
+                    <div className="flex flex-col gap-1">
+                      <button onClick={() => { setIsEditModalOpen(true); setIsActionsOpen(false); }} className="w-full px-3 py-2 rounded-lg text-left text-sm font-medium text-slate-700 dark:text-gray-200 hover:neu-pressed flex items-center gap-3 transition-all">
                         <Pencil size={16} className="text-slate-400" /> Edit Project Details
                       </button>
-                      <button onClick={() => { setIsArchiveModalOpen(true); setIsActionsOpen(false); }} className="w-full px-4 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-white/5 flex items-center gap-3 transition-colors">
+                      <button onClick={() => { setIsArchiveModalOpen(true); setIsActionsOpen(false); }} className="w-full px-3 py-2 rounded-lg text-left text-sm font-medium text-slate-700 dark:text-gray-200 hover:neu-pressed flex items-center gap-3 transition-all">
                         <Archive size={16} className="text-slate-400" /> Archive Project
                       </button>
-                      <div className="h-px w-full bg-slate-100 dark:bg-white/10 my-1" />
-                      <button onClick={() => { setIsDeleteModalOpen(true); setIsActionsOpen(false); }} className="w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-300 flex items-center gap-3 transition-colors">
+                      <div className="h-px w-full bg-slate-200/50 dark:bg-white/5 my-0.5" />
+                      <button onClick={() => { setIsDeleteModalOpen(true); setIsActionsOpen(false); }} className="w-full px-3 py-2 rounded-lg text-left text-sm font-medium text-red-600 hover:neu-pressed hover:text-red-500 dark:text-red-400 dark:hover:text-red-300 flex items-center gap-3 transition-all">
                         <Trash size={16} className="text-red-500 dark:text-red-400" /> Delete Project
                       </button>
                     </div>
@@ -435,7 +421,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
         </div>
 
         {/* Sliding Navigation Tabs */}
-        <div className="flex bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl border border-white/50 dark:border-white/10 rounded-2xl p-1.5 mb-8 w-max shadow-sm overflow-x-auto max-w-full">
+        <div className="flex neu-flat rounded-2xl p-1.5 mb-8 w-max overflow-x-auto max-w-full">
           {['Details', 'Payments', 'Tasklists', 'Files'].map((tab) => (
             <button
               key={tab}
@@ -461,7 +447,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
         </div>
 
         {/* Tab Contents */}
-        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-3xl border border-white/50 dark:border-white/10 rounded-[2.5rem] min-h-[500px] relative overflow-hidden shadow-xl shadow-slate-200/50 dark:shadow-black/40">
+        <div className="neu-flat rounded-[2.5rem] min-h-[500px] relative overflow-hidden">
           <AnimatePresence mode="wait">
             
             {activeTab === 'Tasklists' && (
@@ -475,12 +461,12 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
               >
                 <div className="flex justify-between items-center mb-6">
                   <div className="flex items-center gap-4">
-                    <h2 className="text-xl font-bold text-slate-800 dark:text-white">Project Deliverables</h2>
+                    <h2 className="">Project Deliverables</h2>
                     <span className="px-3 py-1 bg-slate-100 dark:bg-white/5 rounded-full text-sm font-medium text-slate-500 dark:text-gray-400">{completedTasks} of {tasks.length} Completed</span>
                   </div>
                   <button 
                     onClick={() => { setEditingTask(null); setIsTaskModalOpen(true); }}
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors shadow-sm flex items-center gap-2"
+                    className="px-4 py-2 neu-button text-indigo-500 text-sm font-bold rounded-xl transition-colors flex items-center gap-2"
                   >
                     <Plus size={16} /> Add Task
                   </button>
@@ -491,7 +477,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                     <div 
                       key={task.id}
                       onClick={() => handleTaskToggle(task.id)}
-                      className={`group flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${task.completed ? 'bg-slate-50/50 dark:bg-white/5 border-transparent' : 'bg-white/80 dark:bg-black/20 border-slate-200 dark:border-white/10 hover:border-indigo-300 dark:hover:border-purple-500/30 shadow-sm hover:shadow-md'}`}
+                      className={`group flex items-center justify-between p-4 rounded-2xl cursor-pointer transition-all ${task.completed ? 'neu-pressed' : 'neu-flat hover:-translate-y-1'}`}
                     >
                       <div className="flex items-center gap-4">
                         <div className={`w-6 h-6 rounded-md flex items-center justify-center border transition-colors flex-shrink-0 ${task.completed ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 dark:border-gray-600 group-hover:border-indigo-400 dark:group-hover:border-purple-400'}`}>
@@ -534,11 +520,11 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
               >
                 <div className="max-w-4xl mx-auto">
                   <div className="flex items-center gap-4 mb-8 pb-6 border-b border-slate-200/50 dark:border-white/10">
-                    <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center shadow-inner">
+                    <div className="w-12 h-12 neu-pressed text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center">
                       <FileText size={24} />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white">Project Brief</h2>
+                      <h2 className="">Project Brief</h2>
                       <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Complete scope, requirements, and deliverables.</p>
                     </div>
                   </div>
@@ -561,16 +547,16 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                 className="p-8"
               >
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-bold text-slate-800 dark:text-white">Milestone Payments</h2>
+                  <h2 className="">Milestone Payments</h2>
                   <button 
                     onClick={() => { setEditingMilestone(null); setIsMilestoneModalOpen(true); }}
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors shadow-sm flex items-center gap-2"
+                    className="px-4 py-2 neu-button text-indigo-500 text-sm font-bold rounded-xl transition-colors flex items-center gap-2"
                   >
                     <Plus size={16} /> Add Milestone
                   </button>
                 </div>
                 
-                <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-black/20">
+                <div className="overflow-hidden rounded-2xl neu-pressed">
                   <table className="w-full text-left text-sm">
                     <thead className="bg-slate-100/50 dark:bg-white/5 border-b border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-400">
                       <tr>
@@ -643,7 +629,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                       value={fileSearchQuery}
                       onChange={(e) => setFileSearchQuery(e.target.value)}
                       placeholder="Search files..." 
-                      className="w-full pl-9 pr-4 py-2 bg-white/50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl text-sm focus:outline-none focus:border-indigo-500" 
+                      className="w-full pl-9 pr-4 py-2 neu-pressed rounded-xl text-sm focus:outline-none" 
                     />
                   </div>
                   
@@ -653,7 +639,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                       <button 
                         key={cat} 
                         onClick={() => setActiveFileCategory(cat)}
-                        className={`text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${activeFileCategory === cat ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+                        className={`text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${activeFileCategory === cat ? 'neu-pressed text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-gray-300 hover:neu-flat'}`}
                       >
                         {cat}
                       </button>
@@ -666,7 +652,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                   {/* Drag and Drop Zone */}
                   <div 
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full border-2 border-dashed border-slate-200 dark:border-purple-500/20 rounded-3xl bg-white/30 dark:bg-black/10 flex flex-col items-center justify-center p-8 text-center group hover:border-indigo-400 dark:hover:border-purple-500/50 hover:bg-white/50 dark:hover:bg-purple-900/10 transition-all cursor-pointer"
+                    className="w-full rounded-3xl neu-pressed flex flex-col items-center justify-center p-8 text-center group transition-all cursor-pointer"
                   >
                     <input 
                       type="file" 
@@ -674,10 +660,10 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                       className="hidden" 
                       onChange={handleFileUpload} 
                     />
-                    <div className="w-12 h-12 bg-slate-100 dark:bg-white/5 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/20 transition-all shadow-sm">
+                    <div className="w-12 h-12 neu-flat rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-all">
                       <UploadCloud size={24} className="text-slate-400 dark:text-gray-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors" />
                     </div>
-                    <h3 className="text-base font-bold text-slate-800 dark:text-white mb-1">Upload Project Assets</h3>
+                    <h3 className="mb-1">Upload Project Assets</h3>
                     <p className="text-slate-500 dark:text-gray-400 text-xs max-w-sm">
                       Drag and drop your files here, or click to browse. Supports PDF, PNG, JPG, ZIP up to 50MB.
                     </p>
@@ -686,7 +672,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                   {/* File List */}
                   <div className="flex flex-col gap-3 overflow-y-auto pr-2 max-h-[300px]">
                     {filteredFiles.map(file => (
-                      <div key={file.id} className="group flex items-center justify-between p-4 bg-white/80 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-2xl hover:border-indigo-300 dark:hover:border-purple-500/30 transition-all shadow-sm hover:shadow-md">
+                      <div key={file.id} className="group flex items-center justify-between p-4 neu-flat rounded-2xl transition-all hover:-translate-y-1">
                         <div className="flex items-center gap-4">
                           <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-500 dark:text-indigo-400">
                             <File size={20} />
@@ -785,19 +771,19 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-md bg-white dark:bg-slate-900 backdrop-blur-2xl border border-red-200 dark:border-red-500/30 rounded-3xl p-8 shadow-2xl flex flex-col items-center text-center"
+              className="relative w-full max-w-md neu-flat rounded-3xl p-8 flex flex-col items-center text-center"
             >
-              <div className="w-16 h-16 bg-red-50 dark:bg-red-500/10 rounded-full flex items-center justify-center mb-4 text-red-500">
+              <div className="w-16 h-16 neu-pressed rounded-full flex items-center justify-center mb-4 text-red-500">
                 <AlertTriangle size={32} />
               </div>
-              <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Delete Project</h3>
+              <h3 className="mb-2">Delete Project</h3>
               <p className="text-slate-600 dark:text-gray-400 mb-8 leading-relaxed">
                 Are you sure? All milestones, tasks, and files will be permanently lost. This action cannot be undone.
               </p>
               <div className="flex gap-4 w-full">
                 <button 
                   onClick={() => setIsDeleteModalOpen(false)}
-                  className="flex-1 py-3 text-sm font-bold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-colors"
+                  className="flex-1 py-3 text-sm font-bold text-slate-600 dark:text-gray-300 neu-button rounded-xl transition-colors"
                 >
                   Cancel
                 </button>
@@ -812,7 +798,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                       toast.error(res.error || 'Failed to delete project', { id: loadingToast });
                     }
                   }}
-                  className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white text-sm font-bold rounded-xl transition-colors shadow-lg shadow-red-500/25"
+                  className="flex-1 py-3 neu-button text-red-500 text-sm font-bold rounded-xl transition-colors"
                 >
                   Confirm Delete
                 </button>
@@ -838,25 +824,25 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-md bg-white dark:bg-slate-900 backdrop-blur-2xl border border-amber-200 dark:border-amber-500/30 rounded-3xl p-8 shadow-2xl flex flex-col items-center text-center"
+              className="relative w-full max-w-md neu-flat rounded-3xl p-8 flex flex-col items-center text-center"
             >
-              <div className="w-16 h-16 bg-amber-50 dark:bg-amber-500/10 rounded-full flex items-center justify-center mb-4 text-amber-500">
+              <div className="w-16 h-16 neu-pressed rounded-full flex items-center justify-center mb-4 text-amber-500">
                 <Archive size={32} />
               </div>
-              <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Archive Project?</h3>
+              <h3 className="mb-2">Archive Project?</h3>
               <p className="text-slate-600 dark:text-gray-400 mb-8 leading-relaxed">
                 Archiving will hide this project from active boards. You can restore it later from the settings.
               </p>
               <div className="flex gap-4 w-full">
                 <button 
                   onClick={() => setIsArchiveModalOpen(false)}
-                  className="flex-1 py-3 text-sm font-bold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-colors"
+                  className="flex-1 py-3 text-sm font-bold text-slate-600 dark:text-gray-300 neu-button rounded-xl transition-colors"
                 >
                   Cancel
                 </button>
                 <button 
                   onClick={() => router.push(`/marketplace/${platform.toLowerCase()}`)}
-                  className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-xl transition-colors shadow-lg shadow-amber-500/25"
+                  className="flex-1 py-3 neu-button text-amber-500 text-sm font-bold rounded-xl transition-colors"
                 >
                   Archive It
                 </button>
@@ -881,9 +867,9 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-lg bg-white dark:bg-slate-900 backdrop-blur-2xl border border-slate-200 dark:border-purple-500/30 rounded-3xl p-8 shadow-2xl flex flex-col"
+              className="relative w-full max-w-lg neu-flat rounded-3xl p-8 flex flex-col"
             >
-              <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-6">
+              <h3 className="mb-6">
                 {editingMilestone ? 'Edit Milestone' : 'Add Milestone'}
               </h3>
               
@@ -912,23 +898,23 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                 
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-2">Description</label>
-                  <input name="description" required defaultValue={editingMilestone?.description} type="text" placeholder="e.g. Initial Deposit" className="w-full px-4 py-3 bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:text-white transition-all shadow-sm" />
+                  <input name="description" required defaultValue={editingMilestone?.description} type="text" placeholder="e.g. Initial Deposit" className="w-full px-4 py-3 neu-pressed rounded-xl focus:outline-none dark:text-white transition-all" />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-2">Amount ($)</label>
-                    <input name="amount" required defaultValue={editingMilestone?.amount} type="number" placeholder="3750" className="w-full px-4 py-3 bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:text-white transition-all shadow-sm" />
+                    <input name="amount" required defaultValue={editingMilestone?.amount} type="number" placeholder="3750" className="w-full px-4 py-3 neu-pressed rounded-xl focus:outline-none dark:text-white transition-all" />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-2">Expected Date</label>
-                    <input name="date" required defaultValue={editingMilestone?.date} type="date" className="w-full px-4 py-3 bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:text-white transition-all shadow-sm [&::-webkit-calendar-picker-indicator]:dark:invert" />
+                    <input name="date" required defaultValue={editingMilestone?.date} type="date" className="w-full px-4 py-3 neu-pressed rounded-xl focus:outline-none dark:text-white transition-all [&::-webkit-calendar-picker-indicator]:dark:invert" />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-2">Status</label>
-                  <select name="status" defaultValue={editingMilestone?.status || 'Pending'} className="w-full px-4 py-3 bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:text-white transition-all shadow-sm appearance-none">
+                  <select name="status" defaultValue={editingMilestone?.status || 'Pending'} className="w-full px-4 py-3 neu-pressed rounded-xl focus:outline-none dark:text-white transition-all appearance-none">
                     <option value="Paid">Paid</option>
                     <option value="Pending">Pending</option>
                     <option value="Locked">Locked</option>
@@ -939,13 +925,13 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                   <button 
                     type="button"
                     onClick={() => setIsMilestoneModalOpen(false)}
-                    className="flex-1 py-3 text-sm font-bold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-colors"
+                    className="flex-1 py-3 text-sm font-bold text-slate-600 dark:text-gray-300 neu-button rounded-xl transition-colors"
                   >
                     Cancel
                   </button>
                   <button 
                     type="submit"
-                    className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors shadow-lg shadow-indigo-500/25"
+                    className="flex-1 py-3 neu-button text-indigo-500 text-sm font-bold rounded-xl transition-colors"
                   >
                     {editingMilestone ? 'Save Changes' : 'Create Milestone'}
                   </button>
@@ -972,9 +958,9 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-lg bg-white dark:bg-slate-900 backdrop-blur-2xl border border-slate-200 dark:border-purple-500/30 rounded-3xl p-8 shadow-2xl flex flex-col"
+              className="relative w-full max-w-lg neu-flat rounded-3xl p-8 flex flex-col"
             >
-              <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-6">
+              <h3 className="mb-6">
                 {editingTask ? 'Edit Task' : 'Add Task'}
               </h3>
               
@@ -1002,20 +988,20 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                 
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-2">Task Title</label>
-                  <input name="title" required defaultValue={editingTask?.title} type="text" placeholder="e.g. Design System Implementation" className="w-full px-4 py-3 bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:text-white transition-all shadow-sm" />
+                  <input name="title" required defaultValue={editingTask?.title} type="text" placeholder="e.g. Design System Implementation" className="w-full px-4 py-3 neu-pressed rounded-xl focus:outline-none dark:text-white transition-all" />
                 </div>
 
                 <div className="flex gap-4 mt-4">
                   <button 
                     type="button"
                     onClick={() => setIsTaskModalOpen(false)}
-                    className="flex-1 py-3 text-sm font-bold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-colors"
+                    className="flex-1 py-3 text-sm font-bold text-slate-600 dark:text-gray-300 neu-button rounded-xl transition-colors"
                   >
                     Cancel
                   </button>
                   <button 
                     type="submit"
-                    className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors shadow-lg shadow-indigo-500/25"
+                    className="flex-1 py-3 neu-button text-indigo-500 text-sm font-bold rounded-xl transition-colors"
                   >
                     {editingTask ? 'Save Changes' : 'Create Task'}
                   </button>

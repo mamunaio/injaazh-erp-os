@@ -62,13 +62,9 @@ export default function RoadmapPage() {
   };
 
   return (
-    <div className="flex h-screen bg-[#050505] text-slate-200 overflow-hidden font-sans">
+    <div className="flex h-screen neu-base-bg overflow-hidden font-sans text-slate-800 dark:text-slate-200">
       <Sidebar />
       <div className="flex-1 flex flex-col relative z-10 overflow-hidden">
-        {/* Dynamic Background Elements */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-violet-600/10 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-fuchsia-600/10 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-5 pointer-events-none" />
 
         <Topbar />
 
@@ -82,14 +78,14 @@ export default function RoadmapPage() {
             >
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-violet-500/20 text-violet-400 rounded-lg">
+                  <div className="p-2 neu-pressed text-violet-500 rounded-lg">
                     <Map size={24} />
                   </div>
-                  <h1 className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-fuchsia-400 tracking-tight">
+                  <h1 className="text-slate-800 dark:text-white font-bold text-3xl">
                     Product Roadmap
                   </h1>
                 </div>
-                <p className="text-slate-400 text-lg">
+                <p className="text-slate-500 dark:text-slate-400 text-lg">
                   Upcoming Task List & Software Systems Development Plan
                 </p>
               </div>
@@ -102,13 +98,13 @@ export default function RoadmapPage() {
                   placeholder="Search projects..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all shadow-inner"
+                  className="w-full neu-pressed rounded-2xl pl-12 pr-4 py-3.5 text-slate-800 dark:text-white placeholder:text-slate-500 focus:outline-none transition-all"
                 />
               </div>
 
               <button
                 onClick={() => setIsAddModalOpen(true)}
-                className="flex items-center gap-2 bg-violet-600/80 hover:bg-violet-500 text-white px-5 py-3.5 rounded-2xl font-bold transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(139,92,246,0.3)] whitespace-nowrap"
+                className="flex items-center gap-2 neu-button text-violet-500 px-5 py-3.5 rounded-2xl font-bold transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
               >
                 <Plus size={20} />
                 <span className="hidden sm:inline">Add Project</span>

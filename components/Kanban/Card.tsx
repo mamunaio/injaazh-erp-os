@@ -71,7 +71,7 @@ export default function Card({ card, onClick }: CardProps) {
       {...listeners}
       onClick={handleCardClick}
       suppressHydrationWarning
-      className="group bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border border-purple-500/10 dark:border-purple-500/20 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-purple-400/40 dark:hover:border-purple-500/40 rounded-xl p-4 transition-all duration-300 cursor-pointer"
+      className="group neu-flat p-4 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
     >
       {/* Tech Tags */}
       {card.tags.length > 0 && (

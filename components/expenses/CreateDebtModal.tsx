@@ -76,15 +76,15 @@ export default function CreateDebtModal({ isOpen, onClose, onSubmit, initialData
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-              className="pointer-events-auto w-full max-w-lg bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800 rounded-2xl sm:rounded-[28px] shadow-2xl flex flex-col overflow-hidden max-h-[95vh] sm:max-h-[90vh]"
+              className="pointer-events-auto w-full max-w-lg neu-flat rounded-2xl sm:rounded-[28px] shadow-2xl flex flex-col overflow-hidden max-h-[95vh] sm:max-h-[90vh]"
             >
-              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800/80 bg-white/50 dark:bg-slate-900/50">
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-800/50">
                 <h2 className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-gray-400">
                   {initialData ? 'Edit Record' : 'Add Loan / Debt'}
                 </h2>
                 <button
                   onClick={onClose}
-                  className="p-1.5 sm:p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+                  className="p-1.5 sm:p-2 text-slate-400 hover:text-red-500 rounded-full transition-colors"
                 >
                   <X size={18} className="sm:w-5 sm:h-5" />
                 </button>
@@ -98,14 +98,14 @@ export default function CreateDebtModal({ isOpen, onClose, onSubmit, initialData
                     <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300">
                       Record Type
                     </label>
-                    <div className="flex p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl sm:rounded-2xl">
+                    <div className="flex p-1 neu-pressed rounded-xl sm:rounded-2xl">
                       <button
                         type="button"
                         onClick={() => setFormData({ ...formData, type: 'borrowed' })}
                         className={`flex-1 py-2 sm:py-2.5 text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl transition-all ${
                           formData.type === 'borrowed' 
-                            ? 'bg-white dark:bg-slate-700 text-rose-600 dark:text-rose-400 shadow-md' 
-                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                            ? 'neu-button text-rose-500' 
+                            : 'text-slate-500 hover:neu-flat'
                         }`}
                       >
                         I Owe Them (Borrowed)
@@ -115,8 +115,8 @@ export default function CreateDebtModal({ isOpen, onClose, onSubmit, initialData
                         onClick={() => setFormData({ ...formData, type: 'lent' })}
                         className={`flex-1 py-2 sm:py-2.5 text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl transition-all ${
                           formData.type === 'lent' 
-                            ? 'bg-white dark:bg-slate-700 text-teal-600 dark:text-teal-400 shadow-md' 
-                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                            ? 'neu-button text-teal-500' 
+                            : 'text-slate-500 hover:neu-flat'
                         }`}
                       >
                         They Owe Me (Lent)
@@ -138,7 +138,7 @@ export default function CreateDebtModal({ isOpen, onClose, onSubmit, initialData
                         required
                         value={formData.personName}
                         onChange={(e) => setFormData({ ...formData, personName: e.target.value })}
-                        className="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-900 dark:text-white transition-all font-semibold text-sm sm:text-base"
+                        className="w-full pl-10 pr-4 py-2.5 sm:py-3 neu-pressed rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-900 dark:text-white transition-all font-semibold text-sm sm:text-base"
                         placeholder="e.g. John Doe"
                       />
                     </div>
@@ -159,7 +159,7 @@ export default function CreateDebtModal({ isOpen, onClose, onSubmit, initialData
                         required
                         value={formData.amount}
                         onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                        className="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-900 dark:text-white transition-all font-semibold text-sm sm:text-base"
+                        className="w-full pl-10 pr-4 py-2.5 sm:py-3 neu-pressed rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-900 dark:text-white transition-all font-semibold text-sm sm:text-base"
                         placeholder="0.00"
                       />
                     </div>
@@ -179,7 +179,7 @@ export default function CreateDebtModal({ isOpen, onClose, onSubmit, initialData
                         required
                         value={formData.date}
                         onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                        className="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-900 dark:text-white transition-all font-semibold text-sm sm:text-base"
+                        className="w-full pl-10 pr-4 py-2.5 sm:py-3 neu-pressed rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-900 dark:text-white transition-all font-semibold text-sm sm:text-base"
                       />
                     </div>
                   </div>
@@ -196,7 +196,7 @@ export default function CreateDebtModal({ isOpen, onClose, onSubmit, initialData
                       <textarea
                         value={formData.description}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        className="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-900 dark:text-white transition-all min-h-[80px] sm:min-h-[100px] resize-none font-medium text-sm sm:text-base"
+                        className="w-full pl-10 pr-4 py-2.5 sm:py-3 neu-pressed rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-900 dark:text-white transition-all min-h-[80px] sm:min-h-[100px] resize-none font-medium text-sm sm:text-base"
                         placeholder="e.g. Borrowed for emergency..."
                       />
                     </div>
@@ -204,12 +204,12 @@ export default function CreateDebtModal({ isOpen, onClose, onSubmit, initialData
                 </form>
               </div>
 
-              <div className="p-4 sm:p-6 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50">
+              <div className="p-4 sm:p-6 border-t border-slate-800/50">
                 <button
                   type="submit"
                   form="debtForm"
                   disabled={isSubmitting}
-                  className="w-full flex items-center justify-center gap-2 py-3 sm:py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl sm:rounded-2xl font-bold shadow-lg shadow-indigo-500/25 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed text-sm sm:text-base"
+                  className="w-full flex items-center justify-center gap-2 py-3 sm:py-3.5 neu-button text-indigo-500 rounded-xl sm:rounded-2xl font-bold transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed text-sm sm:text-base"
                 >
                   {isSubmitting ? (
                     <><Loader2 size={18} className="animate-spin" /> Saving...</>
