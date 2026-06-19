@@ -13,11 +13,11 @@ function safeRevalidatePath(path: string, type?: 'layout' | 'page') {
   } catch (error) {
     // Silent catch - allows actions to run outside Next.js request/static context
   }
-}
 import connectToDatabase from '@/lib/mongodb';
 import MarketplaceProject from '@/models/MarketplaceProject';
 import { Project } from '@/models/Project';
 import { Transaction } from '@/models/Transaction';
+import { getAuthUser } from '@/lib/auth';
 import type { IMarketplaceProject } from '@/models/MarketplaceProject';
 
 /**
@@ -120,8 +120,25 @@ export async function getMarketplaceProjects(platform?: string) {
       .lean()
       .exec();
       
-    // Serialize for Client Component
-    return JSON.parse(JSON.stringify(projects));
+    const authUser = await getAuthUser();
+    let parsed = JSON.parse(JSON.stringify(projects));
+    
+    if (authUser && authUser.role === 'admin') {
+      parsed = parsed.map((p: any) => {
+        if (p.platform === 'Direct') {
+          return {
+            ...p,
+            title: 'Confidential Direct Project',
+            clientDetails: p.clientDetails ? { ...p.clientDetails, clientName: 'Confidential Client' } : p.clientDetails,
+            notes: 'Confidential',
+            url: ''
+          };
+        }
+        return p;
+      });
+    }
+    
+    return parsed;
   } catch (error) {
     console.error('Failed to fetch marketplace projects:', error);
     throw new Error('Failed to fetch marketplace projects');

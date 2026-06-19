@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import connectToDatabase from '@/lib/mongodb';
 import { Transaction } from '@/models/Transaction';
+import { getAuthUser } from '@/lib/auth';
 
 export async function getTransactions() {
   try {
@@ -12,25 +13,30 @@ export async function getTransactions() {
       .populate('projectId', 'title platform')
       .sort({ date: -1 })
       .lean();
+    const authUser = await getAuthUser();
     
     // Serialize for client
-    const serialized = transactions.map((t: any) => ({
-      _id: t._id?.toString() || '',
-      platform: t.platform || '',
-      type: t.type || '',
-      amount: t.amount || 0,
-      date: t.date ? new Date(t.date).toISOString() : new Date().toISOString(),
-      category: t.category || '',
-      description: t.description || '',
-      projectId: t.projectId ? {
-        _id: t.projectId._id?.toString(),
-        title: t.projectId.title,
-        platform: t.projectId.platform,
-      } : null,
+    const serialized = transactions.map((t: any) => {
+      const isDirectAdmin = authUser && authUser.role === 'admin' && t.platform === 'Direct';
+      
+      return {
+        _id: t._id?.toString() || '',
+        platform: t.platform || '',
+        type: t.type || '',
+        amount: t.amount || 0,
+        date: t.date ? new Date(t.date).toISOString() : new Date().toISOString(),
+        category: t.category || '',
+        description: isDirectAdmin ? 'Confidential Transaction' : (t.description || ''),
+        projectId: t.projectId ? {
+          _id: t.projectId._id?.toString(),
+          title: isDirectAdmin ? 'Confidential Direct Project' : t.projectId.title,
+          platform: t.projectId.platform,
+        } : null,
       milestoneId: t.milestoneId || null,
       createdAt: t.createdAt ? new Date(t.createdAt).toISOString() : new Date().toISOString(),
       updatedAt: t.updatedAt ? new Date(t.updatedAt).toISOString() : new Date().toISOString(),
-    }));
+      };
+    });
     
     return { success: true, data: serialized };
   } catch (error: any) {

@@ -3,12 +3,32 @@
 import dbConnect from '@/lib/mongodb';
 import MarketplaceClient from '@/models/MarketplaceClient';
 import { revalidatePath } from 'next/cache';
+import { getAuthUser } from '@/lib/auth';
 
 export async function getMarketplaceClients() {
   try {
     await dbConnect();
     const clients = await MarketplaceClient.find().sort({ createdAt: -1 });
-    return { success: true, data: JSON.parse(JSON.stringify(clients)) };
+    const authUser = await getAuthUser();
+    
+    let parsed = JSON.parse(JSON.stringify(clients));
+    if (authUser && authUser.role === 'admin') {
+      parsed = parsed.map((c: any) => {
+        if (c.platform === 'Direct') {
+          return {
+            ...c,
+            name: 'Confidential Client',
+            company: c.company ? 'Confidential Company' : c.company,
+            email: c.email ? 'hidden@example.com' : c.email,
+            profileLink: '',
+            notes: 'Confidential'
+          };
+        }
+        return c;
+      });
+    }
+    
+    return { success: true, data: parsed };
   } catch (error: any) {
     console.error('Error fetching marketplace clients:', error);
     return { success: false, error: error.message || 'Failed to fetch clients' };

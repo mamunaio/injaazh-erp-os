@@ -22,10 +22,5 @@ export default async function PlatformPage({
   }
 
   const { platform } = await params;
-  
-  if (platform === 'direct' && authUser.role === 'admin') {
-    redirect('/marketplace');
-  }
-
   return <PlatformClient platform={platform} />;
 }

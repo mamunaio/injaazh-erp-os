@@ -33,7 +33,6 @@ export default function Sidebar() {
     
     if (user.role === 'admin') {
       if (item.href === '/daily-expenses') return false;
-      if (item.href === '/marketplace/clients') return false;
       return true;
     }
     
