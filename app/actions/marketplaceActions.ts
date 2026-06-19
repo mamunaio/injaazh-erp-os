@@ -13,6 +13,7 @@ function safeRevalidatePath(path: string, type?: 'layout' | 'page') {
   } catch (error) {
     // Silent catch - allows actions to run outside Next.js request/static context
   }
+}
 import connectToDatabase from '@/lib/mongodb';
 import MarketplaceProject from '@/models/MarketplaceProject';
 import { Project } from '@/models/Project';
