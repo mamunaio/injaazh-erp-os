@@ -540,7 +540,7 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
       date: new Date(),
       method: 'Email' as const,
       notes: `Subject: ${subject}\nSent Via: ${usedAccountEmail}\n\n${body}${isSimulated ? '\n\n[SANDBOX SIMULATION: Email sent successfully]' : ''}`,
-      loggedBy: currentUser ? currentUser.id : undefined,
+      loggedBy: (currentUser ? currentUser.id : undefined) as any,
     };
     
     // Apply updates directly
