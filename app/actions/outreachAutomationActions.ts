@@ -23,7 +23,7 @@ async function getAvailableEmailAccount() {
       $expr: { $lt: ['$sentToday', '$dailyLimit'] },
     },
     { $inc: { sentToday: 1 } },
-    { new: true, sort: { sentToday: 1 } } // Pick the one with least sent today
+    { new: true, sort: { sentToday: -1 } } // Pick the account currently in use until it hits the limit
   );
 
   return account;
