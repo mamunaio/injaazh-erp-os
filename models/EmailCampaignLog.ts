@@ -9,6 +9,7 @@ export interface IEmailCampaignLog extends Document {
   status: 'Sent' | 'Failed' | 'Bounced';
   errorMessage?: string;
   sentAt: Date;
+  sentBy?: mongoose.Types.ObjectId;
 }
 
 const EmailCampaignLogSchema = new Schema<IEmailCampaignLog>({
@@ -20,6 +21,7 @@ const EmailCampaignLogSchema = new Schema<IEmailCampaignLog>({
   status: { type: String, enum: ['Sent', 'Failed', 'Bounced'], default: 'Sent' },
   errorMessage: { type: String },
   sentAt: { type: Date, default: Date.now },
+  sentBy: { type: Schema.Types.ObjectId, ref: 'User' },
 });
 
 // Indexes for fast lookups by Message-ID when checking replies

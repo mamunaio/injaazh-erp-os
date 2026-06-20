@@ -11,6 +11,7 @@ import MoneyAnalytics from '@/components/MoneyAnalytics';
 import { calculateTotals, groupTransactionsByPlatform } from '@/lib/analyticsUtils';
 import { formatCurrency as formatCurrencyUtil, formatDateDisplay } from '@/lib/formattingUtils';
 import { exportToCSV, exportToPDF } from '@/lib/exportUtils';
+import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 
 interface MoneyClientProps {
   initialTransactions: any[];
@@ -33,6 +34,7 @@ const PLATFORM_DOTS = {
 
 export default function MoneyClient({ initialTransactions, platformSummary }: MoneyClientProps) {
   const router = useRouter();
+  const { confirm } = useConfirm();
   const [transactions, setTransactions] = useState(initialTransactions);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -149,7 +151,8 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
   };
 
   const handleDeleteTransaction = async (transactionId: string) => {
-    if (!confirm('Are you sure you want to delete this transaction?')) return;
+    const isConfirmed = await confirm({ message: 'Are you sure you want to delete this transaction?', danger: true });
+    if (!isConfirmed) return;
     
     const result = await deleteTransaction(transactionId);
     if (result.success) {
@@ -168,12 +171,11 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
     return formatDateDisplay(dateString);
   };
 
-  const handleExportCSV = () => {
+  const handleExportCSV = async () => {
     // Check for large datasets
-    if (filteredTransactions.length > 10000) {
-      if (!confirm(`You are about to export ${filteredTransactions.length} transactions. This may take a moment. Continue?`)) {
-        return;
-      }
+    if (filteredTransactions.length > 100) {
+      const isConfirmed = await confirm({ message: `You are about to export ${filteredTransactions.length} transactions. This may take a moment. Continue?` });
+      if (!isConfirmed) return;
     }
     
     const result = exportToCSV(filteredTransactions);
@@ -186,12 +188,11 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
     }
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     // Check for large datasets
     if (filteredTransactions.length > 1000) {
-      if (!confirm(`You are about to export ${filteredTransactions.length} transactions. Only the first 1000 will be included. Continue?`)) {
-        return;
-      }
+      const isConfirmed = await confirm({ message: `You are about to export ${filteredTransactions.length} transactions. Only the first 1000 will be included. Continue?`, danger: true });
+      if (!isConfirmed) return;
     }
     
     const result = exportToPDF(filteredTransactions, platformSummary, totals);

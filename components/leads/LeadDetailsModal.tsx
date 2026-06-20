@@ -60,6 +60,22 @@ const CustomSelect = ({ value, onChange, options, className = "", dropdownUp = f
   );
 };
 
+const InputField = ({ label, icon: Icon, type = "text", value, onChange, placeholder = "" }: any) => (
+  <div className="relative group">
+    <label className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-slate-400 uppercase mb-2 ml-1">
+      {Icon && <Icon size={12} className="text-slate-500 group-focus-within:text-indigo-400 transition-colors" />}
+      {label}
+    </label>
+    <input 
+      type={type} 
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      className="w-full neu-pressed rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all placeholder-slate-500"
+    />
+  </div>
+);
+
 export default function LeadDetailsModal({ 
   isOpen, 
   onClose, 
@@ -137,6 +153,8 @@ export default function LeadDetailsModal({
         instagram_url: lead.instagram_url || '',
         linkedin_url: lead.linkedin_url || '',
         reportFileUrl: lead.reportFileUrl || '',
+        email_draft: lead.email_draft || '',
+        email_subject_draft: lead.email_subject_draft || '',
         nextFollowUpDate: lead.nextFollowUpDate ? new Date(lead.nextFollowUpDate).toISOString().split('T')[0] : '',
         outreach_logs: lead.outreach_logs || []
       });
@@ -176,22 +194,6 @@ export default function LeadDetailsModal({
       default: return <FileText size={14} className="text-slate-400" />;
     }
   };
-
-  const InputField = ({ label, icon: Icon, type = "text", value, onChange, placeholder = "" }: any) => (
-    <div className="relative group">
-      <label className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-slate-400 uppercase mb-2 ml-1">
-        {Icon && <Icon size={12} className="text-slate-500 group-focus-within:text-indigo-400 transition-colors" />}
-        {label}
-      </label>
-      <input 
-        type={type} 
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className="w-full neu-pressed rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all placeholder-slate-500"
-      />
-    </div>
-  );
 
   return (
     <AnimatePresence>
@@ -321,6 +323,7 @@ export default function LeadDetailsModal({
                   />
                 </div>
 
+
               </form>
             </div>
 
@@ -381,8 +384,35 @@ export default function LeadDetailsModal({
                 </div>
               </div>
 
-              {/* Timeline */}
+              {/* Scrollable Area for Draft & Timeline */}
               <div className="flex-1 p-8 overflow-y-auto custom-scrollbar relative z-10">
+                {/* Automated Outreach Draft Card */}
+                <div className="neu-flat rounded-2xl p-6 mb-10 relative z-20 border border-white/5">
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-4">
+                    <Sparkles size={16} className="text-indigo-500" /> Automated Outreach Draft
+                  </h4>
+                  <div className="space-y-4">
+                    <InputField 
+                      label="Email Subject" 
+                      icon={Mail} 
+                      value={formData.email_subject_draft} 
+                      onChange={(e:any) => setFormData({...formData, email_subject_draft: e.target.value})} 
+                      placeholder="Custom Subject..." 
+                    />
+                    <div className="relative group">
+                      <label className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-slate-400 uppercase mb-2 ml-1">
+                        <FileText size={12} className="text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+                        Email Body
+                      </label>
+                      <textarea
+                        value={formData.email_draft}
+                        onChange={(e:any) => setFormData({...formData, email_draft: e.target.value})}
+                        placeholder="Custom email body..."
+                        className="w-full neu-pressed rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all placeholder-slate-500 min-h-[180px] resize-y"
+                      />
+                    </div>
+                  </div>
+                </div>
                 <div className="flex justify-between items-center mb-8">
                   <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
                     <Activity size={14} /> Interaction Timeline
@@ -418,7 +448,6 @@ export default function LeadDetailsModal({
               </div>
             </div>
           </div>
-
           {/* Footer Actions */}
           <div className="p-6 border-t border-slate-200/10 bg-transparent flex justify-end gap-4">
             <button 

@@ -39,6 +39,7 @@ import {
 import { getActiveSessions, revokeSession } from '@/app/actions/sessionActions';
 import { Users } from 'lucide-react';
 import EmailAccountsManager from './EmailAccountsManager';
+import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 
 const playSound = (type: 'success' | 'pop' | 'error' | 'cash') => {
   try {
@@ -158,6 +159,7 @@ const TABS = [
 ];
 
 export default function SettingsClient() {
+  const { confirm } = useConfirm();
   const [activeTab, setActiveTab] = useState('general');
   const [isSaving, setIsSaving] = useState(false);
   const [showKey, setShowKey] = useState(false);
@@ -408,7 +410,8 @@ export default function SettingsClient() {
   };
 
   const handleDeleteMember = async (memberId: string) => {
-    if (!confirm('Are you sure you want to remove this team member?')) return;
+    const isConfirmed = await confirm({ message: 'Are you sure you want to remove this team member?', danger: true });
+    if (!isConfirmed) return;
 
     toast.loading('Removing team member...', { id: 'team-delete' });
     try {
@@ -502,6 +505,36 @@ export default function SettingsClient() {
       if (masterSound) playSound('error');
     } finally {
       setIsSendingTestEmail(false);
+    }
+  };
+
+  const handleClearSmtp = async () => {
+    const isConfirmed = await confirm({ message: 'Are you sure you want to clear the SMTP configuration?', danger: true });
+    if (!isConfirmed) return;
+    setIsSaving(true);
+    toast.loading('Clearing SMTP settings...', { id: 'smtp-clear' });
+    try {
+      const emptySettings = {
+        host: '',
+        port: 587,
+        user: '',
+        pass: '',
+        fromName: '',
+        fromEmail: '',
+      };
+      const res = await saveSystemSettings('smtp', emptySettings);
+      if (res.success) {
+        setSmtpSettings(emptySettings);
+        toast.success('SMTP settings cleared!', { id: 'smtp-clear' });
+        if (masterSound) playSound('success');
+      } else {
+        throw new Error(res.error || 'Failed to clear SMTP settings');
+      }
+    } catch (err: any) {
+      toast.error(err.message, { id: 'smtp-clear' });
+      if (masterSound) playSound('error');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -1085,24 +1118,35 @@ export default function SettingsClient() {
                         <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">💡 Tip: Test connection first, then click "Save Changes" at the top.</p>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={handleTestConnection}
-                        disabled={isTestingConnection}
-                        className="px-6 py-3 neu-button text-indigo-500 font-bold rounded-2xl transition-all text-xs flex items-center justify-center gap-2 disabled:opacity-40"
-                      >
-                        {isTestingConnection ? (
-                          <>
-                            <Activity size={14} className="animate-spin" />
-                            <span>Verifying...</span>
-                          </>
-                        ) : (
-                          <>
-                            <MonitorSmartphone size={14} />
-                            <span>Test Connection</span>
-                          </>
-                        )}
-                      </button>
+                      <div className="flex flex-col sm:flex-row items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={handleClearSmtp}
+                          disabled={isSaving}
+                          className="w-full sm:w-auto px-4 py-3 neu-button text-rose-500 font-bold rounded-2xl transition-all text-xs flex items-center justify-center gap-2"
+                        >
+                          <Trash2 size={14} />
+                          <span>Clear Settings</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleTestConnection}
+                          disabled={isTestingConnection}
+                          className="w-full sm:w-auto px-6 py-3 neu-button text-indigo-500 font-bold rounded-2xl transition-all text-xs flex items-center justify-center gap-2 disabled:opacity-40"
+                        >
+                          {isTestingConnection ? (
+                            <>
+                              <Activity size={14} className="animate-spin" />
+                              <span>Verifying...</span>
+                            </>
+                          ) : (
+                            <>
+                              <MonitorSmartphone size={14} />
+                              <span>Test Connection</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
 
                     {testResult && (

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Mail, Send, Activity, MessageSquare, CheckCircle, Clock, AlertCircle, Sparkles, User, Building2, Globe, Phone, ExternalLink, Plus } from 'lucide-react';
+import { Mail, Send, Activity, MessageSquare, CheckCircle, Clock, AlertCircle, Sparkles, User, Building2, Globe, Phone, ExternalLink, Plus, RefreshCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { createProposal } from '@/app/actions/proposalActions';
 
@@ -16,6 +16,24 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
   const [activeTab, setActiveTab] = useState<'inbox' | 'pipeline'>('inbox');
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isCreatingProposalFor, setIsCreatingProposalFor] = useState<string | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleSyncInboxes = async () => {
+    setIsSyncing(true);
+    try {
+      const response = await fetch('/api/cron/check-replies');
+      if (response.ok) {
+        window.location.reload();
+      } else {
+        alert('Failed to sync inboxes.');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Error syncing inboxes.');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   const handleCreateProposal = async (lead: any) => {
     setIsCreatingProposalFor(lead._id);
@@ -89,13 +107,24 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
     <div className="min-h-screen neu-base-bg p-4 md:p-8 text-slate-800 dark:text-slate-200">
       
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="mb-3">
-          Outreach Analytics
-        </h1>
-        <p className="text-[15px] font-inter leading-relaxed tracking-wide text-slate-600 dark:text-gray-400">
-          Monitor your automated campaigns, track quotas, and respond to hot leads.
-        </p>
+      <div className="mb-8 flex justify-between items-end">
+        <div>
+          <h1 className="mb-3">
+            Outreach Analytics
+          </h1>
+          <p className="text-[15px] font-inter leading-relaxed tracking-wide text-slate-600 dark:text-gray-400">
+            Monitor your automated campaigns, track quotas, and respond to hot leads.
+          </p>
+        </div>
+        
+        <button
+          onClick={handleSyncInboxes}
+          disabled={isSyncing}
+          className="flex items-center gap-2 px-5 py-2.5 neu-button bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-bold rounded-xl text-sm disabled:opacity-50"
+        >
+          <RefreshCw size={16} className={isSyncing ? 'animate-spin' : ''} />
+          {isSyncing ? 'Syncing...' : 'Sync Inboxes'}
+        </button>
       </div>
 
       {/* Top Stat Cards */}
@@ -204,7 +233,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
               ) : (
                 <div className="grid grid-cols-1 gap-4">
                   {hotInboxLeads.map(lead => (
-                    <div key={lead._id} className="p-5 rounded-2xl border-2 border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/50 dark:bg-emerald-900/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div key={lead._id} className="p-5 rounded-2xl neu-flat border-l-4 border-emerald-500 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                       <div className="flex items-center gap-4">
                         <div 
                           style={{ background: getAvatarGradient(lead.company_name) }}
@@ -267,7 +296,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {activePipelineLeads.map(lead => (
-                    <div key={lead._id} className="p-4 rounded-xl border border-slate-200 dark:border-slate-700/50 bg-white/50 dark:bg-slate-800/30 flex items-start gap-4">
+                    <div key={lead._id} className="p-4 rounded-xl neu-flat flex items-start gap-4 transition-all hover:scale-[1.02]">
                       <div 
                         style={{ background: getAvatarGradient(lead.company_name) }}
                         className="h-10 w-10 rounded-xl flex items-center justify-center text-white text-xs font-bold shadow-md flex-shrink-0"

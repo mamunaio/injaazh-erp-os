@@ -6,6 +6,7 @@ import Sidebar from '@/components/layout/Sidebar';
 import Topbar from '@/components/layout/Topbar';
 import { SidebarProvider } from '@/components/layout/SidebarContext';
 import { UserProvider } from '@/components/layout/UserContext';
+import { ConfirmDialogProvider } from '@/components/layout/ConfirmDialogProvider';
 
 export default function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -27,13 +28,15 @@ export default function AppLayoutWrapper({ children }: { children: React.ReactNo
 
   return (
     <UserProvider>
-      <SidebarProvider>
-        <Sidebar />
-        <Topbar />
-        <main className="pl-4 lg:pl-[288px] pt-[104px] pr-4 pb-4 min-h-screen transition-all duration-300">
-          {children}
-        </main>
-      </SidebarProvider>
+      <ConfirmDialogProvider>
+        <SidebarProvider>
+          <Sidebar />
+          <Topbar />
+          <main className="pl-4 lg:pl-[288px] pt-[104px] pr-4 pb-4 min-h-screen transition-all duration-300">
+            {children}
+          </main>
+        </SidebarProvider>
+      </ConfirmDialogProvider>
     </UserProvider>
   );
 }

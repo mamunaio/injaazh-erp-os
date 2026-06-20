@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import connectToDatabase from '@/lib/mongodb';
 import { Lead } from '@/models/Lead';
+import { getAuthUser } from '@/lib/auth';
 
 export async function createLead(data: any) {
   try {
@@ -64,6 +65,10 @@ export async function createLead(data: any) {
     }
     
     // No duplicates, proceed with creation
+    const currentUser = await getAuthUser();
+    if (currentUser) {
+      data.createdBy = currentUser.id;
+    }
     const newLead = new Lead(data);
     await newLead.save();
     revalidatePath('/leads');
@@ -151,7 +156,19 @@ export async function checkDuplicateLead(data: {
 export async function getLeads() {
   try {
     await connectToDatabase();
-    const leads = await Lead.find({}).sort({ createdAt: -1 }).lean();
+    const currentUser = await getAuthUser();
+    let query = {};
+    
+    // Regular users (editors/marketplace_team) only see their own leads. 
+    // Owner and admin see all.
+    if (currentUser && currentUser.role !== 'owner' && currentUser.role !== 'admin') {
+      query = { createdBy: currentUser.id };
+    }
+
+    const leads = await Lead.find(query)
+      .populate('createdBy', 'name email')
+      .sort({ createdAt: -1 })
+      .lean();
     return { success: true, data: JSON.parse(JSON.stringify(leads)) };
   } catch (error: any) {
     console.error('Error fetching leads:', error);
@@ -244,6 +261,7 @@ export async function updateLeadStatus(id: string, newStatus: string) {
 export async function updateLead(id: string, updateData: any) {
   try {
     await connectToDatabase();
+    const currentUser = await getAuthUser();
     
     // Get the current lead to check previous status
     const currentLead = await Lead.findById(id).lean();
@@ -256,7 +274,8 @@ export async function updateLead(id: string, updateData: any) {
         const newestLog = updateData.outreach_logs[0];
         if (newestLog && ['Email', 'WhatsApp', 'Facebook', 'Phone'].includes(newestLog.method)) {
           const followUpDate = new Date();
-          followUpDate.setDate(followUpDate.getDate() + 3);
+          const randomDays = Math.floor(Math.random() * 3) + 3; // 3, 4, or 5
+          followUpDate.setDate(followUpDate.getDate() + randomDays);
           updateData.nextFollowUpDate = followUpDate;
         }
       }
@@ -273,7 +292,8 @@ export async function updateLead(id: string, updateData: any) {
     if (updateData.outreach_logs) {
       updateData.outreach_logs = updateData.outreach_logs.map((log: any) => ({
         ...log,
-        date: log.date ? new Date(log.date) : new Date()
+        date: log.date ? new Date(log.date) : new Date(),
+        loggedBy: log.loggedBy || (currentUser ? currentUser.id : undefined)
       }));
     }
 
@@ -362,61 +382,145 @@ export async function deleteLead(id: string) {
   }
 }
 
-export async function sendOutreachEmail(leadId: string, subject: string, body: string) {
+export async function sendOutreachEmail(leadId: string, subject: string, body: string, senderAccountId: string = 'auto') {
   try {
+    const currentUser = await getAuthUser();
     await connectToDatabase();
-    
-    // Find the lead
+    const { Lead } = await import('@/models/Lead');
     const lead = await Lead.findById(leadId);
-    if (!lead) {
-      return { success: false, error: 'Lead not found' };
-    }
     
-    if (!lead.email) {
-      return { success: false, error: 'Lead does not have an email address' };
+    if (!lead || !lead.email) {
+      return { success: false, error: 'Lead or lead email not found.' };
     }
-    const emailTo = lead.email;
-    await connectToDatabase();
-    
-    // Load dynamic SMTP from database if available
-    const SystemSettingsModule = await import('@/models/SystemSettings');
-    const dbSettings = await SystemSettingsModule.SystemSettings.findOne({ key: 'smtp' }).lean();
-    const smtpData = (dbSettings?.value as any) || {};
 
-    const smtpHost = smtpData.host || process.env.SMTP_HOST;
-    const smtpUser = smtpData.user || process.env.SMTP_USER;
-    const smtpPass = smtpData.pass || process.env.SMTP_PASS;
-    
+    const emailTo = lead.email;
     let emailSent = false;
     let isSimulated = false;
-    
-    // Check if SMTP is configured
-    const hasSmtpConfig = !!(smtpHost && smtpUser && smtpPass);
-    
-    if (hasSmtpConfig) {
+    let usedAccountEmail = '';
+
+    const { EmailAccount } = await import('@/models/EmailAccount');
+    const { EmailCampaignLog } = await import('@/models/EmailCampaignLog');
+
+    let selectedAccount = null;
+
+    if (senderAccountId && senderAccountId !== 'auto') {
+      // Find the explicit account requested
+      selectedAccount = await EmailAccount.findOneAndUpdate(
+        {
+          _id: senderAccountId,
+          isActive: true,
+          $expr: { $lt: ['$sentToday', '$dailyLimit'] },
+        },
+        { $inc: { sentToday: 1 } },
+        { new: true }
+      );
+      if (!selectedAccount) {
+        return { success: false, error: 'Selected email account is inactive or has reached its daily limit.' };
+      }
+    } else {
+      // Auto-select an available email account
+      selectedAccount = await EmailAccount.findOneAndUpdate(
+        {
+          isActive: true,
+          $expr: { $lt: ['$sentToday', '$dailyLimit'] },
+        },
+        { $inc: { sentToday: 1 } },
+        { new: true, sort: { sentToday: -1 } } 
+      );
+    }
+
+    if (selectedAccount) {
       try {
-        const { sendEmail } = await import('@/lib/email');
-        const emailRes = await sendEmail({
+        const nodemailer = await import('nodemailer');
+        
+        const isSmtp = selectedAccount.accountType === 'smtp';
+        const transporter = nodemailer.createTransport(isSmtp ? {
+          host: selectedAccount.smtpHost,
+          port: selectedAccount.smtpPort,
+          secure: selectedAccount.smtpSecure,
+          auth: {
+            user: selectedAccount.email,
+            pass: selectedAccount.appPassword,
+          },
+        } : {
+          service: 'gmail',
+          auth: {
+            user: selectedAccount.email,
+            pass: selectedAccount.appPassword,
+          },
+        });
+
+        const info = await transporter.sendMail({
+          from: selectedAccount.email,
           to: emailTo,
           subject: subject,
           text: body,
           html: body.replace(/\n/g, '<br />'),
         });
-        
-        if (emailRes.success) {
-          emailSent = true;
-          console.log(`✉️ Email successfully sent via SMTP to: ${emailTo}`);
-        } else {
-          console.error('❌ SMTP send failed:', emailRes.error);
-          return { success: false, error: `SMTP configuration is active but failed: ${emailRes.error}` };
+
+        // Log the campaign using the rotating account
+        await EmailCampaignLog.create({
+          leadId: lead._id,
+          accountId: selectedAccount._id,
+          messageId: info.messageId,
+          type: 'Initial', // Or follow-up depending on logic, keeping 'Initial' for manual composer
+          status: 'Sent',
+          sentBy: currentUser ? currentUser.id : undefined,
+        });
+
+        emailSent = true;
+        usedAccountEmail = selectedAccount.email;
+        console.log(`✉️ Email successfully sent via ${isSmtp ? 'SMTP' : 'Gmail'} (${selectedAccount.email}) to: ${emailTo}`);
+      } catch (rotationError: any) {
+        console.error(`❌ Email send failed for ${selectedAccount.email}:`, rotationError);
+        // Revert quota on failure
+        await EmailAccount.findByIdAndUpdate(selectedAccount._id, { $inc: { sentToday: -1 } });
+        if (senderAccountId && senderAccountId !== 'auto') {
+          // If explicit sender failed, do not fallback to global smtp. Throw error directly.
+          return { success: false, error: `Failed to send via selected account: ${rotationError.message}` };
         }
-      } catch (smtpError: any) {
-        console.error('❌ SMTP send failed:', smtpError);
-        return { success: false, error: `SMTP configuration is active but failed: ${smtpError.message || smtpError}` };
       }
-    } else {
-      console.log('ℹ️ SMTP credentials missing. Switched to Simulated Sandbox outreach.');
-      isSimulated = true;
+    }
+    
+    // Fallback to Global SMTP if no rotating account is available or if it failed
+    if (!emailSent) {
+      // Load dynamic SMTP from database if available
+      const SystemSettingsModule = await import('@/models/SystemSettings');
+      const dbSettings = await SystemSettingsModule.SystemSettings.findOne({ key: 'smtp' }).lean();
+      const smtpData = (dbSettings?.value as any) || {};
+
+      const smtpHost = smtpData.host || process.env.SMTP_HOST;
+      const smtpUser = smtpData.user || process.env.SMTP_USER;
+      const smtpPass = smtpData.pass || process.env.SMTP_PASS;
+      
+      const hasSmtpConfig = !!(smtpHost && smtpUser && smtpPass);
+      
+      if (hasSmtpConfig) {
+        try {
+          const { sendEmail } = await import('@/lib/email');
+          const emailRes = await sendEmail({
+            to: emailTo,
+            subject: subject,
+            text: body,
+            html: body.replace(/\n/g, '<br />'),
+          });
+          
+          if (emailRes.success) {
+            emailSent = true;
+            usedAccountEmail = smtpUser as string;
+            console.log(`✉️ Email successfully sent via Fallback Global SMTP to: ${emailTo}`);
+          } else {
+            console.error('❌ Fallback SMTP send failed:', emailRes.error);
+            return { success: false, error: `SMTP fallback failed: ${emailRes.error}` };
+          }
+        } catch (smtpError: any) {
+          console.error('❌ Fallback SMTP send failed:', smtpError);
+          return { success: false, error: `SMTP fallback failed: ${smtpError.message || smtpError}` };
+        }
+      } else {
+        console.log('ℹ️ No active Gmail accounts and SMTP credentials missing. Switched to Simulated Sandbox outreach.');
+        isSimulated = true;
+      }
     }
     
     // Fallback simulation delay to guarantee realistic UX
@@ -424,6 +528,7 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
       await new Promise(resolve => setTimeout(resolve, 1500)); // 1.5 seconds simulated delay
       emailSent = true;
       isSimulated = true;
+      usedAccountEmail = 'sandbox@simulation.local';
     }
     
     // Progress Lead outreach_status to 'Contacted'!
@@ -434,16 +539,18 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
     const newLog = {
       date: new Date(),
       method: 'Email' as const,
-      notes: `Subject: ${subject}\n\n${body}${isSimulated ? '\n\n[SANDBOX SIMULATION: Email sent successfully]' : ''}`
+      notes: `Subject: ${subject}\nSent Via: ${usedAccountEmail}\n\n${body}${isSimulated ? '\n\n[SANDBOX SIMULATION: Email sent successfully]' : ''}`,
+      loggedBy: currentUser ? currentUser.id : undefined,
     };
     
     // Apply updates directly
     lead.outreach_status = newStatus;
     lead.outreach_logs = [newLog, ...lead.outreach_logs];
     
-    // Automatically schedule a follow-up 3 days in the future
+    // Automatically schedule a follow-up between 3 and 5 days in the future
     const followUpDate = new Date();
-    followUpDate.setDate(followUpDate.getDate() + 3);
+    const randomDays = Math.floor(Math.random() * 3) + 3; // 3, 4, or 5
+    followUpDate.setDate(followUpDate.getDate() + randomDays);
     lead.nextFollowUpDate = followUpDate;
     
     await lead.save();
@@ -459,6 +566,7 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
     return { 
       success: true, 
       isSimulated,
+      sentVia: usedAccountEmail,
       data: JSON.parse(JSON.stringify(lead)) 
     };
   } catch (error: any) {

@@ -3,6 +3,7 @@
 import nodemailer from 'nodemailer';
 import connectToDatabase from '@/lib/mongodb';
 import { SystemSettings } from '@/models/SystemSettings';
+import { EmailAccount } from '@/models/EmailAccount';
 
 export async function getSystemSettings(key: string) {
   try {
@@ -29,6 +30,32 @@ export async function saveSystemSettings(key: string, value: any) {
       { value },
       { new: true, upsert: true }
     );
+
+    // Sync SMTP settings to EmailAccounts collection for unified Outreach dropdown and rotation
+    if (key === 'smtp' && value?.user && value?.pass) {
+      await EmailAccount.findOneAndUpdate(
+        { email: value.user },
+        {
+          appPassword: value.pass,
+          accountType: 'smtp',
+          smtpHost: value.host,
+          smtpPort: Number(value.port) || 465,
+          smtpSecure: Number(value.port) === 465,
+          isActive: true,
+          isGlobal: true,
+          $setOnInsert: {
+            dailyLimit: 100, // Default generous limit for global SMTP
+            sentToday: 0
+          }
+        },
+        { upsert: true, new: true }
+      );
+    } else if (key === 'smtp' && (!value?.user || !value?.pass)) {
+      // If SMTP is cleared, we could deactivate or delete the associated SMTP account.
+      // But we might not know which one it was if they just cleared the form. 
+      // It's fine to leave it as is or handle it explicitly if needed.
+    }
+
     return {
       success: true,
       data: settings.value,

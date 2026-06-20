@@ -8,6 +8,7 @@ import CreateProjectModal from '@/components/CreateProjectModal';
 import EditProjectModal from '@/components/EditProjectModal';
 import { createProject, updateProject, deleteProject } from '@/app/actions/projectActions';
 import { useRouter } from 'next/navigation';
+import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 
 interface ProjectsClientProps {
   initialProjects: any[];
@@ -15,6 +16,7 @@ interface ProjectsClientProps {
 
 export default function ProjectsClient({ initialProjects }: ProjectsClientProps) {
   const router = useRouter();
+  const { confirm } = useConfirm();
   const [viewMode, setViewMode] = useState<'board' | 'list'>('board');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -47,7 +49,8 @@ export default function ProjectsClient({ initialProjects }: ProjectsClientProps)
   };
 
   const handleDeleteProject = async (projectId: string) => {
-    if (confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+    const isConfirmed = await confirm({ message: 'Are you sure you want to delete this project? This action cannot be undone.', danger: true });
+    if (isConfirmed) {
       const result = await deleteProject(projectId);
       if (result.success) {
         setIsEditModalOpen(false);

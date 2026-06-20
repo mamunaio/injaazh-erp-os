@@ -21,11 +21,10 @@ export async function checkRepliesForAccount(account: any) {
     const connection = await imaps.connect(config);
     await connection.openBox('INBOX');
 
-    // Search for unread emails from the last 5 days
+    // Search for all emails from the last 5 days (even if marked as read in Gmail)
     // node-imap requires a JS Date object for SINCE, not an ISO string!
     const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
     const searchCriteria = [
-      'UNREAD',
       ['SINCE', fiveDaysAgo]
     ];
     

@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { X, Mail, Send, Loader2, Sparkles, Code, Search, AlertCircle, CheckCircle, Info } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Mail, Send, Loader2, Sparkles, Code, Search, AlertCircle, CheckCircle, Info, FileText, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { sendOutreachEmail } from '@/app/actions/leadActions';
+import { getEmailAccounts } from '@/app/actions/emailAccountActions';
 import { generateAIEmailDraft } from '@/app/actions/aiActions';
 
 interface Template {
@@ -72,6 +73,64 @@ Injaazh Digital`
   }
 ];
 
+// Custom Select Component for Neumorphic Dropdowns
+const CustomSelect = ({ value, onChange, options, className = "", dropdownUp = false }: any) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find((opt: any) => opt.value === value);
+
+  return (
+    <div className="relative flex-1 min-w-0" ref={selectRef}>
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full flex items-center justify-between cursor-pointer select-none ${className}`}
+      >
+        <span className="flex-1 min-w-0 truncate pr-2" title={selectedOption ? selectedOption.label : 'Select...'}>
+          {selectedOption ? selectedOption.label : 'Select...'}
+        </span>
+        <ChevronDown size={14} className={`text-slate-500 transition-transform duration-200 flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+      </div>
+      
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: dropdownUp ? 10 : -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: dropdownUp ? 10 : -10, scale: 0.95 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className={`absolute z-[100] w-full min-w-[280px] right-0 neu-flat rounded-2xl py-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-white/5 overflow-hidden ${dropdownUp ? 'bottom-full mb-2' : 'top-full mt-2'}`}
+          >
+            {options.map((opt: any) => (
+              <div 
+                key={opt.value}
+                onClick={() => { onChange(opt.value); setIsOpen(false); }}
+                className={`px-4 py-3 text-[11px] font-semibold cursor-pointer transition-all border-l-2 truncate ${
+                  value === opt.value 
+                    ? 'border-indigo-500 text-indigo-400 bg-indigo-500/10 font-bold' 
+                    : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                }`}
+              >
+                {opt.label}
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 export default function OutreachComposerModal({
   isOpen,
   onClose,
@@ -83,7 +142,21 @@ export default function OutreachComposerModal({
   lead: any;
   onEmailSent: (updatedLead: any) => void;
 }) {
-  const [selectedTemplateId, setSelectedTemplateId] = useState(TEMPLATES[0].id);
+  const dynamicTemplates = React.useMemo(() => {
+    if (!lead || !lead.email_draft) return TEMPLATES;
+    return [
+      {
+        id: 'custom-draft',
+        name: 'Custom Saved Draft',
+        icon: <FileText size={16} className="text-orange-400" />,
+        subject: lead.email_subject_draft || 'Custom Subject',
+        body: lead.email_draft
+      },
+      ...TEMPLATES
+    ];
+  }, [lead]);
+
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
   
   // Editable fields for dynamic replacement
   const [contactName, setContactName] = useState('');
@@ -98,24 +171,52 @@ export default function OutreachComposerModal({
   const [isSending, setIsSending] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successInfo, setSuccessInfo] = useState<{ isSimulated: boolean } | null>(null);
+  const [successInfo, setSuccessInfo] = useState<{ isSimulated: boolean, sentVia?: string } | null>(null);
+  
+  // Sender Account Selection
+  const [activeAccounts, setActiveAccounts] = useState<any[]>([]);
+  const [selectedSenderId, setSelectedSenderId] = useState<string>('auto');
 
   // Initialize and update fields when lead changes
   useEffect(() => {
-    if (lead) {
+    if (lead && isOpen) {
       setContactName(lead.contact_person || 'there');
       setCompanyName(lead.company_name || 'your company');
       setWebsiteUrl(lead.website_url || 'your website');
       setSuccessInfo(null);
       setErrorMessage(null);
+      if (lead.email_draft) {
+        setSelectedTemplateId('custom-draft');
+      } else {
+        setSelectedTemplateId(TEMPLATES[0].id);
+      }
+      
+      // Fetch active accounts for sender selection
+      const fetchAccounts = async () => {
+        const res = await getEmailAccounts();
+        if (res.success && res.accounts) {
+          setActiveAccounts(res.accounts.filter((a: any) => a.isActive));
+        }
+      };
+      fetchAccounts();
     }
   }, [lead, isOpen]);
 
   // Compile template whenever variables or template selection changes
   useEffect(() => {
-    if (!lead) return;
+    if (!lead || !selectedTemplateId || selectedTemplateId === 'ai-draft') return;
     
-    const activeTemplate = TEMPLATES.find(t => t.id === selectedTemplateId) || TEMPLATES[0];
+    // For custom-draft, we don't compile placeholders if it's already compiled manually by user
+    if (selectedTemplateId === 'custom-draft') {
+      const activeTemplate = dynamicTemplates.find(t => t.id === 'custom-draft');
+      if (activeTemplate) {
+        setSubject(activeTemplate.subject);
+        setBody(activeTemplate.body);
+      }
+      return;
+    }
+
+    const activeTemplate = dynamicTemplates.find(t => t.id === selectedTemplateId) || dynamicTemplates[0];
     
     const compile = (text: string) => {
       return text
@@ -126,7 +227,7 @@ export default function OutreachComposerModal({
 
     setSubject(compile(activeTemplate.subject));
     setBody(compile(activeTemplate.body));
-  }, [selectedTemplateId, contactName, companyName, websiteUrl, lead, isOpen]);
+  }, [selectedTemplateId, contactName, companyName, websiteUrl, lead, isOpen, dynamicTemplates]);
 
   if (!isOpen || !lead) return null;
 
@@ -169,9 +270,9 @@ export default function OutreachComposerModal({
     setErrorMessage(null);
 
     try {
-      const response = await sendOutreachEmail(lead._id, subject, body);
+      const response = await sendOutreachEmail(lead._id, subject, body, selectedSenderId);
       if (response.success && response.data) {
-        setSuccessInfo({ isSimulated: !!response.isSimulated });
+        setSuccessInfo({ isSimulated: !!response.isSimulated, sentVia: response.sentVia });
         // Let the state settle, then invoke callback and close
         setTimeout(() => {
           onEmailSent(response.data);
@@ -224,44 +325,43 @@ export default function OutreachComposerModal({
             <button
               onClick={onClose}
               disabled={isSending}
-              className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors bg-slate-100 dark:bg-white/5 p-2 rounded-full hover:bg-slate-200 dark:hover:bg-white/10 disabled:opacity-50"
+              className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white neu-pressed rounded-xl transition-all disabled:opacity-50"
             >
-              <X size={18} />
+              <X size={20} />
             </button>
           </div>
 
-          {/* Main Workspace */}
-          <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
-            {/* Left side: Templates and Custom variables */}
-            <div className="w-full md:w-5/12 p-6 overflow-y-auto border-r border-white/5 flex flex-col space-y-6">
+          <div className="flex flex-1 overflow-hidden">
+            
+            {/* Left side: Configuration Panel */}
+            <div className="w-full md:w-1/3 border-r border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-black/20 p-6 flex flex-col gap-8 overflow-y-auto">
               
-              {/* Template selection cards */}
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider mb-2.5 uppercase">
+                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 block">
                   Select High-Converting Template
                 </label>
                 <div className="space-y-2">
-                  {TEMPLATES.map((tmpl) => {
+                  {dynamicTemplates.map((tmpl) => {
                     const isSelected = selectedTemplateId === tmpl.id;
                     return (
                       <button
                         key={tmpl.id}
                         onClick={() => setSelectedTemplateId(tmpl.id)}
-                        className={`w-full flex items-start gap-3 p-3.5 rounded-xl text-left transition-all duration-300 ${
-                          isSelected
-                            ? 'neu-pressed shadow-[inset_0_0_15px_rgba(99,102,241,0.1)]'
-                            : 'neu-flat hover:-translate-y-0.5 hover:shadow-lg'
+                        className={`w-full text-left p-3.5 rounded-xl border transition-all duration-200 flex items-start gap-3 ${
+                          isSelected 
+                            ? 'bg-slate-800 border-indigo-500/30 shadow-[0_4px_20px_-4px_rgba(99,102,241,0.2)]' 
+                            : 'neu-pressed border-transparent hover:border-indigo-500/20'
                         }`}
                       >
-                        <div className={`p-2 rounded-lg mt-0.5 ${isSelected ? 'bg-indigo-500/10' : 'bg-slate-100 dark:bg-slate-800'}`}>
+                        <div className={`p-2 rounded-lg ${isSelected ? 'bg-indigo-500/20' : 'bg-slate-800/50'}`}>
                           {tmpl.icon}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className={`text-sm font-semibold ${isSelected ? 'text-indigo-600 dark:text-purple-300' : 'text-slate-700 dark:text-slate-300'}`}>
+                          <div className={`font-bold text-sm ${isSelected ? 'text-white' : 'text-slate-300'}`}>
                             {tmpl.name}
                           </div>
                           <div className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
-                            {tmpl.subject.replace('{companyName}', companyName || lead.company_name)}
+                            {tmpl.id === 'custom-draft' ? tmpl.subject : tmpl.subject.replace('{companyName}', companyName || lead.company_name)}
                           </div>
                         </div>
                       </button>
@@ -270,13 +370,13 @@ export default function OutreachComposerModal({
                 </div>
               </div>
 
-              {/* Dynamic Variables editor */}
-              <div className="space-y-4">
-                <div>
-                  <h3 className="block text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase mb-3">
-                    Personalize Placeholders
-                  </h3>
-                  <div className="p-4 rounded-xl neu-flat space-y-3.5">
+              <div>
+                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 block">
+                  Personalize Placeholders
+                </label>
+                
+                <div className="neu-flat rounded-2xl p-4 space-y-4">
+                  <div className="space-y-3">
                     <div>
                       <label className="block text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
                         Contact Person ({'{contactName}'})
@@ -285,11 +385,11 @@ export default function OutreachComposerModal({
                         type="text"
                         value={contactName}
                         onChange={(e) => setContactName(e.target.value)}
-                        placeholder="e.g. John Doe or Team"
+                        placeholder="e.g. John Doe"
                         className="w-full neu-pressed rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder:text-slate-600"
                       />
                     </div>
-
+                    
                     <div>
                       <label className="block text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
                         Company Name ({'{companyName}'})
@@ -332,70 +432,73 @@ export default function OutreachComposerModal({
             </div>
 
             {/* Right side: Email Editor Panel */}
-            <div className="flex-1 p-6 flex flex-col space-y-4 overflow-y-auto">
+            <div className="w-full md:w-2/3 p-8 flex flex-col relative h-full overflow-y-auto">
               
-              {/* Recipient summary */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 p-4 rounded-xl neu-flat text-xs text-slate-300">
-                <div className="flex items-center gap-2 truncate">
-                  <span className="font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-[9px] w-12 flex-shrink-0">Recipient:</span>
-                  <span className="truncate">{lead.email}</span>
+              <div className="flex flex-col gap-5 mb-5 flex-shrink-0 relative z-20">
+                <div className="flex items-center gap-4 text-sm neu-flat p-3 rounded-xl">
+                  <div className="flex items-center gap-3 w-1/2">
+                    <span className="font-bold text-slate-400 uppercase tracking-wider text-[10px]">Recipient:</span>
+                    <span className="font-semibold text-slate-800 dark:text-white truncate">{lead.email}</span>
+                  </div>
+                  <div className="flex items-center gap-3 w-1/2 border-l border-slate-200 dark:border-white/5 pl-4">
+                    <span className="font-bold text-slate-400 uppercase tracking-wider text-[10px] whitespace-nowrap flex-shrink-0">Send From:</span>
+                    <CustomSelect
+                      value={selectedSenderId}
+                      onChange={(val: string) => setSelectedSenderId(val)}
+                      options={[
+                        { value: 'auto', label: 'Auto-Rotate Pool (Recommended)' },
+                        ...activeAccounts.map(acc => ({
+                          value: acc._id,
+                          label: `${acc.email} (${acc.accountType === 'smtp' ? 'Webmail' : 'Gmail'})`
+                        }))
+                      ]}
+                      className="text-indigo-600 dark:text-indigo-400 font-bold text-sm"
+                    />
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 truncate">
-                  <span className="font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-[9px] w-12 flex-shrink-0">Status:</span>
-                  <span className="px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-500 text-[10px] font-medium border border-orange-500/20">
-                    {lead.outreach_status}
-                  </span>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Subject Line</label>
+                  <input
+                    type="text"
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    className="w-full neu-pressed rounded-xl px-4 py-3.5 text-sm font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all placeholder:text-slate-500"
+                    placeholder="Enter an attention-grabbing subject..."
+                  />
                 </div>
               </div>
 
-              {/* Subject Input */}
-              <div className="flex flex-col">
-                <label className="block text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider mb-1.5 uppercase">
-                  Subject Line
-                </label>
-                <input
-                  type="text"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  className="w-full neu-pressed rounded-xl px-4 py-3 text-sm text-white font-medium focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all"
-                />
-              </div>
-
-              {/* Body Text Area */}
-              <div className="flex-1 flex flex-col min-h-[220px]">
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase">
-                    Email Message Draft
-                  </label>
+              {/* Email Body & Footer */}
+              <div className="flex-1 flex flex-col neu-pressed rounded-2xl overflow-hidden relative z-10 focus-within:ring-2 focus-within:ring-indigo-500/30 transition-all">
+                <div className="flex justify-between items-center px-4 py-3 border-b border-slate-200/10 bg-transparent">
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Email Message Draft</span>
                   <button 
                     onClick={handleAIGenerate}
-                    disabled={isGeneratingAI || isSending}
-                    className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 hover:from-purple-500/20 hover:to-indigo-500/20 text-purple-600 dark:text-purple-400 text-[10px] font-bold rounded-lg transition-colors border border-purple-500/20 disabled:opacity-50"
+                    disabled={isGeneratingAI}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-purple-400 hover:bg-purple-500/10 border border-purple-500/20 transition-colors disabled:opacity-50"
                   >
                     {isGeneratingAI ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                    {isGeneratingAI ? 'Writing...' : 'AI Magic Draft'}
+                    AI Magic Draft
                   </button>
                 </div>
+                
                 <textarea
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
-                  className="w-full flex-1 neu-pressed rounded-xl p-5 text-[13px] text-slate-300 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all font-mono leading-[1.8] resize-none"
-                  placeholder="Compose your cold email message here..."
+                  className="flex-1 w-full bg-transparent p-5 text-sm text-slate-800 dark:text-slate-300 focus:outline-none resize-none placeholder-slate-500 leading-relaxed font-mono"
+                  placeholder="Type your email message here..."
                 />
-              </div>
 
-              {/* Action Banner / Errors / Successes */}
-              <div className="pt-2 flex flex-col gap-2">
-                
                 {/* Error Banner */}
                 {errorMessage && (
                   <motion.div
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/20 text-red-500 text-xs rounded-xl"
+                    className="flex items-start gap-2 p-3.5 bg-rose-500/10 border-t border-rose-500/20 text-rose-400 text-xs"
                   >
-                    <AlertCircle size={14} className="flex-shrink-0" />
-                    <span>{errorMessage}</span>
+                    <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
+                    <span className="leading-relaxed">{errorMessage}</span>
                   </motion.div>
                 )}
 
@@ -404,7 +507,7 @@ export default function OutreachComposerModal({
                   <motion.div
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex items-start gap-2.5 p-3.5 bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 text-xs rounded-xl"
+                    className="flex items-start gap-2.5 p-3.5 bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 text-xs rounded-xl mx-4 mb-4 mt-2"
                   >
                     <CheckCircle size={16} className="flex-shrink-0 mt-0.5 text-green-500" />
                     <div>
@@ -412,14 +515,14 @@ export default function OutreachComposerModal({
                       <div className="text-[11px] opacity-90 mt-0.5 leading-relaxed">
                         {successInfo.isSimulated 
                           ? 'Simulated sandbox fallback: database timeline successfully updated. Lead status set to Contacted!'
-                          : 'SMTP email successfully delivered. CRM status progressed.'}
+                          : `Email successfully delivered via ${successInfo.sentVia || 'Email Account'}. CRM status progressed.`}
                       </div>
                     </div>
                   </motion.div>
                 )}
 
                 {/* Control Action Buttons */}
-                <div className="flex items-center justify-between gap-4 pt-2">
+                <div className="flex items-center justify-between gap-4 px-5 py-4 border-t border-slate-200/10 bg-transparent mt-auto">
                   <div className="text-[10px] text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping"></span>
                     Ready for delivery &bull; Rich logs auto-archived

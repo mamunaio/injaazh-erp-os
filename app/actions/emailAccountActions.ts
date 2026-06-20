@@ -3,13 +3,31 @@
 import connectDB from '@/lib/mongodb';
 import { EmailAccount } from '@/models/EmailAccount';
 import nodemailer from 'nodemailer';
+import { getAuthUser } from '@/lib/auth';
 
-export async function addEmailAccount(data: { email: string; appPassword: string; dailyLimit: number }) {
+export async function addEmailAccount(data: { 
+  email: string; 
+  appPassword: string; 
+  dailyLimit: number;
+  accountType?: 'gmail' | 'smtp';
+  smtpHost?: string;
+  smtpPort?: number;
+  smtpSecure?: boolean;
+}) {
   try {
     await connectDB();
     
     // Verify credentials first
-    const transporter = nodemailer.createTransport({
+    const isSmtp = data.accountType === 'smtp';
+    const transporter = nodemailer.createTransport(isSmtp ? {
+      host: data.smtpHost,
+      port: data.smtpPort,
+      secure: data.smtpSecure,
+      auth: {
+        user: data.email,
+        pass: data.appPassword,
+      },
+    } : {
       service: 'gmail',
       auth: {
         user: data.email,
@@ -20,13 +38,22 @@ export async function addEmailAccount(data: { email: string; appPassword: string
     try {
       await transporter.verify();
     } catch (verifyError: any) {
-      return { success: false, error: 'Invalid Gmail credentials. Please check your email and App Password.' };
+      return { success: false, error: isSmtp ? 'Invalid SMTP credentials or host/port configuration.' : 'Invalid Gmail credentials. Please check your email and App Password.' };
     }
+
+    const currentUser = await getAuthUser();
+    if (!currentUser) return { success: false, error: 'Unauthorized' };
 
     const newAccount = await EmailAccount.create({
       email: data.email,
       appPassword: data.appPassword,
       dailyLimit: data.dailyLimit,
+      accountType: data.accountType || 'gmail',
+      smtpHost: data.smtpHost,
+      smtpPort: data.smtpPort,
+      smtpSecure: data.smtpSecure,
+      userId: currentUser.id,
+      isGlobal: false,
     });
 
     return { success: true, account: JSON.parse(JSON.stringify(newAccount)) };
@@ -41,7 +68,19 @@ export async function addEmailAccount(data: { email: string; appPassword: string
 export async function getEmailAccounts() {
   try {
     await connectDB();
-    const accounts = await EmailAccount.find({}).sort({ createdAt: -1 });
+    const currentUser = await getAuthUser();
+    if (!currentUser) return { success: false, error: 'Unauthorized' };
+
+    // Fetch user's own accounts, global accounts, AND legacy accounts without a userId
+    const query = {
+      $or: [
+        { userId: currentUser.id },
+        { isGlobal: true },
+        { userId: { $exists: false } }
+      ]
+    };
+
+    const accounts = await EmailAccount.find(query).sort({ createdAt: -1 });
     return { success: true, accounts: JSON.parse(JSON.stringify(accounts)) };
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch email accounts' };

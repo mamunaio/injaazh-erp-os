@@ -4,6 +4,7 @@ export interface IOutreachLog {
   date: Date;
   method: 'Email' | 'WhatsApp' | 'Facebook' | 'Phone' | 'Note';
   notes: string;
+  loggedBy?: mongoose.Types.ObjectId;
 }
 
 export interface ILead extends Document {
@@ -30,6 +31,7 @@ export interface ILead extends Document {
   last_contacted_date?: Date;
   is_replied: boolean;
   last_reply_subject?: string;
+  createdBy?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -38,6 +40,7 @@ const OutreachLogSchema = new Schema<IOutreachLog>({
   date: { type: Date, default: Date.now },
   method: { type: String, enum: ['Email', 'WhatsApp', 'Facebook', 'Phone', 'Note'], required: true },
   notes: { type: String, default: '' },
+  loggedBy: { type: Schema.Types.ObjectId, ref: 'User' },
 });
 
 const LeadSchema = new Schema<ILead>({
@@ -72,6 +75,7 @@ const LeadSchema = new Schema<ILead>({
   last_contacted_date: { type: Date },
   is_replied: { type: Boolean, default: false },
   last_reply_subject: { type: String },
+  createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
 }, { timestamps: true });
 
 // Create indexes for duplicate prevention

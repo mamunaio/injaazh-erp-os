@@ -7,6 +7,7 @@ import { createMarketplaceClient, deleteMarketplaceClient, updateMarketplaceClie
 import { countryToTimezoneMap } from '@/lib/countryToTimezone';
 import toast from 'react-hot-toast';
 import { useUser } from '@/components/layout/UserContext';
+import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 
 interface ClientHubClientProps {
   initialClients: any[];
@@ -14,6 +15,7 @@ interface ClientHubClientProps {
 
 export default function ClientHubClient({ initialClients }: ClientHubClientProps) {
   const { user } = useUser();
+  const { confirm } = useConfirm();
   const [clients, setClients] = useState(initialClients);
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -103,7 +105,8 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
   };
 
   const handleDeleteClient = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this client?')) return;
+    const isConfirmed = await confirm({ message: 'Are you sure you want to delete this client?', danger: true });
+    if (!isConfirmed) return;
     
     const result = await deleteMarketplaceClient(id);
     if (result.success) {

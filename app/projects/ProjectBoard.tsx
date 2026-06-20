@@ -21,6 +21,7 @@ import KanbanCard from '@/components/KanbanCard';
 import { updateProjectStatus, deleteProject } from '@/app/actions/projectActions';
 import { updateLeadStatus } from '@/app/actions/leadActions';
 import { useRouter } from 'next/navigation';
+import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 
 const COLUMNS = [
   { id: 'Planning', title: 'Planning', color: 'from-blue-500 to-cyan-500' },
@@ -111,6 +112,7 @@ interface ProjectBoardProps {
 
 export default function ProjectBoard({ initialProjects, onEdit }: ProjectBoardProps) {
   const router = useRouter();
+  const { confirm } = useConfirm();
   const [projects, setProjects] = useState(initialProjects);
   const [activeProject, setActiveProject] = useState<any>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -188,14 +190,11 @@ export default function ProjectBoard({ initialProjects, onEdit }: ProjectBoardPr
       return;
     }
 
-    const confirmed = confirm(
-      `Reset "${project.title}" back to Lead?\n\n` +
-      `This will:\n` +
-      `• Delete this project\n` +
-      `• Change the lead status back to "Contacted"\n` +
-      `• Allow you to close the lead again for testing\n\n` +
-      `Continue?`
-    );
+    const confirmed = await confirm({
+      title: 'Reset to Lead?',
+      message: `Reset "${project.title}" back to Lead? This will delete this project and change the lead status back to "Contacted".`,
+      danger: true
+    });
 
     if (!confirmed) return;
 

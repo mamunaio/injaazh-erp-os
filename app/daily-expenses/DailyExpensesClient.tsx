@@ -9,6 +9,7 @@ import CreateDebtModal from '@/components/expenses/CreateDebtModal';
 import PartialPaymentModal from '@/components/expenses/PartialPaymentModal';
 import { createDailyExpense, updateDailyExpense, deleteDailyExpense } from '@/app/actions/dailyExpenseActions';
 import { createPersonalDebt, updatePersonalDebt, deletePersonalDebt, settlePersonalDebt, makePartialPayment } from '@/app/actions/personalDebtActions';
+import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 
 const CATEGORY_COLORS: Record<string, string> = {
   'Food & Dining': '#f59e0b',
@@ -36,6 +37,7 @@ const formatCurrency = (amount: number) => {
 };
 
 export default function DailyExpensesClient({ initialExpenses, initialDebts = [] }: { initialExpenses: any[], initialDebts?: any[] }) {
+  const { confirm } = useConfirm();
   const [activeTab, setActiveTab] = useState<'expenses' | 'debts'>('expenses');
   const [timeFilter, setTimeFilter] = useState<'7days' | 'month' | 'year' | 'all'>('7days');
 
@@ -159,7 +161,8 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
   };
 
   const handleDeleteExpense = async (id: string) => {
-    if (confirm('Are you sure you want to delete this expense?')) {
+    const isConfirmed = await confirm({ message: 'Are you sure you want to delete this expense?', danger: true });
+    if (isConfirmed) {
       const res = await deleteDailyExpense(id);
       if (res.success) {
         setExpenses(expenses.filter(e => e._id !== id));
@@ -210,7 +213,8 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
   };
 
   const handleDeleteDebt = async (id: string) => {
-    if (confirm('Are you sure you want to delete this record?')) {
+    const isConfirmed = await confirm({ message: 'Are you sure you want to delete this record?', danger: true });
+    if (isConfirmed) {
       const res = await deletePersonalDebt(id);
       if (res.success) {
         setDebts(debts.filter(d => d._id !== id));
@@ -219,7 +223,8 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
   };
 
   const handleSettleDebt = async (id: string) => {
-    if (confirm('Mark this record as settled?')) {
+    const isConfirmed = await confirm({ message: 'Mark this record as settled?' });
+    if (isConfirmed) {
       const res = await settlePersonalDebt(id);
       if (res.success) {
         setDebts(debts.map(d => d._id === id ? res.data : d));
