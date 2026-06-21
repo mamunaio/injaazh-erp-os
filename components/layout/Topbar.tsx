@@ -71,7 +71,7 @@ export default function Topbar() {
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
-    <header className="h-16 fixed top-4 right-4 left-4 lg:left-[288px] z-40 neu-flat rounded-full px-4 md:px-8 flex items-center justify-between transition-all duration-300">
+    <header className="h-16 fixed top-[45px] right-4 left-4 lg:left-[288px] z-40 neu-flat rounded-full px-4 md:px-8 flex items-center justify-between transition-all duration-300">
       {/* Left Area */}
       <div className="flex-1 flex items-center justify-start">
         <button 

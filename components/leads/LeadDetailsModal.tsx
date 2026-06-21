@@ -68,7 +68,7 @@ const InputField = ({ label, icon: Icon, type = "text", value, onChange, placeho
     </label>
     <input 
       type={type} 
-      value={value}
+      value={value || ''}
       onChange={onChange}
       placeholder={placeholder}
       className="w-full neu-pressed rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all placeholder-slate-500"

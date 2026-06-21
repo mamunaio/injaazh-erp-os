@@ -59,7 +59,7 @@ export default function Sidebar() {
         />
       )}
       
-      <aside className={`w-64 fixed top-4 bottom-4 left-4 z-50 neu-flat flex flex-col transition-transform duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-[120%] lg:translate-x-0'}`}>
+      <aside className={`w-64 fixed top-[45px] bottom-4 left-4 z-50 neu-flat flex flex-col transition-transform duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-[120%] lg:translate-x-0'}`}>
         {/* Logo */}
         <div className="h-20 flex items-center justify-between px-6 border-b border-slate-800/50 bg-transparent">
           <Link href="/" className="flex items-center gap-2 group" onClick={() => setIsMobileSidebarOpen(false)}>

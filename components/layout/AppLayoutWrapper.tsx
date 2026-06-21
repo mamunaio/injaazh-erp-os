@@ -32,7 +32,7 @@ export default function AppLayoutWrapper({ children }: { children: React.ReactNo
         <SidebarProvider>
           <Sidebar />
           <Topbar />
-          <main className="pl-4 lg:pl-[288px] pt-[104px] pr-4 pb-4 min-h-screen transition-all duration-300">
+          <main className="pl-4 lg:pl-[288px] pt-[133px] pr-4 pb-4 min-h-screen transition-all duration-300">
             {children}
           </main>
         </SidebarProvider>
