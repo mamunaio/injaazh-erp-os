@@ -19,6 +19,8 @@
     },
     "files": [
       "main.js",
+      "splash.html",
+      "offline.html",
       "package.json"
     ],
     "win": {
@@ -26,11 +28,20 @@
       "icon": "public/favicon.ico"
     },
     "nsis": {
-      "oneClick": true,
+      "oneClick": false,
       "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
       "runAfterFinish": true,
-      "createDesktopShortcut": true
-    }
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "mamunaio",
+        "repo": "injaazh-erp-os"
+      }
+    ]
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -49,6 +60,7 @@
     "bcryptjs": "^3.0.3",
     "canvas-confetti": "^1.9.4",
     "date-fns": "^4.4.0",
+    "electron-updater": "^6.8.9",
     "framer-motion": "^12.40.0",
     "imap-simple": "^5.1.0",
     "jose": "^6.2.3",

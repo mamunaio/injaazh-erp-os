@@ -1,17 +1,29 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, dialog } = require('electron');
 const path = require('path');
+const { autoUpdater } = require('electron-updater');
 
 // Determine if we are running in development mode
 const isDev = !app.isPackaged;
 
-// The URL of your live Vercel app
-// When testing locally with npm run dev, it will connect to localhost:3000
-const LIVE_URL = 'https://injaazh-erp-os.vercel.app/';
+const LIVE_URL = 'https://erp.injaazh.com/';
 const LOCAL_URL = 'http://localhost:3000';
 
-const URL_TO_LOAD = isDev ? LOCAL_URL : LIVE_URL;
+const URL_TO_LOAD = LIVE_URL;
 
 function createWindow() {
+  // --- Create Splash Screen ---
+  let splashWindow = new BrowserWindow({
+    width: 500,
+    height: 300,
+    transparent: true,
+    frame: false,
+    alwaysOnTop: true,
+    icon: path.join(__dirname, 'public', 'favicon.ico'),
+  });
+
+  splashWindow.loadFile('splash.html');
+
+  // --- Create Main Window ---
   const mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
@@ -22,6 +34,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      sandbox: false,
       // You can add a preload script here if needed in the future
     },
     backgroundColor: '#1A1D24',
@@ -29,9 +42,18 @@ function createWindow() {
     titleBarOverlay: {
       color: 'rgba(0, 0, 0, 0)', // Completely transparent to show Next.js background
       symbolColor: '#ffffff',
-      height: 35
+      height: 45 // Slightly taller to cover the drag region well
     },
-    show: true, // Show immediately so it feels fast
+    show: false, // Wait until the app is fully loaded before showing
+  });
+
+  // Show the main window and destroy splash when ready
+  mainWindow.once('ready-to-show', () => {
+    if (splashWindow) {
+      splashWindow.close();
+      splashWindow = null;
+    }
+    mainWindow.show();
   });
 
   // Remove the ancient-looking File/Edit/View menu bar
@@ -42,20 +64,68 @@ function createWindow() {
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
   });
 
-  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
-    console.error('Failed to load URL:', errorDescription);
-    // You could load a local error HTML here instead of staying blank
+  mainWindow.webContents.on('did-finish-load', () => {
+    // Inject CSS to make the Next.js Topbar draggable and show the custom title bar only in Electron
+    mainWindow.webContents.insertCSS(`
+      /* Show the hidden title bar in Electron and make it draggable */
+      #electron-titlebar {
+        display: flex !important;
+        -webkit-app-region: drag;
+      }
+      /* Push the entire app content down so it doesn't overlap with the title bar */
+      body {
+        padding-top: 35px !important;
+      }
+      /* Make sure inputs and buttons within the title bar (if any) are not draggable */
+      #electron-titlebar button, #electron-titlebar input, #electron-titlebar a, .no-drag {
+        -webkit-app-region: no-drag;
+      }
+    `);
   });
 
+  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+    // Ignore if it's the offline page itself failing
+    if (validatedURL.includes('offline.html')) return;
+    
+    console.error('Failed to load URL:', errorDescription);
+    mainWindow.loadURL(`file://${__dirname}/offline.html?error=${encodeURIComponent(errorDescription)}&code=${errorCode}`);
+  });
+
+  // Open the DevTools automatically if in development mode
   // Open the DevTools automatically if in development mode
   if (isDev) {
     // mainWindow.webContents.openDevTools();
   }
 }
 
+// Auto updater events
+autoUpdater.on('update-available', () => {
+  dialog.showMessageBox({
+    type: 'info',
+    title: 'Update Available',
+    message: 'A new version of Injaazh ERP is available. It is being downloaded in the background.'
+  });
+});
+
+autoUpdater.on('update-downloaded', () => {
+  dialog.showMessageBox({
+    type: 'info',
+    title: 'Update Ready',
+    message: 'Update downloaded. The application will quit and install the update now.',
+    buttons: ['Restart Now']
+  }).then(() => {
+    autoUpdater.quitAndInstall();
+  });
+});
+
 // This method will be called when Electron has finished initialization
 app.whenReady().then(() => {
   createWindow();
+
+  // Check for updates automatically in production
+  if (!isDev) {
+    autoUpdater.checkForUpdatesAndNotify();
+  }
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
