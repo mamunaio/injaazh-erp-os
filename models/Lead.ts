@@ -23,6 +23,7 @@ export interface ILead extends Document {
   lead_context?: string;
   email_draft?: string;
   email_subject_draft?: string;
+  facebook_draft?: string;
   outreach_logs: IOutreachLog[];
   nextFollowUpDate?: Date;
   timezone?: string;
@@ -67,6 +68,7 @@ const LeadSchema = new Schema<ILead>({
   lead_context: { type: String, trim: true },
   email_draft: { type: String },
   email_subject_draft: { type: String },
+  facebook_draft: { type: String },
   outreach_logs: [OutreachLogSchema],
   nextFollowUpDate: { type: Date },
   timezone: { type: String, default: 'EST' },

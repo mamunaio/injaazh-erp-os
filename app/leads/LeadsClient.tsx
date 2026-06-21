@@ -39,7 +39,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
     company_name: '', contact_person: '', email: '', phone: '', source: 'Manual',
     targetService: 'High-end Web Development', website_url: '', facebook_url: '',
     instagram_url: '', linkedin_url: '', reportFileUrl: '',
-    timezone: 'EST', outreach_scheduled_for: '', lead_context: '', email_draft: '', email_subject_draft: ''
+    timezone: 'EST', outreach_scheduled_for: '', lead_context: '', email_draft: '', email_subject_draft: '', facebook_draft: ''
   });
   const [formStep, setFormStep] = useState(1);
 
@@ -117,7 +117,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
           company_name: '', contact_person: '', email: '', phone: '', source: 'Manual',
           targetService: 'High-end Web Development', website_url: '', facebook_url: '',
           instagram_url: '', linkedin_url: '', reportFileUrl: '',
-          timezone: 'EST', outreach_scheduled_for: '', lead_context: '', email_draft: '', email_subject_draft: ''
+          timezone: 'EST', outreach_scheduled_for: '', lead_context: '', email_draft: '', email_subject_draft: '', facebook_draft: ''
         });
         setFormStep(1);
         toast.success(res.message || 'Lead created successfully! 🎉');
@@ -1205,6 +1205,17 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
                             onChange={e => setFormData({...formData, email_draft: e.target.value})}
                             className="w-full px-4 py-3 neu-pressed rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent resize-none h-48"
                             placeholder="Write your email here, or click 'Auto-Generate Draft' to have AI write it for you..."
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-bold text-slate-600 dark:text-slate-400 mb-2">
+                            Facebook Message Draft
+                          </label>
+                          <textarea 
+                            value={formData.facebook_draft}
+                            onChange={e => setFormData({...formData, facebook_draft: e.target.value})}
+                            className="w-full px-4 py-3 neu-pressed rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent resize-none h-32"
+                            placeholder="Write your Facebook outreach message here..."
                           />
                         </div>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
