@@ -155,6 +155,7 @@ export default function LeadDetailsModal({
         reportFileUrl: lead.reportFileUrl || '',
         email_draft: lead.email_draft || '',
         email_subject_draft: lead.email_subject_draft || '',
+        facebook_draft: lead.facebook_draft || '',
         nextFollowUpDate: lead.nextFollowUpDate ? new Date(lead.nextFollowUpDate).toISOString().split('T')[0] : '',
         outreach_logs: lead.outreach_logs || []
       });
@@ -309,78 +310,23 @@ export default function LeadDetailsModal({
                   </div>
                 </div>
                 
-                <div className="pt-4 mt-4 border-t border-slate-200/10">
-                  <label className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-slate-400 uppercase mb-2 ml-1">
-                    <Calendar size={12} className="text-slate-500" /> Next Follow-up Date
-                  </label>
-                  <DatePicker 
-                    selected={formData.nextFollowUpDate ? new Date(formData.nextFollowUpDate) : null}
-                    onChange={(date: Date | null) => setFormData({...formData, nextFollowUpDate: date ? date.toISOString().split('T')[0] : ''})}
-                    className="w-full neu-pressed rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all placeholder-slate-500"
-                    placeholderText="Select Schedule Date"
-                    dateFormat="MMM d, yyyy"
-                    showPopperArrow={false}
-                  />
-                </div>
-
-
               </form>
             </div>
 
             {/* Right Column: Activity Timeline */}
             <div className="w-1/2 flex flex-col bg-transparent">
-              {/* Log Entry Area */}
+              {/* Facebook Draft Area */}
               <div className="p-8 border-b border-slate-200/10 relative z-30">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                    <MessageCircle size={16} className="text-indigo-500" /> Log Activity
-                  </h3>
-                  <div className="flex gap-2">
-                    <button 
-                      type="button"
-                      onClick={() => handleQuickAction('linkedin')}
-                      disabled={activeQuickAction !== null}
-                      className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider neu-button text-blue-500 rounded-lg flex items-center gap-1.5 transition-colors disabled:opacity-50"
-                    >
-                      {activeQuickAction === 'linkedin' ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />} LinkedIn Gen
-                    </button>
-                    <button 
-                      type="button"
-                      onClick={() => handleQuickAction('summarize')}
-                      disabled={activeQuickAction !== null}
-                      className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider neu-button text-purple-500 rounded-lg flex items-center gap-1.5 transition-colors disabled:opacity-50"
-                    >
-                      {activeQuickAction === 'summarize' ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />} Summarize
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="neu-pressed rounded-2xl overflow-visible transition-all focus-within:ring-2 focus-within:ring-indigo-500/30">
-                  <textarea 
-                    value={newLog.note}
-                    onChange={e => setNewLog({...newLog, note: e.target.value})}
-                    placeholder="Write a note about your latest outreach..."
-                    className="w-full bg-transparent px-5 py-4 text-sm text-slate-800 dark:text-white placeholder-slate-500 focus:outline-none min-h-[100px] resize-none"
+                <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-4">
+                  <Globe size={16} className="text-indigo-500" /> Facebook Message Draft
+                </h4>
+                <div className="relative group">
+                  <textarea
+                    value={formData.facebook_draft}
+                    onChange={(e:any) => setFormData({...formData, facebook_draft: e.target.value})}
+                    placeholder="Write your Facebook outreach message here..."
+                    className="w-full neu-pressed rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all placeholder-slate-500 min-h-[180px] resize-y"
                   />
-                  <div className="flex justify-between items-center px-4 py-3 border-t border-slate-200/10 bg-transparent">
-                    <div className="relative w-40">
-                      <CustomSelect 
-                        value={newLog.type}
-                        onChange={(val: string) => setNewLog({...newLog, type: val})}
-                        options={['Note', 'Email', 'WhatsApp', 'Facebook', 'Phone', 'LinkedIn']}
-                        className="text-sm text-slate-400 font-bold hover:text-indigo-400"
-                        dropdownUp={true}
-                      />
-                    </div>
-                    <button 
-                      type="button"
-                      onClick={handleAddLog}
-                      disabled={isSubmitting || !newLog.note.trim()}
-                      className="px-6 py-2 neu-button text-indigo-500 text-sm font-bold rounded-xl transition-all disabled:opacity-50"
-                    >
-                      Add Log
-                    </button>
-                  </div>
                 </div>
               </div>
 
@@ -412,38 +358,6 @@ export default function LeadDetailsModal({
                       />
                     </div>
                   </div>
-                </div>
-                <div className="flex justify-between items-center mb-8">
-                  <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                    <Activity size={14} /> Interaction Timeline
-                  </h3>
-                </div>
-                
-                <div className="relative border-l-2 border-slate-700/50 ml-4 space-y-8 pb-8">
-                  {(!formData.outreach_logs || formData.outreach_logs.length === 0) ? (
-                    <div className="ml-8 text-sm text-slate-500 italic neu-pressed p-4 rounded-xl">No activity logged yet. Add a note above to get started.</div>
-                  ) : (
-                    formData.outreach_logs.map((log: any, idx: number) => (
-                      <div key={idx} className="relative ml-8 group">
-                        {/* Neumorphic node */}
-                        <div className="absolute -left-[41px] top-1 w-8 h-8 rounded-full neu-flat flex items-center justify-center transition-all z-10 group-hover:text-indigo-500">
-                          {getLogIcon(log.method)}
-                        </div>
-                        {/* Connecting line glow effect on hover */}
-                        <div className="absolute -left-[41px] top-4 bottom-[-32px] w-0.5 bg-indigo-500/0 group-hover:bg-indigo-500/50 transition-colors" />
-                        
-                        <div className="neu-flat rounded-2xl p-5 transition-all shadow-sm">
-                          <div className="flex justify-between items-start mb-3">
-                            <span className="text-xs font-bold px-2.5 py-1 neu-pressed rounded-md text-indigo-500">{log.method}</span>
-                            <span className="text-[11px] font-semibold text-slate-500">
-                              {new Date(log.date).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
-                            </span>
-                          </div>
-                          <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">{log.notes}</p>
-                        </div>
-                      </div>
-                    ))
-                  )}
                 </div>
               </div>
             </div>
