@@ -171,6 +171,23 @@ export async function getDashboardData() {
         createdAt: l.createdAt ? new Date(l.createdAt).toISOString() : '',
       }));
 
+    // Get recent proposals
+    const recentProposals = proposals
+      .sort((a: any, b: any) => {
+        const dateA = new Date(a.updatedAt || a.createdAt).getTime();
+        const dateB = new Date(b.updatedAt || b.createdAt).getTime();
+        return dateB - dateA;
+      })
+      .slice(0, 5)
+      .map((p: any) => ({
+        _id: p._id?.toString() || '',
+        title: p.title || '',
+        clientName: p.clientName || '',
+        status: p.status || '',
+        value: p.value || 0,
+        updatedAt: p.updatedAt ? new Date(p.updatedAt).toISOString() : (p.createdAt ? new Date(p.createdAt).toISOString() : ''),
+      }));
+
     // Project status distribution
     const projectStatusDistribution = {
       Planning: projects.filter((p: any) => p.status === 'Planning').length + 
@@ -282,6 +299,7 @@ export async function getDashboardData() {
         upcomingDeadlines,
         recentTransactions,
         recentLeads,
+        recentProposals,
         projectStatusDistribution,
         platformIncome,
         incomeTrend,

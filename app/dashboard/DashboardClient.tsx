@@ -146,7 +146,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
     );
   }
 
-  const { stats, upcomingDeadlines, recentTransactions, recentLeads, projectStatusDistribution, platformIncome, incomeTrend, seoProjects } = dashboardData;
+  const { stats, upcomingDeadlines, recentTransactions, recentLeads, recentProposals, projectStatusDistribution, platformIncome, incomeTrend, seoProjects } = dashboardData;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -857,34 +857,46 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
             </GlassCard>
           </motion.div>
 
-          {/* Upcoming Deadlines (spans 4) */}
+          {/* Recent Proposals (spans 4) */}
           <motion.div variants={itemVariants} className="col-span-1 md:col-span-12 xl:col-span-4">
             <GlassCard className="h-full min-h-[320px] flex flex-col">
-              <h3 className="mb-6 flex items-center gap-2">
-                <Calendar size={16} className="text-violet-500" />
-                Deadlines
-              </h3>
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="flex items-center gap-2">
+                  <FileText size={16} className="text-violet-500" />
+                  Recent Proposals
+                </h3>
+                <Link href="/proposals" className="text-sm font-bold text-violet-500 hover:text-violet-400">View all</Link>
+              </div>
               <div className="flex-1 space-y-3 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/20">
-                {upcomingDeadlines.length === 0 ? (
+                {!recentProposals || recentProposals.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center opacity-50 py-8">
-                    <Clock size={24} className="mb-2" />
-                    <p className="text-sm font-bold">All caught up!</p>
+                    <FileText size={24} className="mb-2 text-violet-500 animate-pulse" />
+                    <p className="text-sm font-bold">No proposals sent yet</p>
                   </div>
                 ) : (
-                  upcomingDeadlines.map((project: any) => (
-                    <div key={project._id} className="p-3 rounded-2xl neu-pressed  transition-colors border border-transparent hover:border-slate-800/50">
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="truncate pr-2">{project.title}</h4>
-                        <span className="text-sm font-black uppercase text-violet-500 bg-violet-500/10 px-2 py-0.5 rounded-full">{formatDate(project.deadline)}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 h-1.5 bg-black/5 dark:bg-white/5 rounded-full overflow-hidden">
-                          <div className="h-full bg-violet-500 rounded-full" style={{ width: `${project.progress}%` }}></div>
+                  recentProposals.map((proposal: any) => {
+                    const statusColor = 
+                      proposal.status === 'Accepted' ? 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20' :
+                      proposal.status === 'Rejected' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20' :
+                      proposal.status === 'Sent' ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20' :
+                      proposal.status === 'Viewed' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' :
+                      'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20';
+
+                    return (
+                      <div key={proposal._id} className="p-3 rounded-2xl neu-pressed transition-colors border border-transparent hover:border-slate-800/50">
+                        <div className="flex justify-between items-start mb-1">
+                          <h4 className="truncate pr-2 font-bold text-slate-800 dark:text-slate-200 text-sm max-w-[150px]">{proposal.title || proposal.clientName}</h4>
+                          <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full border whitespace-nowrap ${statusColor}`}>
+                            {proposal.status}
+                          </span>
                         </div>
-                        <span className="text-sm font-black text-slate-500">{project.progress}%</span>
+                        <div className="flex items-center justify-between mt-1 pt-2 border-t border-slate-800/20">
+                          <span className="text-sm font-black text-slate-500">{formatCurrency(proposal.value)}</span>
+                          <span className="text-xs font-bold text-slate-400">{getRelativeTime(proposal.updatedAt)}</span>
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </GlassCard>
