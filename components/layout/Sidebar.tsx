@@ -26,7 +26,7 @@ const navItems = [
 export default function Sidebar() {
   const pathname = usePathname();
   const { isMobileSidebarOpen, setIsMobileSidebarOpen } = useSidebar();
-  const { user } = useUser();
+  const { user, loading } = useUser();
 
   const filteredNavItems = navItems.filter((item) => {
     if (!user) return false;
@@ -84,31 +84,43 @@ export default function Sidebar() {
         <div className="text-[10px] font-bold text-slate-400 dark:text-gray-600 uppercase tracking-widest mb-4 px-3">
           Navigation
         </div>
-        {filteredNavItems.map((item) => {
-          // Determine active state for both exact match and sub-routes (except dashboard)
-          const isActive = item.href === '/dashboard' 
-            ? pathname === '/' || pathname === '/dashboard'
-            : item.href === '/marketplace'
-              ? pathname === '/marketplace' || (pathname.startsWith('/marketplace/') && !pathname.startsWith('/marketplace/clients'))
-              : pathname.startsWith(item.href);
-          
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              onClick={() => setIsMobileSidebarOpen(false)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${
-                isActive 
-                  ? 'neu-button text-indigo-500 font-bold' 
-                  : 'text-slate-500 hover:neu-flat'
-              }`}
-            >
-              <Icon size={20} className={`${isActive ? 'text-indigo-500' : 'text-slate-500 group-hover:text-indigo-500 transition-colors'}`} />
-              <span className={`font-semibold text-sm`}>{item.name}</span>
-            </Link>
-          );
-        })}
+        
+        {loading ? (
+          <div className="space-y-2">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl">
+                <div className="w-5 h-5 rounded-md bg-slate-200/50 dark:bg-slate-800/50 animate-pulse"></div>
+                <div className="h-4 bg-slate-200/50 dark:bg-slate-800/50 rounded w-28 animate-pulse"></div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          filteredNavItems.map((item) => {
+            // Determine active state for both exact match and sub-routes (except dashboard)
+            const isActive = item.href === '/dashboard' 
+              ? pathname === '/' || pathname === '/dashboard'
+              : item.href === '/marketplace'
+                ? pathname === '/marketplace' || (pathname.startsWith('/marketplace/') && !pathname.startsWith('/marketplace/clients'))
+                : pathname.startsWith(item.href);
+            
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={() => setIsMobileSidebarOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${
+                  isActive 
+                    ? 'neu-button text-indigo-500 font-bold' 
+                    : 'text-slate-500 hover:neu-flat'
+                }`}
+              >
+                <Icon size={20} className={`${isActive ? 'text-indigo-500' : 'text-slate-500 group-hover:text-indigo-500 transition-colors'}`} />
+                <span className={`font-semibold text-sm`}>{item.name}</span>
+              </Link>
+            );
+          })
+        )}
       </nav>
 
       {/* Settings at Bottom */}
