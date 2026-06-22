@@ -19,14 +19,6 @@ export default function AppLayoutWrapper({ children, initialUser }: { children: 
 
   const isProposalPublicPage = pathname.startsWith('/p/');
 
-  if (isAuthPage) {
-    return <main className="min-h-screen bg-slate-950">{children}</main>;
-  }
-
-  if (isProposalPublicPage) {
-    return <main className="min-h-screen">{children}</main>;
-  }
-
   React.useEffect(() => {
     // If not auth page, not public page, and initialUser is null (session invalid in DB),
     // force clear the cookie so middleware catches it properly.
@@ -36,6 +28,14 @@ export default function AppLayoutWrapper({ children, initialUser }: { children: 
       });
     }
   }, [isAuthPage, isProposalPublicPage, initialUser]);
+
+  if (isAuthPage) {
+    return <main className="min-h-screen bg-slate-950">{children}</main>;
+  }
+
+  if (isProposalPublicPage) {
+    return <main className="min-h-screen">{children}</main>;
+  }
 
   return (
     <UserProvider initialUser={initialUser}>
