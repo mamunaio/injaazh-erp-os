@@ -681,54 +681,62 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
             </GlassCard>
           </motion.div>
 
-          {/* NEW PREMIUM BENTO CARD: SEO & AEO Visibility Tracker Summary (spans 4) */}
+          {/* NEW PREMIUM BENTO CARD: Upcoming Project Milestones (spans 4) */}
           <motion.div variants={itemVariants} className="col-span-1 md:col-span-12 xl:col-span-4">
             <GlassCard className="h-full min-h-[320px] flex flex-col">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="flex items-center gap-2">
-                  <Globe size={16} className="text-indigo-500" />
-                  SEO & AEO Visibility
+                  <Calendar size={16} className="text-indigo-500" />
+                  Upcoming Deadlines
                 </h3>
-                <Link href="/seo" className="text-sm font-bold text-indigo-500 hover:text-indigo-400 flex items-center gap-0.5">
-                  Tracker <ChevronRight size={14} />
+                <Link href="/projects" className="text-sm font-bold text-indigo-500 hover:text-indigo-400 flex items-center gap-0.5">
+                  View all <ChevronRight size={14} />
                 </Link>
               </div>
               
-              <div className="flex-1 space-y-4 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/20">
-                {seoProjects.length === 0 ? (
+              <div className="flex-1 space-y-3 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/20">
+                {upcomingDeadlines.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center opacity-50 py-8">
-                    <Globe size={24} className="mb-2 text-indigo-500 animate-pulse" />
-                    <p className="text-sm font-bold">No websites tracked yet</p>
-                    <Link href="/seo" className="text-xs text-indigo-400 underline mt-1">Configure in SEO Hub</Link>
+                    <Calendar size={24} className="mb-2 text-indigo-500 animate-pulse" />
+                    <p className="text-sm font-bold">No upcoming deadlines</p>
+                    <p className="text-xs text-indigo-400 mt-1">You are all caught up!</p>
                   </div>
                 ) : (
-                  seoProjects.map((p: any) => {
-                    const perf = p.lighthouse.performance;
-                    const perfColor = perf >= 90 ? 'text-emerald-500' : perf >= 50 ? 'text-amber-500' : 'text-rose-500';
+                  upcomingDeadlines.map((item: any) => {
+                    const statusColor = 
+                      item.status === 'Completed' ? 'bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 border-fuchsia-500/20' :
+                      item.status === 'In Review' ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20' :
+                      item.status === 'In Progress' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' :
+                      'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20';
+                      
                     return (
-                      <div key={p.id} className="p-3.5 rounded-2xl neu-pressed  transition-all border border-transparent hover:border-slate-800/50 flex flex-col gap-2">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <h4 className="truncate max-w-[150px]">{p.clientName}</h4>
-                            <p className="text-sm text-slate-400 truncate max-w-[170px]">{p.url.replace(/https?:\/\/(www\.)?/, '')}</p>
+                      <div key={item._id} className="p-3.5 rounded-2xl neu-pressed transition-all border border-transparent hover:border-slate-800/50 flex flex-col gap-2">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1 min-w-0 pr-3">
+                            <h4 className="truncate font-bold text-slate-800 dark:text-slate-200">{item.title}</h4>
+                            <p className="text-xs font-bold text-rose-500 mt-1 flex items-center gap-1">
+                              <Clock size={12} /> {formatDate(item.deadline)}
+                            </p>
                           </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-black text-slate-400">Lighthouse:</span>
-                            <span className={`text-sm font-black ${perfColor}`}>{perf}</span>
-                          </div>
+                          <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full border whitespace-nowrap ${statusColor}`}>
+                            {item.status || 'Active'}
+                          </span>
                         </div>
                         
-                        <div className="grid grid-cols-2 gap-2 pt-1 border-t border-white/5 dark:border-white/5 text-sm font-bold text-slate-500">
-                          <div className="flex justify-between">
-                            <span>ChatGPT Mentions:</span>
-                            <span className="text-slate-800 dark:text-slate-200 font-extrabold">{p.aeo.chatgptMentions}</span>
+                        {item.progress > 0 && (
+                          <div className="mt-1">
+                            <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
+                              <span>Progress</span>
+                              <span>{item.progress}%</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full" 
+                                style={{ width: `${item.progress}%` }}
+                              ></div>
+                            </div>
                           </div>
-                          <div className="flex justify-between">
-                            <span>Perplexity Visibility:</span>
-                            <span className="text-indigo-500 font-extrabold">{p.aeo.perplexityScore}%</span>
-                          </div>
-                        </div>
+                        )}
                       </div>
                     );
                   })
