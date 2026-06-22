@@ -1,13 +1,14 @@
 import React from 'react';
 import TeamLogsClient from './TeamLogsClient';
-import { getAuthUser } from '@/app/actions/authActions';
+import { getCurrentUser } from '@/app/actions/authActions';
 import { redirect } from 'next/navigation';
 
 export default async function TeamLogsPage() {
-  const user = await getAuthUser();
-  if (!user) {
+  const authRes = await getCurrentUser();
+  if (!authRes.success || !authRes.data) {
     redirect('/login');
   }
+  const user = authRes.data;
 
   // Pass user info (role, etc.) to the client component so we know if they can edit
   const serializedUser = JSON.parse(JSON.stringify(user));
