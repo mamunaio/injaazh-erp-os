@@ -37,10 +37,10 @@ export default function IslamicSplashModal({ islamicQuote }: IslamicSplashModalP
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-md"
           >
             <motion.div 
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: -20 }}
-              className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto neu-base-bg rounded-3xl shadow-2xl p-8 border border-slate-700/50"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+              className="relative w-full h-full max-w-none max-h-none overflow-y-auto neu-base-bg flex flex-col items-center justify-center p-8"
             >
               <button 
                 onClick={() => setMinimized(true)}
@@ -49,33 +49,33 @@ export default function IslamicSplashModal({ islamicQuote }: IslamicSplashModalP
                 <X size={20} />
               </button>
 
-              <div className="flex flex-col items-center text-center mb-8">
-                <div className="w-16 h-16 mb-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                  <BookOpen size={32} className="text-white" />
+              <div className="flex flex-col items-center text-center mb-12 max-w-3xl mx-auto mt-auto">
+                <div className="w-20 h-20 mb-6 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                  <BookOpen size={40} className="text-white" />
                 </div>
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
+                <h2 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent mb-4">
                   আজকের ইসলামিক বার্তা
                 </h2>
-                <p className="text-slate-400 mt-2">
+                <p className="text-lg font-bold text-slate-400 tracking-wide uppercase">
                   {new Date().toLocaleDateString('bn-BD', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10 w-full max-w-5xl mx-auto">
                 {islamicQuote.ayah && (
                   <div className="flex flex-col gap-4">
                     <div className="flex items-center gap-2 mb-2 justify-center">
-                      <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                      <h4 className="text-sm font-bold text-slate-300">কোরআনের আয়াত</h4>
+                      <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                      <h4 className="text-sm font-bold text-slate-400 tracking-widest uppercase">কোরআনের আয়াত</h4>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-arabic text-emerald-400 mb-2 leading-relaxed" dir="rtl">
+                      <p className="text-2xl md:text-3xl font-arabic text-indigo-400 mb-4 leading-relaxed" dir="rtl">
                         {islamicQuote.ayah.arabic}
                       </p>
-                      <p className="text-sm font-bold text-emerald-500/80 uppercase tracking-widest">{islamicQuote.ayah.reference}</p>
+                      <p className="text-xs font-bold text-indigo-500/80 uppercase tracking-widest bg-indigo-500/10 px-3 py-1 rounded-full inline-block">{islamicQuote.ayah.reference}</p>
                     </div>
-                    <div className="p-4 neu-pressed rounded-xl flex-1 text-center">
-                      <p className="text-base font-medium text-slate-300 leading-relaxed">
+                    <div className="p-6 neu-flat rounded-2xl flex-1 text-center">
+                      <p className="text-lg font-medium text-slate-300 leading-relaxed">
                         {islamicQuote.ayah.translation}
                       </p>
                     </div>
@@ -85,17 +85,17 @@ export default function IslamicSplashModal({ islamicQuote }: IslamicSplashModalP
                 {islamicQuote.hadith && (
                   <div className="flex flex-col gap-4">
                     <div className="flex items-center gap-2 mb-2 justify-center">
-                      <div className="w-2 h-2 rounded-full bg-teal-500"></div>
-                      <h4 className="text-sm font-bold text-slate-300">ডেইলি হাদিস</h4>
+                      <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                      <h4 className="text-sm font-bold text-slate-400 tracking-widest uppercase">ডেইলি হাদিস</h4>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-arabic text-teal-400 mb-2 leading-relaxed" dir="rtl">
+                      <p className="text-2xl md:text-3xl font-arabic text-purple-400 mb-4 leading-relaxed" dir="rtl">
                         {islamicQuote.hadith.arabic}
                       </p>
-                      <p className="text-sm font-bold text-teal-500/80 uppercase tracking-widest">{islamicQuote.hadith.reference}</p>
+                      <p className="text-xs font-bold text-purple-500/80 uppercase tracking-widest bg-purple-500/10 px-3 py-1 rounded-full inline-block">{islamicQuote.hadith.reference}</p>
                     </div>
-                    <div className="p-4 neu-pressed rounded-xl flex-1 text-center">
-                      <p className="text-base font-medium text-slate-300 leading-relaxed">
+                    <div className="p-6 neu-flat rounded-2xl flex-1 text-center">
+                      <p className="text-lg font-medium text-slate-300 leading-relaxed">
                         {islamicQuote.hadith.translation}
                       </p>
                     </div>
@@ -103,12 +103,12 @@ export default function IslamicSplashModal({ islamicQuote }: IslamicSplashModalP
                 )}
               </div>
 
-              <div className="mt-10 flex justify-center">
+              <div className="mt-16 mb-auto flex justify-center w-full">
                 <button 
                   onClick={() => setMinimized(true)}
-                  className="flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold rounded-2xl shadow-lg shadow-teal-500/25 transition-all transform hover:scale-105"
+                  className="flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold text-lg rounded-2xl shadow-xl shadow-indigo-500/25 transition-all transform hover:scale-105 active:scale-95"
                 >
-                  <PlayCircle size={24} />
+                  <PlayCircle size={28} />
                   Bismillah, Start Work
                 </button>
               </div>
@@ -123,15 +123,15 @@ export default function IslamicSplashModal({ islamicQuote }: IslamicSplashModalP
           <motion.div 
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
-            className="mb-6 overflow-hidden rounded-2xl neu-flat border border-emerald-500/20 bg-gradient-to-r from-slate-900 to-slate-800"
+            className="mb-6 overflow-hidden rounded-2xl neu-flat border border-indigo-500/20"
           >
             <div className="px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
                   <BookOpen size={20} className="text-white" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-emerald-400 uppercase tracking-widest font-black mb-0.5">Today's Insight</p>
+                  <p className="text-[10px] text-indigo-400 uppercase tracking-widest font-black mb-0.5">Today's Insight</p>
                   <p className="text-sm text-slate-300 font-medium truncate max-w-2xl">
                     {islamicQuote.ayah?.translation || islamicQuote.hadith?.translation || ''}
                   </p>
@@ -142,7 +142,7 @@ export default function IslamicSplashModal({ islamicQuote }: IslamicSplashModalP
                   setShowSplash(true);
                   setMinimized(false);
                 }}
-                className="text-xs font-bold text-white bg-emerald-500/20 hover:bg-emerald-500/30 px-5 py-2 rounded-xl transition-all shrink-0 border border-emerald-500/30"
+                className="text-xs font-bold text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 px-5 py-2 rounded-xl transition-all shrink-0 border border-indigo-500/20"
               >
                 Read Full
               </button>
