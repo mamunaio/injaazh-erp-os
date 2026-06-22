@@ -1,6 +1,6 @@
 'use server';
 
-import { connectToDatabase } from '@/lib/mongodb';
+import connectToDatabase from '@/lib/mongodb';
 import { IslamicInsight } from '@/models/IslamicInsight';
 import { revalidatePath } from 'next/cache';
 
