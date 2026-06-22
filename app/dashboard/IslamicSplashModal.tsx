@@ -138,7 +138,10 @@ export default function IslamicSplashModal({ islamicQuote }: IslamicSplashModalP
                 </div>
               </div>
               <button 
-                onClick={() => setMinimized(false)}
+                onClick={() => {
+                  setShowSplash(true);
+                  setMinimized(false);
+                }}
                 className="text-xs font-bold text-white bg-emerald-500/20 hover:bg-emerald-500/30 px-5 py-2 rounded-xl transition-all shrink-0 border border-emerald-500/30"
               >
                 Read Full
