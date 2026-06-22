@@ -16,6 +16,12 @@ async function getAvailableEmailAccount() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  // LAZY RESET: Reset sentToday for accounts that weren't reset today
+  await EmailAccount.updateMany(
+    { $or: [{ lastResetDate: { $lt: today } }, { lastResetDate: { $exists: false } }] },
+    { $set: { sentToday: 0, lastResetDate: new Date() } }
+  );
+
   // Find active accounts where sentToday < dailyLimit
   const account = await EmailAccount.findOneAndUpdate(
     {
@@ -165,6 +171,15 @@ export async function getOutreachAnalytics() {
     const totalReplies = await Lead.countDocuments({ is_replied: true });
     
     // 3. Quota Usage Today (Sum of sentToday across all active accounts)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // LAZY RESET: Ensure quotas are accurate before summing
+    await EmailAccount.updateMany(
+      { $or: [{ lastResetDate: { $lt: today } }, { lastResetDate: { $exists: false } }] },
+      { $set: { sentToday: 0, lastResetDate: new Date() } }
+    );
+    
     const activeAccounts = await EmailAccount.find({ isActive: true });
     const totalDailyQuota = activeAccounts.reduce((acc, account) => acc + account.dailyLimit, 0);
     const totalSentToday = activeAccounts.reduce((acc, account) => acc + account.sentToday, 0);

@@ -71,6 +71,14 @@ export async function getEmailAccounts() {
     const currentUser = await getAuthUser();
     if (!currentUser) return { success: false, error: 'Unauthorized' };
 
+    // LAZY RESET: Reset sentToday for accounts that weren't reset today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    await EmailAccount.updateMany(
+      { $or: [{ lastResetDate: { $lt: today } }, { lastResetDate: { $exists: false } }] },
+      { $set: { sentToday: 0, lastResetDate: new Date() } }
+    );
+
     // Fetch user's own accounts, global accounts, AND legacy accounts without a userId
     const query = {
       $or: [

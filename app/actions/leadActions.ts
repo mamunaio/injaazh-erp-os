@@ -403,6 +403,14 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
 
     let selectedAccount = null;
 
+    // LAZY RESET: Ensure quotas are accurate before sending
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    await EmailAccount.updateMany(
+      { $or: [{ lastResetDate: { $lt: today } }, { lastResetDate: { $exists: false } }] },
+      { $set: { sentToday: 0, lastResetDate: new Date() } }
+    );
+
     if (senderAccountId && senderAccountId !== 'auto') {
       // Find the explicit account requested
       selectedAccount = await EmailAccount.findOneAndUpdate(
