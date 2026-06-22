@@ -185,8 +185,6 @@ export async function getOutreachAnalytics() {
     const totalSentToday = activeAccounts.reduce((acc, account) => acc + account.sentToday, 0);
     
     // 4. Queued for Today / Future (Active Pipeline)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
     const queuedCount = await Lead.countDocuments({
       outreach_status: { $nin: ['Closed', 'Not Interested'] },
       is_replied: false,
