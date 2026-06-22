@@ -74,3 +74,47 @@ export async function getTodayWorkSession() {
     return { success: false, error: error.message };
   }
 }
+
+export async function getTeamWorkLogs(dateString?: string) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return { success: false, error: 'Unauthorized' };
+
+    await connectToDatabase();
+
+    // Default to today if no date provided
+    const targetDate = dateString ? new Date(dateString) : new Date();
+    targetDate.setHours(0, 0, 0, 0);
+
+    // Get all sessions for the target date and populate user details
+    const sessions = await WorkSession.find({ date: targetDate })
+      .populate('userId', 'name email role avatar')
+      .sort({ totalSeconds: -1 })
+      .lean();
+
+    return { success: true, data: JSON.parse(JSON.stringify(sessions)) };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function updateWorkLog(sessionId: string, newTotalSeconds: number) {
+  try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== 'owner') {
+      return { success: false, error: 'Unauthorized. Only Owner can edit time.' };
+    }
+
+    await connectToDatabase();
+
+    const session = await WorkSession.findById(sessionId);
+    if (!session) return { success: false, error: 'Session not found' };
+
+    session.totalSeconds = newTotalSeconds;
+    await session.save();
+
+    return { success: true, data: JSON.parse(JSON.stringify(session)) };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

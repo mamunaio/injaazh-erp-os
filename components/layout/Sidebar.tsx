@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { LayoutDashboard, Users, FileText, Briefcase, Store, DollarSign, Settings, Globe, Activity, X, Wallet, Mail, Map } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Briefcase, Store, DollarSign, Settings, Globe, Activity, X, Wallet, Mail, Map, Clock } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import { useSidebar } from './SidebarContext';
 import { useUser } from './UserContext';
@@ -20,6 +20,7 @@ const navItems = [
   { name: 'Market Clients', href: '/marketplace/clients', icon: Users },
   { name: 'Money', href: '/money', icon: DollarSign },
   { name: 'Daily Expenses', href: '/daily-expenses', icon: Wallet },
+  { name: 'Team Logs', href: '/team-logs', icon: Clock },
 ];
 
 export default function Sidebar() {
@@ -37,12 +38,12 @@ export default function Sidebar() {
     }
     
     if (user.role === 'editor') {
-      const allowed = ['/dashboard', '/leads', '/outreach', '/proposals', '/projects', '/roadmap'];
+      const allowed = ['/dashboard', '/leads', '/outreach', '/proposals', '/projects', '/roadmap', '/team-logs'];
       return allowed.includes(item.href);
     }
 
     if (user.role === 'marketplace_team') {
-      const allowed = ['/dashboard', '/marketplace', '/marketplace/clients'];
+      const allowed = ['/dashboard', '/marketplace', '/marketplace/clients', '/team-logs'];
       return allowed.includes(item.href);
     }
     
