@@ -89,12 +89,12 @@ export default function DatePicker({ value, onChange, className = '', placeholde
         <button
           key={`day-${i}`}
           onClick={(e) => { e.preventDefault(); handleDateSelect(i); }}
-          className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all
+          className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold transition-all duration-300
             ${isSelected 
-              ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/30 scale-105' 
+              ? 'neu-button text-indigo-500 scale-105' 
               : isToday
-                ? 'bg-indigo-500/10 text-indigo-500 font-bold'
-                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                ? 'neu-pressed text-indigo-400'
+                : 'text-slate-600 dark:text-slate-400 hover:neu-flat hover:text-indigo-500 dark:hover:text-indigo-400'
             }
           `}
         >
@@ -125,37 +125,37 @@ export default function DatePicker({ value, onChange, className = '', placeholde
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            initial={{ opacity: 0, y: 15, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="absolute top-full left-0 mt-2 p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/50 dark:border-white/10 rounded-3xl shadow-2xl z-50 w-[300px]"
+            exit={{ opacity: 0, y: 15, scale: 0.95 }}
+            transition={{ duration: 0.2, type: "spring", stiffness: 300, damping: 25 }}
+            className="absolute top-full left-0 mt-3 p-5 neu-flat rounded-[2rem] z-50 w-[320px]"
           >
             {/* Header */}
-            <div className="flex items-center justify-between mb-4 px-2">
+            <div className="flex items-center justify-between mb-6 px-1">
               <button 
                 type="button" 
                 onClick={(e) => { e.preventDefault(); handlePrevMonth(); }}
-                className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
+                className="w-10 h-10 flex items-center justify-center rounded-xl hover:neu-pressed text-slate-500 dark:text-slate-400 transition-all outline-none"
               >
-                <ChevronLeft size={18} />
+                <ChevronLeft size={20} />
               </button>
-              <div className="font-bold text-slate-800 dark:text-slate-100">
+              <div className="font-black text-lg text-slate-800 dark:text-slate-100 tracking-wide">
                 {monthNames[currentMonth]} {currentYear}
               </div>
               <button 
                 type="button" 
                 onClick={(e) => { e.preventDefault(); handleNextMonth(); }}
-                className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
+                className="w-10 h-10 flex items-center justify-center rounded-xl hover:neu-pressed text-slate-500 dark:text-slate-400 transition-all outline-none"
               >
-                <ChevronRight size={18} />
+                <ChevronRight size={20} />
               </button>
             </div>
 
             {/* Days Header */}
-            <div className="grid grid-cols-7 gap-1 mb-2">
+            <div className="grid grid-cols-7 gap-1 mb-4">
               {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
-                <div key={day} className="text-center text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <div key={day} className="text-center text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">
                   {day}
                 </div>
               ))}
@@ -167,7 +167,7 @@ export default function DatePicker({ value, onChange, className = '', placeholde
             </div>
             
             {/* Quick Actions */}
-            <div className="mt-4 pt-3 border-t border-slate-200/50 dark:border-white/5 flex justify-between">
+            <div className="mt-6 pt-5 border-t border-slate-200/50 dark:border-white/5 flex gap-3">
               <button 
                 type="button"
                 onClick={(e) => {
@@ -179,7 +179,7 @@ export default function DatePicker({ value, onChange, className = '', placeholde
                   onChange(`${yy}-${mm}-${dd}`);
                   setIsOpen(false);
                 }}
-                className="text-xs font-bold text-indigo-500 hover:text-indigo-600 transition-colors px-2 py-1"
+                className="flex-1 py-2.5 neu-button text-xs font-bold text-indigo-500 rounded-xl transition-all"
               >
                 Today
               </button>
@@ -190,7 +190,7 @@ export default function DatePicker({ value, onChange, className = '', placeholde
                   onChange('');
                   setIsOpen(false);
                 }}
-                className="text-xs font-bold text-slate-400 hover:text-slate-500 transition-colors px-2 py-1"
+                className="flex-1 py-2.5 neu-pressed text-xs font-bold text-slate-500 dark:text-slate-400 rounded-xl transition-all hover:text-rose-500 dark:hover:text-rose-400"
               >
                 Clear
               </button>
