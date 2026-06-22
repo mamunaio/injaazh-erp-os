@@ -12,6 +12,7 @@ export default function EmailAccountsManager() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [email, setEmail] = useState('');
+  const [senderName, setSenderName] = useState('');
   const [appPassword, setAppPassword] = useState('');
   const [accountType, setAccountType] = useState<'gmail' | 'smtp'>('gmail');
   const [smtpHost, setSmtpHost] = useState('');
@@ -45,6 +46,7 @@ export default function EmailAccountsManager() {
 
     const res = await addEmailAccount({ 
       email, 
+      senderName,
       appPassword, 
       dailyLimit,
       accountType,
@@ -56,6 +58,7 @@ export default function EmailAccountsManager() {
     if (res.success && res.account) {
       toast.success('Account added successfully!', { id: 'add-acc' });
       setEmail('');
+      setSenderName('');
       setAppPassword('');
       setAccountType('gmail');
       setSmtpHost('');
@@ -124,7 +127,19 @@ export default function EmailAccountsManager() {
               Connect your Google accounts using an App Password. These accounts will be used in rotation for automated outreach.
             </p>
 
-            <form onSubmit={handleAddAccount} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <form onSubmit={handleAddAccount} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+              <div className="md:col-span-1">
+                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">
+                  Sender Name
+                </label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. Mamun from Injaazh"
+                  value={senderName} 
+                  onChange={(e) => setSenderName(e.target.value)} 
+                  className="w-full px-4 py-3 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+                />
+              </div>
               <div className="md:col-span-1">
                 <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">
                   Email Address
@@ -226,7 +241,7 @@ export default function EmailAccountsManager() {
                     </div>
                     <div>
                       <h4 className="truncate max-w-[150px]" title={account.email}>
-                        {account.email}
+                        {account.senderName ? `${account.senderName} (${account.email})` : account.email}
                       </h4>
                       <div className="flex gap-1.5 mt-1">
                         <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${account.isActive ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400' : 'bg-slate-200 text-slate-500 dark:bg-slate-800'}`}>

@@ -7,6 +7,7 @@ import { getAuthUser } from '@/lib/auth';
 
 export async function addEmailAccount(data: { 
   email: string; 
+  senderName?: string;
   appPassword: string; 
   dailyLimit: number;
   accountType?: 'gmail' | 'smtp';
@@ -46,6 +47,7 @@ export async function addEmailAccount(data: {
 
     const newAccount = await EmailAccount.create({
       email: data.email,
+      senderName: data.senderName,
       appPassword: data.appPassword,
       dailyLimit: data.dailyLimit,
       accountType: data.accountType || 'gmail',

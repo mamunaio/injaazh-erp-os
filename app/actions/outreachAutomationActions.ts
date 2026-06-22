@@ -116,8 +116,9 @@ export async function executeAutomatedOutreach(leadId: string, isFollowUp = fals
       },
     });
 
+    const senderName = account.senderName || 'Injaazh Global';
     const mailOptions: any = {
-      from: account.email,
+      from: `"${senderName}" <${account.email}>`,
       to: lead.email,
       subject: subject,
       text: emailBody,

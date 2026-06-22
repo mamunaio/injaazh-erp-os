@@ -458,13 +458,16 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
           },
         });
 
-        const info = await transporter.sendMail({
-          from: selectedAccount.email,
-          to: emailTo,
+        const senderName = selectedAccount.senderName || 'Injaazh Global';
+        const mailOptions: any = {
+          from: `"${senderName}" <${selectedAccount.email}>`,
+          to: emailTo || lead.email,
           subject: subject,
           text: body,
           html: body.replace(/\n/g, '<br />'),
-        });
+        };
+
+        const info = await transporter.sendMail(mailOptions);
 
         // Log the campaign using the rotating account
         await EmailCampaignLog.create({

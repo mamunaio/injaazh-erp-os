@@ -2,6 +2,7 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IEmailAccount extends Document {
   email: string;
+  senderName?: string;
   appPassword: string; // Stored securely/encrypted if possible, but for MVP it's plaintext
   accountType?: 'gmail' | 'smtp';
   smtpHost?: string;
@@ -19,6 +20,7 @@ export interface IEmailAccount extends Document {
 
 const EmailAccountSchema = new Schema<IEmailAccount>({
   email: { type: String, required: true, unique: true, trim: true, lowercase: true },
+  senderName: { type: String },
   appPassword: { type: String, required: true },
   accountType: { type: String, enum: ['gmail', 'smtp'], default: 'gmail' },
   smtpHost: { type: String },
