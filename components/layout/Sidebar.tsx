@@ -34,7 +34,7 @@ export default function Sidebar() {
     if (user.role === 'owner') return true;
     
     if (user.role === 'admin') {
-      if (item.href === '/daily-expenses') return false;
+      if (item.href === '/daily-expenses' || item.href === '/settings/insights') return false;
       return true;
     }
     

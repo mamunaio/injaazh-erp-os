@@ -2,10 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, Plus, Trash2, Database, AlertCircle, Save } from 'lucide-react';
+import { BookOpen, Plus, Trash2, Database, AlertCircle, Save, Lock } from 'lucide-react';
 import { getAllIslamicInsights, addIslamicInsight, deleteIslamicInsight, seedIslamicInsights } from '@/app/actions/dailyInsightsActions';
+import { useUser } from '@/components/layout/UserContext';
+import { useRouter } from 'next/navigation';
 
 export default function InsightsManagerPage() {
+  const { user, loading: userLoading } = useUser();
+  const router = useRouter();
+
   const [insights, setInsights] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSeeding, setIsSeeding] = useState(false);
@@ -30,8 +35,22 @@ export default function InsightsManagerPage() {
   };
 
   useEffect(() => {
-    fetchInsights();
-  }, []);
+    if (!userLoading) {
+      if (user?.role !== 'owner') {
+        router.push('/dashboard');
+      } else {
+        fetchInsights();
+      }
+    }
+  }, [user, userLoading, router]);
+
+  if (userLoading || user?.role !== 'owner') {
+    return (
+      <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-50 via-slate-100 to-slate-200 dark:from-slate-900 dark:via-purple-950/20 dark:to-slate-950 p-4 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+      </div>
+    );
+  }
 
   const handleSeed = async () => {
     if (!confirm('Are you sure you want to seed the database with the default 20 insights?')) return;
@@ -85,14 +104,17 @@ export default function InsightsManagerPage() {
   };
 
   return (
-    <div className="p-8 max-w-6xl mx-auto min-h-screen">
-      <div className="flex justify-between items-end mb-8">
-        <div>
-          <h1 className="text-3xl font-black bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent mb-2">
-            Islamic Insights Manager
-          </h1>
-          <p className="text-slate-400">Manage the daily Quran & Hadith quotes shown on the dashboard.</p>
-        </div>
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-50 via-slate-100 to-slate-200 dark:from-slate-900 dark:via-purple-950/20 dark:to-slate-950 p-4 md:p-8 text-slate-800 dark:text-slate-200 overflow-hidden font-sans tracking-tight">
+      <div className="max-w-[1400px] mx-auto">
+        <div className="flex justify-between items-end mb-8">
+          <div>
+            <h1 className="mb-3">
+              Islamic Insights Manager
+            </h1>
+            <p className="text-[15px] font-inter leading-relaxed tracking-wide text-slate-500 dark:text-slate-400 flex items-center gap-2">
+              <Lock size={16} className="text-rose-500" /> Owner Only Access
+            </p>
+          </div>
         <div className="flex gap-4">
           <button 
             onClick={() => setIsAdding(!isAdding)}
@@ -205,6 +227,7 @@ export default function InsightsManagerPage() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }
