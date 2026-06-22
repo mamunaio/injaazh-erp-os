@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import AppLayoutWrapper from "@/components/layout/AppLayoutWrapper";
 import CommandCenter from "@/components/layout/CommandCenter";
+import WorkTimeTracker from "@/components/layout/WorkTimeTracker";
 import { Toaster } from "react-hot-toast";
 
 // Primary font - Outfit (premium, modern, geometric)
@@ -55,6 +56,7 @@ export default function RootLayout({
           <AppLayoutWrapper>
             {children}
             <CommandCenter />
+            <WorkTimeTracker />
           </AppLayoutWrapper>
           <Toaster position="top-right" />
         </ThemeProvider>
