@@ -195,6 +195,7 @@ export default function EmailAccountsManager() {
               </div>
             </form>
           </>
+        ) : (
           <>
             <p className="text-sm text-slate-500 mb-6">
               Connect multiple professional Webmail/SMTP accounts (e.g. Hostinger, Dreamhost, cPanel) to use them in rotation for outreach.
@@ -283,6 +284,7 @@ export default function EmailAccountsManager() {
               </div>
             </form>
           </>
+        )}
 
         {showGuide && accountType === 'gmail' && (
           <div className="mt-6 p-5 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-indigo-200 dark:border-indigo-500/20 text-sm">
