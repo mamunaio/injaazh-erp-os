@@ -1,7 +1,7 @@
 'use server';
 
 import { getAuthUser } from './authActions';
-import dbConnect from '@/lib/db';
+import connectToDatabase from '@/lib/mongodb';
 import WorkSession from '@/models/WorkSession';
 
 export async function pingWorkSession() {
@@ -9,7 +9,7 @@ export async function pingWorkSession() {
     const user = await getAuthUser();
     if (!user) return { success: false, error: 'Unauthorized' };
 
-    await dbConnect();
+    await connectToDatabase();
 
     const now = new Date();
     // Use the start of the day for the date field
@@ -58,7 +58,7 @@ export async function getTodayWorkSession() {
     const user = await getAuthUser();
     if (!user) return { success: false, error: 'Unauthorized' };
 
-    await dbConnect();
+    await connectToDatabase();
 
     const now = new Date();
     const date = new Date(now);
