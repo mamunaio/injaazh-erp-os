@@ -6,8 +6,9 @@ import WorkSession from '@/models/WorkSession';
 
 export async function pingWorkSession() {
   try {
-    const user = await getCurrentUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    const authRes = await getCurrentUser();
+    if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
+    const user = authRes.data;
 
     await connectToDatabase();
 
@@ -55,8 +56,9 @@ export async function pingWorkSession() {
 
 export async function getTodayWorkSession() {
   try {
-    const user = await getCurrentUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    const authRes = await getCurrentUser();
+    if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
+    const user = authRes.data;
 
     await connectToDatabase();
 
@@ -77,8 +79,9 @@ export async function getTodayWorkSession() {
 
 export async function getTeamWorkLogs(dateString?: string) {
   try {
-    const user = await getCurrentUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    const authRes = await getCurrentUser();
+    if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
+    const user = authRes.data;
 
     await connectToDatabase();
 
@@ -100,10 +103,11 @@ export async function getTeamWorkLogs(dateString?: string) {
 
 export async function updateWorkLog(sessionId: string, newTotalSeconds: number) {
   try {
-    const user = await getCurrentUser();
-    if (!user || user.role !== 'owner') {
+    const authRes = await getCurrentUser();
+    if (!authRes.success || !authRes.data || authRes.data.role !== 'owner') {
       return { success: false, error: 'Unauthorized. Only Owner can edit time.' };
     }
+    const user = authRes.data;
 
     await connectToDatabase();
 
