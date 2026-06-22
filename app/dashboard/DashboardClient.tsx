@@ -44,6 +44,7 @@ import {
 } from 'recharts';
 import { motion } from 'framer-motion';
 import { useUser } from '@/components/layout/UserContext';
+import IslamicSplashModal from './IslamicSplashModal';
 
 interface DashboardClientProps {
   dashboardData: any;
@@ -182,6 +183,13 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
     return `${diffDays}d ago`;
   };
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 18) return 'Good Afternoon';
+    return 'Good Evening';
+  };
+
   if (user?.role !== 'admin' && user?.role !== 'owner') {
     return (
       <div className="min-h-screen neu-base-bg p-4 md:p-8 text-slate-800 dark:text-slate-200 overflow-hidden">
@@ -195,7 +203,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
           <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
             <div>
               <h1 className="mb-3">
-                Hello, {user?.name || 'Team Member'}!
+                {getGreeting()}, {user?.name || 'Team Member'}!
               </h1>
               <p className="text-slate-500 dark:text-slate-500 text-sm font-inter font-medium tracking-wide">
                 Welcome back to your workspace dashboard • {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
@@ -221,86 +229,8 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
             </div>
           </motion.div>
 
-          {/* Daily Islamic Insight */}
-          {islamicQuote && (
-            <motion.div variants={itemVariants} className="mb-6">
-              <GlassCard className="relative overflow-hidden group p-0 flex flex-col">
-                <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
-                
-                {/* Header */}
-                <div className="p-6 border-b border-slate-800/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative z-10">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                      <BookOpen size={24} className="text-white" />
-                    </div>
-                    <div>
-                      <h3 className="flex items-center gap-2">
-                        আজকের ইসলামিক বার্তা
-                      </h3>
-                      <p className="text-sm font-inter text-slate-500 dark:text-slate-500 tracking-wide">
-                        {new Date().toLocaleDateString('bn-BD', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Content - Two Columns */}
-                <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-800/50 relative z-10">
-                  
-                  {/* Ayah Column */}
-                  {islamicQuote.ayah && (
-                    <div className="p-6 flex flex-col gap-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                        <h4 className="text-sm font-bold text-slate-700 dark:text-slate-200">কোরআনের আয়াত</h4>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-arabic text-emerald-600 dark:text-emerald-400 mb-2 leading-relaxed" dir="rtl">
-                          {islamicQuote.ayah.arabic}
-                        </p>
-                        <p className="text-sm font-bold text-emerald-600/80 dark:text-emerald-400/80 uppercase tracking-widest">{islamicQuote.ayah.reference}</p>
-                      </div>
-                      <div className="p-4 neu-pressed flex-1">
-                        <p className="text-base font-medium text-slate-700 dark:text-slate-300 leading-relaxed">
-                          {islamicQuote.ayah.translation}
-                        </p>
-                      </div>
-                      {islamicQuote.ayah.asbabAlNuzul && (
-                        <div className="mt-2 pl-4 border-l-2 border-emerald-500/30">
-                          <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">শানে নুযুল (প্রেক্ষাপট)</p>
-                          <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                            {islamicQuote.ayah.asbabAlNuzul}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Hadith Column */}
-                  {islamicQuote.hadith && (
-                    <div className="p-6 flex flex-col gap-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-2 h-2 rounded-full bg-teal-500"></div>
-                        <h4 className="text-sm font-bold text-slate-700 dark:text-slate-200">ডেইলি হাদিস</h4>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-arabic text-teal-600 dark:text-teal-400 mb-2 leading-relaxed" dir="rtl">
-                          {islamicQuote.hadith.arabic}
-                        </p>
-                        <p className="text-sm font-bold text-teal-600/80 dark:text-teal-400/80 uppercase tracking-widest">{islamicQuote.hadith.reference}</p>
-                      </div>
-                      <div className="p-4 neu-pressed flex-1">
-                        <p className="text-base font-medium text-slate-700 dark:text-slate-300 leading-relaxed">
-                          {islamicQuote.hadith.translation}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                </div>
-              </GlassCard>
-            </motion.div>
-          )}
+          {/* Daily Islamic Insight Modal & Banner */}
+          <IslamicSplashModal islamicQuote={islamicQuote} />
 
           {/* Today's Work Updates Section */}
           <motion.div variants={itemVariants} className="mb-6">
@@ -492,7 +422,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
         <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
           <div>
             <h1 className="mb-3">
-              Dashboard
+              {getGreeting()}, {user?.name || 'Team Member'}!
             </h1>
             <p className="text-slate-500 dark:text-slate-500 text-base font-inter font-medium tracking-wide">
               {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
@@ -519,86 +449,8 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
           </div>
         </motion.div>
 
-        {/* Daily Islamic Insight */}
-        {islamicQuote && (
-          <motion.div variants={itemVariants} className="mb-6">
-            <GlassCard className="relative overflow-hidden group p-0 flex flex-col">
-              <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
-              
-              {/* Header */}
-              <div className="p-6 border-b border-slate-800/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative z-10">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                    <BookOpen size={24} className="text-white" />
-                  </div>
-                  <div>
-                    <h3 className="flex items-center gap-2">
-                      আজকের ইসলামিক বার্তা
-                    </h3>
-                    <p className="text-sm font-inter text-slate-500 dark:text-slate-500 tracking-wide">
-                      {new Date().toLocaleDateString('bn-BD', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Content - Two Columns */}
-              <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-800/50 relative z-10">
-                
-                {/* Ayah Column */}
-                {islamicQuote.ayah && (
-                  <div className="p-6 flex flex-col gap-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                      <h4 className="text-sm font-bold text-slate-700 dark:text-slate-200">কোরআনের আয়াত</h4>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-arabic text-emerald-600 dark:text-emerald-400 mb-2 leading-relaxed" dir="rtl">
-                        {islamicQuote.ayah.arabic}
-                      </p>
-                      <p className="text-sm font-bold text-emerald-600/80 dark:text-emerald-400/80 uppercase tracking-widest">{islamicQuote.ayah.reference}</p>
-                    </div>
-                    <div className="p-4 neu-pressed flex-1">
-                      <p className="text-base font-medium text-slate-700 dark:text-slate-300 leading-relaxed">
-                        {islamicQuote.ayah.translation}
-                      </p>
-                    </div>
-                    {islamicQuote.ayah.asbabAlNuzul && (
-                      <div className="mt-2 pl-4 border-l-2 border-emerald-500/30">
-                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">শানে নুযুল (প্রেক্ষাপট)</p>
-                        <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                          {islamicQuote.ayah.asbabAlNuzul}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Hadith Column */}
-                {islamicQuote.hadith && (
-                  <div className="p-6 flex flex-col gap-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-2 h-2 rounded-full bg-teal-500"></div>
-                      <h4 className="text-sm font-bold text-slate-700 dark:text-slate-200">ডেইলি হাদিস</h4>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-arabic text-teal-600 dark:text-teal-400 mb-2 leading-relaxed" dir="rtl">
-                        {islamicQuote.hadith.arabic}
-                      </p>
-                      <p className="text-sm font-bold text-teal-600/80 dark:text-teal-400/80 uppercase tracking-widest">{islamicQuote.hadith.reference}</p>
-                    </div>
-                    <div className="p-4 neu-pressed flex-1">
-                      <p className="text-base font-medium text-slate-700 dark:text-slate-300 leading-relaxed">
-                        {islamicQuote.hadith.translation}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-              </div>
-            </GlassCard>
-          </motion.div>
-        )}
+        {/* Daily Islamic Insight Modal & Banner */}
+        <IslamicSplashModal islamicQuote={islamicQuote} />
 
         {/* Bento Grid Architecture */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
