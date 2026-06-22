@@ -3,6 +3,7 @@ import { Outfit, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import AppLayoutWrapper from "@/components/layout/AppLayoutWrapper";
+import CommandCenter from "@/components/layout/CommandCenter";
 import { Toaster } from "react-hot-toast";
 
 // Primary font - Outfit (premium, modern, geometric)
@@ -53,6 +54,7 @@ export default function RootLayout({
           </div>
           <AppLayoutWrapper>
             {children}
+            <CommandCenter />
           </AppLayoutWrapper>
           <Toaster position="top-right" />
         </ThemeProvider>
