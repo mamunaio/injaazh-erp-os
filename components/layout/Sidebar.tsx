@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { LayoutDashboard, Users, FileText, Briefcase, Store, DollarSign, Settings, Globe, Activity, X, Wallet, Mail, Map, Clock } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Briefcase, Store, DollarSign, Settings, Globe, Activity, X, Wallet, Mail, Map, Clock, BookOpen } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import { useSidebar } from './SidebarContext';
 import { useUser } from './UserContext';
@@ -21,6 +21,7 @@ const navItems = [
   { name: 'Money', href: '/money', icon: DollarSign },
   { name: 'Daily Expenses', href: '/daily-expenses', icon: Wallet },
   { name: 'Team Logs', href: '/team-logs', icon: Clock },
+  { name: 'Islamic Insights', href: '/settings/insights', icon: BookOpen },
 ];
 
 export default function Sidebar() {

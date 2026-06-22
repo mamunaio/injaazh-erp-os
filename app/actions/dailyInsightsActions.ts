@@ -1,5 +1,9 @@
 'use server';
 
+import { connectToDatabase } from '@/lib/mongodb';
+import { IslamicInsight } from '@/models/IslamicInsight';
+import { revalidatePath } from 'next/cache';
+
 // Rich Islamic Insights Database (20+ Days Rotation)
 const dailyIslamicInsights = [
   {
@@ -269,19 +273,41 @@ const dailyIslamicInsights = [
  */
 export async function getDailyIslamicQuote() {
   try {
-    // Get quote based on day of year
+    await connectToDatabase();
+    
+    // Check if we have any insights in the database
+    const totalInsights = await IslamicInsight.countDocuments();
+    
     const now = new Date();
     const start = new Date(now.getFullYear(), 0, 0);
     const diff = now.getTime() - start.getTime();
     const oneDay = 1000 * 60 * 60 * 24;
     const dayOfYear = Math.floor(diff / oneDay);
+
+    if (totalInsights === 0) {
+      // Fallback to hardcoded array if DB is empty
+      const index = dayOfYear % dailyIslamicInsights.length;
+      return {
+        success: true,
+        data: dailyIslamicInsights[index]
+      };
+    }
     
-    const index = dayOfYear % dailyIslamicInsights.length;
-    const insight = dailyIslamicInsights[index];
+    // Get the insight based on day order
+    const index = dayOfYear % totalInsights;
+    const insight = await IslamicInsight.findOne().sort({ dayNumber: 1 }).skip(index);
     
+    if (!insight) {
+      // Fallback
+      return { success: true, data: dailyIslamicInsights[0] };
+    }
+
     return {
       success: true,
-      data: insight
+      data: {
+        ayah: insight.ayah,
+        hadith: insight.hadith
+      }
     };
   } catch (error: any) {
     console.error('❌ Error fetching Islamic insight:', error);
@@ -289,5 +315,93 @@ export async function getDailyIslamicQuote() {
       success: false,
       error: 'Failed to fetch Islamic insight'
     };
+  }
+}
+
+/**
+ * Admin: Get all Islamic Insights
+ */
+export async function getAllIslamicInsights() {
+  try {
+    await connectToDatabase();
+    const insights = await IslamicInsight.find().sort({ dayNumber: 1 });
+    return { success: true, data: JSON.parse(JSON.stringify(insights)) };
+  } catch (error: any) {
+    return { success: false, error: 'Failed to fetch insights' };
+  }
+}
+
+/**
+ * Admin: Add a new Islamic Insight
+ */
+export async function addIslamicInsight(data: any) {
+  try {
+    await connectToDatabase();
+    
+    // Auto-assign dayNumber
+    const total = await IslamicInsight.countDocuments();
+    const newInsight = await IslamicInsight.create({
+      ...data,
+      dayNumber: data.dayNumber || (total + 1)
+    });
+    
+    revalidatePath('/dashboard');
+    revalidatePath('/settings/insights');
+    return { success: true, data: JSON.parse(JSON.stringify(newInsight)) };
+  } catch (error: any) {
+    console.error('Add insight error:', error);
+    return { success: false, error: 'Failed to add insight' };
+  }
+}
+
+/**
+ * Admin: Delete an Islamic Insight
+ */
+export async function deleteIslamicInsight(id: string) {
+  try {
+    await connectToDatabase();
+    await IslamicInsight.findByIdAndDelete(id);
+    
+    // Reorder remaining insights to prevent gaps in rotation
+    const remaining = await IslamicInsight.find().sort({ dayNumber: 1 });
+    for (let i = 0; i < remaining.length; i++) {
+      remaining[i].dayNumber = i + 1;
+      await remaining[i].save();
+    }
+    
+    revalidatePath('/dashboard');
+    revalidatePath('/settings/insights');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: 'Failed to delete insight' };
+  }
+}
+
+/**
+ * Admin: Seed hardcoded insights to Database
+ */
+export async function seedIslamicInsights() {
+  try {
+    await connectToDatabase();
+    const existingCount = await IslamicInsight.countDocuments();
+    
+    if (existingCount > 0) {
+      return { success: false, error: 'Database already has insights. Clear them first to seed.' };
+    }
+
+    const docs = dailyIslamicInsights.map((insight, index) => ({
+      dayNumber: index + 1,
+      ayah: insight.ayah,
+      hadith: insight.hadith
+    }));
+
+    await IslamicInsight.insertMany(docs);
+    
+    revalidatePath('/dashboard');
+    revalidatePath('/settings/insights');
+    return { success: true, message: `Seeded ${docs.length} insights successfully.` };
+  } catch (error: any) {
+    console.error('Seed error:', error);
+    return { success: false, error: 'Failed to seed insights' };
   }
 }
