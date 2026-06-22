@@ -1,12 +1,12 @@
 'use server';
 
-import { getAuthUser } from './authActions';
+import { getCurrentUser } from './authActions';
 import connectToDatabase from '@/lib/mongodb';
 import WorkSession from '@/models/WorkSession';
 
 export async function pingWorkSession() {
   try {
-    const user = await getAuthUser();
+    const user = await getCurrentUser();
     if (!user) return { success: false, error: 'Unauthorized' };
 
     await connectToDatabase();
@@ -55,7 +55,7 @@ export async function pingWorkSession() {
 
 export async function getTodayWorkSession() {
   try {
-    const user = await getAuthUser();
+    const user = await getCurrentUser();
     if (!user) return { success: false, error: 'Unauthorized' };
 
     await connectToDatabase();
