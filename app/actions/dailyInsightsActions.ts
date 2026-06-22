@@ -305,8 +305,8 @@ export async function getDailyIslamicQuote() {
     return {
       success: true,
       data: {
-        ayah: insight.ayah,
-        hadith: insight.hadith
+        ayah: JSON.parse(JSON.stringify(insight.ayah)),
+        hadith: JSON.parse(JSON.stringify(insight.hadith))
       }
     };
   } catch (error: any) {
