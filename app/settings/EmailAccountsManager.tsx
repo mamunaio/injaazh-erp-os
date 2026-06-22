@@ -195,12 +195,94 @@ export default function EmailAccountsManager() {
               </div>
             </form>
           </>
-        ) : (
-          <div className="text-sm text-slate-500 p-6 bg-white/5 dark:bg-slate-900/30 rounded-2xl border border-slate-200 dark:border-white/5 text-center leading-relaxed">
-             Your Professional Webmail is centrally managed from the <strong className="text-indigo-500 dark:text-indigo-400">SMTP Configurations</strong> page on the left menu. <br/><br/>
-             Once you successfully connect an SMTP account there, it will automatically appear in your pool of connected accounts below!
-          </div>
-        )}
+          <>
+            <p className="text-sm text-slate-500 mb-6">
+              Connect multiple professional Webmail/SMTP accounts (e.g. Hostinger, Dreamhost, cPanel) to use them in rotation for outreach.
+            </p>
+
+            <form onSubmit={handleAddAccount} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+              <div className="lg:col-span-1">
+                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">
+                  Sender Name
+                </label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. Sales Team"
+                  value={senderName} 
+                  onChange={(e) => setSenderName(e.target.value)} 
+                  className="w-full px-4 py-3 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+                />
+              </div>
+              <div className="lg:col-span-1">
+                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">
+                  SMTP Username / Email
+                </label>
+                <input 
+                  type="email" 
+                  placeholder="sales@company.com"
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)} 
+                  className="w-full px-4 py-3 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+                />
+              </div>
+              <div className="lg:col-span-1">
+                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">
+                  SMTP Password
+                </label>
+                <input 
+                  type="password" 
+                  placeholder="••••••••••••"
+                  value={appPassword} 
+                  onChange={(e) => setAppPassword(e.target.value)} 
+                  className="w-full px-4 py-3 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+                />
+              </div>
+              <div className="lg:col-span-1">
+                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Daily Limit</label>
+                <input 
+                  type="number" 
+                  min="1"
+                  value={dailyLimit} 
+                  onChange={(e) => setDailyLimit(parseInt(e.target.value) || 15)} 
+                  className="w-full px-4 py-3 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+                />
+              </div>
+              <div className="lg:col-span-1">
+                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">
+                  SMTP Host
+                </label>
+                <input 
+                  type="text" 
+                  placeholder="smtp.hostinger.com"
+                  value={smtpHost} 
+                  onChange={(e) => setSmtpHost(e.target.value)} 
+                  className="w-full px-4 py-3 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+                  required={accountType === 'smtp'}
+                />
+              </div>
+              <div className="lg:col-span-1">
+                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">
+                  SMTP Port
+                </label>
+                <input 
+                  type="number" 
+                  value={smtpPort} 
+                  onChange={(e) => setSmtpPort(parseInt(e.target.value) || 465)} 
+                  className="w-full px-4 py-3 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+                />
+              </div>
+              <div className="lg:col-span-2">
+                <button 
+                  type="submit" 
+                  disabled={isAdding}
+                  className="w-full flex justify-center items-center gap-2 px-6 py-3 neu-button text-indigo-500 dark:text-indigo-400 font-bold rounded-2xl transition-all text-sm disabled:opacity-70"
+                >
+                  {isAdding ? <Activity size={16} className="animate-spin" /> : <Plus size={16} />}
+                  {isAdding ? 'Verifying...' : 'Add Professional Webmail'}
+                </button>
+              </div>
+            </form>
+          </>
 
         {showGuide && accountType === 'gmail' && (
           <div className="mt-6 p-5 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-indigo-200 dark:border-indigo-500/20 text-sm">
