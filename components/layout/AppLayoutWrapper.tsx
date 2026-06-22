@@ -7,8 +7,9 @@ import Topbar from '@/components/layout/Topbar';
 import { SidebarProvider } from '@/components/layout/SidebarContext';
 import { UserProvider } from '@/components/layout/UserContext';
 import { ConfirmDialogProvider } from '@/components/layout/ConfirmDialogProvider';
+import { logoutUser } from '@/app/actions/authActions';
 
-export default function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
+export default function AppLayoutWrapper({ children, initialUser }: { children: React.ReactNode, initialUser?: any }) {
   const pathname = usePathname();
   const isAuthPage = 
     pathname === '/login' || 
@@ -26,8 +27,18 @@ export default function AppLayoutWrapper({ children }: { children: React.ReactNo
     return <main className="min-h-screen">{children}</main>;
   }
 
+  React.useEffect(() => {
+    // If not auth page, not public page, and initialUser is null (session invalid in DB),
+    // force clear the cookie so middleware catches it properly.
+    if (!isAuthPage && !isProposalPublicPage && !initialUser) {
+      logoutUser().then(() => {
+        window.location.href = '/login';
+      });
+    }
+  }, [isAuthPage, isProposalPublicPage, initialUser]);
+
   return (
-    <UserProvider>
+    <UserProvider initialUser={initialUser}>
       <ConfirmDialogProvider>
         <SidebarProvider>
           <Sidebar />

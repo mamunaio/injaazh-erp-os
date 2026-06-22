@@ -21,9 +21,9 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-export function UserProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+export function UserProvider({ children, initialUser }: { children: ReactNode, initialUser?: any }) {
+  const [user, setUser] = useState<User | null>(initialUser || null);
+  const [loading, setLoading] = useState(false);
 
   const fetchUser = async () => {
     try {
@@ -42,8 +42,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    fetchUser();
-  }, []);
+    if (!initialUser) {
+      setLoading(true);
+      fetchUser();
+    }
+  }, [initialUser]);
 
   const refreshUser = async () => {
     setLoading(true);

@@ -6,6 +6,7 @@ import AppLayoutWrapper from "@/components/layout/AppLayoutWrapper";
 import CommandCenter from "@/components/layout/CommandCenter";
 import WorkTimeTracker from "@/components/layout/WorkTimeTracker";
 import { Toaster } from "react-hot-toast";
+import { getCurrentUser } from "@/app/actions/authActions";
 
 // Primary font - Outfit (premium, modern, geometric)
 const outfit = Outfit({
@@ -28,11 +29,13 @@ export const metadata: Metadata = {
   description: "Enterprise Resource Planning for Injaazh Global",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const res = await getCurrentUser();
+  const initialUser = res.success ? res.data : null;
   return (
     <html
       lang="en"
@@ -53,7 +56,7 @@ export default function RootLayout({
           >
             <span className="text-xs font-semibold text-slate-400 tracking-wider">Injaazh ERP</span>
           </div>
-          <AppLayoutWrapper>
+          <AppLayoutWrapper initialUser={initialUser}>
             {children}
             <CommandCenter />
             <WorkTimeTracker />
