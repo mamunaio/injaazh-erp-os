@@ -12,6 +12,7 @@ import { calculateTotals, groupTransactionsByPlatform } from '@/lib/analyticsUti
 import { formatCurrency as formatCurrencyUtil, formatDateDisplay } from '@/lib/formattingUtils';
 import { exportToCSV, exportToPDF } from '@/lib/exportUtils';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
+import DatePicker from '@/components/ui/DatePicker';
 
 interface MoneyClientProps {
   initialTransactions: any[];
@@ -278,19 +279,17 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
           {/* Custom Date Range Inputs */}
           {dateRange === 'custom' && (
             <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 neu-pressed rounded-xl px-3 py-2">
-                <input
-                  type="date"
+              <div className="flex items-center gap-2 px-1">
+                <DatePicker
                   value={customStartDate}
-                  onChange={(e) => setCustomStartDate(e.target.value)}
-                  className="bg-transparent text-sm font-semibold text-slate-700 dark:text-slate-300 focus:outline-none"
+                  onChange={(val) => setCustomStartDate(val)}
+                  placeholder="Start Date"
                 />
-                <span className="text-slate-500 dark:text-slate-400">to</span>
-                <input
-                  type="date"
+                <span className="text-slate-500 dark:text-slate-400 font-bold px-2">to</span>
+                <DatePicker
                   value={customEndDate}
-                  onChange={(e) => setCustomEndDate(e.target.value)}
-                  className="bg-transparent text-sm font-semibold text-slate-700 dark:text-slate-300 focus:outline-none"
+                  onChange={(val) => setCustomEndDate(val)}
+                  placeholder="End Date"
                 />
               </div>
               {dateError && (

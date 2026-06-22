@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { getTeamWorkLogs, updateWorkLog } from '@/app/actions/workSessionActions';
 import { Calendar, Clock, Edit2, Check, X, Award, Activity } from 'lucide-react';
 import toast from 'react-hot-toast';
+import DatePicker from '@/components/ui/DatePicker';
 
 type WorkSession = {
   _id: string;
@@ -90,15 +91,10 @@ export default function TeamLogsClient({ currentUser }: { currentUser: any }) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-1 neu-flat rounded-3xl p-6 bg-white/40 dark:bg-slate-900/40">
           <label className="block text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Select Date</label>
-          <div className="relative">
-            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-            <input 
-              type="date" 
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-transparent text-slate-700 dark:text-slate-200 font-bold"
-            />
-          </div>
+          <DatePicker 
+            value={date} 
+            onChange={(val) => { if(val) setDate(val); }} 
+          />
         </div>
 
         {topPerformer && topPerformer.totalSeconds > 0 && (

@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Clock, Briefcase, ShoppingCart, Globe, Users, CheckCircle2, Circle, UploadCloud, FileText, Search, Filter, DollarSign, Check, MoreHorizontal, Pencil, Archive, Trash, ChevronDown, Lock, XCircle, AlertTriangle, Plus, File, Download, CheckSquare, User } from 'lucide-react';
 import EditMarketplaceProjectModal from '@/components/EditMarketplaceProjectModal';
 import { getMarketplaceProjectById, updateMarketplaceProject, deleteMarketplaceProject } from '@/app/actions/marketplaceActions';
+import DatePicker from '@/components/ui/DatePicker';
 import toast, { Toaster } from 'react-hot-toast';
 
 const INITIAL_TASKS = [
@@ -47,6 +48,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
   const [milestones, setMilestones] = useState<any[]>([]);
   const [isMilestoneModalOpen, setIsMilestoneModalOpen] = useState(false);
   const [editingMilestone, setEditingMilestone] = useState<{ id?: number | string, description: string, date: string, status: string, amount: number } | null>(null);
+  const [milestoneDate, setMilestoneDate] = useState('');
 
   // Task State
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -549,7 +551,11 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="">Milestone Payments</h2>
                   <button 
-                    onClick={() => { setEditingMilestone(null); setIsMilestoneModalOpen(true); }}
+                    onClick={() => { 
+                      setEditingMilestone(null); 
+                      setMilestoneDate('');
+                      setIsMilestoneModalOpen(true); 
+                    }}
                     className="px-4 py-2 neu-button text-indigo-500 text-sm font-bold rounded-xl transition-colors flex items-center gap-2"
                   >
                     <Plus size={16} /> Add Milestone
@@ -585,7 +591,11 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                           <td className="p-4 text-right">
                             <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button 
-                                onClick={() => { setEditingMilestone(milestone); setIsMilestoneModalOpen(true); }}
+                                onClick={() => { 
+                                  setEditingMilestone(milestone); 
+                                  setMilestoneDate(milestone.date);
+                                  setIsMilestoneModalOpen(true); 
+                                }}
                                 className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-md transition-colors"
                               >
                                 <Pencil size={14} />
@@ -908,7 +918,11 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-2">Expected Date</label>
-                    <input name="date" required defaultValue={editingMilestone?.date} type="date" className="w-full px-4 py-3 neu-pressed rounded-xl focus:outline-none dark:text-white transition-all [&::-webkit-calendar-picker-indicator]:dark:invert" />
+                    <DatePicker 
+                      name="date"
+                      value={milestoneDate}
+                      onChange={(val) => setMilestoneDate(val)}
+                    />
                   </div>
                 </div>
 
