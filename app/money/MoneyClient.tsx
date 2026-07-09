@@ -133,6 +133,7 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
     if (result.success) {
       setTransactions([result.data, ...transactions]);
       setIsAddModalOpen(false);
+      window.dispatchEvent(new CustomEvent('fetch-notifications'));
       router.refresh();
     } else {
       alert('Failed to create transaction: ' + (result.error || 'Unknown error'));
@@ -145,6 +146,7 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
       setTransactions(transactions.map(t => t._id === transactionId ? result.data : t));
       setIsEditModalOpen(false);
       setSelectedTransaction(null);
+      window.dispatchEvent(new CustomEvent('fetch-notifications'));
       router.refresh();
     } else {
       alert('Failed to update transaction: ' + (result.error || 'Unknown error'));
@@ -158,6 +160,7 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
     const result = await deleteTransaction(transactionId);
     if (result.success) {
       setTransactions(transactions.filter(t => t._id !== transactionId));
+      window.dispatchEvent(new CustomEvent('fetch-notifications'));
       router.refresh();
     } else {
       alert('Failed to delete transaction: ' + (result.error || 'Unknown error'));

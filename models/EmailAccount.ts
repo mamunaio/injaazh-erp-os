@@ -12,6 +12,9 @@ export interface IEmailAccount extends Document {
   dailyLimit: number;
   sentToday: number;
   lastResetDate: Date;
+  warmupEnabled?: boolean;
+  warmupDailyLimit?: number;
+  warmupSentToday?: number;
   userId?: mongoose.Types.ObjectId;
   isGlobal?: boolean;
   createdAt: Date;
@@ -30,6 +33,9 @@ const EmailAccountSchema = new Schema<IEmailAccount>({
   dailyLimit: { type: Number, default: 15 },
   sentToday: { type: Number, default: 0 },
   lastResetDate: { type: Date, default: Date.now },
+  warmupEnabled: { type: Boolean, default: false },
+  warmupDailyLimit: { type: Number, default: 5 },
+  warmupSentToday: { type: Number, default: 0 },
   userId: { type: Schema.Types.ObjectId, ref: 'User' },
   isGlobal: { type: Boolean, default: false },
 }, { timestamps: true });

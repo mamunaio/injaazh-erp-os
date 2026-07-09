@@ -3,8 +3,50 @@
 import React, { useState, useEffect } from 'react';
 import { Mail, Plus, Trash2, CheckCircle, XCircle, Activity, AlertTriangle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { addEmailAccount, getEmailAccounts, deleteEmailAccount, updateEmailAccountStatus } from '@/app/actions/emailAccountActions';
+import { addEmailAccount, getEmailAccounts, deleteEmailAccount, updateEmailAccountStatus, updateWarmupSettings } from '@/app/actions/emailAccountActions';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
+
+// Helper to play sounds without external files
+const playStatusSound = (type: 'success' | 'error' | 'loading') => {
+  try {
+    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    
+    if (type === 'success') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+      osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
+      osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2);
+      
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.05);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+      
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.4);
+    } else if (type === 'error') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(200, ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 0.3);
+      
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 0.05);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.3);
+    }
+  } catch (e) {
+    console.error("Audio playback failed", e);
+  }
+};
 
 export default function EmailAccountsManager() {
   const { confirm } = useConfirm();
@@ -56,7 +98,7 @@ export default function EmailAccountsManager() {
     });
     
     if (res.success && res.account) {
-      toast.success('Account added successfully!', { id: 'add-acc' });
+      window.dispatchEvent(new CustomEvent('fetch-notifications'));
       setEmail('');
       setSenderName('');
       setAppPassword('');
@@ -65,6 +107,7 @@ export default function EmailAccountsManager() {
       setDailyLimit(15);
       setAccounts([res.account, ...accounts]);
     } else {
+      playStatusSound('error');
       toast.error(res.error || 'Failed to add account', { id: 'add-acc' });
     }
     setIsAdding(false);
@@ -74,9 +117,33 @@ export default function EmailAccountsManager() {
     const res = await updateEmailAccountStatus(id, !currentStatus);
     if (res.success) {
       setAccounts(accounts.map(acc => acc._id === id ? { ...acc, isActive: !currentStatus } : acc));
-      toast.success(`Account ${!currentStatus ? 'activated' : 'paused'} successfully`);
+      window.dispatchEvent(new CustomEvent('fetch-notifications'));
     } else {
+      playStatusSound('error');
       toast.error('Failed to update status');
+    }
+  };
+
+  const handleToggleWarmup = async (id: string, account: any) => {
+    const newStatus = !account.warmupEnabled;
+    let newLimit = account.warmupDailyLimit || 5;
+    
+    if (newStatus) {
+      const limitStr = prompt('Enter daily warmup limit (emails per day):', newLimit.toString());
+      if (limitStr === null) return; // cancelled
+      const parsedLimit = parseInt(limitStr, 10);
+      if (!isNaN(parsedLimit) && parsedLimit > 0) {
+        newLimit = parsedLimit;
+      }
+    }
+
+    const res = await updateWarmupSettings(id, newStatus, newLimit);
+    if (res.success) {
+      setAccounts(accounts.map(acc => acc._id === id ? { ...acc, warmupEnabled: newStatus, warmupDailyLimit: newLimit } : acc));
+      window.dispatchEvent(new CustomEvent('fetch-notifications'));
+    } else {
+      playStatusSound('error');
+      toast.error('Failed to update warmup settings');
     }
   };
 
@@ -87,8 +154,9 @@ export default function EmailAccountsManager() {
     const res = await deleteEmailAccount(id);
     if (res.success) {
       setAccounts(accounts.filter(acc => acc._id !== id));
-      toast.success('Account removed successfully');
+      window.dispatchEvent(new CustomEvent('fetch-notifications'));
     } else {
+      playStatusSound('error');
       toast.error('Failed to remove account');
     }
   };
@@ -363,6 +431,39 @@ export default function EmailAccountsManager() {
                     <p className="text-[10px] font-semibold text-rose-500 mt-1 flex items-center gap-1">
                       <AlertTriangle size={10} /> Quota Exhausted for today
                     </p>
+                  )}
+                </div>
+
+                {/* Warmup Status */}
+                <div className="mb-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                      <Activity size={12} className={account.warmupEnabled ? "text-green-500" : "text-slate-400"} />
+                      Auto-Warmup
+                    </span>
+                    <button 
+                      onClick={() => handleToggleWarmup(account._id, account)}
+                      className={`text-[10px] font-bold px-2 py-1 rounded-lg transition-colors ${account.warmupEnabled ? 'bg-green-100 text-green-600 dark:bg-green-500/20 dark:text-green-400' : 'bg-slate-200 text-slate-500 dark:bg-slate-800'}`}
+                    >
+                      {account.warmupEnabled ? 'ON' : 'OFF'}
+                    </button>
+                  </div>
+                  
+                  {account.warmupEnabled && (
+                    <>
+                      <div className="flex justify-between items-end mb-1">
+                        <span className="text-[10px] text-slate-400">Warmup Quota</span>
+                        <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
+                          {account.warmupSentToday || 0} / {account.warmupDailyLimit || 5}
+                        </span>
+                      </div>
+                      <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full rounded-full bg-green-500"
+                          style={{ width: `${Math.min(100, ((account.warmupSentToday || 0) / (account.warmupDailyLimit || 5)) * 100)}%` }}
+                        />
+                      </div>
+                    </>
                   )}
                 </div>
 

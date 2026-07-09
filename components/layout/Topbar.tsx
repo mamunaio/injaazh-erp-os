@@ -10,6 +10,49 @@ import toast from 'react-hot-toast';
 import { useSidebar } from './SidebarContext';
 import { useUser } from './UserContext';
 
+// Helper to play a soft, realistic notification 'ding' using Web Audio API
+const playNotificationSound = () => {
+  try {
+    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime); // A5
+    osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.1); // Slide to A6
+    
+    gainNode.gain.setValueAtTime(0, ctx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.05);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+    
+    osc.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    
+    osc.start();
+    osc.stop(ctx.currentTime + 0.4);
+  } catch (e) {
+    console.error("Audio playback failed", e);
+  }
+};
+
+// Helper to format relative time (e.g., "2m ago")
+const getRelativeTime = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays === 1) return 'Yesterday';
+  return `${diffDays}d ago`;
+};
+
 export default function Topbar() {
   const { user } = useUser();
   const router = useRouter();
@@ -20,18 +63,69 @@ export default function Topbar() {
   
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
+  const prevUnreadCountRef = useRef(0);
 
   useEffect(() => {
     // Fetch initial notifications
     const fetchNotifs = async () => {
       const data = await getRecentNotifications();
       setNotifications(data);
+      
+      const currentUnread = data.filter((n: any) => !n.isRead).length;
+      // Play sound and show toast if there are new unread notifications compared to last check
+      if (currentUnread > prevUnreadCountRef.current && prevUnreadCountRef.current !== 0) {
+        playNotificationSound();
+        
+        // Show Toast Popup
+        const newNotifs = data.filter((n: any) => !n.isRead);
+        if (newNotifs.length > 0) {
+          const newest = newNotifs[0];
+          toast.custom((t) => (
+             <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-sm w-full neu-flat rounded-2xl pointer-events-auto flex`}>
+               <div className="flex-1 w-0 p-4">
+                 <div className="flex items-start">
+                   <div className="flex-shrink-0 pt-0.5">
+                     <div className="h-10 w-10 rounded-full neu-pressed flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                       <Bell size={18} />
+                     </div>
+                   </div>
+                   <div className="ml-3 flex-1">
+                     <p className="text-sm font-bold text-slate-800 dark:text-white">
+                       New Notification
+                     </p>
+                     <p className="mt-1 text-sm font-medium text-slate-600 dark:text-slate-400">
+                       {newest.message}
+                     </p>
+                   </div>
+                 </div>
+               </div>
+               <div className="flex border-l border-slate-300 dark:border-slate-800/50">
+                 <button
+                   onClick={() => toast.dismiss(t.id)}
+                   className="w-full border border-transparent rounded-none rounded-r-2xl p-4 flex items-center justify-center text-sm font-bold text-slate-500 hover:text-slate-700 dark:hover:text-white transition-colors"
+                 >
+                   Close
+                 </button>
+               </div>
+             </div>
+          ), { duration: 5000 });
+        }
+      }
+      prevUnreadCountRef.current = currentUnread;
     };
+    
     fetchNotifs();
     
-    // Set up an interval to poll for new notifications every 30 seconds
-    const interval = setInterval(fetchNotifs, 30000);
-    return () => clearInterval(interval);
+    // Listen for custom event to trigger instant fetch
+    const handleInstantFetch = () => fetchNotifs();
+    window.addEventListener('fetch-notifications', handleInstantFetch);
+    
+    // Polling every 10 seconds as backup
+    const interval = setInterval(fetchNotifs, 10000);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('fetch-notifications', handleInstantFetch);
+    };
   }, []);
 
   useEffect(() => {
@@ -108,7 +202,11 @@ export default function Topbar() {
       <div className="flex-1 flex items-center justify-end gap-4 md:gap-6">
         
         {/* Notifications */}
-        <div className="relative" ref={notifRef}>
+        <div 
+          className="relative" 
+          ref={notifRef}
+          onMouseEnter={() => { setShowNotifications(true); setShowProfile(false); }}
+        >
           <button 
             onClick={() => { setShowNotifications(!showNotifications); setShowProfile(false); }}
             className={`relative p-2 rounded-xl transition-colors ${showNotifications ? 'bg-indigo-50 dark:bg-white/10 text-indigo-600 dark:text-white' : 'text-slate-500 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white'}`}
@@ -156,8 +254,9 @@ export default function Topbar() {
                         </div>
                         <div>
                           <p className={`text-sm ${!notif.isRead ? 'font-bold text-slate-800 dark:text-slate-200' : 'font-medium text-slate-600 dark:text-slate-400'}`}>{notif.message}</p>
-                          <p className="text-xs font-medium text-slate-400 mt-1">
-                            {new Date(notif.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          <p className={`text-xs mt-1 flex items-center gap-1.5 ${!notif.isRead ? 'font-bold text-indigo-500' : 'font-medium text-slate-400'}`}>
+                            {!notif.isRead && <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 block"></span>}
+                            {getRelativeTime(notif.createdAt)}
                           </p>
                         </div>
                       </div>

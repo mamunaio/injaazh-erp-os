@@ -131,6 +131,63 @@ const CustomSelect = ({ value, onChange, options, className = "", dropdownUp = f
   );
 };
 
+// Helper to play sounds without external files
+const playStatusSound = (type: 'success' | 'error' | 'loading') => {
+  try {
+    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    
+    if (type === 'success') {
+      // Happy chime (upward arpeggio)
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+      osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5
+      osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2); // G5
+      
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.05);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+      
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.4);
+    } else if (type === 'error') {
+      // Error buzz (low tone descending)
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(200, ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 0.3);
+      
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 0.05);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.3);
+    } else if (type === 'loading') {
+      // Brief click for action initiation
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, ctx.currentTime);
+      
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.05, ctx.currentTime + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+      
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.1);
+    }
+  } catch (e) {
+    console.error("Audio playback failed", e);
+  }
+};
+
 export default function OutreachComposerModal({
   isOpen,
   onClose,
@@ -176,6 +233,9 @@ export default function OutreachComposerModal({
   // Sender Account Selection
   const [activeAccounts, setActiveAccounts] = useState<any[]>([]);
   const [selectedSenderId, setSelectedSenderId] = useState<string>('auto');
+  
+  // Anti-Spam Cooldown State
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
   // Initialize and update fields when lead changes
   useEffect(() => {
@@ -201,6 +261,27 @@ export default function OutreachComposerModal({
       fetchAccounts();
     }
   }, [lead, isOpen]);
+
+  // Anti-Spam Cooldown Timer
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const checkCooldown = () => {
+      const lastSent = localStorage.getItem('lastEmailSentTime');
+      if (lastSent) {
+        const elapsed = Date.now() - parseInt(lastSent, 10);
+        if (elapsed < 30000) {
+          setCooldownRemaining(Math.ceil((30000 - elapsed) / 1000));
+        } else {
+          setCooldownRemaining(0);
+        }
+      }
+    };
+    
+    checkCooldown();
+    const interval = setInterval(checkCooldown, 1000);
+    return () => clearInterval(interval);
+  }, [isOpen, isSending]); // Re-run when modal opens or after sending finishes
 
   // Compile template whenever variables or template selection changes
   useEffect(() => {
@@ -257,32 +338,48 @@ export default function OutreachComposerModal({
   };
 
   const handleSend = async () => {
+    if (cooldownRemaining > 0) {
+      playStatusSound('error');
+      setErrorMessage(`Please wait ${cooldownRemaining} seconds to prevent spam.`);
+      return;
+    }
     if (!subject.trim()) {
+      playStatusSound('error');
       setErrorMessage('Subject cannot be empty');
       return;
     }
     if (!body.trim()) {
+      playStatusSound('error');
       setErrorMessage('Email body cannot be empty');
       return;
     }
 
+    playStatusSound('loading');
     setIsSending(true);
     setErrorMessage(null);
 
     try {
       const response = await sendOutreachEmail(lead._id, subject, body, selectedSenderId);
       if (response.success && response.data) {
+        playStatusSound('success');
         setSuccessInfo({ isSimulated: !!response.isSimulated, sentVia: response.sentVia });
+        
+        // Record the time to enforce a 30s cooldown for the next email
+        localStorage.setItem('lastEmailSentTime', Date.now().toString());
+        setCooldownRemaining(30);
+
         // Let the state settle, then invoke callback and close
         setTimeout(() => {
           onEmailSent(response.data);
           onClose();
         }, 2000);
       } else {
+        playStatusSound('error');
         setErrorMessage(response.error || 'Outreach email failed to dispatch.');
       }
     } catch (err: any) {
       console.error('Outreach modal dispatch error:', err);
+      playStatusSound('error');
       setErrorMessage(err.message || 'An unexpected error occurred.');
     } finally {
       setIsSending(false);
@@ -539,7 +636,7 @@ export default function OutreachComposerModal({
                     
                     <button
                       onClick={handleSend}
-                      disabled={isSending || !!successInfo}
+                      disabled={isSending || !!successInfo || cooldownRemaining > 0}
                       className="relative overflow-hidden group px-6 py-2.5 neu-button text-purple-400 font-black rounded-xl text-xs flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none min-w-[150px]"
                     >
                       {isSending ? (
@@ -551,6 +648,11 @@ export default function OutreachComposerModal({
                         <>
                           <CheckCircle size={14} className="animate-bounce" />
                           <span>Sent!</span>
+                        </>
+                      ) : cooldownRemaining > 0 ? (
+                        <>
+                          <Loader2 size={14} className="animate-spin text-orange-400" />
+                          <span className="text-orange-400">Wait {cooldownRemaining}s</span>
                         </>
                       ) : (
                         <>

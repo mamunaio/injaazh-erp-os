@@ -10,18 +10,18 @@ import { useSidebar } from './SidebarContext';
 import { useUser } from './UserContext';
 
 const navItems = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Leads', href: '/leads', icon: Users },
-  { name: 'Outreach Analytics', href: '/outreach', icon: Mail },
+  { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Prospects', href: '/leads', icon: Users },
+  { name: 'Campaigns', href: '/outreach', icon: Mail },
   { name: 'Proposals', href: '/proposals', icon: FileText },
   { name: 'Projects', href: '/projects', icon: Briefcase },
   { name: 'Roadmap', href: '/roadmap', icon: Map },
-  { name: 'Marketplace', href: '/marketplace', icon: Store },
-  { name: 'Market Clients', href: '/marketplace/clients', icon: Users },
-  { name: 'Money', href: '/money', icon: DollarSign },
-  { name: 'Daily Expenses', href: '/daily-expenses', icon: Wallet },
-  { name: 'Team Logs', href: '/team-logs', icon: Clock },
-  { name: 'Islamic Insights', href: '/settings/insights', icon: BookOpen },
+  { name: 'Freelance Jobs', href: '/marketplace', icon: Store },
+  { name: 'Clients', href: '/marketplace/clients', icon: Users },
+  { name: 'Finance', href: '/money', icon: DollarSign },
+  { name: 'Expenses', href: '/daily-expenses', icon: Wallet },
+  { name: 'Time Logs', href: '/team-logs', icon: Clock },
+  { name: 'Daily Insights', href: '/settings/insights', icon: BookOpen },
 ];
 
 export default function Sidebar() {

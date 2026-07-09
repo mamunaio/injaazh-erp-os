@@ -148,12 +148,14 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
       if (res.success) {
         setExpenses(expenses.map(e => e._id === editingExpense._id ? res.data : e));
         setEditingExpense(null);
+        window.dispatchEvent(new CustomEvent('fetch-notifications'));
         return true;
       }
     } else {
       const res = await createDailyExpense(data);
       if (res.success) {
         setExpenses([res.data, ...expenses]);
+        window.dispatchEvent(new CustomEvent('fetch-notifications'));
         return true;
       }
     }
@@ -166,6 +168,7 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
       const res = await deleteDailyExpense(id);
       if (res.success) {
         setExpenses(expenses.filter(e => e._id !== id));
+        window.dispatchEvent(new CustomEvent('fetch-notifications'));
       }
     }
   };
@@ -200,12 +203,14 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
       if (res.success) {
         setDebts(debts.map(d => d._id === editingDebt._id ? res.data : d));
         setEditingDebt(null);
+        window.dispatchEvent(new CustomEvent('fetch-notifications'));
         return true;
       }
     } else {
       const res = await createPersonalDebt(data);
       if (res.success) {
         setDebts([res.data, ...debts]);
+        window.dispatchEvent(new CustomEvent('fetch-notifications'));
         return true;
       }
     }
@@ -218,6 +223,7 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
       const res = await deletePersonalDebt(id);
       if (res.success) {
         setDebts(debts.filter(d => d._id !== id));
+        window.dispatchEvent(new CustomEvent('fetch-notifications'));
       }
     }
   };
@@ -228,6 +234,7 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
       const res = await settlePersonalDebt(id);
       if (res.success) {
         setDebts(debts.map(d => d._id === id ? res.data : d));
+        window.dispatchEvent(new CustomEvent('fetch-notifications'));
       }
     }
   };
@@ -261,6 +268,7 @@ export default function DailyExpensesClient({ initialExpenses, initialDebts = []
       if (res.message) {
         alert(res.message);
       }
+      window.dispatchEvent(new CustomEvent('fetch-notifications'));
       return true;
     } else {
       console.error('Payment failed:', res.error);
