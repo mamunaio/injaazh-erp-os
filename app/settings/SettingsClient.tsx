@@ -645,12 +645,12 @@ export default function SettingsClient() {
                         <label className="block text-sm font-jakarta font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 mb-2">
                           {user?.role === 'admin' ? 'Admin Name' : 'Your Name'}
                         </label>
-                        <input type="text" value={profileName} onChange={(e) => setProfileName(e.target.value)} className="w-full px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 font-inter text-[15px]" />
+                        <input type="text" value={profileName} onChange={(e) => setProfileName(e.target.value)} className="w-full px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-200 font-inter text-[15px]" />
                       </div>
                     </div>
                     <div>
                       <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Email Address</label>
-                      <input type="email" value={profileEmail} onChange={(e) => setProfileEmail(e.target.value)} className="w-full px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 font-medium" />
+                      <input type="email" value={profileEmail} onChange={(e) => setProfileEmail(e.target.value)} className="w-full px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-200 font-medium" />
                     </div>
                   </div>
                 </GlassCard>
@@ -813,7 +813,7 @@ export default function SettingsClient() {
                           type="password" 
                           value={currentPassword} 
                           onChange={(e) => setCurrentPassword(e.target.value)} 
-                          className="w-full px-5 py-3 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 text-sm font-medium" 
+                          className="w-full px-5 py-3 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-200 text-sm font-medium" 
                         />
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -823,7 +823,7 @@ export default function SettingsClient() {
                             type="password" 
                             value={newPassword} 
                             onChange={(e) => setNewPassword(e.target.value)} 
-                            className="w-full px-5 py-3 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 text-sm font-medium" 
+                            className="w-full px-5 py-3 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-200 text-sm font-medium" 
                           />
                         </div>
                         <div>
@@ -832,7 +832,7 @@ export default function SettingsClient() {
                             type="password" 
                             value={confirmNewPassword} 
                             onChange={(e) => setConfirmNewPassword(e.target.value)} 
-                            className="w-full px-5 py-3 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 text-sm font-medium" 
+                            className="w-full px-5 py-3 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-200 text-sm font-medium" 
                           />
                         </div>
                       </div>
@@ -866,7 +866,7 @@ export default function SettingsClient() {
                           placeholder="e.g. John Doe"
                           value={inviteName} 
                           onChange={(e) => setInviteName(e.target.value)} 
-                          className="w-full px-5 py-3.5 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 text-sm font-medium" 
+                          className="w-full px-5 py-3.5 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-200 text-sm font-medium" 
                         />
                       </div>
                       <div>
@@ -876,7 +876,7 @@ export default function SettingsClient() {
                           placeholder="e.g. john@injaazh.com"
                           value={inviteEmail} 
                           onChange={(e) => setInviteEmail(e.target.value)} 
-                          className="w-full px-5 py-3.5 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 text-sm font-medium" 
+                          className="w-full px-5 py-3.5 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-200 text-sm font-medium" 
                         />
                       </div>
                       <div>
@@ -886,7 +886,7 @@ export default function SettingsClient() {
                           placeholder="••••••••"
                           value={invitePassword} 
                           onChange={(e) => setInvitePassword(e.target.value)} 
-                          className="w-full px-5 py-3.5 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 text-sm font-medium" 
+                          className="w-full px-5 py-3.5 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-200 text-sm font-medium" 
                         />
                       </div>
                       <div className="md:col-span-2 flex items-center gap-6 py-2">
@@ -894,7 +894,7 @@ export default function SettingsClient() {
                         <select 
                           value={inviteRole}
                           onChange={(e) => setInviteRole(e.target.value)}
-                          className="w-48 px-4 py-2.5 neu-flat rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 text-sm font-semibold"
+                          className="w-48 px-4 py-2.5 neu-flat rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-200 text-sm font-semibold"
                         >
                           <option value="admin">Admin (Manager)</option>
                           <option value="editor">Editor (Leads & Projects)</option>
@@ -936,7 +936,7 @@ export default function SettingsClient() {
                         ) : (
                           teamMembers.map(member => (
                             <tr key={member._id} className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-500/5 transition-colors text-sm font-medium">
-                              <td className="py-4 px-4 font-bold text-slate-800 dark:text-slate-200">{member.name}</td>
+                              <td className="py-4 px-4 font-bold text-slate-200">{member.name}</td>
                               <td className="py-4 px-4 text-slate-500">{member.email}</td>
                               <td className="py-4 px-4">
                                 <span className="text-[10px] bg-slate-550/10 text-slate-650 dark:text-slate-450 px-2.5 py-1 rounded-full uppercase tracking-wider font-extrabold border border-slate-500/10">
@@ -948,7 +948,7 @@ export default function SettingsClient() {
                                   <select 
                                     value={member.role}
                                     onChange={(e) => handleToggleRole(member._id, e.target.value)}
-                                    className="w-40 px-3 py-1.5 neu-pressed rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 text-xs font-semibold"
+                                    className="w-40 px-3 py-1.5 neu-pressed rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-200 text-xs font-semibold"
                                   >
                                     <option value="owner">Owner</option>
                                     <option value="admin">Admin</option>
@@ -989,7 +989,7 @@ export default function SettingsClient() {
                         <input 
                           type={showKey ? 'text' : 'password'} 
                           defaultValue="AIzaSyB_f-XVZOMwGgD1kUxm1Q44wCMjqqIuKtY" 
-                          className="w-full px-5 py-3.5 pr-12 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 font-medium font-mono text-sm" 
+                          className="w-full px-5 py-3.5 pr-12 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-200 font-medium font-mono text-sm" 
                         />
                         <button 
                           onClick={() => setShowKey(!showKey)}
@@ -1040,7 +1040,7 @@ export default function SettingsClient() {
                           placeholder="e.g. smtp.gmail.com" 
                           value={smtpSettings.host} 
                           onChange={(e) => setSmtpSettings(prev => ({ ...prev, host: e.target.value }))}
-                          className="w-full px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 font-inter text-[15px]" 
+                          className="w-full px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-200 font-inter text-[15px]" 
                         />
                       </div>
                       <div>
@@ -1050,7 +1050,7 @@ export default function SettingsClient() {
                           placeholder="e.g. 587" 
                           value={smtpSettings.port} 
                           onChange={(e) => setSmtpSettings(prev => ({ ...prev, port: parseInt(e.target.value) || 587 }))}
-                          className="w-full px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 font-medium" 
+                          className="w-full px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-200 font-medium" 
                         />
                       </div>
                     </div>
@@ -1063,7 +1063,7 @@ export default function SettingsClient() {
                           placeholder="e.g. your-email@gmail.com" 
                           value={smtpSettings.user} 
                           onChange={(e) => setSmtpSettings(prev => ({ ...prev, user: e.target.value }))}
-                          className="w-full px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 font-medium" 
+                          className="w-full px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-200 font-medium" 
                         />
                       </div>
                       <div>
@@ -1074,7 +1074,7 @@ export default function SettingsClient() {
                             placeholder="e.g. App Password" 
                             value={smtpSettings.pass} 
                             onChange={(e) => setSmtpSettings(prev => ({ ...prev, pass: e.target.value }))}
-                            className="w-full px-5 py-3.5 pr-12 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 font-medium font-mono text-sm" 
+                            className="w-full px-5 py-3.5 pr-12 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-200 font-medium font-mono text-sm" 
                           />
                           <button 
                             type="button"
@@ -1095,7 +1095,7 @@ export default function SettingsClient() {
                           placeholder="e.g. Mamun" 
                           value={smtpSettings.fromName} 
                           onChange={(e) => setSmtpSettings(prev => ({ ...prev, fromName: e.target.value }))}
-                          className="w-full px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 font-medium" 
+                          className="w-full px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-200 font-medium" 
                         />
                       </div>
                       <div>
@@ -1105,7 +1105,7 @@ export default function SettingsClient() {
                           placeholder="e.g. mamun@injaazh.com" 
                           value={smtpSettings.fromEmail} 
                           onChange={(e) => setSmtpSettings(prev => ({ ...prev, fromEmail: e.target.value }))}
-                          className="w-full px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 font-medium" 
+                          className="w-full px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-200 font-medium" 
                         />
                       </div>
                     </div>
@@ -1189,7 +1189,7 @@ export default function SettingsClient() {
                               handleSendTestEmail();
                             }
                           }}
-                          className="flex-1 px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent text-slate-800 dark:text-slate-200 font-inter text-[15px]" 
+                          className="flex-1 px-5 py-3.5 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent text-slate-200 font-inter text-[15px]" 
                         />
                         <button
                           type="button"

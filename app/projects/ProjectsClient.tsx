@@ -63,7 +63,7 @@ export default function ProjectsClient({ initialProjects }: ProjectsClientProps)
   };
 
   return (
-    <div className="min-h-screen neu-base-bg p-4 md:p-8 text-slate-800 dark:text-slate-200">
+    <div className="min-h-screen neu-base-bg p-4 md:p-8 text-slate-200">
       
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">

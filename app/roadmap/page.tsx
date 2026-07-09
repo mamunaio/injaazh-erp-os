@@ -62,7 +62,7 @@ export default function RoadmapPage() {
   };
 
   return (
-    <div className="flex h-screen neu-base-bg overflow-hidden font-sans text-slate-800 dark:text-slate-200">
+    <div className="flex h-screen neu-base-bg overflow-hidden font-sans text-slate-200">
       <Sidebar />
       <div className="flex-1 flex flex-col relative z-10 overflow-hidden">
 

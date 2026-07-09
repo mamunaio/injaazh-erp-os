@@ -305,7 +305,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
   const StatusIcon = currentStatus.icon;
 
   return (
-    <div className="min-h-screen neu-base-bg text-slate-800 dark:text-slate-200">
+    <div className="min-h-screen neu-base-bg text-slate-200">
       {/* Sticky Header */}
       <div className="sticky top-0 z-50 neu-base-bg shadow-lg">
         <div className="max-w-7xl mx-auto px-8 py-4">
@@ -323,7 +323,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
                     type="text"
                     value={proposal.title}
                     onChange={(e) => setProposal({ ...proposal, title: e.target.value })}
-                    className="text-2xl font-bold bg-transparent border-b-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 focus:border-solid outline-none text-slate-900 dark:text-white placeholder-slate-400 w-full pr-8 py-1 transition-all"
+                    className="text-2xl font-bold bg-transparent border-b-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 focus:border-solid outline-none text-white placeholder-slate-400 w-full pr-8 py-1 transition-all"
                     placeholder="Untitled Proposal"
                   />
                   <Edit2 size={18} className="absolute right-2 text-slate-400 pointer-events-none" />
@@ -433,7 +433,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
               type="text"
               value={proposal.clientName}
               onChange={(e) => setProposal({ ...proposal, clientName: e.target.value })}
-              className="w-full px-4 py-3 neu-pressed rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none transition-all"
+              className="w-full px-4 py-3 neu-pressed rounded-xl text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none transition-all"
               placeholder="Enter client name"
             />
           </div>
@@ -482,7 +482,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
                         type="text"
                         value={phase.title}
                         onChange={(e) => updatePhase(phaseIndex, 'title', e.target.value)}
-                        className="flex-1 px-3 py-2 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none text-sm font-semibold border-b border-slate-300 dark:border-slate-700"
+                        className="flex-1 px-3 py-2 bg-transparent text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none text-sm font-semibold border-b border-slate-300 dark:border-slate-700"
                         placeholder="Phase Title"
                       />
                       <button
@@ -496,7 +496,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
                     <textarea
                       value={phase.description}
                       onChange={(e) => updatePhase(phaseIndex, 'description', e.target.value)}
-                      className="w-full px-3 py-2 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none text-sm resize-none"
+                      className="w-full px-3 py-2 bg-transparent text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none text-sm resize-none"
                       placeholder="Phase Description"
                       rows={2}
                     />
@@ -522,7 +522,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
                               onChange={(e) =>
                                 updateDeliverable(phaseIndex, deliverableIndex, e.target.value)
                               }
-                              className="flex-1 px-3 py-1.5 bg-transparent border-b border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none text-sm"
+                              className="flex-1 px-3 py-1.5 bg-transparent border-b border-slate-200 dark:border-slate-800 text-white placeholder-slate-400 focus:outline-none text-sm"
                               placeholder="Deliverable item"
                             />
                             <button
@@ -571,7 +571,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
                         type="text"
                         value={item.description}
                         onChange={(e) => updateInvestmentItem(index, 'description', e.target.value)}
-                        className="flex-1 px-3 py-2 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none text-sm"
+                        className="flex-1 px-3 py-2 bg-transparent text-white placeholder-slate-400 focus:outline-none text-sm"
                         placeholder="Description"
                       />
                       <div className="relative">
@@ -585,7 +585,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
                           onChange={(e) =>
                             updateInvestmentItem(index, 'cost', parseFloat(e.target.value) || 0)
                           }
-                          className="w-32 pl-8 pr-3 py-2 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none text-sm"
+                          className="w-32 pl-8 pr-3 py-2 bg-transparent text-white placeholder-slate-400 focus:outline-none text-sm"
                           placeholder="0"
                         />
                       </div>
@@ -636,7 +636,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
               <p className="text-slate-600 dark:text-gray-400 mb-2">
                 Are you sure you want to delete this proposal?
               </p>
-              <p className="font-semibold text-slate-900 dark:text-white mb-6">
+              <p className="font-semibold text-white mb-6">
                 "{proposal.title}"
               </p>
               

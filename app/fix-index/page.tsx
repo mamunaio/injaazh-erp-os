@@ -45,7 +45,7 @@ export default function FixIndexPage() {
 
         {result && (
           <div className="mt-6 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
-            <pre className="text-sm text-slate-900 dark:text-white whitespace-pre-wrap">
+            <pre className="text-sm text-white whitespace-pre-wrap">
               {result}
             </pre>
           </div>

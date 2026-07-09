@@ -104,7 +104,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
   };
 
   return (
-    <div className="min-h-screen neu-base-bg p-4 md:p-8 text-slate-800 dark:text-slate-200">
+    <div className="min-h-screen neu-base-bg p-4 md:p-8 text-slate-200">
       
       {/* Page Header */}
       <div className="mb-8 flex justify-between items-end">
@@ -266,7 +266,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                         <button 
                           onClick={() => handleCreateProposal(lead)}
                           disabled={isCreatingProposalFor === lead._id}
-                          className="flex items-center gap-2.5 px-6 py-3 neu-button text-slate-800 dark:text-slate-200 font-jakarta font-bold rounded-xl text-sm disabled:opacity-50"
+                          className="flex items-center gap-2.5 px-6 py-3 neu-button text-slate-200 font-jakarta font-bold rounded-xl text-sm disabled:opacity-50"
                         >
                           {isCreatingProposalFor === lead._id ? (
                             <span className="animate-pulse">Creating...</span>

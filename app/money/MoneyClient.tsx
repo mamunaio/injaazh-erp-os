@@ -242,7 +242,7 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
   }, [dateFilteredTransactions]);
 
   return (
-    <div className="min-h-screen neu-base-bg p-4 md:p-8 text-slate-800 dark:text-slate-200">
+    <div className="min-h-screen neu-base-bg p-4 md:p-8 text-slate-200">
       
       {/* Export Status Notification */}
       {exportStatus && (
@@ -714,10 +714,10 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
                 {monthlySummary.length > 0 && (
                   <tfoot className="border-t-2 border-slate-300 dark:border-slate-600">
                     <tr className="bg-slate-50 dark:bg-slate-800/50">
-                      <td className="py-4 px-4 text-sm font-bold text-slate-800 dark:text-slate-200">
+                      <td className="py-4 px-4 text-sm font-bold text-slate-200">
                         Total
                       </td>
-                      <td className="py-4 px-4 text-right text-sm font-bold text-slate-800 dark:text-slate-200">
+                      <td className="py-4 px-4 text-right text-sm font-bold text-slate-200">
                         {monthlySummary.reduce((sum, m) => sum + m.transactions, 0)}
                       </td>
                       <td className="py-4 px-4 text-right text-sm font-bold text-green-600 dark:text-green-400">
@@ -729,7 +729,7 @@ export default function MoneyClient({ initialTransactions, platformSummary }: Mo
                       <td className="py-4 px-4 text-right text-sm font-bold text-purple-600 dark:text-purple-400">
                         {formatCurrency(monthlySummary.reduce((sum, m) => sum + m.profit, 0))}
                       </td>
-                      <td className="py-4 px-4 text-right text-sm font-bold text-slate-800 dark:text-slate-200">
+                      <td className="py-4 px-4 text-right text-sm font-bold text-slate-200">
                         {(() => {
                           const totalIncome = monthlySummary.reduce((sum, m) => sum + m.income, 0);
                           const totalProfit = monthlySummary.reduce((sum, m) => sum + m.profit, 0);

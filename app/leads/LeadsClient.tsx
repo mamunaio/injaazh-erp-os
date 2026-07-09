@@ -279,7 +279,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
   };
 
   return (
-    <div className="min-h-screen neu-base-bg p-4 md:p-8 text-slate-800 dark:text-slate-200">
+    <div className="min-h-screen neu-base-bg p-4 md:p-8 text-slate-200">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 md:mb-10 gap-4 md:gap-6">
         <div>
@@ -331,7 +331,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
 
           <button 
             onClick={() => setIsFormOpen(true)}
-            className="flex items-center gap-2 md:gap-2.5 px-5 md:px-7 py-2.5 md:py-3 neu-button text-slate-800 dark:text-slate-200 font-jakarta font-bold rounded-xl text-sm md:text-sm flex-1 md:flex-initial justify-center"
+            className="flex items-center gap-2 md:gap-2.5 px-5 md:px-7 py-2.5 md:py-3 neu-button text-slate-200 font-jakarta font-bold rounded-xl text-sm md:text-sm flex-1 md:flex-initial justify-center"
           >
             <Plus size={20} strokeWidth={2.5} className="text-indigo-500" />
             <span>New Lead</span>
@@ -385,7 +385,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
           {!showFollowUps && !searchQuery && (
             <button 
               onClick={() => setIsFormOpen(true)}
-              className="flex items-center gap-2.5 px-7 py-3 neu-button text-slate-800 dark:text-slate-200 font-jakarta font-bold rounded-xl text-sm"
+              className="flex items-center gap-2.5 px-7 py-3 neu-button text-slate-200 font-jakarta font-bold rounded-xl text-sm"
             >
               <Plus size={20} strokeWidth={2.5} className="text-indigo-500" /> Create First Lead
             </button>
@@ -597,166 +597,139 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
                   <div className="flex-1 h-px bg-gradient-to-r from-slate-200 via-slate-300 to-transparent dark:from-white/5 dark:via-white/10 dark:to-transparent"></div>
                 </div>
 
-                {/* Table for this date */}
-                <div className="w-full overflow-x-auto neu-flat rounded-2xl border-none">
-                  <table className="w-full border-collapse text-left text-sm">
-                    <thead>
-                      <tr className="border-b border-slate-200 dark:border-white/10 neu-pressed text-slate-500 dark:text-slate-400 font-jakarta font-black uppercase tracking-widest text-[11px]">
-                        <th className="px-6 py-4">Company & Target</th>
-                        <th className="px-6 py-4">Contact</th>
-                        <th className="px-6 py-4">Status</th>
-                        <th className="px-6 py-4">Next Follow-up</th>
-                        <th className="px-6 py-4 text-center">Actions</th>
-                        <th className="px-6 py-4 text-right"></th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200/50 dark:divide-white/5">
-                      {dateLeads.map((lead) => {
-                const statusStyle = getStatusConfig(lead.outreach_status);
-                let isFollowUpToday = false;
-                if (lead.nextFollowUpDate) {
-                  const followUpDate = new Date(lead.nextFollowUpDate);
-                  const today = new Date();
-                  today.setHours(0, 0, 0, 0);
-                  isFollowUpToday = followUpDate <= today;
-                }
+                {/* Stacked Card List for this date */}
+                <div className="space-y-3">
+                  {dateLeads.map((lead) => {
+                    const statusStyle = getStatusConfig(lead.outreach_status);
+                    let isFollowUpToday = false;
+                    if (lead.nextFollowUpDate) {
+                      const followUpDate = new Date(lead.nextFollowUpDate);
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      isFollowUpToday = followUpDate <= today;
+                    }
 
-                return (
-                  <tr 
-                    key={lead._id}
-                    onClick={() => handleCardClick(lead)}
-                    className="hover:bg-slate-50 dark:hover:bg-white/5 transition-all duration-150 cursor-pointer group"
-                  >
-                    {/* Company Name & Target Service */}
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl neu-pressed flex items-center justify-center text-indigo-500">
-                          <Building2 size={16} strokeWidth={2.5} />
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                          <span className="font-jakarta font-black text-slate-900 dark:text-white group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors truncate max-w-[200px] sm:max-w-[300px] tracking-tight">
-                            {lead.company_name}
-                          </span>
-                          <span className="text-[11px] font-jakarta font-bold uppercase text-indigo-600 dark:text-indigo-400 tracking-wider mt-0.5">
-                            {lead.targetService || 'No service'}
-                          </span>
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Contact Person */}
-                    <td className="px-6 py-4">
-                      {lead.contact_person && lead.contact_person !== lead.company_name ? (
-                        <div className="flex items-center gap-1.5 text-xs font-inter font-semibold text-slate-700 dark:text-gray-300 neu-pressed px-2.5 py-1 rounded-lg w-max border-none">
-                          <User size={12} className="text-indigo-400" />
-                          <span>{lead.contact_person}</span>
-                        </div>
-                      ) : (
-                        <span className="text-xs font-inter text-slate-400 dark:text-gray-500 font-medium italic">Not set</span>
-                      )}
-                    </td>
-
-                    {/* Outreach Status */}
-                    <td className="px-6 py-4">
-                      <span className={`text-[9px] font-black uppercase px-2.5 py-1 rounded-full border ${statusStyle.bg} ${statusStyle.color} ${statusStyle.border}`}>
-                        {lead.outreach_status}
-                      </span>
-                    </td>
-
-                    {/* Created Date */}
-                    <td className="px-6 py-4 text-xs font-inter font-semibold text-slate-600 dark:text-slate-400">
-                      {formatDate(lead.createdAt)}
-                    </td>
-
-                    {/* Next Follow-up */}
-                    <td className="px-6 py-4">
-                      {lead.nextFollowUpDate ? (
-                        <div className="flex items-center gap-1.5">
-                          {isFollowUpToday && (
-                            <span className="relative flex h-2 w-2">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                            </span>
-                          )}
-                          <span className={`text-xs font-inter font-semibold ${isFollowUpToday ? 'text-red-500' : 'text-blue-500'}`}>
-                            {formatDate(lead.nextFollowUpDate)}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-xs font-inter text-slate-400 dark:text-gray-500 font-medium">No follow-up</span>
-                      )}
-                    </td>
-
-                    {/* Action Buttons */}
-                    <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-center gap-2">
-                        {lead.email ? (
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setComposerLead(lead);
-                              setIsComposerOpen(true);
-                            }}
-                            className="p-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition-colors"
-                            title="Send Email"
-                          >
-                            <Mail size={14} strokeWidth={2.5} />
-                          </button>
-                        ) : (
-                          <div className="p-2 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-gray-650 opacity-40 cursor-not-allowed">
-                            <Mail size={14} strokeWidth={2.5} />
-                          </div>
-                        )}
-
-                        {lead.phone ? (
-                          <a 
-                            href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="p-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 transition-colors"
-                            title="WhatsApp"
-                          >
-                            <MessageCircle size={14} strokeWidth={2.5} />
-                          </a>
-                        ) : (
-                          <div className="p-2 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-gray-650 opacity-40 cursor-not-allowed">
-                            <MessageCircle size={14} strokeWidth={2.5} />
-                          </div>
-                        )}
-
-                        {lead.website_url ? (
-                          <a 
-                            href={lead.website_url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="p-2 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 transition-colors"
-                            title="Visit Website"
-                          >
-                            <Globe size={14} strokeWidth={2.5} />
-                          </a>
-                        ) : (
-                          <div className="p-2 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-gray-650 opacity-40 cursor-not-allowed">
-                            <Globe size={14} strokeWidth={2.5} />
-                          </div>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* Options Menu */}
-                    <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
-                      <button 
-                        onClick={(e) => toggleMenu(lead._id, e)}
-                        className="text-slate-400 hover:text-slate-700 dark:text-gray-500 dark:hover:text-white transition-colors p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10"
+                    return (
+                      <div 
+                        key={lead._id}
+                        onClick={() => handleCardClick(lead)}
+                        className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group gap-4 md:gap-0 relative overflow-hidden"
                       >
-                        <MoreHorizontal size={16} />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                        {/* Company Info */}
+                        <div className="flex items-center gap-4 flex-1">
+                          <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 group-hover:scale-105 transition-transform">
+                            <Building2 size={20} />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <h4 className="text-base font-bold text-white group-hover:text-indigo-400 transition-colors truncate">
+                                {lead.company_name}
+                              </h4>
+                              <span className={`text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full border ${statusStyle.bg} ${statusStyle.color} ${statusStyle.border}`}>
+                                {lead.outreach_status}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
+                              <span className="truncate">{lead.targetService || 'No service'}</span>
+                              <span className="w-1 h-1 rounded-full bg-slate-600"></span>
+                              <span className="truncate flex items-center gap-1">
+                                <User size={10} /> {lead.contact_person || 'Not set'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Middle Info: Dates & Follow-up */}
+                        <div className="flex-1 flex flex-col md:items-center gap-1">
+                          {lead.nextFollowUpDate ? (
+                            <div className="flex items-center gap-1.5">
+                              {isFollowUpToday && (
+                                <span className="relative flex h-2 w-2">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                </span>
+                              )}
+                              <span className={`text-xs font-bold ${isFollowUpToday ? 'text-red-400' : 'text-blue-400'}`}>
+                                Next: {formatDate(lead.nextFollowUpDate)}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-xs font-bold text-slate-500">No follow-up set</span>
+                          )}
+                          <span className="text-[10px] font-medium text-slate-500">Created: {formatDate(lead.createdAt)}</span>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex-1 flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                          {lead.email ? (
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setComposerLead(lead);
+                                setIsComposerOpen(true);
+                              }}
+                              className="p-2 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 transition-colors"
+                              title="Send Email"
+                            >
+                              <Mail size={16} />
+                            </button>
+                          ) : (
+                            <div className="p-2 rounded-xl bg-slate-800 text-slate-600 opacity-50 cursor-not-allowed">
+                              <Mail size={16} />
+                            </div>
+                          )}
+
+                          {lead.phone ? (
+                            <a 
+                              href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="p-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 transition-colors"
+                              title="WhatsApp"
+                            >
+                              <MessageCircle size={16} />
+                            </a>
+                          ) : (
+                            <div className="p-2 rounded-xl bg-slate-800 text-slate-600 opacity-50 cursor-not-allowed">
+                              <MessageCircle size={16} />
+                            </div>
+                          )}
+
+                          {lead.website_url ? (
+                            <a 
+                              href={lead.website_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="p-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 transition-colors"
+                              title="Visit Website"
+                            >
+                              <Globe size={16} />
+                            </a>
+                          ) : (
+                            <div className="p-2 rounded-xl bg-slate-800 text-slate-600 opacity-50 cursor-not-allowed">
+                              <Globe size={16} />
+                            </div>
+                          )}
+
+                          {/* Options Menu Button */}
+                          <div className="w-px h-6 bg-white/10 mx-1"></div>
+                          
+                          <button 
+                            onClick={(e) => toggleMenu(lead._id, e)}
+                            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                          >
+                            <MoreHorizontal size={18} />
+                          </button>
+                        </div>
+
+                        {/* Hover Accent Glow */}
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-2xl">
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             );
           })}
@@ -869,7 +842,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
                 <p className="text-slate-700 dark:text-gray-300 mb-2 font-medium">
                   Are you sure you want to delete
                 </p>
-                <p className="font-black text-lg text-slate-900 dark:text-white mb-6 px-5 py-3 neu-pressed rounded-xl border border-red-500/10">
+                <p className="font-black text-lg text-white mb-6 px-5 py-3 neu-pressed rounded-xl border border-red-500/10">
                   "{leadToDelete.company_name}"?
                 </p>
                 
@@ -1000,7 +973,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
                             type="text" 
                             value={formData.company_name}
                             onChange={e => setFormData({...formData, company_name: e.target.value})}
-                            className="w-full px-4 py-3 neu-pressed rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all font-medium"
+                            className="w-full px-4 py-3 neu-pressed rounded-xl text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all font-medium"
                             placeholder="e.g. Acme Corp"
                           />
                         </div>
@@ -1011,7 +984,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
                             type="text" 
                             value={formData.contact_person}
                             onChange={e => setFormData({...formData, contact_person: e.target.value})}
-                            className="w-full px-4 py-3 neu-pressed rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all font-medium"
+                            className="w-full px-4 py-3 neu-pressed rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all font-medium"
                             placeholder="John Doe"
                           />
                         </div>
@@ -1022,7 +995,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
                             type="text" 
                             value={formData.source}
                             onChange={e => setFormData({...formData, source: e.target.value})}
-                            className="w-full px-4 py-3 bg-white dark:bg-black/40 border-2 border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 transition-all"
+                            className="w-full px-4 py-3 bg-white dark:bg-black/40 border-2 border-slate-200 dark:border-white/10 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 transition-all"
                             placeholder="e.g. LinkedIn"
                           />
                         </div>
@@ -1037,7 +1010,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
                       <select 
                         value={formData.targetService}
                         onChange={e => setFormData({...formData, targetService: e.target.value})}
-                        className="w-full px-4 py-3 neu-pressed rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent cursor-pointer font-medium"
+                        className="w-full px-4 py-3 neu-pressed rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent cursor-pointer font-medium"
                       >
                         {['High-end Web Development', 'Next.js / Laravel App', 'WordPress Development', 'Custom ERP / SaaS', 'Technical SEO', 'Answer Engine Optimization (AEO)', 'Generative Engine Optimization (GEO)', 'UI/UX Design'].map(srv => (
                           <option key={srv} value={srv}>{srv}</option>
@@ -1062,7 +1035,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
                             type="email" 
                             value={formData.email}
                             onChange={e => setFormData({...formData, email: e.target.value})}
-                            className="w-full px-4 py-3 neu-pressed rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all font-medium"
+                            className="w-full px-4 py-3 neu-pressed rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all font-medium"
                             placeholder="john@example.com"
                           />
                         </div>
@@ -1072,7 +1045,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
                             type="tel" 
                             value={formData.phone}
                             onChange={e => setFormData({...formData, phone: e.target.value})}
-                            className="w-full px-4 py-3 bg-white dark:bg-black/40 border-2 border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                            className="w-full px-4 py-3 bg-white dark:bg-black/40 border-2 border-slate-200 dark:border-white/10 rounded-xl text-white focus:ring-2 focus:ring-indigo-500"
                             placeholder="+1234567890"
                           />
                         </div>
@@ -1082,7 +1055,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
                             type="url" 
                             value={formData.website_url}
                             onChange={e => setFormData({...formData, website_url: e.target.value})}
-                            className="w-full px-4 py-3 bg-white dark:bg-black/40 border-2 border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                            className="w-full px-4 py-3 bg-white dark:bg-black/40 border-2 border-slate-200 dark:border-white/10 rounded-xl text-white focus:ring-2 focus:ring-indigo-500"
                             placeholder="https://example.com"
                           />
                         </div>
@@ -1119,7 +1092,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
                         <textarea 
                           value={formData.lead_context}
                           onChange={e => setFormData({...formData, lead_context: e.target.value})}
-                          className="w-full px-4 py-3 neu-pressed rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent resize-none h-32"
+                          className="w-full px-4 py-3 neu-pressed rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent resize-none h-32"
                           placeholder="What makes this lead unique? Write down their pain points so AI can generate a highly personalized email."
                         />
                       </div>
@@ -1153,7 +1126,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
                             selected={formData.outreach_scheduled_for ? new Date(formData.outreach_scheduled_for) : null}
                             onChange={(date: Date | null) => setFormData({...formData, outreach_scheduled_for: date ? date.toISOString().split('T')[0] : ''})}
                             minDate={new Date()}
-                            className="w-full px-4 py-2.5 neu-pressed rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-sm text-slate-800 dark:text-slate-200"
+                            className="w-full px-4 py-2.5 neu-pressed rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-sm text-slate-200"
                             placeholderText="Select Schedule Date"
                             dateFormat="MMM d, yyyy"
                             showPopperArrow={false}
@@ -1192,7 +1165,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
                             type="text"
                             value={formData.email_subject_draft}
                             onChange={e => setFormData({...formData, email_subject_draft: e.target.value})}
-                            className="w-full px-4 py-2.5 neu-pressed rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent font-semibold"
+                            className="w-full px-4 py-2.5 neu-pressed rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent font-semibold"
                             placeholder="e.g. Quick question regarding Acme Corp"
                           />
                         </div>
@@ -1203,7 +1176,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
                           <textarea 
                             value={formData.email_draft}
                             onChange={e => setFormData({...formData, email_draft: e.target.value})}
-                            className="w-full px-4 py-3 neu-pressed rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent resize-none h-48"
+                            className="w-full px-4 py-3 neu-pressed rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent resize-none h-48"
                             placeholder="Write your email here, or click 'Auto-Generate Draft' to have AI write it for you..."
                           />
                         </div>
@@ -1214,7 +1187,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
                           <textarea 
                             value={formData.facebook_draft}
                             onChange={e => setFormData({...formData, facebook_draft: e.target.value})}
-                            className="w-full px-4 py-3 neu-pressed rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent resize-none h-32"
+                            className="w-full px-4 py-3 neu-pressed rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent resize-none h-32"
                             placeholder="Write your Facebook outreach message here..."
                           />
                         </div>

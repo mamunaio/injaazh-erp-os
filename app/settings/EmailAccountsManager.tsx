@@ -356,7 +356,7 @@ export default function EmailAccountsManager() {
 
         {showGuide && accountType === 'gmail' && (
           <div className="mt-6 p-5 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-indigo-200 dark:border-indigo-500/20 text-sm">
-            <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-3 text-base">কীভাবে 16-digit App Password পাবেন?</h4>
+            <h4 className="font-bold text-slate-200 mb-3 text-base">কীভাবে 16-digit App Password পাবেন?</h4>
             <ol className="list-decimal pl-5 space-y-2 text-slate-600 dark:text-slate-400">
               <li>আপনার জিমেইলে লগ-ইন করে <a href="https://myaccount.google.com/" target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:text-indigo-600 underline decoration-indigo-500/30 underline-offset-2 font-bold">Manage your Google Account</a>-এ যান।</li>
               <li>বামদিকের মেনু থেকে <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:text-indigo-600 underline decoration-indigo-500/30 underline-offset-2 font-bold">Security</a>-তে ক্লিক করুন।</li>

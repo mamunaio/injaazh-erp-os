@@ -149,7 +149,7 @@ export default function TeamLogsClient({ currentUser }: { currentUser: any }) {
                           {log.userId.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="font-bold text-slate-800 dark:text-slate-200">{log.userId.name}</p>
+                          <p className="font-bold text-slate-200">{log.userId.name}</p>
                           <p className="text-xs text-slate-500">{log.userId.role}</p>
                         </div>
                       </div>

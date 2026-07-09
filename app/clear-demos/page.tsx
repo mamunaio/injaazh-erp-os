@@ -180,7 +180,7 @@ export default function ClearDemosPage() {
               ) : (
                 <AlertTriangle size={20} className="text-red-600 dark:text-red-400 mt-0.5" />
               )}
-              <pre className="text-sm text-slate-900 dark:text-white whitespace-pre-wrap flex-1">
+              <pre className="text-sm text-white whitespace-pre-wrap flex-1">
                 {result}
               </pre>
             </div>

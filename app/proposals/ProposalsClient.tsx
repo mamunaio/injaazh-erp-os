@@ -152,7 +152,7 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
   };
 
   return (
-    <div className="min-h-screen neu-base-bg p-8 text-slate-800 dark:text-slate-200">
+    <div className="min-h-screen neu-base-bg p-8 text-slate-200">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
         <div>
@@ -359,7 +359,7 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
                 <p className="text-[15px] font-inter leading-relaxed tracking-wide text-slate-600 dark:text-gray-400 mb-2">
                   Are you sure you want to delete
                 </p>
-                <p className="font-jakarta font-bold text-slate-900 dark:text-white mb-6">
+                <p className="font-jakarta font-bold text-white mb-6">
                   "{proposalToDelete.title}"?
                 </p>
                 

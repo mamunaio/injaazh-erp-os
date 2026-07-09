@@ -266,7 +266,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-8 neu-base-bg text-slate-800 dark:text-slate-200 flex flex-col items-center relative overflow-hidden">
+    <div className="min-h-screen p-4 md:p-8 neu-base-bg text-slate-200 flex flex-col items-center relative overflow-hidden">
 
       
       <div className="w-full max-w-6xl relative z-10">
@@ -576,7 +576,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                     <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                       {milestones.map((milestone) => (
                         <tr key={milestone.id} className="hover:bg-white dark:hover:bg-white/5 transition-colors group">
-                          <td className="p-4 text-slate-800 dark:text-slate-200 font-medium">{milestone.description}</td>
+                          <td className="p-4 text-slate-200 font-medium">{milestone.description}</td>
                           <td className="p-4 text-slate-500 dark:text-gray-400">{new Date(milestone.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
                           <td className="p-4">
                             <span className={`px-2.5 py-1 text-xs font-bold rounded-lg border ${
@@ -587,7 +587,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                               {milestone.status}
                             </span>
                           </td>
-                          <td className="p-4 text-slate-800 dark:text-slate-200 font-bold text-right">${milestone.amount.toLocaleString()}</td>
+                          <td className="p-4 text-slate-200 font-bold text-right">${milestone.amount.toLocaleString()}</td>
                           <td className="p-4 text-right">
                             <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button 
@@ -688,7 +688,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                             <File size={20} />
                           </div>
                           <div>
-                            <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{file.name}</p>
+                            <p className="text-sm font-bold text-slate-200">{file.name}</p>
                             <div className="flex items-center gap-3 text-xs font-medium text-slate-500 dark:text-gray-400 mt-1">
                               <span>{file.size}</span>
                               <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-gray-600" />

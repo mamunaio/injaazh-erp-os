@@ -109,7 +109,7 @@ export default function MarketplaceClient({ allProjects = [] }: { allProjects?: 
   ];
 
   return (
-    <div className="min-h-screen p-4 md:p-8 neu-base-bg text-slate-800 dark:text-slate-200">
+    <div className="min-h-screen p-4 md:p-8 neu-base-bg text-slate-200">
       
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-6 max-w-7xl mx-auto">
@@ -197,7 +197,7 @@ export default function MarketplaceClient({ allProjects = [] }: { allProjects?: 
                   
                   <div className="flex justify-between items-center gap-2">
                     <span className="text-[10px] text-slate-600 dark:text-gray-400 font-jakarta font-bold uppercase tracking-wide">Pipeline</span>
-                    <span className="text-lg font-mono font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                    <span className="text-lg font-mono font-bold text-slate-200 whitespace-nowrap">
                       ${folder.stats.pipeline.toLocaleString()}
                     </span>
                   </div>

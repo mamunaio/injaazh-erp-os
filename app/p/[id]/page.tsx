@@ -138,7 +138,7 @@ export default function PublicProposalView() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-indigo-50 dark:from-slate-950 dark:via-purple-950/20 dark:to-slate-950 flex items-center justify-center">
+      <div className="min-h-screen neu-base-bg flex items-center justify-center">
         <div className="text-center">
           <Loader2 size={48} className="animate-spin text-indigo-600 dark:text-indigo-400 mx-auto mb-4" />
           <p className="text-slate-600 dark:text-gray-400">Loading proposal...</p>
@@ -149,7 +149,7 @@ export default function PublicProposalView() {
 
   if (error || !proposal) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-indigo-50 dark:from-slate-950 dark:via-purple-950/20 dark:to-slate-950 flex items-center justify-center">
+      <div className="min-h-screen neu-base-bg flex items-center justify-center">
         <div className="text-center">
           <h1 className="mb-2">
             {error || 'Proposal Not Found'}
@@ -165,7 +165,7 @@ export default function PublicProposalView() {
   const isAccepted = proposal.status === 'Accepted';
 
   return (
-    <div className="min-h-screen neu-base-bg text-slate-800 dark:text-slate-200">
+    <div className="min-h-screen neu-base-bg text-slate-200">
       {/* Hero Header */}
       <div className="relative neu-flat mx-4 md:mx-8 mt-8 rounded-[2rem] overflow-hidden py-20 border border-slate-200 dark:border-white/10">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIxLTEuNzktNC00LTRzLTQgMS43OS00IDQgMS43OSA0IDQgNCA0LTEuNzkgNC00em0wLTEwYzAtMi4yMS0xLjc5LTQtNC00cy00IDEuNzktNCA0IDEuNzkgNCA0IDQgNC0xLjc5IDQtNHptMC0xMGMwLTIuMjEtMS43OS00LTQtNHMtNCAxLjc5LTQgNCAxLjc5IDQgNCA0IDQtMS43OSA0LTR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
@@ -259,13 +259,13 @@ export default function PublicProposalView() {
                     className="flex items-center justify-between py-3 border-b border-slate-200 dark:border-white/10 last:border-0"
                   >
                     <span className="text-slate-700 dark:text-gray-300">{item.description}</span>
-                    <span className="text-lg font-semibold text-slate-900 dark:text-white">
+                    <span className="text-lg font-semibold text-white">
                       {formatCurrency(item.cost)}
                     </span>
                   </div>
                 ))}
                 <div className="flex items-center justify-between pt-4 border-t-2 border-slate-300 dark:border-white/20">
-                  <span className="text-xl font-bold text-slate-900 dark:text-white">Total Investment</span>
+                  <span className="text-xl font-bold text-white">Total Investment</span>
                   <span className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
                     {formatCurrency(proposal.value)}
                   </span>

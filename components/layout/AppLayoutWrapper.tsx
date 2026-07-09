@@ -41,9 +41,16 @@ export default function AppLayoutWrapper({ children, initialUser }: { children: 
     <UserProvider initialUser={initialUser}>
       <ConfirmDialogProvider>
         <SidebarProvider>
+          {/* Global Ambient Glows */}
+          <div className="fixed inset-0 overflow-hidden pointer-events-none z-[-1]">
+            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/10 blur-[120px] rounded-full" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-pink-500/10 blur-[120px] rounded-full" />
+            <div className="absolute top-[40%] left-[30%] w-[30%] h-[30%] bg-violet-500/5 blur-[150px] rounded-full" />
+          </div>
+
           <Sidebar />
           <Topbar />
-          <main className="pl-4 lg:pl-[288px] pt-[133px] pr-4 pb-4 min-h-screen transition-all duration-300">
+          <main className="pl-4 lg:pl-[288px] pt-[133px] pr-4 pb-4 min-h-screen transition-all duration-300 relative z-0">
             {children}
           </main>
         </SidebarProvider>

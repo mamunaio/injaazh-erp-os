@@ -46,7 +46,7 @@ export default function InsightsManagerPage() {
 
   if (userLoading || user?.role !== 'owner') {
     return (
-      <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-50 via-slate-100 to-slate-200 dark:from-slate-900 dark:via-purple-950/20 dark:to-slate-950 p-4 flex items-center justify-center">
+      <div className="min-h-screen neu-base-bg p-4 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
       </div>
     );
@@ -104,7 +104,7 @@ export default function InsightsManagerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-50 via-slate-100 to-slate-200 dark:from-slate-900 dark:via-purple-950/20 dark:to-slate-950 p-4 md:p-8 text-slate-800 dark:text-slate-200 overflow-hidden font-sans tracking-tight">
+    <div className="min-h-screen neu-base-bg p-4 md:p-8 text-slate-200 overflow-hidden font-sans tracking-tight">
       <div className="max-w-[1400px] mx-auto">
         <div className="flex justify-between items-end mb-8">
           <div>

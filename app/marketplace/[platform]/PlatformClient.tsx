@@ -137,7 +137,7 @@ export default function PlatformClient({ platform }: { platform: string }) {
   const pConf = getPlatformConfig();
 
   return (
-    <div className="min-h-screen p-4 md:p-8 neu-base-bg text-slate-800 dark:text-slate-200 relative overflow-hidden">
+    <div className="min-h-screen p-4 md:p-8 neu-base-bg text-slate-200 relative overflow-hidden">
 
 
       <div className="max-w-7xl mx-auto relative z-10">
@@ -172,7 +172,7 @@ export default function PlatformClient({ platform }: { platform: string }) {
               <input 
                 type="text" 
                 placeholder="Search projects..." 
-                className="w-full pl-11 pr-4 py-3 neu-pressed rounded-xl text-sm font-inter text-[15px] focus:outline-none text-slate-800 dark:text-slate-200 placeholder-slate-400 transition-all"
+                className="w-full pl-11 pr-4 py-3 neu-pressed rounded-xl text-sm font-inter text-[15px] focus:outline-none text-slate-200 placeholder-slate-400 transition-all"
               />
             </div>
             

@@ -42,7 +42,7 @@ export default async function RootLayout({
       className={`${outfit.variable} ${jetbrainsMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full neu-base-bg text-slate-900 dark:text-slate-100 font-outfit antialiased transition-colors duration-300 selection:bg-indigo-500/30 dark:selection:bg-indigo-500/30" suppressHydrationWarning>
+      <body className="min-h-full neu-base-bg text-slate-100 font-outfit antialiased transition-colors duration-300 selection:bg-indigo-500/30 dark:selection:bg-indigo-500/30" suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
