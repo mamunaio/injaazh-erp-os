@@ -7,6 +7,7 @@ import CommandCenter from "@/components/layout/CommandCenter";
 import WorkTimeTracker from "@/components/layout/WorkTimeTracker";
 import { Toaster } from "react-hot-toast";
 import { getCurrentUser } from "@/app/actions/authActions";
+import ChatWidget from "@/components/ui/ChatWidget";
 
 // Primary font - Outfit (premium, modern, geometric)
 const outfit = Outfit({
@@ -60,8 +61,10 @@ export default async function RootLayout({
             {children}
             <CommandCenter />
             <WorkTimeTracker />
+            <ChatWidget />
           </AppLayoutWrapper>
-          <Toaster position="top-right" />
+          <Toaster 
+            position="top-right" />
         </ThemeProvider>
       </body>
     </html>

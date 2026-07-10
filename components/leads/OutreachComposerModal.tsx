@@ -79,6 +79,17 @@ const CustomSelect = ({ value, onChange, options, className = "", dropdownUp = f
   const selectRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
         setIsOpen(false);

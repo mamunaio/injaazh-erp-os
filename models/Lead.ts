@@ -21,6 +21,10 @@ export interface ILead extends Document {
   targetService?: 'High-end Web Development' | 'Next.js / Laravel App' | 'WordPress Development' | 'Custom ERP / SaaS' | 'Technical SEO' | 'Answer Engine Optimization (AEO)' | 'Generative Engine Optimization (GEO)' | 'UI/UX Design';
   reportFileUrl?: string;
   lead_context?: string;
+  address?: string;
+  traffic_count?: string;
+  business_profile_link?: string;
+  rating?: string;
   email_draft?: string;
   email_subject_draft?: string;
   facebook_draft?: string;
@@ -59,6 +63,10 @@ const LeadSchema = new Schema<ILead>({
   facebook_url: { type: String, trim: true },
   instagram_url: { type: String, trim: true },
   linkedin_url: { type: String, trim: true },
+  address: { type: String, trim: true },
+  traffic_count: { type: String, trim: true },
+  business_profile_link: { type: String, trim: true },
+  rating: { type: String, trim: true },
   targetService: { 
     type: String, 
     enum: ['High-end Web Development', 'Next.js / Laravel App', 'WordPress Development', 'Custom ERP / SaaS', 'Technical SEO', 'Answer Engine Optimization (AEO)', 'Generative Engine Optimization (GEO)', 'UI/UX Design'],

@@ -39,6 +39,7 @@ import {
 import { getActiveSessions, revokeSession } from '@/app/actions/sessionActions';
 import { Users } from 'lucide-react';
 import EmailAccountsManager from './EmailAccountsManager';
+import AiKeysManager from './AiKeysManager';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 
 const playSound = (type: 'success' | 'pop' | 'error' | 'cash') => {
@@ -983,22 +984,7 @@ export default function SettingsClient() {
                   </h2>
                   
                   <div className="space-y-8">
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Google Gemini API Key (AI Assistant)</label>
-                      <div className="relative">
-                        <input 
-                          type={showKey ? 'text' : 'password'} 
-                          defaultValue="AIzaSyB_f-XVZOMwGgD1kUxm1Q44wCMjqqIuKtY" 
-                          className="w-full px-5 py-3.5 pr-12 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-slate-200 font-medium font-mono text-sm" 
-                        />
-                        <button 
-                          onClick={() => setShowKey(!showKey)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-500 transition-colors"
-                        >
-                          {showKey ? <EyeOff size={20} /> : <Eye size={20} />}
-                        </button>
-                      </div>
-                    </div>
+                    <AiKeysManager />
 
                     <div className="pt-8 border-t border-slate-200 dark:border-slate-800">
                       <h3 className="mb-4 flex items-center justify-between">

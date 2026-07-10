@@ -12,7 +12,8 @@ import { useUser } from './UserContext';
 const navItems = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Prospects', href: '/leads', icon: Users },
-  { name: 'Campaigns', href: '/outreach', icon: Mail },
+  { name: 'Campaigns', href: '/campaigns', icon: Mail },
+  { name: 'Outreach Stats', href: '/outreach', icon: Activity },
   { name: 'Proposals', href: '/proposals', icon: FileText },
   { name: 'Projects', href: '/projects', icon: Briefcase },
   { name: 'Roadmap', href: '/roadmap', icon: Map },

@@ -1,15 +1,10 @@
 'use server';
 
-import { GoogleGenAI } from '@google/genai';
-
-// Initialize the Gemini client
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+import { generateAIContent } from '@/lib/aiProvider';
 
 export async function generateAIEmailDraft(leadData: any) {
   try {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY is not configured in the environment.');
-    }
+    // We construct a specific prompt forcing anti-AI, human-like behavior
 
     const { company_name, contact_person, targetService, website_url, lead_context } = leadData;
     const name = contact_person && contact_person !== company_name ? contact_person : 'there';
@@ -41,19 +36,18 @@ STRICT RULES:
    Best,
    Injaazh Global`;
 
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-        }
+    const response = await generateAIContent({
+      prompt,
+      jsonMode: true
     });
 
-    const text = response.text;
-    if (!text) {
-      throw new Error('Gemini returned empty response');
+    if (!response.success || !response.text) {
+      throw new Error(response.error || 'AI returned empty response');
     }
-    const data = JSON.parse(text);
+    
+    // Clean potential markdown blocks
+    const cleanText = response.text.replace(/```json/gi, '').replace(/```/g, '').trim();
+    const data = JSON.parse(cleanText);
 
     return {
       success: true,
@@ -71,8 +65,6 @@ STRICT RULES:
 
 export async function enrichLeadData(companyName: string, websiteUrl: string) {
   try {
-    if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY missing');
-    
     const prompt = `You are an expert Data Enrichment AI. Based on your training data, fill in the missing details for the company "${companyName}" (Website: ${websiteUrl || 'unknown'}).
     Provide reasonable and accurate guesses for the following fields if you know them. If completely unknown, return empty strings. Do not invent fake names for people.
     Return ONLY a valid JSON object matching this exact schema:
@@ -83,19 +75,18 @@ export async function enrichLeadData(companyName: string, websiteUrl: string) {
       "instagram_url": "instagram link (if known, else empty)"
     }`;
 
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-        }
+    const response = await generateAIContent({
+      prompt,
+      jsonMode: true
     });
     
-    const text = response.text;
-    if (!text) {
-      throw new Error('Gemini returned empty response');
+    if (!response.success || !response.text) {
+      throw new Error(response.error || 'AI returned empty response');
     }
-    const data = JSON.parse(text);
+    
+    // Clean potential markdown blocks
+    const cleanText = response.text.replace(/```json/gi, '').replace(/```/g, '').trim();
+    const data = JSON.parse(cleanText);
     return { success: true, data };
   } catch(error: any) {
     console.error('Enrichment error:', error);
@@ -105,8 +96,6 @@ export async function enrichLeadData(companyName: string, websiteUrl: string) {
 
 export async function generateQuickAction(actionType: string, leadData: any) {
   try {
-    if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY missing');
-    
     let prompt = '';
     if (actionType === 'linkedin') {
       prompt = `Write a short, engaging LinkedIn connection request note (max 300 characters) for ${leadData.contact_person || leadData.company_name} at ${leadData.company_name}. Keep it casual, professional, and no AI jargon.`;
@@ -114,14 +103,13 @@ export async function generateQuickAction(actionType: string, leadData: any) {
       prompt = `Summarize the following interaction history with ${leadData.company_name} into 2-3 brief bullet points. Focus on key decisions or statuses:\n\n${JSON.stringify(leadData.outreach_logs)}`;
     }
 
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
+    const response = await generateAIContent({
+      prompt
     });
-    const text = response.text;
-    if (!text) throw new Error('Gemini returned empty response');
+
+    if (!response.success || !response.text) throw new Error(response.error || 'AI returned empty response');
     
-    return { success: true, data: text };
+    return { success: true, data: response.text };
   } catch(error: any) {
     console.error('Quick action error:', error);
     return { success: false, error: error.message };

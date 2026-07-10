@@ -1,13 +1,14 @@
 'use server';
 
 import connectDB from '@/lib/mongodb';
+import mongoose from 'mongoose';
 import { Lead } from '@/models/Lead';
+import { Campaign } from '@/models/Campaign';
+import { CampaignLead } from '@/models/CampaignLead';
 import { EmailAccount } from '@/models/EmailAccount';
 import { EmailCampaignLog } from '@/models/EmailCampaignLog';
 import nodemailer from 'nodemailer';
-import { GoogleGenAI } from '@google/genai';
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+import { generateAIContent } from '@/lib/aiProvider';
 
 /**
  * Automatically select an available email account that hasn't reached its daily limit.
@@ -61,11 +62,10 @@ STRICT RULES:
    Injaazh Global`;
 
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
+    const response = await generateAIContent({
+      prompt
     });
-    return response.text;
+    return response.success ? response.text : null;
   } catch (error) {
     console.error('Failed to generate AI email:', error);
     return null;
@@ -127,9 +127,16 @@ export async function executeAutomatedOutreach(leadId: string, isFollowUp = fals
     // If follow up, we could append In-Reply-To if we want it in the same thread.
     // But for now, we just send it.
 
-    const info = await transporter.sendMail(mailOptions);
+    let info;
+    try {
+      info = await transporter.sendMail(mailOptions);
+    } catch (sendError: any) {
+      // Revert quota if sending fails
+      await EmailAccount.findByIdAndUpdate(account._id, { $inc: { sentToday: -1 } });
+      throw new Error(`Failed to send email: ${sendError.message}`);
+    }
 
-    // Log the campaign
+    // Log the email
     await EmailCampaignLog.create({
       leadId: lead._id,
       accountId: account._id,
@@ -207,6 +214,208 @@ export async function getOutreachAnalytics() {
     };
   } catch (error: any) {
     console.error('Error fetching outreach analytics:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Execute a sequence step for a lead in a campaign
+ */
+export async function executeCampaignSequence(campaignLeadId: string) {
+  try {
+    await connectDB();
+    
+    const campaignLead = await CampaignLead.findById(campaignLeadId).populate('campaignId').populate('leadId');
+    if (!campaignLead) throw new Error('CampaignLead not found');
+    if (campaignLead.status !== 'Active') return { success: false, error: 'Lead is not active in this campaign' };
+
+    const campaign = campaignLead.campaignId;
+    const lead = campaignLead.leadId;
+    
+    if (campaign.status !== 'Active') {
+      return { success: false, error: 'Campaign is paused or draft' };
+    }
+    
+    const step = campaign.sequences.find((s: any) => s.stepNumber === campaignLead.currentStep);
+    if (!step) {
+      campaignLead.status = 'Finished';
+      await campaignLead.save();
+      
+      // Auto-complete the campaign if no active leads are left
+      const remainingActive = await CampaignLead.countDocuments({ 
+        campaignId: campaign._id, 
+        status: 'Active',
+        _id: { $ne: campaignLead._id } // exclude the one we just finished
+      });
+      
+      if (remainingActive === 0) {
+        const Campaign = (await import('@/models/Campaign')).Campaign;
+        await Campaign.findByIdAndUpdate(campaign._id, { status: 'Completed' });
+      }
+      
+      return { success: true, finished: true };
+    }
+
+    const account = await getAvailableEmailAccount();
+    if (!account) {
+      throw new Error('No available email accounts with remaining quota for today.');
+    }
+
+    let emailBody = step.bodyTemplate;
+    let subject = step.subjectTemplate;
+    
+    // Simple template replacement
+    const replaceVars = (text: string) => {
+      return text.replace(/{{company_name}}/g, lead.company_name)
+                 .replace(/{{contact_person}}/g, lead.contact_person || 'there')
+                 .replace(/{{website_url}}/g, lead.website_url || '');
+    };
+    
+    if (step.useAI) {
+      const baseContext = lead.lead_context ? `CRITICAL LEAD CONTEXT: ${lead.lead_context}\n\n` : '';
+      const prompt = `You are a highly skilled Sales Executive. Your goal is to write a highly personalized outreach email based on this specific prompt instructions.\n\n${baseContext}Target Company: ${lead.company_name}\nContact Person: ${lead.contact_person || 'The Team'}\nWebsite: ${lead.website_url || 'Unknown'}\n\nPrompt Instructions for this step:\n${step.bodyTemplate}\n\nDO NOT include the Subject Line in your output, ONLY output the email body text. Make it sound 100% human-written.`;
+      
+      const response = await generateAIContent({ prompt });
+      if (!response.success) {
+        await EmailAccount.findByIdAndUpdate(account._id, { $inc: { sentToday: -1 } });
+        throw new Error(response.error || 'AI Generation failed');
+      }
+      emailBody = response.text;
+      subject = replaceVars(subject);
+    } else {
+      emailBody = replaceVars(emailBody);
+      subject = replaceVars(subject);
+    }
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user: account.email, pass: account.appPassword },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
+    });
+
+    const senderName = account.senderName || 'Injaazh Global';
+    
+    // Add a simple opt-out footer to improve deliverability
+    const footer = `\n\n--\nIf you don't wish to receive these emails, simply reply "Unsubscribe".`;
+    const finalEmailBody = emailBody + footer;
+    
+    // Format as HTML to look better and improve inbox rate
+    const htmlBody = finalEmailBody.replace(/\n/g, '<br>');
+
+    const mailOptions: any = {
+      from: `"${senderName}" <${account.email}>`,
+      to: lead.email,
+      subject: subject,
+      text: finalEmailBody,
+      html: `<div style="font-family: sans-serif; font-size: 14px; color: #333;">${htmlBody}</div>`,
+      headers: {
+        'List-Unsubscribe': `<mailto:${account.email}?subject=Unsubscribe>`,
+        'Precedence': 'bulk'
+      }
+    };
+
+    let info;
+    try {
+      info = await transporter.sendMail(mailOptions);
+    } catch (sendError: any) {
+      await EmailAccount.findByIdAndUpdate(account._id, { $inc: { sentToday: -1 } });
+      throw new Error(`Failed to send email: ${sendError.message}`);
+    }
+
+    await EmailCampaignLog.create({
+      leadId: lead._id,
+      accountId: account._id,
+      messageId: info.messageId,
+      type: campaignLead.currentStep === 1 ? 'Initial' : 'Follow-up',
+      status: 'Sent',
+    });
+
+    // Update Lead status
+    lead.outreach_status = 'Contacted';
+    lead.last_contacted_date = new Date();
+    await lead.save();
+
+    // Advance CampaignLead step
+    const nextStepNum = campaignLead.currentStep + 1;
+    const nextStep = campaign.sequences.find((s: any) => s.stepNumber === nextStepNum);
+    
+    if (nextStep) {
+      campaignLead.currentStep = nextStepNum;
+      const nextDate = new Date();
+      nextDate.setDate(nextDate.getDate() + nextStep.delayDays);
+      campaignLead.nextActionDate = nextDate;
+    } else {
+      campaignLead.status = 'Finished';
+    }
+    
+    await campaignLead.save();
+
+    // Auto-complete the campaign if no active leads are left
+    if (!nextStep) {
+      const remainingActive = await CampaignLead.countDocuments({ 
+        campaignId: campaign._id, 
+        status: 'Active'
+      });
+      
+      if (remainingActive === 0) {
+        // Use findByIdAndUpdate since campaign is a populated subdoc here
+        const Campaign = (await import('@/models/Campaign')).Campaign;
+        await Campaign.findByIdAndUpdate(campaign._id, { status: 'Completed' });
+      }
+    }
+
+    return { success: true, messageId: info.messageId };
+
+  } catch (error: any) {
+    console.error('Campaign Outreach error:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function forceRunCampaign(campaignId: string) {
+  try {
+    console.log(`[FORCE RUN] Starting force run for campaign: ${campaignId}`);
+    await connectDB();
+    const activeCampaignLeads = await CampaignLead.find({
+      campaignId,
+      status: 'Active',
+      nextActionDate: { $lte: new Date() }
+    });
+
+    console.log(`[FORCE RUN] Found ${activeCampaignLeads.length} eligible active leads.`);
+
+    if (activeCampaignLeads.length === 0) {
+      return { success: true, message: 'No eligible leads found to process right now.' };
+    }
+
+    let processedCount = 0;
+    let lastError = null;
+    
+    for (const cl of activeCampaignLeads) {
+      console.log(`[FORCE RUN] Processing lead: ${cl.leadId}`);
+      const res = await executeCampaignSequence(cl._id.toString());
+      if (res.success) {
+        processedCount++;
+        console.log(`[FORCE RUN] Successfully sent email to lead: ${cl.leadId}`);
+      } else {
+        lastError = res.error;
+        console.error(`[FORCE RUN] Error for lead ${cl.leadId}:`, res.error);
+      }
+      // Wait to avoid rate limits
+      await new Promise(r => setTimeout(r, 2000));
+    }
+
+    console.log(`[FORCE RUN] Finished processing ${processedCount} leads. Last error:`, lastError);
+
+    if (processedCount === 0 && lastError) {
+      return { success: false, error: lastError };
+    }
+
+    return { success: true, message: `Successfully processed ${processedCount} leads.` };
+  } catch (error: any) {
+    console.error(`[FORCE RUN] Fatal error:`, error);
     return { success: false, error: error.message };
   }
 }

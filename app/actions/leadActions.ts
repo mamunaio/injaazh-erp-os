@@ -585,3 +585,118 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
     return { success: false, error: error.message || 'Outreach failed to send' };
   }
 }
+
+export async function importCSVLeads(leadsData: any[]) {
+  try {
+    await connectToDatabase();
+    const user = await getAuthUser();
+    if (!user) return { success: false, error: 'Unauthorized' };
+
+    let imported = 0;
+    let duplicates = 0;
+    let errors = 0;
+
+    for (const data of leadsData) {
+      if (!data.company_name) {
+        errors++;
+        continue;
+      }
+
+      // Check duplicate by company_name or email
+      let isDuplicate = false;
+      if (data.email) {
+        const existing = await Lead.findOne({ email: data.email.trim().toLowerCase() }).lean();
+        if (existing) isDuplicate = true;
+      }
+      if (!isDuplicate && data.company_name) {
+        const existing = await Lead.findOne({ 
+          company_name: { $regex: new RegExp(`^${data.company_name.trim()}$`, 'i') }
+        }).lean();
+        if (existing) isDuplicate = true;
+      }
+
+      if (isDuplicate) {
+        duplicates++;
+        continue;
+      }
+
+      // Parse date if valid
+      let parsedDate = undefined;
+      if (data.nextFollowUpDate && !isNaN(new Date(data.nextFollowUpDate).getTime())) {
+        parsedDate = new Date(data.nextFollowUpDate);
+      }
+
+      // Sanitize outreach status
+      const validStatuses = ['New', 'Contacted', 'Replied', 'Meeting Booked', 'Closed', 'Not Interested'];
+      let safeStatus = data.outreach_status || 'New';
+      const statusLower = safeStatus.toLowerCase();
+      
+      if (statusLower.includes('email') || statusLower.includes('message') || statusLower.includes('contact')) {
+        safeStatus = 'Contacted';
+      } else if (!validStatuses.includes(safeStatus)) {
+        safeStatus = 'New';
+      }
+
+      const newLead = new Lead({
+        company_name: data.company_name,
+        address: data.address || '',
+        phone: data.phone || undefined,
+        website_url: data.website_url || '',
+        email: data.email || undefined,
+        facebook_url: data.facebook_url || '',
+        linkedin_url: data.linkedin_url || '',
+        traffic_count: data.traffic_count || '',
+        business_profile_link: data.business_profile_link || '',
+        rating: data.rating || '',
+        outreach_status: safeStatus,
+        nextFollowUpDate: parsedDate,
+        createdBy: user.id,
+      });
+
+      try {
+        await newLead.save();
+        imported++;
+      } catch (err: any) {
+        if (err.code === 11000) {
+          duplicates++;
+        } else {
+          errors++;
+          console.error('Error saving lead from CSV:', err);
+        }
+      }
+    }
+
+    revalidatePath('/leads');
+    return { success: true, imported, duplicates, errors };
+  } catch (error: any) {
+    console.error('Error importing CSV leads:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function bulkDeleteLeads(leadIds: string[]) {
+  try {
+    await connectToDatabase();
+    
+    const user = await getAuthUser();
+    if (!user) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    if (!leadIds || leadIds.length === 0) {
+      return { success: false, error: 'No leads selected' };
+    }
+
+    const result = await Lead.deleteMany({ _id: { $in: leadIds } });
+    
+    revalidatePath('/leads');
+    
+    return { 
+      success: true, 
+      message: `Successfully deleted ${result.deletedCount} leads` 
+    };
+  } catch (error: any) {
+    console.error('Error bulk deleting leads:', error);
+    return { success: false, error: error.message || 'Failed to delete leads' };
+  }
+}

@@ -1,21 +1,30 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Mail, MessageCircle, Globe, Plus, X, Trash2, Edit, MoreHorizontal, Building2, User, Calendar, Tag, Loader2, AlertTriangle, FileText, Clock, LayoutGrid, List, CheckCircle, Sparkles, ArrowRight } from 'lucide-react';
+import { Mail, MessageCircle, Globe, Plus, X, Trash2, Edit, MoreHorizontal, Building2, User, Calendar, Tag, Loader2, AlertTriangle, FileText, Clock, LayoutGrid, List, CheckCircle, Sparkles, ArrowRight, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createLead, deleteLead } from '@/app/actions/leadActions';
+import { addLeadsToCampaign } from '@/app/actions/campaignActions';
 import { useRouter } from 'next/navigation';
 import LeadDetailsModal from '@/components/leads/LeadDetailsModal';
 import OutreachComposerModal from '@/components/leads/OutreachComposerModal';
 import { toast } from 'react-hot-toast';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import CSVImportModal from '@/components/leads/CSVImportModal';
 
 const STATUS_OPTIONS = ['New', 'Contacted', 'Replied', 'Meeting Booked', 'Closed', 'Not Interested'];
 
-export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
+export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { initialLeads: any[], initialCampaigns?: any[] }) {
   const router = useRouter();
   const [leads, setLeads] = useState(initialLeads);
+  const [campaigns, setCampaigns] = useState(initialCampaigns);
+
+  React.useEffect(() => {
+    setLeads(initialLeads);
+    setCampaigns(initialCampaigns);
+  }, [initialLeads, initialCampaigns]);
+
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
   const [showFollowUps, setShowFollowUps] = useState(false);
@@ -26,6 +35,15 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
   const [leadToDelete, setLeadToDelete] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isCSVModalOpen, setIsCSVModalOpen] = useState(false);
+  const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
+  const [selectedCampaignId, setSelectedCampaignId] = useState('');
+  const [isAddingToCampaign, setIsAddingToCampaign] = useState(false);
+  
+  // Bulk Delete State
+  const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+
   
   // Cold Email Outreach state
   const [isComposerOpen, setIsComposerOpen] = useState(false);
@@ -176,6 +194,50 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (selectedLeads.length === 0) return;
+    
+    if (!confirm(`Are you sure you want to delete ${selectedLeads.length} leads? This action cannot be undone.`)) {
+      return;
+    }
+
+    setIsBulkDeleting(true);
+    try {
+      const { bulkDeleteLeads } = await import('@/app/actions/leadActions');
+      const result = await bulkDeleteLeads(selectedLeads);
+      
+      if (result.success) {
+        toast.success(result.message);
+        setSelectedLeads([]);
+        router.refresh();
+      } else {
+        toast.error(result.error || 'Failed to delete leads');
+      }
+    } catch (error) {
+      console.error('Error bulk deleting:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
+  const handleAddToCampaign = async () => {
+    if (!selectedCampaignId) return alert("Please select a campaign");
+    if (selectedLeads.length === 0) return;
+    
+    setIsAddingToCampaign(true);
+    const res = await addLeadsToCampaign(selectedCampaignId, selectedLeads);
+    setIsAddingToCampaign(false);
+    
+    if (res.success) {
+      toast.success(`Successfully added ${selectedLeads.length} leads to the campaign`);
+      setIsCampaignModalOpen(false);
+      setSelectedLeads([]);
+      setSelectedCampaignId('');
+    } else {
+      toast.error("Failed to add leads to campaign: " + res.error);
+    }
+  };
+
   const handleEditClick = (lead: any, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -228,8 +290,22 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
       )
     : filteredLeads;
 
-  // Group leads by date
-  const groupedLeads = searchedLeads.reduce((groups: Record<string, any[]>, lead) => {
+  // Pagination logic
+  const [currentPage, setCurrentPage] = useState(1);
+  const leadsPerPage = 50;
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, showFollowUps]);
+
+  const totalPages = Math.ceil(searchedLeads.length / leadsPerPage);
+  const paginatedLeads = searchedLeads.slice(
+    (currentPage - 1) * leadsPerPage,
+    currentPage * leadsPerPage
+  );
+
+  // Group leads by date (using paginated leads)
+  const groupedLeads = paginatedLeads.reduce((groups: Record<string, any[]>, lead) => {
     const date = new Date(lead.createdAt);
     const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
     if (!groups[dateKey]) {
@@ -280,95 +356,182 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
 
   return (
     <div className="min-h-screen neu-base-bg p-4 md:p-8 text-slate-200">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 md:mb-10 gap-4 md:gap-6">
+      {/* Top Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
         <div>
-          <h1 className="mb-2 md:mb-3">
+          <h1 className="mb-1 text-3xl font-black text-white tracking-tight">
             Leads & Outreach
           </h1>
-          <p className="text-slate-600 dark:text-gray-400 text-sm md:text-base font-inter font-medium tracking-wide">Manage high-density pipeline and cold outreach</p>
+          <p className="text-slate-400 text-sm font-medium">Manage your high-density pipeline and cold outreach campaigns</p>
         </div>
-
-        <div className="flex items-center gap-2 md:gap-4 flex-wrap w-full md:w-auto">
-          {/* View Mode Toggle */}
-          <div className="flex items-center bg-white/50 dark:bg-slate-800/40 p-1 border border-slate-300 dark:border-white/10 rounded-xl">
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-all ${
-                viewMode === 'list' 
-                  ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md' 
-                  : 'text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-white'
-              }`}
-              title="List View"
-            >
-              <List size={16} />
-            </button>
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-all ${
-                viewMode === 'grid' 
-                  ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md' 
-                  : 'text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-white'
-              }`}
-              title="Grid View"
-            >
-              <LayoutGrid size={16} />
-            </button>
-          </div>
-
+        
+        <div className="flex items-center gap-3 w-full md:w-auto">
           <button 
             onClick={() => setShowFollowUps(!showFollowUps)}
-            className={`flex items-center gap-2 md:gap-2.5 px-4 md:px-6 py-2.5 md:py-3 border-2 rounded-xl transition-all text-sm md:text-sm font-jakarta font-bold shadow-sm hover:shadow-md ${
+            className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm ${
               showFollowUps 
-                ? 'bg-gradient-to-r from-red-50 to-orange-50 border-red-300 text-red-700 dark:from-red-500/20 dark:to-orange-500/20 dark:border-red-400/50 dark:text-red-300 shadow-red-200/50 dark:shadow-red-500/20' 
-                : 'bg-white/90 border-slate-300 text-slate-700 hover:bg-slate-50 dark:bg-white/10 dark:border-white/20 dark:hover:bg-white/15 dark:text-white'
+                ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' 
+                : 'bg-white/5 text-slate-300 border border-white/10 hover:bg-white/10'
             }`}
           >
-            <Calendar size={18} strokeWidth={2.5} />
+            <Calendar size={16} strokeWidth={2.5} />
             <span className="hidden sm:inline">Follow-ups Today</span>
             <span className="sm:hidden">Follow-ups</span>
           </button>
 
           <button 
-            onClick={() => setIsFormOpen(true)}
-            className="flex items-center gap-2 md:gap-2.5 px-5 md:px-7 py-2.5 md:py-3 neu-button text-slate-200 font-jakarta font-bold rounded-xl text-sm md:text-sm flex-1 md:flex-initial justify-center"
+            onClick={() => setIsCSVModalOpen(true)}
+            className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700 transition-colors"
           >
-            <Plus size={20} strokeWidth={2.5} className="text-indigo-500" />
+            <FileText size={16} className="text-emerald-400" />
+            <span className="hidden sm:inline">Import CSV</span>
+            <span className="sm:hidden">Import</span>
+          </button>
+
+          <button 
+            onClick={() => setIsFormOpen(true)}
+            className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-500/20 transition-colors border border-indigo-500"
+          >
+            <Plus size={16} strokeWidth={3} />
             <span>New Lead</span>
           </button>
         </div>
       </div>
 
-      {/* Search Bar */}
-      <div className="mb-6">
-        <div className="relative max-w-2xl">
+      {/* Toolbar / Search Ribbon */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white/5 border border-white/10 rounded-2xl p-2 mb-6">
+        <div className="relative w-full md:w-[400px]">
           <input
             type="text"
-            placeholder="Search leads by company, contact, email, phone, or service..."
+            placeholder="Search leads by company, email, phone..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-5 py-3.5 pl-12 neu-pressed rounded-xl focus:outline-none text-slate-800 dark:text-white placeholder-slate-500 font-inter transition-all"
+            className="w-full bg-black/20 border border-white/5 text-white placeholder-slate-400 text-sm font-medium rounded-xl px-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
           />
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
             >
-              <X size={18} />
+              <X size={14} strokeWidth={2.5} />
             </button>
           )}
         </div>
-        {searchQuery && (
-          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400 font-inter">
-            Found <span className="font-bold text-indigo-600 dark:text-indigo-400">{searchedLeads.length}</span> lead{searchedLeads.length !== 1 ? 's' : ''}
-          </p>
+        
+        <div className="flex items-center gap-3 w-full md:w-auto px-2 md:px-2">
+          <div className="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1.5 rounded-lg border border-indigo-500/20">
+            {searchedLeads.length} leads
+          </div>
+
+          <div className="w-px h-6 bg-white/10 mx-1 hidden md:block"></div>
+
+          {/* View Toggles */}
+          <div className="flex items-center bg-black/20 border border-white/5 rounded-lg p-0.5 ml-auto md:ml-0">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-1.5 rounded-md transition-all ${
+                viewMode === 'list' 
+                  ? 'bg-indigo-500 text-white shadow-sm' 
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <List size={14} strokeWidth={2.5} />
+            </button>
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-1.5 rounded-md transition-all ${
+                viewMode === 'grid' 
+                  ? 'bg-indigo-500 text-white shadow-sm' 
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <LayoutGrid size={14} strokeWidth={2.5} />
+            </button>
+          </div>
+        </div>
+      </div>
+      {/* Select All Bar */}
+      <div className="flex items-center justify-between mb-4">
+        {paginatedLeads.length > 0 && (
+          <button
+            onClick={() => {
+              const pageIds = paginatedLeads.map(l => l._id);
+              const allSelected = pageIds.every(id => selectedLeads.includes(id));
+              if (allSelected) {
+                setSelectedLeads(selectedLeads.filter(id => !pageIds.includes(id)));
+              } else {
+                const newSelections = [...selectedLeads];
+                pageIds.forEach(id => {
+                  if (!newSelections.includes(id)) newSelections.push(id);
+                });
+                setSelectedLeads(newSelections);
+              }
+            }}
+            className="flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-indigo-400 transition-colors bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg"
+          >
+            <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+              paginatedLeads.every(l => selectedLeads.includes(l._id)) 
+                ? 'bg-indigo-500 border-indigo-500 text-white' 
+                : 'border-slate-500'
+            }`}>
+              {paginatedLeads.every(l => selectedLeads.includes(l._id)) && <CheckCircle size={12} />}
+            </div>
+            Select all on this page
+          </button>
         )}
       </div>
+
+      {/* Bulk Actions Bar */}
+      <AnimatePresence>
+        {selectedLeads.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="mb-6 flex items-center justify-between bg-[#0f111a]/95 backdrop-blur-xl border border-indigo-500/30 rounded-2xl p-4 shadow-2xl"
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-500 text-xs font-bold text-white">
+                {selectedLeads.length}
+              </span>
+              <span className="text-sm font-medium text-white">Leads Selected</span>
+
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsCampaignModalOpen(true)}
+                className="text-sm bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 transition-colors px-4 py-2 rounded-lg font-bold flex items-center gap-2 border border-indigo-500/30"
+              >
+                <Target size={16} /> Add to Campaign
+              </button>
+              <button
+                onClick={() => setSelectedLeads([])}
+                className="text-sm text-slate-400 hover:text-slate-200 transition-colors px-3 py-2"
+              >
+                Clear Selection
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                disabled={isBulkDeleting}
+                className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-md shadow-rose-500/20 disabled:opacity-50"
+              >
+                {isBulkDeleting ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Trash2 size={16} />
+                )}
+                Delete Selected
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Empty State */}
       {searchedLeads.length === 0 ? (
@@ -400,8 +563,8 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
               <div key={dateKey} className="space-y-4">
                 {/* Date Header */}
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-3 neu-flat px-5 py-3">
-                    <Calendar size={20} className="text-indigo-600 dark:text-indigo-400" />
+                  <div className="flex items-center gap-3 bg-[#0f111a]/80 backdrop-blur-md border border-white/10 rounded-xl px-5 py-3 shadow-lg">
+                    <Calendar size={20} className="text-indigo-400" />
                     <h2 className="">
                       {formatDateHeader(dateKey)}
                     </h2>
@@ -436,7 +599,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
               >
                 <div 
                   onClick={() => handleCardClick(lead)}
-                  className="group neu-flat p-5 transition-all duration-300 flex flex-col cursor-pointer relative h-full hover:-translate-y-1"
+                  className="group bg-[#0f111a]/80 backdrop-blur-md border border-white/10 rounded-2xl p-5 transition-all duration-300 flex flex-col cursor-pointer relative h-full hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/10 hover:border-white/20"
                 >
                   {/* Header: Status & Menu Action */}
                   <div className="flex justify-between items-center mb-3 relative z-10 gap-2">
@@ -464,6 +627,25 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
 
                   {/* Company Info Header */}
                   <div className="flex items-start gap-3 mb-3 relative z-10">
+                    <div 
+                      className="mt-1 flex items-center justify-center p-1 rounded hover:bg-slate-800 transition-colors cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (selectedLeads.includes(lead._id)) {
+                          setSelectedLeads(selectedLeads.filter(id => id !== lead._id));
+                        } else {
+                          setSelectedLeads([...selectedLeads, lead._id]);
+                        }
+                      }}
+                    >
+                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
+                        selectedLeads.includes(lead._id)
+                          ? 'bg-indigo-500 border-indigo-500 text-white'
+                          : 'border-slate-300 dark:border-slate-500 hover:border-indigo-400'
+                      }`}>
+                        {selectedLeads.includes(lead._id) && <CheckCircle size={14} className="text-white" />}
+                      </div>
+                    </div>
                     <div className="w-10 h-10 rounded-xl neu-pressed flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
                       <Building2 size={18} strokeWidth={2.5} className="text-indigo-500" />
                     </div>
@@ -585,8 +767,8 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
               <div key={dateKey} className="space-y-4">
                 {/* Date Header */}
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-3 neu-flat rounded-xl px-5 py-3 shadow-lg dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)]">
-                    <Calendar size={20} className="text-indigo-600 dark:text-indigo-400" />
+                  <div className="flex items-center gap-3 bg-[#0f111a]/80 backdrop-blur-md border border-white/10 rounded-xl px-5 py-3 shadow-lg">
+                    <Calendar size={20} className="text-indigo-400" />
                     <h2 className="">
                       {formatDateHeader(dateKey)}
                     </h2>
@@ -597,142 +779,224 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
                   <div className="flex-1 h-px bg-gradient-to-r from-slate-200 via-slate-300 to-transparent dark:from-white/5 dark:via-white/10 dark:to-transparent"></div>
                 </div>
 
-                {/* Stacked Card List for this date */}
-                <div className="space-y-3">
-                  {dateLeads.map((lead) => {
-                    const statusStyle = getStatusConfig(lead.outreach_status);
-                    let isFollowUpToday = false;
-                    if (lead.nextFollowUpDate) {
-                      const followUpDate = new Date(lead.nextFollowUpDate);
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      isFollowUpToday = followUpDate <= today;
-                    }
+                {/* Modern Table Layout for this date */}
+                <div className="bg-[#0f111a]/80 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+                  {/* Table Header (Hidden on mobile) */}
+                  <div className="hidden md:grid grid-cols-12 gap-4 items-center bg-black/40 border-b border-white/10 px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    <div className="col-span-1 text-center w-8"></div>
+                    <div className="col-span-4">Company & Target</div>
+                    <div className="col-span-3">Contact & Status</div>
+                    <div className="col-span-2">Activity</div>
+                    <div className="col-span-2 text-right">Actions</div>
+                  </div>
 
-                    return (
-                      <div 
-                        key={lead._id}
-                        onClick={() => handleCardClick(lead)}
-                        className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group gap-4 md:gap-0 relative overflow-hidden"
-                      >
-                        {/* Company Info */}
-                        <div className="flex items-center gap-4 flex-1">
-                          <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 group-hover:scale-105 transition-transform">
-                            <Building2 size={20} />
-                          </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 mb-0.5">
-                              <h4 className="text-base font-bold text-white group-hover:text-indigo-400 transition-colors truncate">
-                                {lead.company_name}
-                              </h4>
-                              <span className={`text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full border ${statusStyle.bg} ${statusStyle.color} ${statusStyle.border}`}>
-                                {lead.outreach_status}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
-                              <span className="truncate">{lead.targetService || 'No service'}</span>
-                              <span className="w-1 h-1 rounded-full bg-slate-600"></span>
-                              <span className="truncate flex items-center gap-1">
-                                <User size={10} /> {lead.contact_person || 'Not set'}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
+                  <div className="divide-y divide-white/5">
+                    {dateLeads.map((lead) => {
+                      const statusStyle = getStatusConfig(lead.outreach_status);
+                      let isFollowUpToday = false;
+                      if (lead.nextFollowUpDate) {
+                        const followUpDate = new Date(lead.nextFollowUpDate);
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        isFollowUpToday = followUpDate <= today;
+                      }
 
-                        {/* Middle Info: Dates & Follow-up */}
-                        <div className="flex-1 flex flex-col md:items-center gap-1">
-                          {lead.nextFollowUpDate ? (
-                            <div className="flex items-center gap-1.5">
-                              {isFollowUpToday && (
-                                <span className="relative flex h-2 w-2">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                                </span>
-                              )}
-                              <span className={`text-xs font-bold ${isFollowUpToday ? 'text-red-400' : 'text-blue-400'}`}>
-                                Next: {formatDate(lead.nextFollowUpDate)}
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="text-xs font-bold text-slate-500">No follow-up set</span>
-                          )}
-                          <span className="text-[10px] font-medium text-slate-500">Created: {formatDate(lead.createdAt)}</span>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex-1 flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-                          {lead.email ? (
-                            <button 
+                      return (
+                        <div 
+                          key={lead._id}
+                          onClick={() => handleCardClick(lead)}
+                          className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center p-4 hover:bg-white/5 transition-colors cursor-pointer group relative"
+                        >
+                          {/* Selection Checkbox */}
+                          <div className="hidden md:flex col-span-1 justify-center w-8" onClick={(e) => e.stopPropagation()}>
+                            <div 
+                              className="flex items-center justify-center p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setComposerLead(lead);
-                                setIsComposerOpen(true);
+                                if (selectedLeads.includes(lead._id)) {
+                                  setSelectedLeads(selectedLeads.filter(id => id !== lead._id));
+                                } else {
+                                  setSelectedLeads([...selectedLeads, lead._id]);
+                                }
                               }}
-                              className="p-2 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 transition-colors"
-                              title="Send Email"
                             >
-                              <Mail size={16} />
+                              <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                                selectedLeads.includes(lead._id)
+                                  ? 'bg-indigo-500 border-indigo-500 text-white'
+                                  : 'border-slate-600 group-hover:border-indigo-400'
+                              }`}>
+                                {selectedLeads.includes(lead._id) && <CheckCircle size={12} className="text-white" />}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Mobile Checkbox (Visible only on small screens) */}
+                          <div className="md:hidden flex items-center gap-3 w-full border-b border-white/5 pb-3 mb-1">
+                            <div 
+                              className="flex items-center justify-center p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (selectedLeads.includes(lead._id)) {
+                                  setSelectedLeads(selectedLeads.filter(id => id !== lead._id));
+                                } else {
+                                  setSelectedLeads([...selectedLeads, lead._id]);
+                                }
+                              }}
+                            >
+                              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                                selectedLeads.includes(lead._id)
+                                  ? 'bg-indigo-500 border-indigo-500 text-white'
+                                  : 'border-slate-500'
+                              }`}>
+                                {selectedLeads.includes(lead._id) && <CheckCircle size={14} className="text-white" />}
+                              </div>
+                            </div>
+                            <span className="text-xs font-bold text-slate-400 uppercase">Select Lead</span>
+                          </div>
+
+                          {/* Company Info (Col 4) */}
+                          <div className="col-span-1 md:col-span-4 flex items-center gap-3 min-w-0">
+                            <div className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 group-hover:scale-105 group-hover:bg-indigo-500/20 transition-all">
+                              <Building2 size={18} strokeWidth={2.5} />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h4 className="text-sm font-bold text-white group-hover:text-indigo-400 transition-colors truncate">
+                                {lead.company_name}
+                              </h4>
+                              <div className="flex items-center gap-2 mt-0.5 text-[11px] font-medium text-slate-400">
+                                <span className="truncate">{lead.targetService || 'No service'}</span>
+                                {lead.rating && (
+                                  <>
+                                    <span className="w-1 h-1 rounded-full bg-slate-600 shrink-0"></span>
+                                    <span className="text-amber-400 shrink-0 flex items-center gap-0.5"><span className="text-xs">★</span> {lead.rating}</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Contact & Status (Col 3) */}
+                          <div className="col-span-1 md:col-span-3 flex flex-col items-start gap-1.5 min-w-0">
+                            <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${statusStyle.bg} ${statusStyle.color} ${statusStyle.border} shrink-0`}>
+                              {lead.outreach_status}
+                            </span>
+                            <span className="truncate flex items-center gap-1.5 text-[11px] font-semibold text-slate-300">
+                              <User size={12} className="text-slate-500" /> {lead.contact_person || 'No Contact Person'}
+                            </span>
+                          </div>
+
+                          {/* Activity / Dates (Col 2) */}
+                          <div className="col-span-1 md:col-span-2 flex flex-col items-start gap-1">
+                            {lead.nextFollowUpDate ? (
+                              <div className="flex items-center gap-1.5">
+                                {isFollowUpToday && (
+                                  <span className="relative flex h-1.5 w-1.5 shrink-0">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
+                                  </span>
+                                )}
+                                <span className={`text-[11px] font-bold ${isFollowUpToday ? 'text-red-400' : 'text-blue-400'}`}>
+                                  Next: {formatDate(lead.nextFollowUpDate)}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-[11px] font-medium text-slate-500">No follow-up set</span>
+                            )}
+                            <span className="text-[10px] font-medium text-slate-500">Added: {formatDate(lead.createdAt)}</span>
+                          </div>
+
+                          {/* Actions (Col 2) */}
+                          <div className="col-span-1 md:col-span-2 flex items-center md:justify-end gap-1.5 mt-2 md:mt-0" onClick={(e) => e.stopPropagation()}>
+                            {lead.email ? (
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setComposerLead(lead);
+                                  setIsComposerOpen(true);
+                                }}
+                                className="p-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 transition-colors"
+                                title="Send Email"
+                              >
+                                <Mail size={16} strokeWidth={2.5} />
+                              </button>
+                            ) : (
+                              <div className="p-2 rounded-lg bg-slate-800/50 text-slate-600 cursor-not-allowed">
+                                <Mail size={16} strokeWidth={2.5} />
+                              </div>
+                            )}
+
+                            {lead.phone ? (
+                              <a 
+                                href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="p-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 transition-colors"
+                                title="WhatsApp"
+                              >
+                                <MessageCircle size={16} strokeWidth={2.5} />
+                              </a>
+                            ) : (
+                              <div className="p-2 rounded-lg bg-slate-800/50 text-slate-600 cursor-not-allowed">
+                                <MessageCircle size={16} strokeWidth={2.5} />
+                              </div>
+                            )}
+
+                            {lead.website_url ? (
+                              <a 
+                                href={lead.website_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="p-2 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 transition-colors"
+                                title="Visit Website"
+                              >
+                                <Globe size={16} strokeWidth={2.5} />
+                              </a>
+                            ) : (
+                              <div className="p-2 rounded-lg bg-slate-800/50 text-slate-600 cursor-not-allowed">
+                                <Globe size={16} strokeWidth={2.5} />
+                              </div>
+                            )}
+
+                            <div className="w-px h-5 bg-white/10 mx-0.5"></div>
+                            
+                            <button 
+                              onClick={(e) => toggleMenu(lead._id, e)}
+                              className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                            >
+                              <MoreHorizontal size={18} strokeWidth={2.5} />
                             </button>
-                          ) : (
-                            <div className="p-2 rounded-xl bg-slate-800 text-slate-600 opacity-50 cursor-not-allowed">
-                              <Mail size={16} />
-                            </div>
-                          )}
-
-                          {lead.phone ? (
-                            <a 
-                              href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="p-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 transition-colors"
-                              title="WhatsApp"
-                            >
-                              <MessageCircle size={16} />
-                            </a>
-                          ) : (
-                            <div className="p-2 rounded-xl bg-slate-800 text-slate-600 opacity-50 cursor-not-allowed">
-                              <MessageCircle size={16} />
-                            </div>
-                          )}
-
-                          {lead.website_url ? (
-                            <a 
-                              href={lead.website_url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="p-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 transition-colors"
-                              title="Visit Website"
-                            >
-                              <Globe size={16} />
-                            </a>
-                          ) : (
-                            <div className="p-2 rounded-xl bg-slate-800 text-slate-600 opacity-50 cursor-not-allowed">
-                              <Globe size={16} />
-                            </div>
-                          )}
-
-                          {/* Options Menu Button */}
-                          <div className="w-px h-6 bg-white/10 mx-1"></div>
-                          
-                          <button 
-                            onClick={(e) => toggleMenu(lead._id, e)}
-                            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
-                          >
-                            <MoreHorizontal size={18} />
-                          </button>
+                          </div>
                         </div>
-
-                        {/* Hover Accent Glow */}
-                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-2xl">
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-4 mt-8 mb-4">
+          <button 
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 rounded-xl disabled:opacity-50 transition-colors font-medium text-sm"
+          >
+            Previous
+          </button>
+          <span className="text-slate-400 font-medium text-sm">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button 
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 rounded-xl disabled:opacity-50 transition-colors font-medium text-sm"
+          >
+            Next
+          </button>
         </div>
       )}
 
@@ -792,16 +1056,16 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
               top: `${menuPosition.top}px`,
               right: `${menuPosition.right}px`,
             }}
-            className="z-[110] w-52 neu-flat p-3 flex flex-col gap-2"
+            className="z-[110] w-48 bg-[#0f111a]/95 backdrop-blur-xl border border-white/10 p-2 flex flex-col gap-1 rounded-2xl shadow-2xl"
           >
             <button
               onClick={(e) => {
                 const lead = leads.find(l => l._id === openMenuId);
                 if (lead) handleEditClick(lead, e);
               }}
-              className="w-full flex items-center gap-3 px-4 py-3 neu-button text-sm font-bold text-slate-700 dark:text-gray-300 rounded-xl"
+              className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/10 text-sm font-bold text-slate-300 hover:text-white rounded-xl transition-colors"
             >
-              <Edit size={16} strokeWidth={2.5} className="text-indigo-500" />
+              <Edit size={16} strokeWidth={2.5} className="text-indigo-400" />
               Edit Lead
             </button>
             <button
@@ -809,9 +1073,9 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
                 const lead = leads.find(l => l._id === openMenuId);
                 if (lead) handleDeleteClick(lead, e);
               }}
-              className="w-full flex items-center gap-3 px-4 py-3 neu-button text-sm font-bold text-red-600 dark:text-red-400 rounded-xl"
+              className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-red-500/10 text-sm font-bold text-red-400 hover:text-red-300 rounded-xl transition-colors"
             >
-              <Trash2 size={16} strokeWidth={2.5} className="text-red-500" />
+              <Trash2 size={16} strokeWidth={2.5} />
               Delete Lead
             </button>
           </motion.div>
@@ -1246,6 +1510,73 @@ export default function LeadsClient({ initialLeads }: { initialLeads: any[] }) {
           </div>
         )}
       </AnimatePresence>
+      
+      {/* Campaign Select Modal */}
+      <AnimatePresence>
+        {isCampaignModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="w-full max-w-md bg-[#0f111a] border border-white/10 rounded-3xl p-6 shadow-2xl"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-white">Add to Campaign</h3>
+                  <p className="text-sm text-slate-400">Add {selectedLeads.length} selected leads to a campaign</p>
+                </div>
+                <button onClick={() => setIsCampaignModalOpen(false)} className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-xl transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+
+              {campaigns.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-slate-400 mb-4">You haven't created any campaigns yet.</p>
+                  <button onClick={() => router.push('/campaigns')} className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold">
+                    Go to Campaigns
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-400 mb-2">Select Campaign</label>
+                    <select
+                      value={selectedCampaignId}
+                      onChange={(e) => setSelectedCampaignId(e.target.value)}
+                      className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500"
+                    >
+                      <option value="">-- Choose a Campaign --</option>
+                      {campaigns.map(c => (
+                        <option key={c._id} value={c._id}>{c.name} {c.niche ? `(${c.niche})` : ''}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <button
+                    onClick={handleAddToCampaign}
+                    disabled={isAddingToCampaign || !selectedCampaignId}
+                    className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 mt-4"
+                  >
+                    {isAddingToCampaign ? <Loader2 size={18} className="animate-spin" /> : <Target size={18} />}
+                    Confirm & Add Leads
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* CSV Import Modal */}
+      <CSVImportModal 
+        isOpen={isCSVModalOpen}
+        onClose={() => setIsCSVModalOpen(false)}
+        onSuccess={() => {
+          router.refresh();
+        }}
+      />
     </div>
   );
 }

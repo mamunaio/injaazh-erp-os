@@ -140,6 +140,17 @@ export default function LeadDetailsModal({
   };
 
   useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
     if (lead) {
       setFormData({
         company_name: lead.company_name || '',
