@@ -124,11 +124,14 @@ export default function LeadDetailsModal({
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     }
     return () => {
       document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     };
   }, [isOpen]);
 
@@ -283,7 +286,7 @@ export default function LeadDetailsModal({
                             <CustomSelect 
                                 value={formData.outreach_status || 'New'}
                                 onChange={(val: string) => setFormData({...formData, outreach_status: val})}
-                                options={['New', 'Contacted', 'Replied', 'Meeting Booked', 'Closed', 'Not Interested']}
+                                options={['New', 'Email Sent', 'Replied', 'Meeting Booked', 'Closed', 'Not Interested']}
                             />
                         </div>
                         <div className="relative group">

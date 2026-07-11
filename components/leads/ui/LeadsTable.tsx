@@ -21,7 +21,7 @@ type SortDir = 'asc' | 'desc';
 // Semantic status badge mapping
 const STATUS_STYLES: Record<string, { text: string; dot: string }> = {
   'New':             { text: 'text-slate-500 dark:text-slate-400',  dot: 'bg-slate-400' },
-  'Contacted':       { text: 'text-amber-500',  dot: 'bg-amber-500' },
+  'Email Sent':       { text: 'text-amber-500',  dot: 'bg-amber-500' },
   'Replied':         { text: 'text-emerald-500',  dot: 'bg-emerald-500' },
   'Meeting Booked':  { text: 'text-cyan-500',  dot: 'bg-cyan-500' },
   'Closed':          { text: 'text-[#10B981]',  dot: 'bg-[#10B981]' },
@@ -30,7 +30,7 @@ const STATUS_STYLES: Record<string, { text: string; dot: string }> = {
 
 const STATUS_BG: Record<string, string> = {
   'New':             'bg-slate-400/10 border-slate-400/20',
-  'Contacted':       'bg-amber-500/10 border-amber-500/20',
+  'Email Sent':       'bg-amber-500/10 border-amber-500/20',
   'Replied':         'bg-emerald-500/10 border-emerald-500/20',
   'Meeting Booked':  'bg-cyan-500/10 border-cyan-500/20',
   'Closed':          'bg-[#10B981]/10 border-[#10B981]/20',
@@ -183,7 +183,7 @@ export default function LeadsTable({
             <AnimatePresence>
               {sorted.map((lead, i) => {
                 const isSelected = selectedLeads.includes(lead._id);
-                const status     = lead.status || 'New';
+                const status     = lead.outreach_status || 'New';
                 const statusStyle = STATUS_STYLES[status] ?? { text: 'text-slate-500 dark:text-slate-400', dot: 'bg-slate-400' };
                 const statusBg    = STATUS_BG[status] ?? 'bg-slate-400/10 border-slate-400/20';
                 const initials    = getInitials(lead.company_name || lead.contact_person);
@@ -328,7 +328,7 @@ export default function LeadsTable({
         <AnimatePresence>
           {sorted.map((lead, i) => {
             const isSelected  = selectedLeads.includes(lead._id);
-            const status      = lead.status || 'New';
+            const status      = lead.outreach_status || 'New';
             const statusStyle = STATUS_STYLES[status] ?? { text: 'text-slate-500 dark:text-slate-400', dot: 'bg-slate-400' };
             const statusBg    = STATUS_BG[status] ?? 'bg-slate-400/10 border-slate-400/20';
             const initials    = getInitials(lead.company_name || lead.contact_person);

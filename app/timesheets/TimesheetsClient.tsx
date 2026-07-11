@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, Plus, Calendar, DollarSign, Activity, Play, Edit3, Trash2, Search, X, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { createTimeLog, deleteTimeLog, updateTimeLog, getTimesheetKPIs } from '@/app/actions/timesheetActions';
@@ -8,10 +8,12 @@ import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 
 export default function TimesheetsClient({ user, initialLogs, initialKpis }: { user: any, initialLogs: any[], initialKpis: any }) {
   const [logs, setLogs] = useState<any[]>(initialLogs || []);
   const [kpis, setKpis] = useState<any>(initialKpis || { today: 0, week: 0, month: 0, billableValue: 0, chartData: [] });
+  const { confirm } = useConfirm();
   
   const refreshKpis = async () => {
     const res = await getTimesheetKPIs();
@@ -23,6 +25,20 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis }: { u
   const [editingLogId, setEditingLogId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ project: '', task: '', date: format(new Date(), 'yyyy-MM-dd'), startTime: '09:00', endTime: '17:00' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, [isModalOpen]);
 
   const formatTimeSeconds = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
@@ -101,7 +117,8 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis }: { u
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this log?')) return;
+    const isConfirmed = await confirm({ message: 'Are you sure you want to delete this log?', danger: true });
+    if (!isConfirmed) return;
     const res = await deleteTimeLog(id);
     if (res.success) {
       toast.success('Log deleted');

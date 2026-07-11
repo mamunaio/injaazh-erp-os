@@ -169,7 +169,13 @@ export async function getLeads() {
       .populate('createdBy', 'name email')
       .sort({ createdAt: -1 })
       .lean();
-    return { success: true, data: JSON.parse(JSON.stringify(leads)) };
+    const parsedLeads = JSON.parse(JSON.stringify(leads)).map((lead: any) => {
+      if (lead.outreach_status === 'Contacted') {
+        lead.outreach_status = 'Email Sent';
+      }
+      return lead;
+    });
+    return { success: true, data: parsedLeads };
   } catch (error: any) {
     console.error('Error fetching leads:', error);
     return { success: false, error: error.message, data: [] };
@@ -544,7 +550,7 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
     
     // Progress Lead outreach_status to 'Contacted'!
     const oldStatus = lead.outreach_status;
-    const newStatus = oldStatus === 'New' ? 'Contacted' : oldStatus; // Only progress if it was 'New'
+    const newStatus = oldStatus === 'New' ? 'Email Sent' : oldStatus; // Only progress if it was 'New'
     
     // Create outreach log entry
     const newLog = {
@@ -627,12 +633,12 @@ export async function importCSVLeads(leadsData: any[]) {
       }
 
       // Sanitize outreach status
-      const validStatuses = ['New', 'Contacted', 'Replied', 'Meeting Booked', 'Closed', 'Not Interested'];
+      const validStatuses = ['New', 'Email Sent', 'Replied', 'Meeting Booked', 'Closed', 'Not Interested'];
       let safeStatus = data.outreach_status || 'New';
       const statusLower = safeStatus.toLowerCase();
       
       if (statusLower.includes('email') || statusLower.includes('message') || statusLower.includes('contact')) {
-        safeStatus = 'Contacted';
+        safeStatus = 'Email Sent';
       } else if (!validStatuses.includes(safeStatus)) {
         safeStatus = 'New';
       }

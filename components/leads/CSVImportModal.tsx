@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, X, FileText, CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
 import Papa from 'papaparse';
@@ -20,6 +20,20 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
   const [parsedData, setParsedData] = useState<any[]>([]);
   const [stats, setStats] = useState<{ total: number; valid: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, [isOpen]);
 
   const resetState = () => {
     setFile(null);

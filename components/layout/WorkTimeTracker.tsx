@@ -13,6 +13,42 @@ export default function WorkTimeTracker() {
   const pathname = usePathname();
   const startTimeRef = useRef<number | null>(null);
 
+  // Initialize from localStorage on mount
+  useEffect(() => {
+    try {
+      const storedActive = localStorage.getItem('timeTracker_isActive');
+      const storedStartTime = localStorage.getItem('timeTracker_startTime');
+      const storedTotalSeconds = localStorage.getItem('timeTracker_totalSeconds');
+
+      if (storedActive === 'true' && storedStartTime) {
+        setIsActive(true);
+        const start = parseInt(storedStartTime, 10);
+        startTimeRef.current = start;
+        const elapsed = Math.floor((Date.now() - start) / 1000);
+        setTotalSeconds(elapsed);
+      } else if (storedTotalSeconds) {
+        setTotalSeconds(parseInt(storedTotalSeconds, 10));
+      }
+    } catch (e) {
+      console.error('Error loading time tracker state', e);
+    }
+  }, []);
+
+  // Save to localStorage when state changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('timeTracker_isActive', isActive.toString());
+      if (isActive && startTimeRef.current) {
+        localStorage.setItem('timeTracker_startTime', startTimeRef.current.toString());
+      } else {
+        localStorage.removeItem('timeTracker_startTime');
+      }
+      localStorage.setItem('timeTracker_totalSeconds', totalSeconds.toString());
+    } catch (e) {
+      console.error('Error saving time tracker state', e);
+    }
+  }, [isActive, totalSeconds]);
+
   // Timer update
   useEffect(() => {
     if (pathname === '/login' || pathname === '/' || pathname === '/register') return;
@@ -76,6 +112,9 @@ export default function WorkTimeTracker() {
         setTotalSeconds(0);
         startTimeRef.current = null;
         setIsSaving(false);
+        localStorage.removeItem('timeTracker_isActive');
+        localStorage.removeItem('timeTracker_startTime');
+        localStorage.removeItem('timeTracker_totalSeconds');
       }
     } else {
       // Start

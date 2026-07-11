@@ -21,7 +21,7 @@ interface OutreachClientProps {
 // ─── Status config ────────────────────────────────────────────────────────────
 const STATUS_STYLE: Record<string, { text: string; dot: string; bg: string; border: string }> = {
   'New':            { text: 'text-[#2563EB]', dot: 'bg-[#2563EB]', bg: 'bg-[#2563EB]/10', border: 'border-[#2563EB]/20' },
-  'Contacted':      { text: 'text-[#F59E0B]', dot: 'bg-[#F59E0B]', bg: 'bg-[#F59E0B]/10', border: 'border-[#F59E0B]/20' },
+  'Email Sent':      { text: 'text-[#F59E0B]', dot: 'bg-[#F59E0B]', bg: 'bg-[#F59E0B]/10', border: 'border-[#F59E0B]/20' },
   'Replied':        { text: 'text-[#10B981]', dot: 'bg-[#10B981]', bg: 'bg-[#10B981]/10', border: 'border-[#10B981]/20' },
   'Meeting Booked': { text: 'text-[#0EA5E9]', dot: 'bg-[#0EA5E9]', bg: 'bg-[#0EA5E9]/10', border: 'border-[#0EA5E9]/20' },
   'Closed':         { text: 'text-[#10B981]', dot: 'bg-[#10B981]', bg: 'bg-[#10B981]/10', border: 'border-[#10B981]/20' },
@@ -132,7 +132,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
         const today = new Date(); today.setHours(0, 0, 0, 0);
         const isScheduledForFuture = lead.outreach_scheduled_for && new Date(lead.outreach_scheduled_for) >= today;
         const isFollowUpDue = lead.nextFollowUpDate && new Date(lead.nextFollowUpDate) >= today;
-        if (!isScheduledForFuture && !isFollowUpDue && lead.outreach_status !== 'Contacted') return false;
+        if (!isScheduledForFuture && !isFollowUpDue && lead.outreach_status !== 'Email Sent') return false;
       }
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
@@ -222,7 +222,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
     ? Math.min(100, Math.round((analytics.totalSentToday / analytics.totalDailyQuota) * 100))
     : 0;
 
-  const STATUS_OPTIONS = ['All', 'New', 'Contacted', 'Replied', 'Meeting Booked', 'Closed', 'Not Interested'];
+  const STATUS_OPTIONS = ['All', 'New', 'Email Sent', 'Replied', 'Meeting Booked', 'Closed', 'Not Interested'];
 
   const detailTabs = [
     { id: 'timeline' as const, label: 'Timeline', icon: Activity },
@@ -364,7 +364,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
 
             {/* Status filter pills */}
             <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex gap-2 overflow-x-auto scrollbar-none">
-              {['All', 'New', 'Contacted', 'Replied', 'Meeting Booked'].map(s => (
+              {['All', 'New', 'Email Sent', 'Replied', 'Meeting Booked'].map(s => (
                 <button key={s} onClick={() => setStatusFilter(s)}
                   className={`flex-shrink-0 px-3.5 py-1.5 rounded-lg text-xs font-bold border transition-all ${statusFilter === s ? 'bg-[#2563EB]/10 text-[#2563EB] border-[#2563EB]/30' : 'bg-slate-50 dark:bg-[#09090B] text-[#94A3B8] border-slate-200 dark:border-[#232734] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734]'}`}>
                   {s}
@@ -494,7 +494,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                             aria-label="Change status"
                           >
                             <option value="New">New</option>
-                            <option value="Contacted">Contacted</option>
+                            <option value="Email Sent">Email Sent</option>
                             <option value="Replied">Replied</option>
                             <option value="Meeting Booked">Meeting Booked</option>
                             <option value="Closed">Closed</option>

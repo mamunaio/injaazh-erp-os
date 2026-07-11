@@ -72,7 +72,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
   const closeModal = () => setActiveModal(null);
 
   if (loading) {
-    return <div className="min-h-screen bg-slate-50 dark:bg-[#09090B] flex items-center justify-center"><WorkspaceLoader /></div>;
+    return <div className="fixed inset-0 z-[9999] bg-slate-950 flex items-center justify-center"><WorkspaceLoader /></div>;
   }
 
   if (!dashboardData) {

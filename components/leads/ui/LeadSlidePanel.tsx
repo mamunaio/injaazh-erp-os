@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Building2, User, Mail, Phone, Globe, Calendar, Tag,
@@ -15,13 +15,14 @@ interface LeadSlidePanelProps {
   getStatusConfig: (status: string) => any;
   formatDate: (date?: string) => string;
   onOpenEmailComposer?: (lead: any) => void;
+  onStatusChange?: (leadId: string, newStatus: string) => void;
 }
 
 type TabKey = 'overview' | 'notes' | 'activity';
 
 const STATUS_STYLES: Record<string, { text: string; dot: string; bg: string; border: string }> = {
   'New':            { text: 'text-[#2563EB]', dot: 'bg-[#2563EB]', bg: 'bg-[#2563EB]/10', border: 'border-[#2563EB]/20' },
-  'Contacted':      { text: 'text-[#F59E0B]', dot: 'bg-[#F59E0B]', bg: 'bg-[#F59E0B]/10', border: 'border-[#F59E0B]/20' },
+  'Email Sent':      { text: 'text-[#F59E0B]', dot: 'bg-[#F59E0B]', bg: 'bg-[#F59E0B]/10', border: 'border-[#F59E0B]/20' },
   'Replied':        { text: 'text-[#7C3AED]', dot: 'bg-[#7C3AED]', bg: 'bg-[#7C3AED]/10', border: 'border-[#7C3AED]/20' },
   'Meeting Booked': { text: 'text-[#0EA5E9]', dot: 'bg-[#0EA5E9]', bg: 'bg-[#0EA5E9]/10', border: 'border-[#0EA5E9]/20' },
   'Closed':         { text: 'text-[#10B981]', dot: 'bg-[#10B981]', bg: 'bg-[#10B981]/10', border: 'border-[#10B981]/20' },
@@ -92,12 +93,27 @@ export default function LeadSlidePanel({
   getStatusConfig,
   formatDate,
   onOpenEmailComposer,
+  onStatusChange,
 }: LeadSlidePanelProps) {
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, [isOpen]);
+
   if (!lead) return null;
 
-  const status       = lead.status || 'New';
+  const status       = lead.outreach_status || 'New';
   const statusStyle  = STATUS_STYLES[status] ?? STATUS_STYLES['New'];
   const initials     = getInitials(lead.company_name || lead.contact_person);
   const score        = lead.leadScore ?? 50;
@@ -173,11 +189,28 @@ export default function LeadSlidePanel({
                   <p className="text-sm text-[#94A3B8] font-medium truncate">{lead.contact_person || 'No contact'}</p>
                 </div>
 
-                {/* Status badge */}
-                <span className={`flex-shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold border ${statusStyle.bg} ${statusStyle.border} ${statusStyle.text}`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`} />
-                  {status}
-                </span>
+                {/* Status dropdown */}
+                <div className="relative group/status ml-auto">
+                  <select
+                    value={status}
+                    onChange={(e) => {
+                      if (onStatusChange) {
+                        onStatusChange(lead._id, e.target.value);
+                      }
+                    }}
+                    className={`appearance-none cursor-pointer flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold border ${statusStyle.bg} ${statusStyle.border} ${statusStyle.text} focus:outline-none transition-all hover:brightness-110`}
+                  >
+                    <option value="New">New</option>
+                    <option value="Email Sent">Email Sent</option>
+                    <option value="Replied">Replied</option>
+                    <option value="Meeting Booked">Meeting Booked</option>
+                    <option value="Closed">Closed</option>
+                    <option value="Not Interested">Not Interested</option>
+                  </select>
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  </div>
+                </div>
               </div>
 
               {/* Lead Score */}
@@ -376,16 +409,16 @@ export default function LeadSlidePanel({
                     <h3 className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-5">Timeline</h3>
                     <div className="space-y-0">
                       <ActivityItem icon={CheckCircle2} color="#2563EB"  title="Lead Created"              subtitle={`via ${lead.source || 'Manual'}`}     time={formatDate(lead.createdAt)} />
-                      {lead.status !== 'New' && (
+                      {lead.outreach_status !== 'New' && (
                         <ActivityItem icon={Mail}        color="#F59E0B"  title="First Email Sent"           subtitle="Outreach email delivered"              time="Just now" />
                       )}
-                      {(lead.status === 'Replied' || lead.status === 'Meeting Booked' || lead.status === 'Closed') && (
+                      {(lead.outreach_status === 'Replied' || lead.outreach_status === 'Meeting Booked' || lead.outreach_status === 'Closed') && (
                         <ActivityItem icon={MessageSquare} color="#7C3AED" title="Reply Received"            subtitle={`\"${lead.lead_context?.substring(0, 40) || 'Looking forward to connecting'}...\"`} time="Recently" />
                       )}
-                      {lead.status === 'Meeting Booked' && (
+                      {lead.outreach_status === 'Meeting Booked' && (
                         <ActivityItem icon={Calendar}    color="#0EA5E9"  title="Meeting Booked"             subtitle="Call scheduled via Google Calendar"     time={formatDate(lead.nextFollowUpDate)} />
                       )}
-                      {lead.status === 'Closed' && (
+                      {lead.outreach_status === 'Closed' && (
                         <ActivityItem icon={CheckCircle2} color="#10B981" title="Deal Closed"               subtitle="Prospect converted to client 🎉"         time={formatDate(lead.nextFollowUpDate)} />
                       )}
                     </div>

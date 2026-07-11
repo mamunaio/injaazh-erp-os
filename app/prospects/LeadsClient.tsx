@@ -3,11 +3,12 @@
 import React, { useState } from 'react';
 import { Mail, MessageCircle, Globe, Plus, X, Trash2, Edit, MoreHorizontal, Building2, User, Calendar, Tag, Loader2, AlertTriangle, FileText, Clock, LayoutGrid, List, CheckCircle, Sparkles, ArrowRight, Target, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { createLead, deleteLead } from '@/app/actions/leadActions';
+import { createLead, deleteLead, updateLead } from '@/app/actions/leadActions';
 import { addLeadsToCampaign } from '@/app/actions/campaignActions';
 import { useRouter } from 'next/navigation';
 import OutreachComposerModal from '@/components/leads/OutreachComposerModal';
 import { toast } from 'react-hot-toast';
+import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import CSVImportModal from '@/components/leads/CSVImportModal';
@@ -21,12 +22,13 @@ import QuickFilterChips from '@/components/leads/ui/QuickFilterChips';
 import LeadsTable from '@/components/leads/ui/LeadsTable';
 import LeadSlidePanel from '@/components/leads/ui/LeadSlidePanel';
 
-const STATUS_OPTIONS = ['New', 'Contacted', 'Replied', 'Meeting Booked', 'Closed', 'Not Interested'];
+const STATUS_OPTIONS = ['New', 'Email Sent', 'Replied', 'Meeting Booked', 'Closed', 'Not Interested'];
 
 export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { initialLeads: any[], initialCampaigns?: any[] }) {
   const router = useRouter();
   const [leads, setLeads] = useState(initialLeads);
   const [campaigns, setCampaigns] = useState(initialCampaigns);
+  const { confirm } = useConfirm();
 
   React.useEffect(() => {
     setLeads(initialLeads);
@@ -192,12 +194,12 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
         setLeadToDelete(null);
         window.location.reload();
       } else {
-        alert('Failed to delete lead. Please try again.');
+        toast.error('Failed to delete lead. Please try again.');
         setDeletingId(null);
       }
     } catch (error) {
       console.error('Error deleting lead:', error);
-      alert('An error occurred. Please try again.');
+      toast.error('An error occurred. Please try again.');
       setDeletingId(null);
     }
   };
@@ -205,7 +207,8 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
   const handleBulkDelete = async () => {
     if (selectedLeads.length === 0) return;
     
-    if (!confirm(`Are you sure you want to delete ${selectedLeads.length} leads? This action cannot be undone.`)) {
+    const isConfirmed = await confirm({ message: `Are you sure you want to delete ${selectedLeads.length} leads? This action cannot be undone.`, danger: true });
+    if (!isConfirmed) {
       return;
     }
 
@@ -503,6 +506,22 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
           setIsDetailsModalOpen(false);
           setComposerLead(lead);
           setIsComposerOpen(true);
+        }}
+        onStatusChange={async (leadId, newStatus) => {
+          try {
+            const result = await updateLead(leadId, { outreach_status: newStatus });
+            if (result.success && result.data) {
+              const updatedLead = result.data;
+              setLeads(leads.map(l => l._id === updatedLead._id ? updatedLead : l));
+              if (selectedLead?._id === updatedLead._id) setSelectedLead(updatedLead);
+              toast.success(`Status updated to ${newStatus}`);
+            } else {
+              toast.error(result.error || 'Failed to update status');
+            }
+          } catch (error) {
+            console.error('Failed to update status:', error);
+            toast.error('Failed to update status');
+          }
         }}
       />
       

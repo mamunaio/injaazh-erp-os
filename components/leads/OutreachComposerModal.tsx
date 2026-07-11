@@ -248,6 +248,20 @@ export default function OutreachComposerModal({
   // Anti-Spam Cooldown State
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, [isOpen]);
+
   // Initialize and update fields when lead changes
   useEffect(() => {
     if (lead && isOpen) {
@@ -615,7 +629,7 @@ export default function OutreachComposerModal({
                         <div className="font-bold">Email Dispatched Successfully!</div>
                         <div className="text-[11px] opacity-90 mt-0.5 leading-relaxed">
                           {successInfo.isSimulated 
-                            ? 'Status updated to Contacted.'
+                            ? 'Status updated to Email Sent.'
                             : `Delivered via ${successInfo.sentVia || 'Email Account'}.`}
                         </div>
                       </div>

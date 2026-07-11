@@ -11,7 +11,7 @@ export interface ILead extends Document {
   company_name: string;
   contact_person?: string;
   source: string; // e.g., Google, Facebook, Upwork
-  outreach_status: 'New' | 'Contacted' | 'Replied' | 'Meeting Booked' | 'Closed' | 'Not Interested';
+  outreach_status: 'New' | 'Email Sent' | 'Replied' | 'Meeting Booked' | 'Closed' | 'Not Interested';
   website_url?: string;
   email?: string;
   phone?: string;
@@ -54,7 +54,7 @@ const LeadSchema = new Schema<ILead>({
   source: { type: String, default: 'Manual' },
   outreach_status: { 
     type: String, 
-    enum: ['New', 'Contacted', 'Replied', 'Meeting Booked', 'Closed', 'Not Interested'],
+    enum: ['New', 'Email Sent', 'Replied', 'Meeting Booked', 'Closed', 'Not Interested'],
     default: 'New'
   },
   website_url: { type: String, trim: true },

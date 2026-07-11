@@ -9,11 +9,11 @@ interface LeadsKPIsProps {
 }
 
 export default function LeadsKPIs({ leads }: LeadsKPIsProps) {
-  const newLeads    = leads.filter(l => l.status === 'New').length;
-  const contacted   = leads.filter(l => l.status === 'Contacted').length;
-  const qualified   = leads.filter(l => l.status === 'Meeting Booked').length;
-  const converted   = leads.filter(l => l.status === 'Closed').length;
-  const lost        = leads.filter(l => l.status === 'Not Interested').length;
+  const newLeads    = leads.filter(l => l.outreach_status === 'New').length;
+  const contacted   = leads.filter(l => l.outreach_status === 'Email Sent').length;
+  const qualified   = leads.filter(l => l.outreach_status === 'Meeting Booked').length;
+  const converted   = leads.filter(l => l.outreach_status === 'Closed').length;
+  const lost        = leads.filter(l => l.outreach_status === 'Not Interested').length;
 
   const stats = [
     {
@@ -39,7 +39,7 @@ export default function LeadsKPIs({ leads }: LeadsKPIsProps) {
       glow: 'rgba(148,163,184,0.15)',
     },
     {
-      title: 'Contacted',
+      title: 'Email Sent',
       value: contacted,
       icon: MessageSquare,
       trend: '+5%',

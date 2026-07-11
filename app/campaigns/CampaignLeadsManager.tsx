@@ -5,6 +5,7 @@ import { Upload, Trash2, Edit2, Loader2, CheckCircle, AlertTriangle, Users } fro
 import Papa from 'papaparse';
 import { getCampaignLeads, importCSVToCampaign, removeLeadFromCampaign, updateCampaignLeadInfo } from '@/app/actions/campaignActions';
 import toast from 'react-hot-toast';
+import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 
 export default function CampaignLeadsManager({ campaignId }: { campaignId: string }) {
   const [leads, setLeads] = useState<any[]>([]);
@@ -12,6 +13,7 @@ export default function CampaignLeadsManager({ campaignId }: { campaignId: strin
   const [isUploading, setIsUploading] = useState(false);
   const [editingLeadId, setEditingLeadId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ company_name: '', contact_person: '', email: '', lead_context: '' });
+  const { confirm } = useConfirm();
 
   const fetchLeads = async () => {
     setLoading(true);
@@ -67,7 +69,8 @@ export default function CampaignLeadsManager({ campaignId }: { campaignId: strin
   };
 
   const handleRemove = async (campaignLeadId: string) => {
-    if (!confirm("Remove this lead from the campaign?")) return;
+    const isConfirmed = await confirm({ message: "Remove this lead from the campaign?", danger: true });
+    if (!isConfirmed) return;
     const res = await removeLeadFromCampaign(campaignLeadId);
     if (res.success) {
       toast.success("Lead removed");

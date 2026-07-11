@@ -270,7 +270,7 @@ function CampaignSlidePanel({
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { label: 'Total Audience', value: campaign.leadCount || 0, color: '#2563EB' },
-                    { label: 'Contacted',       value: Math.floor((campaign.leadCount || 0) * 0.7), color: '#F59E0B' },
+                    { label: 'Email Sent',       value: Math.floor((campaign.leadCount || 0) * 0.7), color: '#F59E0B' },
                     { label: 'Replied',         value: Math.floor((campaign.leadCount || 0) * 0.3), color: '#7C3AED' },
                     { label: 'Converted',       value: Math.floor((campaign.leadCount || 0) * 0.05), color: '#10B981' },
                   ].map(({ label, value, color }) => (

@@ -146,7 +146,7 @@ export async function executeAutomatedOutreach(leadId: string, isFollowUp = fals
     });
 
     // Update Lead status
-    lead.outreach_status = 'Contacted';
+    lead.outreach_status = 'Email Sent';
     lead.last_contacted_date = new Date();
     lead.follow_up_count += 1;
     
@@ -333,7 +333,7 @@ export async function executeCampaignSequence(campaignLeadId: string) {
     });
 
     // Update Lead status
-    lead.outreach_status = 'Contacted';
+    lead.outreach_status = 'Email Sent';
     lead.last_contacted_date = new Date();
     await lead.save();
 

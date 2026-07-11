@@ -34,7 +34,7 @@ export async function GET(request: Request) {
 
     // 3. Process Legacy Follow-ups
     const followUpLeads = await Lead.find({
-      outreach_status: 'Contacted',
+      outreach_status: 'Email Sent',
       is_replied: false,
       follow_up_count: { $lt: 3 }, // Max 3 follow-ups
       nextFollowUpDate: { $lte: new Date() },
