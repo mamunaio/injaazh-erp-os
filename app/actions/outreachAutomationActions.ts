@@ -229,8 +229,8 @@ export async function executeCampaignSequence(campaignLeadId: string) {
     if (!campaignLead) throw new Error('CampaignLead not found');
     if (campaignLead.status !== 'Active') return { success: false, error: 'Lead is not active in this campaign' };
 
-    const campaign = campaignLead.campaignId;
-    const lead = campaignLead.leadId;
+    const campaign: any = campaignLead.campaignId;
+    const lead: any = campaignLead.leadId;
     
     if (campaign.status !== 'Active') {
       return { success: false, error: 'Campaign is paused or draft' };
