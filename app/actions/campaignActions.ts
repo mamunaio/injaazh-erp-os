@@ -94,7 +94,7 @@ export async function addLeadsToCampaign(campaignId: string, leadIds: string[]) 
       }
     }));
 
-    await CampaignLead.bulkWrite(operations);
+    await CampaignLead.bulkWrite(operations as any);
     
     revalidatePath('/campaigns');
     revalidatePath('/prospects');
@@ -185,7 +185,7 @@ export async function importCSVToCampaign(campaignId: string, mappedData: any[])
       nextActionDate
     }));
 
-    await CampaignLead.insertMany(operations);
+    await CampaignLead.insertMany(operations as any);
     revalidatePath('/campaigns');
     
     return { success: true, count: newLeads.length };
