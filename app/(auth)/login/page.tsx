@@ -87,13 +87,16 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     
+    const formData = new FormData(e.currentTarget);
+    const rememberMe = formData.get('rememberMe') === 'on';
+    
     if (requires2FA) {
       if (code2FA.length !== 6) {
         toast.error('Please enter a valid 6-digit code');
         setIsLoading(false);
         return;
       }
-      const result = await verifyTwoFactorLogin(tempToken, code2FA);
+      const result = await verifyTwoFactorLogin(tempToken, code2FA, rememberMe);
       setIsLoading(false);
       
       if (result.success) {
@@ -105,7 +108,6 @@ export default function LoginPage() {
       return;
     }
 
-    const formData = new FormData(e.currentTarget);
     const result = await loginUser(formData);
     
     setIsLoading(false);
@@ -129,16 +131,51 @@ export default function LoginPage() {
     <div className="relative min-h-screen flex bg-[#09090B] overflow-hidden font-sans text-slate-200 selection:bg-[#2563EB]/30">
       
       {/* LEFT SIDE - Brand & Atmosphere (Hidden on Mobile/Tablet) */}
-      <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 border-r border-[#232734] overflow-hidden">
-        {/* Breathing Abstract Glow */}
+      <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 overflow-hidden bg-gradient-to-br from-[#09090B] to-[#11131a]">
+        {/* Breathing Abstract Glow & Orbs */}
         <motion.div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[140px] pointer-events-none opacity-20"
+          className="absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full blur-[120px] pointer-events-none mix-blend-screen"
           style={{
-            background: 'radial-gradient(circle, rgba(37,99,235,0.4) 0%, rgba(124,58,237,0.15) 50%, rgba(9,9,11,0) 70%)'
+            background: 'radial-gradient(circle, rgba(124,58,237,0.3) 0%, rgba(9,9,11,0) 70%)'
           }}
-          animate={{ scale: [1, 1.05, 1], opacity: [0.15, 0.25, 0.15] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          animate={{ scale: [1, 1.2, 1], x: [0, 50, 0], y: [0, -50, 0], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
         />
+        <motion.div 
+          className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full blur-[100px] pointer-events-none mix-blend-screen"
+          style={{
+            background: 'radial-gradient(circle, rgba(37,99,235,0.25) 0%, rgba(9,9,11,0) 70%)'
+          }}
+          animate={{ scale: [1, 1.1, 1], x: [0, -30, 0], y: [0, 40, 0], opacity: [0.2, 0.4, 0.2] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        />
+
+        {/* Mini Dashboard Widget / Glassmorphic Floating Element */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.5 }}
+          className="absolute top-1/2 left-[80%] -translate-x-1/2 -translate-y-1/2 w-72 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hidden xl:block overflow-hidden"
+          style={{ transform: 'perspective(1000px) rotateY(-15deg) rotateX(10deg)' }}
+        >
+          <div className="p-6 h-full flex flex-col gap-6">
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center">
+                <Command className="text-violet-400" size={20} />
+              </div>
+              <span className="text-emerald-400 text-xs font-bold bg-emerald-500/10 px-2 py-1 rounded-full">+24%</span>
+            </div>
+            <div>
+              <p className="text-slate-400 text-xs font-semibold mb-1">Total Revenue</p>
+              <h3 className="text-white text-2xl font-bold font-mono">$128,450.00</h3>
+            </div>
+            <div className="flex items-end gap-2 h-12 mt-auto">
+              {[40, 70, 45, 90, 65, 100].map((height, i) => (
+                <div key={i} className="flex-1 bg-violet-500/40 rounded-t-sm hover:bg-violet-400 transition-colors cursor-pointer" style={{ height: `${height}%` }}></div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
 
         {/* Top Brand Logo */}
         <motion.div 
@@ -186,7 +223,7 @@ export default function LoginPage() {
                    <ShieldCheck className="w-8 h-8 text-[#2563EB] relative z-10" strokeWidth={1.5} />
                 </div>
                 <h1 className="text-5xl font-bold font-jakarta text-white mb-6 leading-tight tracking-tight">
-                  Verify your identity.
+                  Two-Factor Authentication
                 </h1>
                 <p className="text-lg text-[#94A3B8] font-medium leading-relaxed">
                   We require two-factor authentication to ensure the utmost security of your enterprise data.
@@ -200,12 +237,12 @@ export default function LoginPage() {
         <div className="relative z-10 flex items-center gap-2">
           {!requires2FA ? (
             <>
-              <div className="flex -space-x-3">
-                <div className="w-8 h-8 rounded-full bg-[#11131A] border-2 border-[#09090B] flex items-center justify-center text-[10px] font-bold">JD</div>
-                <div className="w-8 h-8 rounded-full bg-[#11131A] border-2 border-[#09090B] flex items-center justify-center text-[10px] font-bold text-[#2563EB]">AK</div>
-                <div className="w-8 h-8 rounded-full bg-[#11131A] border-2 border-[#09090B] flex items-center justify-center text-[10px] font-bold text-[#10B981]">SM</div>
+              <div className="flex -space-x-4">
+                <div className="w-10 h-10 rounded-full bg-[#11131A] border-2 border-[#09090B] flex items-center justify-center text-xs font-bold hover:z-10 hover:scale-110 transition-transform cursor-pointer relative shadow-lg">JD</div>
+                <div className="w-10 h-10 rounded-full bg-[#11131A] border-2 border-[#09090B] flex items-center justify-center text-xs font-bold text-[#2563EB] hover:z-10 hover:scale-110 transition-transform cursor-pointer relative shadow-lg">AK</div>
+                <div className="w-10 h-10 rounded-full bg-[#11131A] border-2 border-[#09090B] flex items-center justify-center text-xs font-bold text-[#10B981] hover:z-10 hover:scale-110 transition-transform cursor-pointer relative shadow-lg">SM</div>
               </div>
-              <span className="text-xs font-semibold text-[#94A3B8] ml-2">Join 10,000+ professionals</span>
+              <span className="text-sm font-semibold text-[#94A3B8] ml-4">Join 10,000+ professionals</span>
             </>
           ) : (
             <span className="text-xs font-semibold text-[#94A3B8]">Enterprise-grade encryption and privacy</span>
@@ -235,17 +272,19 @@ export default function LoginPage() {
             <span className="text-2xl font-bold font-jakarta tracking-tight text-white">INJAAZH</span>
           </div>
 
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-white mb-2 font-jakarta tracking-tight">
-              {requires2FA ? 'Verify Your Identity' : 'Welcome back'}
-            </h2>
-            <p className="text-sm text-[#94A3B8] font-medium">
-              {requires2FA ? 'Enter the 6-digit code from your authenticator app.' : 'Please enter your details to sign in.'}
-            </p>
-          </div>
+          <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 p-6 sm:p-8 rounded-[24px] shadow-2xl relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+            
+            <div className="mb-8 relative z-10">
+              <h2 className="text-3xl font-bold text-white mb-2 font-jakarta tracking-tight">
+                {requires2FA ? 'Verify Your Identity' : 'Welcome back'}
+              </h2>
+              <p className="text-sm text-[#94A3B8] font-medium">
+                {requires2FA ? 'Enter the 6-digit code from your authenticator app.' : 'Please enter your details to sign in.'}
+              </p>
+            </div>
 
-          <div className="bg-[#11131A] border border-[#232734] p-6 sm:p-8 rounded-[24px] shadow-2xl">
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
               {requires2FA ? (
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
@@ -263,7 +302,7 @@ export default function LoginPage() {
                         onChange={(e) => handleOtpChange(index, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
                         onPaste={handleOtpPaste}
-                        className="w-12 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-bold font-mono bg-[#09090B] border border-[#232734] rounded-xl text-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-all shadow-inner"
+                        className="w-10 h-12 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-bold font-mono bg-slate-800/50 backdrop-blur-md border border-slate-700/50 rounded-xl text-white focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
                         autoFocus={index === 0}
                       />
                     ))}
@@ -271,30 +310,32 @@ export default function LoginPage() {
                   
                   <div className="flex items-center justify-between pt-2">
                     <label className="flex items-center gap-2 cursor-pointer group">
-                      <input type="checkbox" className="w-4 h-4 rounded border-[#232734] bg-[#09090B] text-[#2563EB] focus:ring-[#2563EB] focus:ring-offset-0 focus:ring-offset-[#11131A] transition-colors" />
-                      <span className="text-xs font-medium text-[#94A3B8] group-hover:text-white transition-colors">Trust this device for 30 days</span>
+                      <input type="checkbox" name="rememberMe" className="w-4 h-4 rounded border-[#232734] bg-[#09090B] text-[#2563EB] focus:ring-[#2563EB] focus:ring-offset-0 focus:ring-offset-[#11131A] transition-colors" />
+                      <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">Trust this device for 30 days</span>
                     </label>
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-2">
                     <button
                       type="button"
-                      className="text-xs font-bold text-[#94A3B8] hover:text-white transition-colors text-left"
+                      className="text-sm font-bold text-slate-300 hover:text-white transition-colors text-left"
                     >
                       Use a recovery code instead
                     </button>
 
                     <div className="flex items-center gap-2 self-start sm:self-auto">
-                      <span className="text-xs text-[#94A3B8] font-medium hidden sm:inline">
+                      <span className="text-sm text-slate-300 font-medium hidden sm:inline">
                         No code?
                       </span>
                       <button
                         type="button"
                         onClick={handleResendOTP}
                         disabled={resendTimer > 0}
-                        className={`text-xs font-bold transition-colors ${resendTimer > 0 ? 'text-[#94A3B8] cursor-not-allowed' : 'text-[#2563EB] hover:text-[#2563EB]/80'}`}
+                        className={`text-sm font-bold transition-colors ${resendTimer > 0 ? 'text-slate-300 cursor-not-allowed' : 'text-[#2563EB] hover:text-[#2563EB]/80'}`}
                       >
-                        {resendTimer > 0 ? `Resend in ${resendTimer}s` : 'Resend Code'}
+                        {resendTimer > 0 ? (
+                          <>Resend in <span className="text-[#2563EB]">{resendTimer}s</span></>
+                        ) : 'Resend Code'}
                       </button>
                     </div>
                   </div>
@@ -311,7 +352,7 @@ export default function LoginPage() {
                           name="email"
                           required
                           placeholder="name@company.com"
-                          className="w-full bg-[#09090B] border border-[#232734] rounded-xl pl-11 pr-4 py-3.5 text-sm text-white font-medium placeholder:text-[#232734] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-all shadow-inner"
+                          className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-sm text-white font-medium placeholder:text-slate-500 focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
                         />
                       </div>
                     </div>
@@ -325,7 +366,7 @@ export default function LoginPage() {
                           name="password"
                           required
                           placeholder="••••••••"
-                          className="w-full bg-[#09090B] border border-[#232734] rounded-xl pl-11 pr-12 py-3.5 text-sm text-white font-medium placeholder:text-[#232734] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-all shadow-inner"
+                          className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-xl pl-11 pr-12 py-3.5 text-sm text-white font-medium placeholder:text-slate-500 focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
                         />
                         <button 
                           type="button"
@@ -340,10 +381,10 @@ export default function LoginPage() {
 
                   <div className="flex items-center justify-between pt-2">
                     <label className="flex items-center gap-2 cursor-pointer group">
-                      <input type="checkbox" className="w-4 h-4 rounded border-[#232734] bg-[#09090B] text-[#2563EB] focus:ring-[#2563EB] focus:ring-offset-0 focus:ring-offset-[#11131A] transition-colors" />
+                      <input type="checkbox" name="rememberMe" className="w-4 h-4 rounded border-[#232734] bg-[#09090B] text-[#2563EB] focus:ring-[#2563EB] focus:ring-offset-0 focus:ring-offset-[#11131A] transition-colors" />
                       <span className="text-xs font-medium text-[#94A3B8] group-hover:text-white transition-colors">Remember me</span>
                     </label>
-                    <Link href="/forgot-password" className="text-xs font-bold text-[#2563EB] hover:text-[#2563EB]/80 transition-colors">
+                    <Link href="/forgot-password" className="text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors">
                       Forgot password?
                     </Link>
                   </div>
@@ -374,12 +415,12 @@ export default function LoginPage() {
                   <div className="h-px flex-1 bg-[#232734]"></div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <button type="button" className="flex items-center justify-center gap-2 bg-[#09090B] hover:bg-[#232734]/50 border border-[#232734] py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#232734] focus:ring-offset-2 focus:ring-offset-[#11131A]">
+                <div className="grid grid-cols-2 gap-3 relative z-10">
+                  <button type="button" className="flex items-center justify-center gap-2 bg-white/5 backdrop-blur-sm hover:bg-white/10 border border-white/10 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-white/20">
                     <GoogleIcon />
                     <span className="text-xs font-bold text-white">Google</span>
                   </button>
-                  <button type="button" className="flex items-center justify-center gap-2 bg-[#09090B] hover:bg-[#232734]/50 border border-[#232734] py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#232734] focus:ring-offset-2 focus:ring-offset-[#11131A]">
+                  <button type="button" className="flex items-center justify-center gap-2 bg-white/5 backdrop-blur-sm hover:bg-white/10 border border-white/10 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-white/20">
                     <MicrosoftIcon />
                     <span className="text-xs font-bold text-white">Microsoft</span>
                   </button>

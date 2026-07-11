@@ -119,19 +119,21 @@ function CampaignSlidePanel({
   const clickRate    = campaign.clickRate    ?? 12;
 
   return (
-    <>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
         onClick={onClose}
-        className="fixed inset-0 bg-[#09090B]/70 backdrop-blur-sm z-50"
+        className="absolute inset-0 bg-[#09090B]/80 backdrop-blur-md"
       />
       {/* Panel */}
       <motion.div
-        initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
-        transition={{ type: 'spring', damping: 30, stiffness: 280 }}
-        className="fixed right-0 top-0 bottom-0 w-full sm:max-w-lg lg:max-w-xl bg-[#09090B] border-l border-[#232734] z-50 flex flex-col"
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+        className="relative w-full max-w-3xl max-h-[90vh] bg-[#09090B] border border-[#232734] rounded-2xl z-50 flex flex-col shadow-2xl overflow-hidden"
         role="dialog" aria-label={`Campaign: ${campaign.name}`}
       >
         {/* Header */}
@@ -347,7 +349,7 @@ function CampaignSlidePanel({
           </AnimatePresence>
         </div>
       </motion.div>
-    </>
+    </div>
   );
 }
 

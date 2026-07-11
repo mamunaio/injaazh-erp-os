@@ -4,7 +4,7 @@ import { getCurrentUser } from './authActions';
 import connectToDatabase from '@/lib/mongodb';
 import WorkSession from '@/models/WorkSession';
 
-export async function pingWorkSession() {
+export async function pingWorkSession(deductSeconds: number = 0) {
   try {
     const authRes = await getCurrentUser();
     if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
@@ -29,18 +29,24 @@ export async function pingWorkSession() {
         totalSeconds: 0,
       });
     } else {
-      // Calculate time difference since last ping
-      const lastActive = new Date(session.lastActiveTime);
-      const diffSeconds = Math.floor((now.getTime() - lastActive.getTime()) / 1000);
+      if (deductSeconds > 0) {
+        session.totalSeconds = Math.max(0, session.totalSeconds - deductSeconds);
+        session.lastActiveTime = now;
+        await session.save();
+      } else {
+        // Calculate time difference since last ping
+        const lastActive = new Date(session.lastActiveTime);
+        const diffSeconds = Math.floor((now.getTime() - lastActive.getTime()) / 1000);
 
-      // If less than 5 minutes have passed, add the diff to totalSeconds
-      // If more than 5 minutes, we assume they were away, so we don't add the idle time
-      if (diffSeconds > 0 && diffSeconds <= 300) {
-        session.totalSeconds += diffSeconds;
+        // If less than 5 minutes have passed, add the diff to totalSeconds
+        // If more than 5 minutes, we assume they were away, so we don't add the idle time
+        if (diffSeconds > 0 && diffSeconds <= 300) {
+          session.totalSeconds += diffSeconds;
+        }
+        
+        session.lastActiveTime = now;
+        await session.save();
       }
-      
-      session.lastActiveTime = now;
-      await session.save();
     }
 
     return { 

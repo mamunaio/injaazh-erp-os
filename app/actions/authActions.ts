@@ -100,6 +100,7 @@ export async function loginUser(formData: FormData) {
     
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
+    const rememberMe = formData.get('rememberMe') === 'on';
 
     if (!email || !password) {
       return { success: false, message: 'Email and password are required' };
@@ -127,9 +128,9 @@ export async function loginUser(formData: FormData) {
       email: user.email,
       role: user.role,
       sessionId
-    });
+    }, rememberMe);
 
-    await setAuthCookie(token);
+    await setAuthCookie(token, rememberMe);
 
     return { success: true, message: 'Login successful' };
   } catch (error: any) {
@@ -138,7 +139,7 @@ export async function loginUser(formData: FormData) {
   }
 }
 
-export async function verifyTwoFactorLogin(tempToken: string, code: string) {
+export async function verifyTwoFactorLogin(tempToken: string, code: string, rememberMe: boolean = false) {
   try {
     await connectToDatabase();
     
@@ -166,9 +167,9 @@ export async function verifyTwoFactorLogin(tempToken: string, code: string) {
       email: user.email,
       role: user.role,
       sessionId
-    });
+    }, rememberMe);
 
-    await setAuthCookie(token);
+    await setAuthCookie(token, rememberMe);
 
     return { success: true, message: 'Login successful' };
   } catch (error: any) {

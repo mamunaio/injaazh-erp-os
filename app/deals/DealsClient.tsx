@@ -361,9 +361,38 @@ export default function DealsClient({ initialDeals }: { initialDeals: Deal[] }) 
   const handleExport = () => {
     setIsExporting(true);
     setTimeout(() => {
-      setIsExporting(false);
-      toast.success('Deals exported successfully as CSV!');
-    }, 1500);
+      try {
+        const headers = ['Deal Name', 'Client Name', 'Value', 'Stage', 'Owner', 'Expected Close Date', 'Created At'];
+        const rows = deals.map(d => {
+          return [
+            `"${d.title.replace(/"/g, '""')}"`,
+            `"${d.clientName.replace(/"/g, '""')}"`,
+            d.value,
+            `"${d.stage}"`,
+            `"${d.owner?.name ? d.owner.name.replace(/"/g, '""') : 'Unassigned'}"`,
+            `"${d.expectedCloseDate || ''}"`,
+            `"${d.createdAt || ''}"`
+          ].join(',');
+        });
+        const csvString = [headers.join(','), ...rows].join('\n');
+
+        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'deals-export.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        toast.success('Deals exported successfully as CSV!');
+      } catch (error) {
+        toast.error('Failed to export deals');
+      } finally {
+        setIsExporting(false);
+      }
+    }, 800);
   };
 
   // ── Preserved dnd-kit sensors (unchanged) ───────────────────────────────────

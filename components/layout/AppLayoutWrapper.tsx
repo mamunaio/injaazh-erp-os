@@ -12,6 +12,7 @@ import { logoutUser } from '@/app/actions/authActions';
 export default function AppLayoutWrapper({ children, initialUser }: { children: React.ReactNode, initialUser?: any }) {
   const pathname = usePathname();
   const isAuthPage = 
+    pathname === '/' ||
     pathname === '/login' || 
     pathname === '/register' || 
     pathname === '/forgot-password' || 

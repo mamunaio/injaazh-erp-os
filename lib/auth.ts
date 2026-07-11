@@ -31,11 +31,11 @@ export const verifyAuth = async (token: string) => {
   }
 };
 
-export const generateAuthToken = async (payload: UserJwtPayload) => {
+export const generateAuthToken = async (payload: UserJwtPayload, rememberMe: boolean = false) => {
   const token = await new SignJWT({ ...payload })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('7d') // 1 week expiration
+    .setExpirationTime(rememberMe ? '30d' : '1d') // 30 days or 1 day
     .sign(new TextEncoder().encode(getJwtSecretKey()));
   
   return token;
@@ -65,17 +65,22 @@ export const verify2FATempToken = async (token: string) => {
   }
 };
 
-export const setAuthCookie = async (token: string) => {
+export const setAuthCookie = async (token: string, rememberMe: boolean = false) => {
   const cookieStore = await cookies();
-  cookieStore.set({
+  const cookieOptions: any = {
     name: 'user_token',
     value: token,
     httpOnly: true,
     path: '/',
     secure: process.env.NODE_ENV === 'production',
-    maxAge: 60 * 60 * 24 * 7, // 7 days
     sameSite: 'lax',
-  });
+  };
+
+  if (rememberMe) {
+    cookieOptions.maxAge = 60 * 60 * 24 * 30; // 30 days
+  }
+
+  cookieStore.set(cookieOptions);
 };
 
 export const removeAuthCookie = async () => {

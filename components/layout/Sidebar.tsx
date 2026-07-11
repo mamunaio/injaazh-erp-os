@@ -18,8 +18,9 @@ const navItems = [
   { name: 'Proposals', href: '/proposals', icon: FileText },
   { name: 'Projects', href: '/projects', icon: Briefcase },
   { name: 'Roadmap', href: '/roadmap', icon: Map },
+  { name: 'Timesheets', href: '/timesheets', icon: Clock },
   { name: 'Clients', href: '/marketplace/clients', icon: Users },
-  { name: 'Finance', href: '/money', icon: DollarSign },
+  { name: 'Finance', href: '/finance', icon: DollarSign },
   { name: 'Expenses', href: '/daily-expenses', icon: Wallet },
   { name: 'Insights', href: '/settings/insights', icon: BookOpen },
   { name: 'Settings', href: '/settings', icon: Settings },
@@ -40,7 +41,7 @@ export default function Sidebar() {
     }
     
     if (user.role === 'editor') {
-      const allowed = ['/dashboard', '/prospects', '/outreach', '/proposals', '/projects', '/roadmap', '/team-logs'];
+      const allowed = ['/dashboard', '/prospects', '/outreach', '/proposals', '/projects', '/roadmap', '/timesheets', '/team-logs'];
       return allowed.includes(item.href);
     }
 
@@ -106,10 +107,10 @@ export default function Sidebar() {
               {filteredNavItems.filter(i => ['/deals', '/proposals', '/marketplace/clients'].includes(i.href)).map(renderNavItem)}
 
               <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3">Work</div>
-              {filteredNavItems.filter(i => ['/projects', '/roadmap'].includes(i.href)).map(renderNavItem)}
+              {filteredNavItems.filter(i => ['/projects', '/roadmap', '/timesheets'].includes(i.href)).map(renderNavItem)}
 
               <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3">Finance</div>
-              {filteredNavItems.filter(i => ['/money', '/daily-expenses'].includes(i.href)).map(renderNavItem)}
+              {filteredNavItems.filter(i => ['/finance', '/daily-expenses'].includes(i.href)).map(renderNavItem)}
 
               <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3">System</div>
               {filteredNavItems.filter(i => ['/settings/insights', '/settings'].includes(i.href)).map(renderNavItem)}

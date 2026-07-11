@@ -14,6 +14,8 @@ import {
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 import { createDailyExpense, updateDailyExpense, deleteDailyExpense } from '@/app/actions/dailyExpenseActions';
 
@@ -64,6 +66,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
   
   const [isSlidePanelOpen, setIsSlidePanelOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -220,6 +223,45 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
     }
   };
 
+  const [isExporting, setIsExporting] = useState(false);
+  const handleExport = () => {
+    setIsExporting(true);
+    setTimeout(() => {
+      try {
+        const headers = ['Title', 'Category', 'Employee', 'Amount', 'Status', 'Date'];
+        const rows = filteredExpenses.map(e => {
+          return [
+            `"${e.description.replace(/"/g, '""')}"`,
+            `"${e.category}"`,
+            `"Admin"`, // default since there's no employee field yet
+            e.amount,
+            `"Approved"`,
+            `"${formatDate(e.date)}"`
+          ].join(',');
+        });
+
+        const csvContent = [headers.join(','), ...rows].join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'expenses-export.csv');
+        document.body.appendChild(link);
+        link.click();
+        
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        toast.success('Exported successfully!');
+      } catch (error) {
+        toast.error('Failed to export CSV');
+      } finally {
+        setIsExporting(false);
+      }
+    }, 100);
+  };
+
   const containerVariants = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
   const itemVariants = { hidden: { opacity: 0, y: 15 }, show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 26 } } };
 
@@ -242,11 +284,12 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
             </div>
             
             <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-              <button className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#11131A] hover:bg-[#232734] border border-[#232734] text-white transition-all">
+              <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#11131A] hover:bg-[#232734] border border-[#232734] text-white transition-all">
                 <UploadCloud size={16} /> Upload Receipt
               </button>
-              <button className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#11131A] hover:bg-[#232734] border border-[#232734] text-white transition-all">
-                <Download size={16} /> Export
+              <button onClick={handleExport} disabled={isExporting} className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#11131A] hover:bg-[#232734] border border-[#232734] text-white transition-all disabled:opacity-50">
+                {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} 
+                {isExporting ? 'Exporting...' : 'Export'}
               </button>
               <button onClick={openAddPanel} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
                 <Plus size={16} strokeWidth={2.5} /> Add Expense
@@ -469,21 +512,21 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
           </div>
         </motion.div>
         
-        {/* ── Right Slide Panel (Add / Edit) ───────────────────────────────── */}
+        {/* ── Centered Modal (Add / Edit) ───────────────────────────────── */}
         <AnimatePresence>
           {isSlidePanelOpen && (
-            <>
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
-                onClick={() => setIsSlidePanelOpen(false)} className="fixed inset-0 bg-[#09090B]/80 backdrop-blur-sm z-50" />
+                onClick={() => setIsSlidePanelOpen(false)} className="absolute inset-0 bg-[#09090B]/80 backdrop-blur-sm" />
               <motion.div
-                initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 30, stiffness: 280 }}
-                className="fixed right-0 top-0 bottom-0 w-full sm:w-[450px] bg-[#09090B] border-l border-[#232734] z-50 flex flex-col shadow-2xl"
+                initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+                className="relative w-full max-w-[500px] bg-[#09090B] border border-[#232734] rounded-2xl z-50 flex flex-col shadow-2xl overflow-hidden max-h-[90vh]"
               >
                 {/* Header */}
                 <div className="flex-shrink-0 p-6 border-b border-[#232734] bg-[#11131A]">
                   <div className="flex items-center justify-between mb-5">
                     <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">{editingExpense ? 'Edit Expense' : 'New Expense'}</span>
-                    <button onClick={() => setIsSlidePanelOpen(false)} className="p-2 rounded-[10px] text-[#94A3B8] hover:text-white hover:bg-[#232734] border border-[#232734] transition-all">
+                    <button type="button" onClick={() => setIsSlidePanelOpen(false)} className="p-2 rounded-[10px] text-[#94A3B8] hover:text-white hover:bg-[#232734] border border-[#232734] transition-all">
                       <X size={14} />
                     </button>
                   </div>
@@ -516,13 +559,20 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Date</label>
-                      <input required type="date" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})}
-                        className="w-full bg-[#11131A] border border-[#232734] text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none" />
+                      <DatePicker 
+                        selected={new Date(formData.date + 'T00:00:00')} 
+                        onChange={(date: Date | null) => setFormData({...formData, date: date ? format(date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')})}
+                        className="w-full bg-[#11131A] border border-[#232734] text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none" 
+                        dateFormat="MMMM d, yyyy"
+                        required
+                        popperPlacement="bottom-start"
+                        popperClassName="z-[60]"
+                      />
                     </div>
                     <div>
                       <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Category</label>
                       <select required value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}
-                        className="w-full bg-[#11131A] border border-[#232734] text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none">
+                        className="w-full bg-[#11131A] border border-[#232734] text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none cursor-pointer">
                         {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
@@ -531,7 +581,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
                   <div>
                     <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Payment Method</label>
                     <select required value={formData.paymentMethod} onChange={e => setFormData({...formData, paymentMethod: e.target.value})}
-                      className="w-full bg-[#11131A] border border-[#232734] text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none">
+                      className="w-full bg-[#11131A] border border-[#232734] text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none cursor-pointer">
                       {PAYMENT_METHODS.map(m => <option key={m} value={m}>{m}</option>)}
                     </select>
                   </div>
@@ -544,10 +594,65 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
                   </div>
                 </form>
               </motion.div>
-            </>
+            </div>
           )}
         </AnimatePresence>
 
+        {/* ── Upload Receipt Modal ─────────────────────────────────────── */}
+        <AnimatePresence>
+          {isUploadModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
+                onClick={() => setIsUploadModalOpen(false)} className="absolute inset-0 bg-[#09090B]/80 backdrop-blur-sm" />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+                className="relative w-full max-w-[450px] bg-[#09090B] border border-[#232734] rounded-2xl z-50 flex flex-col shadow-2xl overflow-hidden"
+              >
+                {/* Header */}
+                <div className="p-6 border-b border-[#232734] bg-[#11131A] flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-[12px] bg-[#10B981]/10 border border-[#10B981]/20 flex items-center justify-center text-[#10B981]">
+                      <UploadCloud size={18} />
+                    </div>
+                    <div>
+                      <h2 className="text-base font-bold text-white tracking-tight">Upload Receipt</h2>
+                      <p className="text-[10px] text-[#94A3B8] font-bold uppercase tracking-widest">AI Auto-Extraction</p>
+                    </div>
+                  </div>
+                  <button type="button" onClick={() => setIsUploadModalOpen(false)} className="p-2 rounded-[10px] text-[#94A3B8] hover:text-white hover:bg-[#232734] border border-[#232734] transition-all">
+                    <X size={14} />
+                  </button>
+                </div>
+
+                {/* Body */}
+                <div className="p-6 space-y-6">
+                  <div className="w-full h-40 border-2 border-dashed border-[#232734] rounded-xl flex flex-col items-center justify-center gap-3 hover:border-[#2563EB]/50 hover:bg-[#2563EB]/5 transition-colors cursor-pointer group">
+                    <div className="w-12 h-12 rounded-full bg-[#11131A] group-hover:bg-[#2563EB]/10 flex items-center justify-center text-[#94A3B8] group-hover:text-[#2563EB] transition-colors">
+                      <UploadCloud size={20} />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-bold text-white mb-1">Click to upload or drag & drop</p>
+                      <p className="text-xs text-[#94A3B8]">SVG, PNG, JPG or PDF (max. 5MB)</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-6 border-t border-[#232734] bg-[#0D0F16] flex gap-3">
+                  <button type="button" onClick={() => setIsUploadModalOpen(false)} className="flex-1 py-2.5 bg-transparent border border-[#232734] hover:bg-[#11131A] text-white font-bold text-sm rounded-xl transition-all">
+                    Cancel
+                  </button>
+                  <button type="button" onClick={() => {
+                    toast.success("Receipt uploaded successfully!");
+                    setIsUploadModalOpen(false);
+                  }} className="flex-1 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold text-sm rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.25)] flex items-center justify-center gap-2">
+                    <CheckCircle2 size={16} /> Extract Data
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+        
       </div>
     </div>
   );

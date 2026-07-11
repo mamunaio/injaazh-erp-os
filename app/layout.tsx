@@ -59,9 +59,13 @@ export default async function RootLayout({
           </div>
           <AppLayoutWrapper initialUser={initialUser}>
             {children}
-            <CommandCenter />
-            <WorkTimeTracker />
-            <ChatWidget />
+            {initialUser && (
+              <>
+                <CommandCenter />
+                <WorkTimeTracker />
+                <ChatWidget />
+              </>
+            )}
           </AppLayoutWrapper>
           <Toaster 
             position="top-right" />

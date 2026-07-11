@@ -274,7 +274,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                 <h2 className="text-lg font-bold font-jakarta text-white tracking-tight flex items-center gap-2">
                   <BarChartIcon size={18} className="text-[#2563EB]" /> Analytics Overview
                 </h2>
-                <button className="text-xs font-bold text-[#2563EB] hover:text-[#2563EB]/80 transition-colors flex items-center gap-1">View Full Report <ChevronRight size={14} /></button>
+                <Link href="/finance" className="text-xs font-bold text-[#2563EB] hover:text-[#2563EB]/80 hover:underline transition-colors flex items-center gap-1">View Full Report <ChevronRight size={14} /></Link>
               </div>
               
               <Card className="h-[400px] flex flex-col p-6">
@@ -424,7 +424,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                   <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
                     <CheckSquare size={16} className="text-slate-400" /> Today's Tasks
                   </h3>
-                  <button className="text-xs font-bold text-[#2563EB] hover:text-[#2563EB]/80 transition-colors">View All</button>
+                  <Link href="/roadmap" className="text-xs font-bold text-[#2563EB] hover:text-[#2563EB]/80 hover:underline transition-colors">View All</Link>
                 </div>
                 <div className="space-y-3">
                    <div className="flex items-start gap-3 p-2 hover:bg-[#09090B] rounded-xl transition-colors cursor-pointer group border border-transparent hover:border-[#232734]">
@@ -459,7 +459,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                   <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
                     <Calendar size={16} className="text-slate-400" /> Upcoming Meetings
                   </h3>
-                  <button className="w-6 h-6 rounded-md bg-[#09090B] border border-[#232734] flex items-center justify-center hover:text-white text-slate-400 transition-colors"><Plus size={14} /></button>
+                  <button onClick={() => handleAction('Meeting Modal')} className="w-6 h-6 rounded-md bg-[#09090B] border border-[#232734] flex items-center justify-center hover:text-white hover:border-[#2563EB]/50 text-slate-400 transition-colors"><Plus size={14} /></button>
                 </div>
                 <div className="space-y-4">
                   <div className="flex gap-4 items-center">
@@ -528,7 +528,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
            <Card className="p-0 overflow-hidden h-full">
              <div className="p-6 border-b border-[#232734] flex justify-between items-center bg-[#11131A]">
                <h3 className="text-base font-bold text-white tracking-tight">Recent Leads</h3>
-               <button className="text-xs font-bold text-[#2563EB] hover:text-[#2563EB]/80 transition-colors">View All</button>
+               <Link href="/prospects" className="text-xs font-bold text-[#2563EB] hover:text-[#2563EB]/80 hover:underline transition-colors">View All</Link>
              </div>
              <div className="overflow-x-auto">
                <table className="w-full text-left border-collapse">
@@ -564,7 +564,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
            <Card className="p-0 overflow-hidden h-full">
              <div className="p-6 border-b border-[#232734] flex justify-between items-center bg-[#11131A]">
                <h3 className="text-base font-bold text-white tracking-tight">Recent Transactions</h3>
-               <button className="text-xs font-bold text-[#2563EB] hover:text-[#2563EB]/80 transition-colors">View All</button>
+               <Link href="/finance" className="text-xs font-bold text-[#2563EB] hover:text-[#2563EB]/80 hover:underline transition-colors">View All</Link>
              </div>
              <div className="overflow-x-auto">
                <table className="w-full text-left border-collapse">
@@ -614,6 +614,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                     {activeModal === 'Proposal Draft' && 'Draft New Proposal'}
                     {activeModal === 'Project Setup' && 'Setup New Project'}
                     {activeModal === 'Lead Form' && 'Add New Lead'}
+                    {activeModal === 'Meeting Modal' && 'Schedule New Meeting'}
                   </h2>
                   <p className="text-xs text-[#94A3B8]">Fill in the details below to proceed.</p>
                 </div>

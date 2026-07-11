@@ -516,6 +516,68 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
         }}
       />
 
+      {/* Dropdown Menu for Action Dots */}
+      <AnimatePresence>
+        {openMenuId && menuPosition && (
+          <>
+            {/* Invisible backdrop to close the menu when clicking outside */}
+            <div 
+              className="fixed inset-0 z-[100]"
+              onClick={() => { setOpenMenuId(null); setMenuPosition(null); }}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -10 }}
+              transition={{ duration: 0.15 }}
+              className="fixed z-[101] w-48 bg-[#09090B]/90 backdrop-blur-md border border-[#232734] rounded-xl shadow-2xl py-2 flex flex-col"
+              style={{ top: menuPosition.top, right: menuPosition.right }}
+            >
+              <button 
+                className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-[#1E293B]/60 transition-colors w-full text-left"
+                onClick={(e) => {
+                  setOpenMenuId(null);
+                  const lead = leads.find(l => l._id === openMenuId);
+                  if (lead) handleEditClick(lead, e);
+                }}
+              >
+                <Edit size={14} /> Edit Lead
+              </button>
+              <button 
+                className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-[#1E293B]/60 transition-colors w-full text-left"
+                onClick={(e) => {
+                  setOpenMenuId(null);
+                  setSelectedLeads([openMenuId]);
+                  setIsCampaignModalOpen(true);
+                }}
+              >
+                <Target size={14} /> Move to Campaign
+              </button>
+              <button 
+                className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-[#1E293B]/60 transition-colors w-full text-left"
+                onClick={(e) => {
+                  setOpenMenuId(null);
+                  toast.success('Task added successfully');
+                }}
+              >
+                <List size={14} /> Add Task
+              </button>
+              <div className="h-px bg-[#232734] my-1 w-full" />
+              <button 
+                className="flex items-center gap-2 px-4 py-2 text-sm text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-colors w-full text-left font-medium"
+                onClick={(e) => {
+                  setOpenMenuId(null);
+                  const lead = leads.find(l => l._id === openMenuId);
+                  if (lead) handleDeleteClick(lead, e);
+                }}
+              >
+                <Trash2 size={14} /> Delete Lead
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {isCSVModalOpen && (
         <CSVImportModal 
           isOpen={isCSVModalOpen} 

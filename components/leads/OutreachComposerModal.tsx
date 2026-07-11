@@ -405,7 +405,7 @@ export default function OutreachComposerModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-slate-900/60 dark:bg-black/70 backdrop-blur-md"
+          className="absolute inset-0 bg-[#09090B]/80 backdrop-blur-md"
           onClick={isSending ? undefined : onClose}
         />
 
@@ -415,25 +415,25 @@ export default function OutreachComposerModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-5xl h-[85vh] neu-flat rounded-2xl flex flex-col overflow-hidden"
+          className="relative w-full max-w-5xl h-[85vh] bg-[#09090B] border border-[#232734] rounded-2xl flex flex-col overflow-hidden shadow-2xl"
         >
           {/* Header */}
-          <div className="flex justify-between items-center p-6 border-b border-white/5">
+          <div className="flex justify-between items-center p-6 border-b border-[#232734] bg-[#11131A]">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 rounded-xl">
+              <div className="p-2.5 bg-[#2563EB]/10 text-[#2563EB] rounded-xl">
                 <Mail size={22} className="animate-pulse" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-slate-800 dark:text-white">CRM Cold Email Outreach</h2>
-                <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">
-                  Send outreach to <span className="font-semibold text-slate-700 dark:text-purple-300">{lead.company_name}</span> &bull; {lead.email}
+                <h2 className="text-xl font-bold text-white">CRM Cold Email Outreach</h2>
+                <p className="text-slate-400 text-xs mt-0.5">
+                  Send outreach to <span className="font-semibold text-white">{lead.company_name}</span> &bull; {lead.email}
                 </p>
               </div>
             </div>
             <button
               onClick={onClose}
               disabled={isSending}
-              className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white neu-pressed rounded-xl transition-all disabled:opacity-50"
+              className="p-2 text-slate-400 hover:text-white hover:bg-[#232734] border border-transparent hover:border-[#232734] rounded-xl transition-all disabled:opacity-50"
             >
               <X size={20} />
             </button>
@@ -442,11 +442,11 @@ export default function OutreachComposerModal({
           <div className="flex flex-1 overflow-hidden">
             
             {/* Left side: Configuration Panel */}
-            <div className="w-full md:w-1/3 border-r border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-black/20 p-6 flex flex-col gap-8 overflow-y-auto">
+            <div className="w-full md:w-1/3 border-r border-[#232734] bg-[#11131A] p-6 flex flex-col gap-6 overflow-y-auto custom-scrollbar">
               
               <div>
-                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 block">
-                  Select High-Converting Template
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">
+                  Select Template
                 </label>
                 <div className="space-y-2">
                   {dynamicTemplates.map((tmpl) => {
@@ -457,18 +457,18 @@ export default function OutreachComposerModal({
                         onClick={() => setSelectedTemplateId(tmpl.id)}
                         className={`w-full text-left p-3.5 rounded-xl border transition-all duration-200 flex items-start gap-3 ${
                           isSelected 
-                            ? 'bg-slate-800 border-indigo-500/30 shadow-[0_4px_20px_-4px_rgba(99,102,241,0.2)]' 
-                            : 'neu-pressed border-transparent hover:border-indigo-500/20'
+                            ? 'bg-[#2563EB]/10 border-[#2563EB]/30' 
+                            : 'bg-[#09090B] border-[#232734] hover:border-[#2563EB]/20'
                         }`}
                       >
-                        <div className={`p-2 rounded-lg ${isSelected ? 'bg-indigo-500/20' : 'bg-slate-800/50'}`}>
+                        <div className={`p-2 rounded-lg ${isSelected ? 'bg-[#2563EB]/20 text-[#2563EB]' : 'bg-[#11131A] text-slate-400'}`}>
                           {tmpl.icon}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className={`font-bold text-sm ${isSelected ? 'text-white' : 'text-slate-300'}`}>
                             {tmpl.name}
                           </div>
-                          <div className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                          <div className="text-[11px] text-slate-500 truncate mt-0.5">
                             {tmpl.id === 'custom-draft' ? tmpl.subject : tmpl.subject.replace('{companyName}', companyName || lead.company_name)}
                           </div>
                         </div>
@@ -479,14 +479,14 @@ export default function OutreachComposerModal({
               </div>
 
               <div>
-                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 block">
-                  Personalize Placeholders
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">
+                  Placeholders
                 </label>
                 
-                <div className="neu-flat rounded-2xl p-4 space-y-4">
+                <div className="bg-[#09090B] border border-[#232734] rounded-2xl p-4 space-y-4">
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                      <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
                         Contact Person ({'{contactName}'})
                       </label>
                       <input
@@ -494,12 +494,12 @@ export default function OutreachComposerModal({
                         value={contactName}
                         onChange={(e) => setContactName(e.target.value)}
                         placeholder="e.g. John Doe"
-                        className="w-full neu-pressed rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder:text-slate-600"
+                        className="w-full bg-[#11131A] border border-[#232734] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#2563EB]/50 transition-all placeholder:text-slate-600"
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                      <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
                         Company Name ({'{companyName}'})
                       </label>
                       <input
@@ -507,12 +507,12 @@ export default function OutreachComposerModal({
                         value={companyName}
                         onChange={(e) => setCompanyName(e.target.value)}
                         placeholder="e.g. Southpaw Flooring"
-                        className="w-full neu-pressed rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder:text-slate-600"
+                        className="w-full bg-[#11131A] border border-[#232734] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#2563EB]/50 transition-all placeholder:text-slate-600"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                      <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
                         Website Url ({'{websiteUrl}'})
                       </label>
                       <input
@@ -520,19 +520,9 @@ export default function OutreachComposerModal({
                         value={websiteUrl}
                         onChange={(e) => setWebsiteUrl(e.target.value)}
                         placeholder="e.g. southpawflooring.com"
-                        className="w-full neu-pressed rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder:text-slate-600"
+                        className="w-full bg-[#11131A] border border-[#232734] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#2563EB]/50 transition-all placeholder:text-slate-600"
                       />
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Status information disclaimer */}
-              <div className="mt-auto pt-4">
-                <div className="flex gap-2.5 p-3.5 neu-pressed rounded-xl text-[11px] text-slate-400 leading-relaxed border border-indigo-500/10">
-                  <Info size={14} className="text-indigo-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-semibold text-slate-700 dark:text-purple-300">Outreach CRM Automation:</span> sending this email progresses lead status to <span className="font-semibold px-1 py-0.5 rounded bg-blue-500/10 text-blue-500 dark:text-blue-400">Contacted</span> and archives this draft directly inside the activity timeline logs!
                   </div>
                 </div>
               </div>
@@ -540,141 +530,138 @@ export default function OutreachComposerModal({
             </div>
 
             {/* Right side: Email Editor Panel */}
-            <div className="w-full md:w-2/3 p-8 flex flex-col relative h-full overflow-y-auto">
+            <div className="w-full md:w-2/3 flex flex-col relative h-full bg-[#09090B]">
               
-              <div className="flex flex-col gap-5 mb-5 flex-shrink-0 relative z-20">
-                <div className="flex items-center gap-4 text-sm neu-flat p-3 rounded-xl">
-                  <div className="flex items-center gap-3 w-1/2">
-                    <span className="font-bold text-slate-400 uppercase tracking-wider text-[10px]">Recipient:</span>
-                    <span className="font-semibold text-slate-800 dark:text-white truncate">{lead.email}</span>
+              <div className="p-8 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-6">
+                
+                {/* Email Configuration */}
+                <div className="flex flex-col gap-5 flex-shrink-0">
+                  <div className="flex items-center gap-4 text-sm bg-[#11131A] border border-[#232734] p-3 rounded-xl">
+                    <div className="flex items-center gap-3 w-1/2">
+                      <span className="font-bold text-slate-400 uppercase tracking-wider text-[10px]">Recipient:</span>
+                      <span className="font-bold text-white truncate">{lead.email}</span>
+                    </div>
+                    <div className="flex items-center gap-3 w-1/2 border-l border-[#232734] pl-4">
+                      <span className="font-bold text-slate-400 uppercase tracking-wider text-[10px] whitespace-nowrap flex-shrink-0">From:</span>
+                      <CustomSelect
+                        value={selectedSenderId}
+                        onChange={(val: string) => setSelectedSenderId(val)}
+                        options={[
+                          { value: 'auto', label: 'Auto-Rotate Pool' },
+                          ...activeAccounts.map(acc => ({
+                            value: acc._id,
+                            label: `${acc.email}`
+                          }))
+                        ]}
+                        className="text-[#2563EB] font-bold text-sm"
+                      />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3 w-1/2 border-l border-slate-200 dark:border-white/5 pl-4">
-                    <span className="font-bold text-slate-400 uppercase tracking-wider text-[10px] whitespace-nowrap flex-shrink-0">Send From:</span>
-                    <CustomSelect
-                      value={selectedSenderId}
-                      onChange={(val: string) => setSelectedSenderId(val)}
-                      options={[
-                        { value: 'auto', label: 'Auto-Rotate Pool (Recommended)' },
-                        ...activeAccounts.map(acc => ({
-                          value: acc._id,
-                          label: `${acc.email} (${acc.accountType === 'smtp' ? 'Webmail' : 'Gmail'})`
-                        }))
-                      ]}
-                      className="text-indigo-600 dark:text-indigo-400 font-bold text-sm"
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Subject Line</label>
+                    <input
+                      type="text"
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
+                      className="w-full bg-[#11131A] border border-[#232734] rounded-xl px-4 py-3.5 text-sm font-bold text-white focus:outline-none focus:border-[#2563EB]/50 transition-all placeholder:text-slate-600"
+                      placeholder="Enter subject..."
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Subject Line</label>
-                  <input
-                    type="text"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    className="w-full neu-pressed rounded-xl px-4 py-3.5 text-sm font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all placeholder:text-slate-500"
-                    placeholder="Enter an attention-grabbing subject..."
-                  />
-                </div>
-              </div>
-
-              {/* Email Body & Footer */}
-              <div className="flex-1 flex flex-col neu-pressed rounded-2xl overflow-hidden relative z-10 focus-within:ring-2 focus-within:ring-indigo-500/30 transition-all">
-                <div className="flex justify-between items-center px-4 py-3 border-b border-slate-200/10 bg-transparent">
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Email Message Draft</span>
-                  <button 
-                    onClick={handleAIGenerate}
-                    disabled={isGeneratingAI}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-purple-400 hover:bg-purple-500/10 border border-purple-500/20 transition-colors disabled:opacity-50"
-                  >
-                    {isGeneratingAI ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                    AI Magic Draft
-                  </button>
-                </div>
-                
-                <textarea
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  className="flex-1 w-full bg-transparent p-5 text-sm text-slate-800 dark:text-slate-300 focus:outline-none resize-none placeholder-slate-500 leading-relaxed font-mono"
-                  placeholder="Type your email message here..."
-                />
-
-                {/* Error Banner */}
-                {errorMessage && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-start gap-2 p-3.5 bg-rose-500/10 border-t border-rose-500/20 text-rose-400 text-xs"
-                  >
-                    <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
-                    <span className="leading-relaxed">{errorMessage}</span>
-                  </motion.div>
-                )}
-
-                {/* Success Banner */}
-                {successInfo && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-start gap-2.5 p-3.5 bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 text-xs rounded-xl mx-4 mb-4 mt-2"
-                  >
-                    <CheckCircle size={16} className="flex-shrink-0 mt-0.5 text-green-500" />
-                    <div>
-                      <div className="font-semibold text-green-700 dark:text-green-300">Outreach Email Dispatched Successfully!</div>
-                      <div className="text-[11px] opacity-90 mt-0.5 leading-relaxed">
-                        {successInfo.isSimulated 
-                          ? 'Simulated sandbox fallback: database timeline successfully updated. Lead status set to Contacted!'
-                          : `Email successfully delivered via ${successInfo.sentVia || 'Email Account'}. CRM status progressed.`}
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Control Action Buttons */}
-                <div className="flex items-center justify-between gap-4 px-5 py-4 border-t border-slate-200/10 bg-transparent mt-auto">
-                  <div className="text-[10px] text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping"></span>
-                    Ready for delivery &bull; Rich logs auto-archived
+                {/* Email Body */}
+                <div className="flex-1 flex flex-col bg-[#11131A] border border-[#232734] rounded-2xl overflow-hidden focus-within:border-[#2563EB]/50 transition-all">
+                  <div className="flex justify-between items-center px-4 py-3 border-b border-[#232734]">
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Message Body</span>
+                    <button 
+                      onClick={handleAIGenerate}
+                      disabled={isGeneratingAI}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-[#A855F7] bg-[#A855F7]/10 hover:bg-[#A855F7]/20 border border-[#A855F7]/20 transition-all disabled:opacity-50"
+                    >
+                      {isGeneratingAI ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                      AI Magic Draft
+                    </button>
                   </div>
                   
-                  <div className="flex gap-4">
-                    <button
-                      onClick={onClose}
-                      disabled={isSending}
-                      className="px-6 py-2.5 text-xs font-bold text-slate-400 hover:text-white transition-colors rounded-xl disabled:opacity-50 neu-button flex items-center justify-center min-w-[100px]"
+                  <textarea
+                    value={body}
+                    onChange={(e) => setBody(e.target.value)}
+                    className="flex-1 w-full bg-transparent p-5 text-sm text-white focus:outline-none resize-none placeholder-slate-600 leading-relaxed font-mono custom-scrollbar"
+                    placeholder="Type your email message here..."
+                  />
+
+                  {/* Error Banner */}
+                  {errorMessage && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-start gap-2 p-3.5 bg-rose-500/10 border-t border-rose-500/20 text-rose-400 text-xs"
                     >
-                      Cancel
-                    </button>
-                    
-                    <button
-                      onClick={handleSend}
-                      disabled={isSending || !!successInfo || cooldownRemaining > 0}
-                      className="relative overflow-hidden group px-6 py-2.5 neu-button text-purple-400 font-black rounded-xl text-xs flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none min-w-[150px]"
+                      <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
+                      <span className="leading-relaxed">{errorMessage}</span>
+                    </motion.div>
+                  )}
+
+                  {/* Success Banner */}
+                  {successInfo && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-start gap-2.5 p-3.5 bg-[#10B981]/10 border border-[#10B981]/20 text-[#10B981] text-xs rounded-xl mx-4 mb-4 mt-2"
                     >
-                      {isSending ? (
-                        <>
-                          <Loader2 size={14} className="animate-spin" />
-                          <span>Dispatching...</span>
-                        </>
-                      ) : successInfo ? (
-                        <>
-                          <CheckCircle size={14} className="animate-bounce" />
-                          <span>Sent!</span>
-                        </>
-                      ) : cooldownRemaining > 0 ? (
-                        <>
-                          <Loader2 size={14} className="animate-spin text-orange-400" />
-                          <span className="text-orange-400">Wait {cooldownRemaining}s</span>
-                        </>
-                      ) : (
-                        <>
-                          <Send size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                          <span>Send Outreach</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
+                      <CheckCircle size={16} className="flex-shrink-0 mt-0.5" />
+                      <div>
+                        <div className="font-bold">Email Dispatched Successfully!</div>
+                        <div className="text-[11px] opacity-90 mt-0.5 leading-relaxed">
+                          {successInfo.isSimulated 
+                            ? 'Status updated to Contacted.'
+                            : `Delivered via ${successInfo.sentVia || 'Email Account'}.`}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
                 </div>
 
+              </div>
+
+              {/* Control Action Buttons / Footer */}
+              <div className="flex items-center justify-end gap-4 px-8 py-5 border-t border-[#232734] bg-[#11131A] flex-shrink-0">
+                <button
+                  onClick={onClose}
+                  disabled={isSending}
+                  className="px-6 py-2.5 text-xs font-bold text-slate-400 bg-transparent hover:bg-[#232734] border border-[#232734] transition-colors rounded-xl disabled:opacity-50 flex items-center justify-center"
+                >
+                  Cancel
+                </button>
+                
+                <button
+                  onClick={handleSend}
+                  disabled={isSending || !!successInfo || cooldownRemaining > 0}
+                  className="px-6 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_0_20px_rgba(37,99,235,0.25)] min-w-[150px]"
+                >
+                  {isSending ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      <span>Sending...</span>
+                    </>
+                  ) : successInfo ? (
+                    <>
+                      <CheckCircle size={14} className="animate-bounce" />
+                      <span>Sent!</span>
+                    </>
+                  ) : cooldownRemaining > 0 ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin text-orange-400" />
+                      <span className="text-orange-400">Wait {cooldownRemaining}s</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send size={14} />
+                      <span>Send Outreach</span>
+                    </>
+                  )}
+                </button>
               </div>
 
             </div>
