@@ -137,7 +137,7 @@ export async function getTimesheetKPIs() {
     let secondsMonth = 0;
     
     // Chart data for last 7 days
-    const chartData = [];
+    const chartData: any[] = [];
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     
     for (let i = 6; i >= 0; i--) {
