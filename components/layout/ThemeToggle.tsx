@@ -16,32 +16,35 @@ export default function ThemeToggle() {
   }
 
   return (
-    <div className="flex neu-pressed p-1 rounded-xl">
+    <div className="flex items-center p-1 bg-slate-900/50 rounded-lg border border-slate-800 gap-1 w-full justify-between">
       <button
         onClick={() => setTheme('light')}
-        className={`flex-1 flex justify-center items-center py-2 rounded-lg transition-all ${
-          theme === 'light' ? 'neu-button text-indigo-500' : 'text-slate-500 hover:neu-flat'
+        className={`w-8 h-8 flex justify-center items-center rounded-md transition-all ${
+          theme === 'light' ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-slate-300'
         }`}
+        aria-label="Light theme"
       >
-        <Sun size={16} />
+        <Sun size={14} />
       </button>
 
       <button
         onClick={() => setTheme('system')}
-        className={`flex-1 flex justify-center items-center py-2 rounded-lg transition-all ${
-          theme === 'system' ? 'neu-button text-purple-500' : 'text-slate-500 hover:neu-flat'
+        className={`w-8 h-8 flex justify-center items-center rounded-md transition-all ${
+          theme === 'system' ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-slate-300'
         }`}
+        aria-label="System theme"
       >
-        <Laptop size={16} />
+        <Laptop size={14} />
       </button>
 
       <button
         onClick={() => setTheme('dark')}
-        className={`flex-1 flex justify-center items-center py-2 rounded-lg transition-all ${
-          theme === 'dark' ? 'neu-button text-purple-500' : 'text-slate-500 hover:neu-flat'
+        className={`w-8 h-8 flex justify-center items-center rounded-md transition-all ${
+          theme === 'dark' ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-slate-300'
         }`}
+        aria-label="Dark theme"
       >
-        <Moon size={16} />
+        <Moon size={14} />
       </button>
     </div>
   );
