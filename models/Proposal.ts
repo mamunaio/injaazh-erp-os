@@ -22,6 +22,8 @@ export interface IProposal extends Document {
   introduction: string;
   phases: IPhase[];
   investment: IInvestmentItem[];
+  dealId?: mongoose.Types.ObjectId;
+  leadId?: mongoose.Types.ObjectId;
   shareToken?: string;
   dateSent?: Date;
   dateAccepted?: Date;
@@ -62,6 +64,8 @@ const ProposalSchema = new Schema<IProposal>(
       min: 0,
       default: 0,
     },
+    dealId: { type: Schema.Types.ObjectId, ref: 'Deal' },
+    leadId: { type: Schema.Types.ObjectId, ref: 'Lead' },
     status: {
       type: String,
       enum: ['Draft', 'Sent', 'Viewed', 'Accepted', 'Rejected'],

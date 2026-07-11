@@ -97,7 +97,7 @@ export default function CommandCenter() {
                 onChange={(e) => setQuery(e.target.value)}
                 className="w-full bg-transparent text-xl text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none"
               />
-              <div className="flex items-center gap-1 text-xs font-bold text-slate-400 bg-slate-800/30 px-2 py-1 rounded-md ml-4">
+              <div className="flex items-center gap-1 text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-800/30 px-2 py-1 rounded-md ml-4">
                 <span>ESC</span>
               </div>
             </div>
@@ -112,7 +112,7 @@ export default function CommandCenter() {
                       <button
                         key={shortcut.id}
                         onClick={() => handleSelect(shortcut.path)}
-                        className="w-full flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-white/10 dark:hover:bg-slate-800/50 transition-colors group text-left"
+                        className="w-full flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-white/10 dark:hover:bg-slate-800/50 transition-colors group text-left"
                       >
                         <div className="flex items-center gap-4">
                           <div className={`w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shadow-inner ${shortcut.color}`}>

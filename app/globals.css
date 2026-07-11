@@ -43,7 +43,7 @@
 
 @layer base {
   body {
-    @apply text-slate-800 dark:text-slate-200 antialiased;
+    @apply bg-slate-50 text-slate-900 dark:bg-[#0A0A0B] dark:text-slate-200 antialiased transition-colors duration-300;
   }
   
   h1 {
@@ -93,15 +93,15 @@
 
 @layer utilities {
   .neu-base-bg {
-    background-color: #0A0A0B;
+    background-color: #f8fafc;
   }
   .dark .neu-base-bg {
     background-color: #0A0A0B;
   }
   
   .neu-flat {
-    background-color: #121214;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 1.5rem; /* 24px */
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
@@ -112,38 +112,43 @@
   }
 
   .neu-pressed {
-    background-color: #0E0E10;
-    border: 1px solid rgba(255, 255, 255, 0.03);
+    background-color: #f1f5f9;
+    border: 1px solid #cbd5e1;
     border-radius: 1rem;
   }
   .dark .neu-pressed {
     background-color: #0E0E10;
+    border: 1px solid rgba(255, 255, 255, 0.03);
   }
   
   .neu-button {
-    background-color: #18181B;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
     border-radius: 0.75rem;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    color: white;
+    color: #0f172a;
   }
   .neu-button:hover {
-    background-color: #27272A;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background-color: #f1f5f9;
+    border: 1px solid #94a3b8;
   }
   .dark .neu-button {
     background-color: #18181B;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: white;
   }
   .dark .neu-button:hover {
     background-color: #27272A;
+    border: 1px solid rgba(255, 255, 255, 0.12);
   }
   
   .neu-button:active, .neu-button-active {
-    background-color: #27272A;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background-color: #e2e8f0;
+    border: 1px solid #94a3b8;
   }
   .dark .neu-button:active, .dark .neu-button-active {
     background-color: #27272A;
+    border: 1px solid rgba(255, 255, 255, 0.15);
   }
 
   /* React Datepicker Custom Styles for Dark Minimal Look */
@@ -152,8 +157,8 @@
   }
   .react-datepicker {
     font-family: inherit !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    background-color: #121214 !important;
+    border: 1px solid #e2e8f0 !important;
+    background-color: #ffffff !important;
     border-radius: 1rem !important;
     padding: 0.5rem;
   }
@@ -163,15 +168,21 @@
   }
   .react-datepicker__header {
     background-color: transparent !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+  .dark .react-datepicker__header {
     border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
   }
   .react-datepicker__current-month, .react-datepicker-time__header, .react-datepicker-year-header {
-    color: #fff !important;
+    color: #0f172a !important;
     font-weight: 600 !important;
     font-size: 0.875rem !important;
   }
+  .dark .react-datepicker__current-month, .dark .react-datepicker-time__header, .dark .react-datepicker-year-header {
+    color: #fff !important;
+  }
   .react-datepicker__day-name, .react-datepicker__day, .react-datepicker__time-name {
-    color: #94a3b8 !important;
+    color: #64748b !important;
     width: 2rem !important;
     height: 2rem !important;
     line-height: 2rem !important;
@@ -179,7 +190,14 @@
     border-radius: 0.5rem !important;
     transition: all 0.2s !important;
   }
+  .dark .react-datepicker__day-name, .dark .react-datepicker__day, .dark .react-datepicker__time-name {
+    color: #94a3b8 !important;
+  }
   .react-datepicker__day:hover {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+  }
+  .dark .react-datepicker__day:hover {
     background-color: rgba(255, 255, 255, 0.05) !important;
     color: #fff !important;
   }

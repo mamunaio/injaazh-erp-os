@@ -29,7 +29,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex bg-[#09090B] overflow-hidden font-sans text-slate-200 selection:bg-[#2563EB]/30">
+    <div className="relative min-h-screen flex bg-slate-50 dark:bg-[#09090B] overflow-hidden font-sans text-slate-800 dark:text-slate-200 selection:bg-[#2563EB]/30">
       
       {/* LEFT SIDE - Brand & Atmosphere (Hidden on Mobile/Tablet) */}
       <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 overflow-hidden bg-gradient-to-br from-[#09090B] to-[#11131a]">
@@ -56,7 +56,7 @@ export default function ForgotPasswordPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.5 }}
-          className="absolute top-1/2 left-[80%] -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hidden xl:block"
+          className="absolute top-1/2 left-[80%] -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/5 backdrop-blur-2xl border border-slate-200 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hidden xl:block"
           style={{ transform: 'perspective(1000px) rotateY(-15deg) rotateX(10deg)' }}
         >
           <div className="p-6 h-full flex flex-col gap-4">
@@ -78,10 +78,10 @@ export default function ForgotPasswordPage() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="relative z-10 flex items-center gap-3"
         >
-          <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-[#232734] flex items-center justify-center shadow-lg">
-            <Command className="w-5 h-5 text-white" strokeWidth={2} />
+          <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center shadow-lg">
+            <Command className="w-5 h-5 text-slate-900 dark:text-white" strokeWidth={2} />
           </div>
-          <span className="text-xl font-bold font-jakarta tracking-tight text-white">INJAAZH</span>
+          <span className="text-xl font-bold font-jakarta tracking-tight text-slate-900 dark:text-white">INJAAZH</span>
         </motion.div>
 
         {/* Center Security Context */}
@@ -91,7 +91,7 @@ export default function ForgotPasswordPage() {
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
           className="relative z-10 max-w-md"
         >
-          <div className="w-16 h-16 rounded-[20px] bg-[#11131A] border border-[#232734] flex items-center justify-center shadow-lg mb-4">
+          <div className="w-16 h-16 rounded-[20px] bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] flex items-center justify-center shadow-lg mb-4">
              <ShieldCheck className="w-8 h-8 text-[#2563EB]" strokeWidth={1.5} />
           </div>
           <div className="inline-flex items-center gap-2 mb-8 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1">
@@ -99,7 +99,7 @@ export default function ForgotPasswordPage() {
             <span className="text-sm font-semibold text-emerald-400">Enterprise-grade encryption and privacy</span>
           </div>
           
-          <h1 className="text-5xl font-bold font-jakarta text-white mb-6 leading-tight tracking-tight">
+          <h1 className="text-5xl font-bold font-jakarta text-slate-900 dark:text-white mb-6 leading-tight tracking-tight">
             Secure your workspace.
           </h1>
           <p className="text-lg text-[#94A3B8] font-medium leading-relaxed">
@@ -128,17 +128,17 @@ export default function ForgotPasswordPage() {
         >
           {/* Mobile Logo Fallback */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-10">
-            <div className="w-12 h-12 rounded-[14px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-[#232734] flex items-center justify-center shadow-lg">
-              <Command className="w-6 h-6 text-white" strokeWidth={2} />
+            <div className="w-12 h-12 rounded-[14px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center shadow-lg">
+              <Command className="w-6 h-6 text-slate-900 dark:text-white" strokeWidth={2} />
             </div>
-            <span className="text-2xl font-bold font-jakarta tracking-tight text-white">INJAAZH</span>
+            <span className="text-2xl font-bold font-jakarta tracking-tight text-slate-900 dark:text-white">INJAAZH</span>
           </div>
 
-          <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 p-6 sm:p-8 rounded-[24px] shadow-2xl relative overflow-hidden">
+          <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 p-6 sm:p-8 rounded-[24px] shadow-2xl relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
             
             <div className="mb-8 relative z-10">
-              <h2 className="text-3xl font-bold text-white mb-2 font-jakarta tracking-tight">
+              <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 font-jakarta tracking-tight">
                 Forgot Password
               </h2>
               <p className="text-sm text-[#94A3B8] font-medium">
@@ -158,7 +158,7 @@ export default function ForgotPasswordPage() {
                       name="email"
                       required
                       placeholder="name@company.com"
-                      className="w-full bg-white/5 backdrop-blur-md border border-slate-700/50 rounded-xl pl-11 pr-4 py-3.5 text-sm text-white font-medium placeholder:text-slate-500 focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
+                      className="w-full bg-white/5 backdrop-blur-md border border-slate-700/50 rounded-xl pl-11 pr-4 py-3.5 text-sm text-slate-900 dark:text-white font-medium placeholder:text-slate-500 focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
                     />
                   </div>
                 </div>
@@ -166,7 +166,7 @@ export default function ForgotPasswordPage() {
                 <button 
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-[#2563EB] hover:bg-[#2563EB]/90 disabled:opacity-50 disabled:hover:bg-[#2563EB] text-white font-semibold text-sm py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.2)] hover:shadow-[0_0_25px_rgba(37,99,235,0.4)] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:ring-offset-2 focus:ring-offset-[#11131A]"
+                  className="w-full bg-[#2563EB] hover:bg-[#2563EB]/90 disabled:opacity-50 disabled:hover:bg-[#2563EB] text-slate-900 dark:text-white font-semibold text-sm py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.2)] hover:shadow-[0_0_25px_rgba(37,99,235,0.4)] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:ring-offset-2 focus:ring-offset-[#11131A]"
                 >
                   {isLoading ? (
                     <Loader2 size={18} className="animate-spin" />
@@ -183,21 +183,21 @@ export default function ForgotPasswordPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4 }}
-                className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[20px] p-8 text-center shadow-inner relative overflow-hidden"
+                className="bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-[20px] p-8 text-center shadow-inner relative overflow-hidden"
               >
                 {/* Success Glow */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[100px] bg-[#10B981]/10 blur-[50px] rounded-full pointer-events-none" />
 
-                <div className="w-16 h-16 bg-[#11131A] border border-[#232734] rounded-[16px] flex items-center justify-center mx-auto mb-6 relative">
+                <div className="w-16 h-16 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[16px] flex items-center justify-center mx-auto mb-6 relative">
                   <div className="absolute -inset-1 bg-[#10B981]/20 blur-md rounded-[16px]" />
                   <CheckCircle2 className="text-[#10B981] relative z-10" size={32} strokeWidth={2} />
                 </div>
                 
-                <h3 className="text-xl font-bold text-white mb-3 font-jakarta tracking-tight">Check your email</h3>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 font-jakarta tracking-tight">Check your email</h3>
                 <p className="text-[#94A3B8] text-sm mb-4 leading-relaxed font-medium">
                   If an account exists for that email, we have sent password reset instructions.
                 </p>
-                <div className="p-3 bg-[#11131A] border border-[#232734] rounded-xl inline-block">
+                <div className="p-3 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl inline-block">
                   <p className="text-[#2563EB] text-[11px] font-bold tracking-wide">
                     (Check terminal console for the mock link!)
                   </p>
@@ -210,7 +210,7 @@ export default function ForgotPasswordPage() {
           <div className="mt-8 text-center flex flex-col items-center gap-4">
             <Link 
               href="/login" 
-              className="inline-flex items-center gap-2 text-[#94A3B8] hover:text-white font-semibold transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] rounded-md px-2 py-1"
+              className="inline-flex items-center gap-2 text-[#94A3B8] hover:text-slate-900 dark:hover:text-white font-semibold transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] rounded-md px-2 py-1"
             >
               <ArrowLeft size={16} /> Back to Sign In
             </Link>

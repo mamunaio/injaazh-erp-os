@@ -151,7 +151,7 @@ const playSound = (type: 'success' | 'pop' | 'error' | 'cash') => {
 };
 
 const GlassCard = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => (
-  <div className={`bg-[#11131A] border border-[#232734] rounded-[24px] p-6 lg:p-8 relative ${className}`}>
+  <div className={`bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 relative ${className}`}>
     {children}
   </div>
 );
@@ -502,7 +502,7 @@ export default function SettingsClient() {
   };
 
   return (
-    <div className="bg-[#09090B] min-h-screen text-white font-inter selection:bg-[#2563EB]/30 pb-32">
+    <div className="bg-slate-50 dark:bg-[#09090B] min-h-screen text-slate-900 dark:text-white font-inter selection:bg-[#2563EB]/30 pb-32">
       
       {/* ── Page Header ──────────────────────────────────────────────────── */}
       <div className="max-w-[1600px] mx-auto p-4 md:p-8 pt-6">
@@ -519,7 +519,7 @@ export default function SettingsClient() {
           </div>
           
           <div className="flex items-center gap-3 w-full md:w-auto">
-            <button className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#11131A] hover:bg-[#232734] border border-[#232734] transition-all">
+            <button className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 shadow-sm transition-all dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
               <RefreshCcw size={16} /> Reset Changes
             </button>
             <AnimatePresence>
@@ -530,7 +530,7 @@ export default function SettingsClient() {
                   exit={{ opacity: 0, scale: 0.9 }}
                   onClick={handleSave} 
                   disabled={isSaving} 
-                  className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-[0_0_20px_rgba(37,99,235,0.25)] border bg-[#2563EB] hover:bg-[#2563EB]/90 text-white border-[#2563EB]/80"
+                  className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-[0_0_20px_rgba(37,99,235,0.25)] border bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white border-[#2563EB]/80"
                 >
                   {isSaving ? <Activity size={16} className="animate-spin" /> : <Save size={16} />} 
                   {isSaving ? 'Saving...' : 'Save Changes'}
@@ -565,8 +565,8 @@ export default function SettingsClient() {
                           onClick={() => { setActiveTab(tab.id); if (masterSound) playSound('pop'); }}
                           className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-sm ${
                             isActive 
-                              ? tab.danger ? 'bg-rose-500/10 text-rose-500' : 'bg-[#11131A] text-white shadow-sm border border-[#232734]'
-                              : 'text-[#94A3B8] hover:bg-[#11131A]/50 hover:text-white border border-transparent'
+                              ? tab.danger ? 'bg-rose-500/10 text-rose-500' : 'bg-white shadow-sm border border-slate-200 text-slate-900 dark:bg-slate-900 dark:border-slate-800 dark:text-white'
+                              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent dark:text-slate-400 dark:hover:bg-slate-800/50'
                           }`}
                         >
                           <Icon size={18} className={isActive ? (tab.danger ? 'text-rose-500' : 'text-[#2563EB]') : 'opacity-70'} />
@@ -594,28 +594,28 @@ export default function SettingsClient() {
                 {/* ── PROFILE ── */}
                 {activeTab === 'profile' && (
                   <GlassCard>
-                    <div className="border-b border-[#232734] pb-6 mb-8">
+                    <div className="border-b border-slate-200 dark:border-[#232734] pb-6 mb-8">
                       <h2 className="text-xl font-bold font-jakarta mb-1">Profile Settings</h2>
                       <p className="text-sm text-[#94A3B8]">Manage your personal information and display settings.</p>
                     </div>
                     
                     <div className="flex items-center gap-6 mb-10">
-                      <label className="w-24 h-24 rounded-full bg-[#09090B] border-2 border-[#232734] flex items-center justify-center cursor-pointer hover:border-[#2563EB]/50 transition-all group relative overflow-hidden">
+                      <label className="w-24 h-24 rounded-full bg-slate-50 dark:bg-[#09090B] border-2 border-slate-200 dark:border-[#232734] flex items-center justify-center cursor-pointer hover:border-[#2563EB]/50 transition-all group relative overflow-hidden">
                         {profileImage ? (
                           <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
                           <User size={32} className="text-[#94A3B8] group-hover:scale-110 group-hover:text-[#2563EB] transition-all" />
                         )}
-                        <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity gap-1 backdrop-blur-[2px]">
-                          <Camera size={16} className="text-white" />
-                          <span className="text-white text-[10px] font-bold uppercase tracking-widest">Change</span>
+                        <div className="absolute inset-0 bg-white/60 dark:bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity gap-1 backdrop-blur-[2px]">
+                          <Camera size={16} className="text-slate-900 dark:text-white" />
+                          <span className="text-slate-900 dark:text-white text-[10px] font-bold uppercase tracking-widest">Change</span>
                         </div>
                         <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                       </label>
                       <div>
-                        <h3 className="font-bold mb-1 text-white">Avatar Profile</h3>
+                        <h3 className="font-bold mb-1 text-slate-900 dark:text-white">Avatar Profile</h3>
                         <p className="text-xs font-medium text-[#94A3B8] mb-3">JPG, GIF or PNG. Max size of 2MB.</p>
-                        <button className="text-xs font-bold text-[#2563EB] bg-[#2563EB]/10 px-3 py-1.5 rounded-lg border border-[#2563EB]/20 hover:bg-[#2563EB]/20 transition-colors" onClick={() => (document.querySelector('input[type="file"]') as HTMLInputElement)?.click()}>
+                        <button className="text-xs font-bold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 shadow-sm px-3 py-1.5 rounded-lg dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors" onClick={() => (document.querySelector('input[type="file"]') as HTMLInputElement)?.click()}>
                           Upload Picture
                         </button>
                       </div>
@@ -624,32 +624,32 @@ export default function SettingsClient() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                       <div>
                         <label className="block text-xs font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">Full Name</label>
-                        <input type="text" value={profileName} onChange={(e) => { setProfileName(e.target.value); triggerChange(); }} className="w-full px-4 py-3 bg-[#09090B] border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-white font-medium text-sm transition-all shadow-sm" />
+                        <input type="text" value={profileName} onChange={(e) => { setProfileName(e.target.value); triggerChange(); }} className="w-full px-4 py-3 bg-slate-50 border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500/50 rounded-xl focus:outline-none dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 font-medium text-sm transition-all shadow-sm" />
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">Email Address</label>
-                        <input type="email" value={profileEmail} onChange={(e) => { setProfileEmail(e.target.value); triggerChange(); }} className="w-full px-4 py-3 bg-[#09090B] border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-white font-medium text-sm transition-all shadow-sm" />
+                        <input type="email" value={profileEmail} onChange={(e) => { setProfileEmail(e.target.value); triggerChange(); }} className="w-full px-4 py-3 bg-slate-50 border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500/50 rounded-xl focus:outline-none dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 font-medium text-sm transition-all shadow-sm" />
                       </div>
                     </div>
 
-                    <div className="pt-8 border-t border-[#232734]">
+                    <div className="pt-8 border-t border-slate-200 dark:border-[#232734]">
                       <h3 className="font-bold mb-6">Change Password</h3>
                       <form onSubmit={handleChangePassword} className="space-y-6 max-w-md">
                         <div>
                           <label className="block text-xs font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">Current Password</label>
-                          <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="w-full px-4 py-3 bg-[#09090B] border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-white text-sm font-bold transition-all shadow-sm" />
+                          <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500/50 rounded-xl focus:outline-none dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 text-sm font-bold transition-all shadow-sm" />
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div>
                             <label className="block text-xs font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">New Password</label>
-                            <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full px-4 py-3 bg-[#09090B] border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-white text-sm font-bold transition-all shadow-sm" />
+                            <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500/50 rounded-xl focus:outline-none dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 text-sm font-bold transition-all shadow-sm" />
                           </div>
                           <div>
                             <label className="block text-xs font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">Confirm Password</label>
-                            <input type="password" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} className="w-full px-4 py-3 bg-[#09090B] border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-white text-sm font-bold transition-all shadow-sm" />
+                            <input type="password" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500/50 rounded-xl focus:outline-none dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 text-sm font-bold transition-all shadow-sm" />
                           </div>
                         </div>
-                        <button type="submit" disabled={isChangingPassword} className="px-6 py-2.5 bg-[#232734] hover:bg-[#2563EB]/20 hover:text-[#2563EB] text-white font-bold rounded-xl transition-all text-sm disabled:opacity-50 border border-transparent hover:border-[#2563EB]/30">
+                        <button type="submit" disabled={isChangingPassword} className="px-6 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-[#2563EB]/20 hover:text-[#2563EB] text-slate-900 dark:text-white font-bold rounded-xl transition-all text-sm disabled:opacity-50 border border-transparent hover:border-[#2563EB]/30">
                           {isChangingPassword ? 'Updating...' : 'Update Password'}
                         </button>
                       </form>
@@ -660,7 +660,7 @@ export default function SettingsClient() {
                 {/* ── COMPANY & WORKSPACE ── */}
                 {(activeTab === 'company' || activeTab === 'workspace') && (
                   <GlassCard>
-                    <div className="border-b border-[#232734] pb-6 mb-8">
+                    <div className="border-b border-slate-200 dark:border-[#232734] pb-6 mb-8">
                       <h2 className="text-xl font-bold font-jakarta mb-1">{activeTab === 'company' ? 'Company Details' : 'Workspace Configuration'}</h2>
                       <p className="text-sm text-[#94A3B8]">Manage global settings and branding.</p>
                     </div>
@@ -668,19 +668,19 @@ export default function SettingsClient() {
                     <div className="space-y-6">
                       <div>
                         <label className="block text-xs font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">Company Name</label>
-                        <input type="text" defaultValue="Injaazh Global" className="w-full px-4 py-3 bg-[#09090B] border border-[#232734] rounded-xl text-white font-medium text-sm transition-all" onChange={triggerChange} />
+                        <input type="text" defaultValue="Injaazh Global" className="w-full px-4 py-3 bg-slate-50 border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500/50 rounded-xl focus:outline-none dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 font-medium text-sm transition-all" onChange={triggerChange} />
                       </div>
                       <div className="grid grid-cols-2 gap-6">
                         <div>
                           <label className="block text-xs font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">Timezone</label>
-                          <select className="w-full px-4 py-3 bg-[#09090B] border border-[#232734] rounded-xl text-white font-medium text-sm transition-all appearance-none" onChange={triggerChange}>
+                          <select className="w-full px-4 py-3 bg-slate-50 border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500/50 rounded-xl focus:outline-none dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 font-medium text-sm transition-all appearance-none" onChange={triggerChange}>
                             <option>UTC (GMT+00:00)</option>
                             <option>EST (GMT-05:00)</option>
                           </select>
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">Currency</label>
-                          <select className="w-full px-4 py-3 bg-[#09090B] border border-[#232734] rounded-xl text-white font-medium text-sm transition-all appearance-none" onChange={triggerChange}>
+                          <select className="w-full px-4 py-3 bg-slate-50 border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500/50 rounded-xl focus:outline-none dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 font-medium text-sm transition-all appearance-none" onChange={triggerChange}>
                             <option>USD ($)</option>
                             <option>EUR (€)</option>
                           </select>
@@ -693,16 +693,16 @@ export default function SettingsClient() {
                 {/* ── NOTIFICATIONS ── */}
                 {activeTab === 'notifications' && (
                   <GlassCard>
-                    <div className="border-b border-[#232734] pb-6 mb-8 flex justify-between items-center">
+                    <div className="border-b border-slate-200 dark:border-[#232734] pb-6 mb-8 flex justify-between items-center">
                       <div>
                         <h2 className="text-xl font-bold font-jakarta mb-1">Notifications & Sounds</h2>
                         <p className="text-sm text-[#94A3B8]">Configure how and when you receive alerts.</p>
                       </div>
-                      <label className="flex items-center gap-3 cursor-pointer bg-[#09090B] px-4 py-2 rounded-xl border border-[#232734]">
+                      <label className="flex items-center gap-3 cursor-pointer bg-slate-50 dark:bg-[#09090B] px-4 py-2 rounded-xl border border-slate-200 dark:border-[#232734]">
                         <span className="text-xs font-bold uppercase tracking-widest text-[#94A3B8]">Master Sound</span>
                         <div className="relative">
                           <input type="checkbox" className="sr-only" checked={masterSound} onChange={() => { setMasterSound(!masterSound); if (!masterSound) playSound('success'); triggerChange(); }} />
-                          <div className={`block w-10 h-6 rounded-full transition-colors ${masterSound ? 'bg-[#2563EB]' : 'bg-[#232734]'}`}></div>
+                          <div className={`block w-10 h-6 rounded-full transition-colors ${masterSound ? 'bg-[#2563EB]' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
                           <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${masterSound ? 'transform translate-x-4' : ''}`}></div>
                         </div>
                       </label>
@@ -714,19 +714,19 @@ export default function SettingsClient() {
                         { id: 'leadConverted', label: 'Lead Converted', desc: 'Plays a success chime when a deal is won.', sound: 'success' as const },
                         { id: 'paymentReceived', label: 'Payment Received', desc: 'Plays a distinct coin chime when income is logged.', sound: 'cash' as const },
                       ].map(item => (
-                        <div key={item.id} className={`flex items-center justify-between p-5 rounded-xl border transition-all ${soundSettings[item.id as keyof typeof soundSettings] && masterSound ? 'bg-[#09090B] border-[#2563EB]/30 shadow-[0_0_15px_rgba(37,99,235,0.05)]' : 'bg-[#09090B] border-[#232734]'}`}>
+                        <div key={item.id} className={`flex items-center justify-between p-5 rounded-xl border transition-all ${soundSettings[item.id as keyof typeof soundSettings] && masterSound ? 'bg-slate-50 dark:bg-[#09090B] border-[#2563EB]/30 shadow-[0_0_15px_rgba(37,99,235,0.05)]' : 'bg-slate-50 dark:bg-[#09090B] border-slate-200 dark:border-[#232734]'}`}>
                           <div className="flex items-center gap-4">
-                            <button onClick={() => masterSound ? playSound(item.sound) : toast.error("Master sound muted")} className="w-10 h-10 rounded-full bg-[#11131A] border border-[#232734] flex items-center justify-center text-[#94A3B8] hover:text-[#2563EB] transition-all" title="Preview Sound">
+                            <button onClick={() => masterSound ? playSound(item.sound) : toast.error("Master sound muted")} className="w-10 h-10 rounded-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] flex items-center justify-center text-[#94A3B8] hover:text-[#2563EB] transition-all" title="Preview Sound">
                               <Play size={14} className="ml-1" />
                             </button>
                             <div>
-                              <h4 className="font-bold text-sm text-white">{item.label}</h4>
+                              <h4 className="font-bold text-sm text-slate-900 dark:text-white">{item.label}</h4>
                               <p className="text-xs font-medium text-[#94A3B8] mt-0.5">{item.desc}</p>
                             </div>
                           </div>
                           <label className="relative cursor-pointer">
                             <input type="checkbox" className="sr-only" disabled={!masterSound} checked={soundSettings[item.id as keyof typeof soundSettings]} onChange={() => handleSoundToggle(item.id as keyof typeof soundSettings)} />
-                            <div className={`block w-10 h-6 rounded-full transition-colors ${!masterSound ? 'bg-[#232734] opacity-50' : soundSettings[item.id as keyof typeof soundSettings] ? 'bg-[#2563EB]' : 'bg-[#232734]'}`}></div>
+                            <div className={`block w-10 h-6 rounded-full transition-colors ${!masterSound ? 'bg-slate-200 dark:bg-slate-700 opacity-50' : soundSettings[item.id as keyof typeof soundSettings] ? 'bg-[#2563EB]' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
                             <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${!masterSound ? 'opacity-50' : ''} ${soundSettings[item.id as keyof typeof soundSettings] ? 'transform translate-x-4' : ''}`}></div>
                           </label>
                         </div>
@@ -738,14 +738,14 @@ export default function SettingsClient() {
                 {/* ── SECURITY ── */}
                 {activeTab === 'security' && (
                   <GlassCard>
-                    <div className="border-b border-[#232734] pb-6 mb-8">
+                    <div className="border-b border-slate-200 dark:border-[#232734] pb-6 mb-8">
                       <h2 className="text-xl font-bold font-jakarta mb-1">Security & Access Control</h2>
                       <p className="text-sm text-[#94A3B8]">Manage 2FA, sessions, and security protocols.</p>
                     </div>
                     
-                    <div className="mb-10 p-6 rounded-xl bg-[#09090B] border border-[#232734] flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div className="mb-10 p-6 rounded-xl bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex flex-col md:flex-row justify-between items-center gap-6">
                       <div>
-                        <h3 className="mb-1 text-white font-bold text-sm">Two-Factor Authentication (2FA)</h3>
+                        <h3 className="mb-1 text-slate-900 dark:text-white font-bold text-sm">Two-Factor Authentication (2FA)</h3>
                         <p className="text-xs font-medium text-[#94A3B8]">
                           {is2FAEnabled ? 'Your account is currently secured with 2FA.' : 'Secure your account with an authenticator app.'}
                         </p>
@@ -755,7 +755,7 @@ export default function SettingsClient() {
                           Disable 2FA
                         </button>
                       ) : (
-                        <button onClick={() => { setIsDisabling2FA(false); setIs2FAModalOpen(true); }} className="px-5 py-2 bg-[#2563EB] text-white font-bold rounded-lg text-sm hover:bg-[#2563EB]/90 shadow-sm border border-[#2563EB]/80">
+                        <button onClick={() => { setIsDisabling2FA(false); setIs2FAModalOpen(true); }} className="px-5 py-2 bg-[#2563EB] text-slate-900 dark:text-white font-bold rounded-lg text-sm hover:bg-[#2563EB]/90 shadow-sm border border-[#2563EB]/80">
                           Enable 2FA
                         </button>
                       )}
@@ -771,13 +771,13 @@ export default function SettingsClient() {
                       ) : activeSessions.length === 0 ? (
                         <div className="p-6 text-center text-xs font-bold text-[#94A3B8]">No active sessions found.</div>
                       ) : activeSessions.map((session) => (
-                        <div key={session._id} className="flex flex-col md:flex-row justify-between items-start md:items-center p-5 rounded-xl bg-[#09090B] border border-[#232734] gap-4">
+                        <div key={session._id} className="flex flex-col md:flex-row justify-between items-start md:items-center p-5 rounded-xl bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] gap-4">
                           <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-[#11131A] border border-[#232734] flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] flex items-center justify-center">
                               <MonitorSmartphone size={18} className="text-[#94A3B8]" />
                             </div>
                             <div>
-                              <h4 className="flex items-center gap-2 text-white font-bold text-sm mb-0.5">
+                              <h4 className="flex items-center gap-2 text-slate-900 dark:text-white font-bold text-sm mb-0.5">
                                 {session.device} 
                                 {session.isCurrent && <span className="text-[9px] bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/20 px-2 py-0.5 rounded-md uppercase tracking-widest">Current</span>}
                               </h4>
@@ -803,40 +803,40 @@ export default function SettingsClient() {
                 {/* ── TEAM (Admin) ── */}
                 {activeTab === 'team' && (
                   <GlassCard>
-                    <div className="border-b border-[#232734] pb-6 mb-8 flex justify-between items-center">
+                    <div className="border-b border-slate-200 dark:border-[#232734] pb-6 mb-8 flex justify-between items-center">
                       <div>
                         <h2 className="text-xl font-bold font-jakarta mb-1">Team Management</h2>
                         <p className="text-sm text-[#94A3B8]">Invite members and manage roles.</p>
                       </div>
                     </div>
                     
-                    <form onSubmit={handleInviteMember} className="mb-10 p-6 rounded-xl bg-[#09090B] border border-[#232734] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                    <form onSubmit={handleInviteMember} className="mb-10 p-6 rounded-xl bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                       <div>
                         <label className="block text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">Name</label>
-                        <input type="text" placeholder="John Doe" value={inviteName} onChange={(e) => setInviteName(e.target.value)} className="w-full px-4 py-2.5 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-[#2563EB]/60 text-white text-sm transition-all" />
+                        <input type="text" placeholder="John Doe" value={inviteName} onChange={(e) => setInviteName(e.target.value)} className="w-full px-4 py-2.5 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl focus:outline-none focus:border-[#2563EB]/60 text-slate-900 dark:text-white text-sm transition-all" />
                       </div>
                       <div>
                         <label className="block text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">Email</label>
-                        <input type="email" placeholder="john@company.com" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="w-full px-4 py-2.5 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-[#2563EB]/60 text-white text-sm transition-all" />
+                        <input type="email" placeholder="john@company.com" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="w-full px-4 py-2.5 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl focus:outline-none focus:border-[#2563EB]/60 text-slate-900 dark:text-white text-sm transition-all" />
                       </div>
                       <div>
                         <label className="block text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">Role</label>
-                        <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value)} className="w-full px-4 py-2.5 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-[#2563EB]/60 text-white text-sm transition-all appearance-none cursor-pointer">
+                        <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value)} className="w-full px-4 py-2.5 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl focus:outline-none focus:border-[#2563EB]/60 text-slate-900 dark:text-white text-sm transition-all appearance-none cursor-pointer">
                           <option value="admin">Admin</option>
                           <option value="editor">Editor</option>
                           <option value="marketplace_team">Marketplace Team</option>
                         </select>
                       </div>
-                      <button type="submit" disabled={isInviting} className="w-full px-4 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold rounded-xl transition-all text-sm h-[42px]">
+                      <button type="submit" disabled={isInviting} className="w-full px-4 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white font-bold rounded-xl transition-all text-sm h-[42px]">
                         {isInviting ? 'Inviting...' : 'Invite Member'}
                       </button>
                     </form>
 
                     <h3 className="mb-4 font-bold text-sm uppercase tracking-widest text-[#94A3B8]">Active Members</h3>
-                    <div className="overflow-x-auto rounded-xl border border-[#232734] bg-[#09090B]">
+                    <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B]">
                       <table className="w-full text-left border-collapse">
                         <thead>
-                          <tr className="border-b border-[#232734] text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">
+                          <tr className="border-b border-slate-200 dark:border-[#232734] text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">
                             <th className="py-4 px-5">Name</th>
                             <th className="py-4 px-5">Role</th>
                             <th className="py-4 px-5 text-right">Actions</th>
@@ -844,13 +844,13 @@ export default function SettingsClient() {
                         </thead>
                         <tbody>
                           {teamMembers.map(member => (
-                            <tr key={member._id} className="border-b border-[#232734]/50 hover:bg-[#11131A] transition-colors group">
+                            <tr key={member._id} className="border-b border-[#232734]/50 hover:bg-white dark:bg-[#11131A] transition-colors group">
                               <td className="py-4 px-5">
-                                <span className="font-bold text-white text-sm block">{member.name}</span>
+                                <span className="font-bold text-slate-900 dark:text-white text-sm block">{member.name}</span>
                                 <span className="text-xs text-[#94A3B8]">{member.email}</span>
                               </td>
                               <td className="py-4 px-5">
-                                <select value={member.role} onChange={(e) => handleToggleRole(member._id, e.target.value)} className="px-3 py-1.5 bg-[#11131A] border border-[#232734] rounded-lg focus:outline-none focus:border-[#2563EB]/50 text-white text-xs font-bold appearance-none cursor-pointer">
+                                <select value={member.role} onChange={(e) => handleToggleRole(member._id, e.target.value)} className="px-3 py-1.5 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-lg focus:outline-none focus:border-[#2563EB]/50 text-slate-900 dark:text-white text-xs font-bold appearance-none cursor-pointer">
                                   <option value="owner">Owner</option>
                                   <option value="admin">Admin</option>
                                   <option value="editor">Editor</option>
@@ -872,7 +872,7 @@ export default function SettingsClient() {
                 {/* ── API KEYS ── */}
                 {activeTab === 'api_keys' && (
                   <GlassCard>
-                    <div className="border-b border-[#232734] pb-6 mb-8">
+                    <div className="border-b border-slate-200 dark:border-[#232734] pb-6 mb-8">
                       <h2 className="text-xl font-bold font-jakarta mb-1">API Keys & Webhooks</h2>
                       <p className="text-sm text-[#94A3B8]">Manage your external API keys and integrations.</p>
                     </div>
@@ -883,7 +883,7 @@ export default function SettingsClient() {
                 {/* ── EMAIL & SMTP ── */}
                 {activeTab === 'email_accounts' && (
                   <GlassCard>
-                    <div className="border-b border-[#232734] pb-6 mb-8">
+                    <div className="border-b border-slate-200 dark:border-[#232734] pb-6 mb-8">
                       <h2 className="text-xl font-bold font-jakarta mb-1">Outreach Emails</h2>
                       <p className="text-sm text-[#94A3B8]">Connect email accounts for outbound campaigns.</p>
                     </div>
@@ -893,7 +893,7 @@ export default function SettingsClient() {
 
                 {activeTab === 'smtp' && (
                   <GlassCard>
-                    <div className="border-b border-[#232734] pb-6 mb-8">
+                    <div className="border-b border-slate-200 dark:border-[#232734] pb-6 mb-8">
                       <h2 className="text-xl font-bold font-jakarta mb-1">SMTP Configurations</h2>
                       <p className="text-sm text-[#94A3B8]">Configure system-wide outgoing email server.</p>
                     </div>
@@ -901,30 +901,30 @@ export default function SettingsClient() {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="md:col-span-2">
                           <label className="block text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">SMTP Host</label>
-                          <input type="text" value={smtpSettings.host} onChange={(e) => { setSmtpSettings(prev => ({ ...prev, host: e.target.value })); triggerChange(); }} className="w-full px-4 py-3 bg-[#09090B] border border-[#232734] rounded-xl focus:border-[#2563EB]/60 text-white font-medium text-sm focus:outline-none" />
+                          <input type="text" value={smtpSettings.host} onChange={(e) => { setSmtpSettings(prev => ({ ...prev, host: e.target.value })); triggerChange(); }} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl focus:border-[#2563EB]/60 text-slate-900 dark:text-white font-medium text-sm focus:outline-none" />
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">Port</label>
-                          <input type="number" value={smtpSettings.port} onChange={(e) => { setSmtpSettings(prev => ({ ...prev, port: parseInt(e.target.value) || 587 })); triggerChange(); }} className="w-full px-4 py-3 bg-[#09090B] border border-[#232734] rounded-xl focus:border-[#2563EB]/60 text-white font-medium text-sm focus:outline-none" />
+                          <input type="number" value={smtpSettings.port} onChange={(e) => { setSmtpSettings(prev => ({ ...prev, port: parseInt(e.target.value) || 587 })); triggerChange(); }} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl focus:border-[#2563EB]/60 text-slate-900 dark:text-white font-medium text-sm focus:outline-none" />
                         </div>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                           <label className="block text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">Username / Email</label>
-                          <input type="email" value={smtpSettings.user} onChange={(e) => { setSmtpSettings(prev => ({ ...prev, user: e.target.value })); triggerChange(); }} className="w-full px-4 py-3 bg-[#09090B] border border-[#232734] rounded-xl focus:border-[#2563EB]/60 text-white font-medium text-sm focus:outline-none" />
+                          <input type="email" value={smtpSettings.user} onChange={(e) => { setSmtpSettings(prev => ({ ...prev, user: e.target.value })); triggerChange(); }} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl focus:border-[#2563EB]/60 text-slate-900 dark:text-white font-medium text-sm focus:outline-none" />
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">App Password</label>
                           <div className="relative">
-                            <input type={showSmtpPass ? 'text' : 'password'} value={smtpSettings.pass} onChange={(e) => { setSmtpSettings(prev => ({ ...prev, pass: e.target.value })); triggerChange(); }} className="w-full px-4 py-3 bg-[#09090B] border border-[#232734] rounded-xl focus:border-[#2563EB]/60 text-white font-mono text-sm focus:outline-none pr-10" />
+                            <input type={showSmtpPass ? 'text' : 'password'} value={smtpSettings.pass} onChange={(e) => { setSmtpSettings(prev => ({ ...prev, pass: e.target.value })); triggerChange(); }} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl focus:border-[#2563EB]/60 text-slate-900 dark:text-white font-mono text-sm focus:outline-none pr-10" />
                             <button type="button" onClick={() => setShowSmtpPass(!showSmtpPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8]"><Eye size={16} /></button>
                           </div>
                         </div>
                       </div>
                       
-                      <div className="pt-6 border-t border-[#232734] flex justify-between items-center">
+                      <div className="pt-6 border-t border-slate-200 dark:border-[#232734] flex justify-between items-center">
                         <p className="text-xs font-bold text-[#94A3B8]">Run handshake test before saving.</p>
-                        <button type="button" onClick={handleTestConnection} disabled={isTestingConnection} className="px-5 py-2.5 bg-[#232734] hover:bg-[#323746] text-white font-bold rounded-xl text-xs flex items-center gap-2 transition-colors">
+                        <button type="button" onClick={handleTestConnection} disabled={isTestingConnection} className="px-5 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-[#323746] text-slate-900 dark:text-white font-bold rounded-xl text-xs flex items-center gap-2 transition-colors">
                           {isTestingConnection ? <Activity size={14} className="animate-spin" /> : <Activity size={14} />} Test Connection
                         </button>
                       </div>
@@ -940,7 +940,7 @@ export default function SettingsClient() {
                 {/* ── APPEARANCE ── */}
                 {activeTab === 'appearance' && (
                   <GlassCard>
-                    <div className="border-b border-[#232734] pb-6 mb-8">
+                    <div className="border-b border-slate-200 dark:border-[#232734] pb-6 mb-8">
                       <h2 className="text-xl font-bold font-jakarta mb-1">Appearance & Interface</h2>
                       <p className="text-sm text-[#94A3B8]">Customize the look and feel of your workspace.</p>
                     </div>
@@ -948,14 +948,14 @@ export default function SettingsClient() {
                     <div className="space-y-10">
                       {/* Theme Selection */}
                       <div>
-                        <h3 className="text-sm font-bold text-white mb-4">Theme Preference</h3>
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Theme Preference</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           {[
                             { id: 'light', label: 'Light', icon: Sun },
                             { id: 'dark', label: 'Dark', icon: Moon },
                             { id: 'system', label: 'System', icon: Monitor }
                           ].map(t => (
-                            <button key={t.id} onClick={() => { setTheme(t.id); triggerChange(); }} className={`relative flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 transition-all ${theme === t.id ? 'bg-[#2563EB]/5 border-[#2563EB] text-[#2563EB]' : 'bg-[#09090B] border-[#232734] text-[#94A3B8] hover:border-[#232734]/80'}`}>
+                            <button key={t.id} onClick={() => { setTheme(t.id); triggerChange(); }} className={`relative flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 transition-all ${theme === t.id ? 'bg-[#2563EB]/5 border-[#2563EB] text-[#2563EB]' : 'bg-slate-50 dark:bg-[#09090B] border-slate-200 dark:border-[#232734] text-[#94A3B8] hover:border-[#232734]/80'}`}>
                               <t.icon size={24} />
                               <span className="font-bold text-sm">{t.label}</span>
                               {theme === t.id && <div className="absolute top-3 right-3"><CheckCircle2 size={16} /></div>}
@@ -966,7 +966,7 @@ export default function SettingsClient() {
 
                       {/* Accent Color */}
                       <div>
-                        <h3 className="text-sm font-bold text-white mb-4">Accent Color</h3>
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Accent Color</h3>
                         <div className="flex flex-wrap items-center gap-4">
                           {[
                             { id: 'violet', color: '#7C3AED', name: 'Violet' },
@@ -977,7 +977,7 @@ export default function SettingsClient() {
                           ].map(c => (
                             <button key={c.id} onClick={() => { setAccent(c.id); triggerChange(); }} className={`group flex flex-col items-center gap-2`} title={c.name}>
                               <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${accent === c.id ? 'ring-[3px] ring-white ring-offset-4 ring-offset-[#11131A]' : 'hover:scale-110'}`} style={{ backgroundColor: c.color }}>
-                                {accent === c.id && <Check size={20} className="text-white" />}
+                                {accent === c.id && <Check size={20} className="text-slate-900 dark:text-white" />}
                               </div>
                             </button>
                           ))}
@@ -986,18 +986,18 @@ export default function SettingsClient() {
 
                       {/* Sidebar Layout */}
                       <div>
-                        <h3 className="text-sm font-bold text-white mb-4">Sidebar Layout</h3>
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Sidebar Layout</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {[
                             { id: 'expanded', label: 'Expanded (Default)', icon: PanelLeft, desc: 'Full menu with labels.' },
                             { id: 'collapsed', label: 'Collapsed', icon: PanelLeftClose, desc: 'Icons only to save space.' }
                           ].map(l => (
-                            <button key={l.id} onClick={() => { setSidebarLayout(l.id); triggerChange(); }} className={`flex items-start text-left gap-4 p-5 rounded-2xl border-2 transition-all ${sidebarLayout === l.id ? 'bg-[#2563EB]/5 border-[#2563EB]' : 'bg-[#09090B] border-[#232734] hover:border-[#232734]/80'}`}>
+                            <button key={l.id} onClick={() => { setSidebarLayout(l.id); triggerChange(); }} className={`flex items-start text-left gap-4 p-5 rounded-2xl border-2 transition-all ${sidebarLayout === l.id ? 'bg-[#2563EB]/5 border-[#2563EB]' : 'bg-slate-50 dark:bg-[#09090B] border-slate-200 dark:border-[#232734] hover:border-[#232734]/80'}`}>
                               <div className={`mt-0.5 ${sidebarLayout === l.id ? 'text-[#2563EB]' : 'text-[#94A3B8]'}`}>
                                 <l.icon size={20} />
                               </div>
                               <div>
-                                <h4 className={`font-bold text-sm mb-1 ${sidebarLayout === l.id ? 'text-white' : 'text-[#94A3B8]'}`}>{l.label}</h4>
+                                <h4 className={`font-bold text-sm mb-1 ${sidebarLayout === l.id ? 'text-slate-900 dark:text-white' : 'text-[#94A3B8]'}`}>{l.label}</h4>
                                 <p className="text-xs text-[#94A3B8] font-medium">{l.desc}</p>
                               </div>
                             </button>
@@ -1011,13 +1011,13 @@ export default function SettingsClient() {
                 {/* ── AUDIT LOGS ── */}
                 {activeTab === 'audit' && (
                   <GlassCard>
-                    <div className="border-b border-[#232734] pb-6 mb-6 flex justify-between items-start md:items-center flex-col md:flex-row gap-4">
+                    <div className="border-b border-slate-200 dark:border-[#232734] pb-6 mb-6 flex justify-between items-start md:items-center flex-col md:flex-row gap-4">
                       <div>
                         <h2 className="text-xl font-bold font-jakarta mb-1">Audit Logs</h2>
                         <p className="text-sm text-[#94A3B8]">Track system activities and security events.</p>
                       </div>
                       <div className="flex gap-3">
-                        <button onClick={handleRefreshLogs} disabled={isRefreshingLogs} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#11131A] hover:bg-[#232734] text-white text-xs font-bold transition-all border border-[#232734] disabled:opacity-50">
+                        <button onClick={handleRefreshLogs} disabled={isRefreshingLogs} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-[#11131A] hover:bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white text-xs font-bold transition-all border border-slate-200 dark:border-[#232734] disabled:opacity-50">
                           <RefreshCcw size={14} className={isRefreshingLogs ? 'animate-spin' : ''} /> Refresh
                         </button>
                         <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2563EB]/10 hover:bg-[#2563EB]/20 text-[#2563EB] border border-[#2563EB]/20 text-xs font-bold transition-all">
@@ -1026,10 +1026,10 @@ export default function SettingsClient() {
                       </div>
                     </div>
 
-                    <div className="overflow-x-auto rounded-xl border border-[#232734] bg-[#09090B]">
+                    <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B]">
                       <table className="w-full text-left border-collapse whitespace-nowrap">
                         <thead>
-                          <tr className="border-b border-[#232734] text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest bg-[#11131A]/50">
+                          <tr className="border-b border-slate-200 dark:border-[#232734] text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest bg-[#11131A]/50">
                             <th className="py-4 px-5">User / System</th>
                             <th className="py-4 px-5">Event Action</th>
                             <th className="py-4 px-5">IP Address</th>
@@ -1039,12 +1039,12 @@ export default function SettingsClient() {
                         </thead>
                         <tbody>
                           {auditLogs.map(log => (
-                            <tr key={log.id} className="border-b border-[#232734]/50 hover:bg-[#11131A] transition-colors group">
+                            <tr key={log.id} className="border-b border-[#232734]/50 hover:bg-white dark:bg-[#11131A] transition-colors group">
                               <td className="py-4 px-5 flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-[#232734] flex items-center justify-center shadow-sm">
+                                <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center shadow-sm">
                                   <User size={14} className="text-[#94A3B8]" />
                                 </div>
-                                <span className="font-bold text-sm text-white">{log.user}</span>
+                                <span className="font-bold text-sm text-slate-900 dark:text-white">{log.user}</span>
                               </td>
                               <td className="py-4 px-5 text-sm font-medium text-[#E2E8F0]">{log.action}</td>
                               <td className="py-4 px-5 text-xs text-[#94A3B8] font-mono">{log.ip}</td>
@@ -1065,19 +1065,19 @@ export default function SettingsClient() {
                 {/* ── INTEGRATIONS ── */}
                 {activeTab === 'integrations' && (
                   <GlassCard>
-                    <div className="border-b border-[#232734] pb-6 mb-8 flex justify-between items-center">
+                    <div className="border-b border-slate-200 dark:border-[#232734] pb-6 mb-8 flex justify-between items-center">
                       <div>
                         <h2 className="text-xl font-bold font-jakarta mb-1">Connected Apps</h2>
                         <p className="text-sm text-[#94A3B8]">Integrate Injaazh ERP with your favorite tools.</p>
                       </div>
-                      <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#232734] hover:bg-[#323746] text-white text-xs font-bold transition-all shadow-sm">
+                      <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-[#323746] text-slate-900 dark:text-white text-xs font-bold transition-all shadow-sm">
                         <ExternalLink size={16} /> App Marketplace
                       </button>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {integrations.map(app => (
-                        <div key={app.id} className="flex flex-col p-5 rounded-2xl bg-[#09090B] border border-[#232734] hover:border-[#232734]/80 transition-all group relative overflow-hidden">
+                        <div key={app.id} className="flex flex-col p-5 rounded-2xl bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] hover:border-[#232734]/80 transition-all group relative overflow-hidden">
                           {app.connected && <div className="absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" style={{ backgroundColor: `${app.color}20` }} />}
                           <div className="flex justify-between items-start mb-4 relative z-10">
                             <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: `${app.color}15`, color: app.color, border: `1px solid ${app.color}30` }}>
@@ -1088,21 +1088,21 @@ export default function SettingsClient() {
                                 <div className="w-1.5 h-1.5 rounded-full bg-[#10B981]" /> Connected
                               </span>
                             ) : (
-                              <span className="px-2.5 py-1 rounded-md bg-[#232734] text-[#94A3B8] text-[10px] font-bold uppercase tracking-wider">
+                              <span className="px-2.5 py-1 rounded-md bg-slate-200 dark:bg-slate-700 text-[#94A3B8] text-[10px] font-bold uppercase tracking-wider">
                                 Not Connected
                               </span>
                             )}
                           </div>
-                          <h3 className="text-sm font-bold text-white mb-1 relative z-10">{app.name}</h3>
+                          <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1 relative z-10">{app.name}</h3>
                           <p className="text-xs text-[#94A3B8] font-medium leading-relaxed mb-6 flex-1 relative z-10">{app.description}</p>
-                          <div className="pt-4 border-t border-[#232734] flex justify-between items-center relative z-10">
+                          <div className="pt-4 border-t border-slate-200 dark:border-[#232734] flex justify-between items-center relative z-10">
                             {app.connected ? (
                               <>
-                                <button className="text-xs font-bold text-[#94A3B8] hover:text-white transition-colors">Configure</button>
+                                <button className="text-xs font-bold text-[#94A3B8] hover:text-slate-900 dark:hover:text-white transition-colors">Configure</button>
                                 <button onClick={() => { toast.success(`${app.name} disconnected`); if(masterSound) playSound('pop'); toggleIntegration(app.id); }} className="text-xs font-bold text-rose-500 hover:text-rose-400 transition-colors">Disconnect</button>
                               </>
                             ) : (
-                              <button onClick={() => { toast.success(`${app.name} connected`); if(masterSound) playSound('success'); toggleIntegration(app.id); }} className="w-full py-2 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white rounded-lg text-xs font-bold transition-all shadow-sm">
+                              <button onClick={() => { toast.success(`${app.name} connected`); if(masterSound) playSound('success'); toggleIntegration(app.id); }} className="w-full py-2 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white rounded-lg text-xs font-bold transition-all shadow-sm">
                                 Connect App
                               </button>
                             )}
@@ -1116,7 +1116,7 @@ export default function SettingsClient() {
                 {/* ── BACKUP & RESTORE ── */}
                 {activeTab === 'backup' && (
                   <GlassCard>
-                    <div className="border-b border-[#232734] pb-6 mb-8 flex justify-between items-start md:items-center flex-col md:flex-row gap-4">
+                    <div className="border-b border-slate-200 dark:border-[#232734] pb-6 mb-8 flex justify-between items-start md:items-center flex-col md:flex-row gap-4">
                       <div>
                         <h2 className="text-xl font-bold font-jakarta mb-1">Backup & Restore</h2>
                         <p className="text-sm text-[#94A3B8]">Manage automated backups or create manual snapshots.</p>
@@ -1124,7 +1124,7 @@ export default function SettingsClient() {
                       <button 
                         onClick={handleCreateBackup} 
                         disabled={isBackingUp} 
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#2563EB]/90 text-white text-sm font-bold transition-all shadow-[0_0_20px_rgba(37,99,235,0.25)] border border-[#2563EB]/80 disabled:opacity-70"
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white text-sm font-bold transition-all shadow-[0_0_20px_rgba(37,99,235,0.25)] border border-[#2563EB]/80 disabled:opacity-70"
                       >
                         {isBackingUp ? <Activity size={16} className="animate-spin" /> : <Database size={16} />}
                         {isBackingUp ? 'Creating Backup...' : 'Create Backup'}
@@ -1132,13 +1132,13 @@ export default function SettingsClient() {
                     </div>
 
                     {isBackingUp && (
-                      <div className="mb-8 p-6 rounded-2xl bg-[#09090B] border border-[#2563EB]/30 relative overflow-hidden">
+                      <div className="mb-8 p-6 rounded-2xl bg-slate-50 dark:bg-[#09090B] border border-[#2563EB]/30 relative overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#2563EB]/10 to-transparent animate-[shimmer_2s_infinite]" style={{ backgroundSize: '200% 100%' }}></div>
                         <div className="relative z-10 flex flex-col items-center justify-center py-4">
                           <Database size={32} className="text-[#2563EB] animate-pulse mb-4" />
-                          <h4 className="font-bold text-white mb-1">Generating Database Snapshot</h4>
+                          <h4 className="font-bold text-slate-900 dark:text-white mb-1">Generating Database Snapshot</h4>
                           <p className="text-xs text-[#94A3B8]">Compressing leads, deals, and configurations...</p>
-                          <div className="w-full max-w-md h-1.5 bg-[#232734] rounded-full mt-6 overflow-hidden">
+                          <div className="w-full max-w-md h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mt-6 overflow-hidden">
                             <div className="h-full bg-[#2563EB] rounded-full animate-[progress_2.5s_ease-in-out_forwards]" style={{ width: '0%' }}></div>
                           </div>
                         </div>
@@ -1152,23 +1152,23 @@ export default function SettingsClient() {
                     <div className="space-y-4">
                       <h3 className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest pl-1">Available Backups</h3>
                       {backups.length === 0 ? (
-                        <div className="p-8 text-center bg-[#09090B] border border-[#232734] rounded-2xl">
+                        <div className="p-8 text-center bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-2xl">
                           <FileArchive size={32} className="text-[#94A3B8] mx-auto mb-3 opacity-50" />
-                          <h4 className="text-sm font-bold text-white mb-1">No backups found</h4>
+                          <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-1">No backups found</h4>
                           <p className="text-xs text-[#64748B]">Create a manual backup to get started.</p>
                         </div>
                       ) : (
                         <div className="grid grid-cols-1 gap-3">
                           {backups.map(backup => (
-                            <div key={backup.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl bg-[#09090B] border border-[#232734] hover:border-[#232734]/80 transition-all group">
+                            <div key={backup.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] hover:border-[#232734]/80 transition-all group">
                               <div className="flex items-center gap-4 mb-4 md:mb-0">
                                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${backup.type === 'Manual' ? 'bg-[#2563EB]/10 text-[#2563EB]' : 'bg-[#10B981]/10 text-[#10B981]'}`}>
                                   <FileArchive size={18} />
                                 </div>
                                 <div>
                                   <div className="flex items-center gap-2 mb-1">
-                                    <h4 className="text-sm font-bold text-white">{backup.date}</h4>
-                                    <span className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-[#11131A] text-[#94A3B8] border border-[#232734]">{backup.type}</span>
+                                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">{backup.date}</h4>
+                                    <span className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-white dark:bg-[#11131A] text-[#94A3B8] border border-slate-200 dark:border-[#232734]">{backup.type}</span>
                                   </div>
                                   <p className="text-xs font-medium text-[#64748B] flex items-center gap-1.5">
                                     <HardDrive size={12} /> {backup.size} • 
@@ -1177,7 +1177,7 @@ export default function SettingsClient() {
                                 </div>
                               </div>
                               <div className="flex items-center gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#11131A] hover:bg-[#232734] border border-[#232734] rounded-lg text-xs font-bold text-[#94A3B8] hover:text-white transition-all">
+                                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#11131A] hover:bg-slate-200 dark:bg-slate-700 border border-slate-200 dark:border-[#232734] rounded-lg text-xs font-bold text-[#94A3B8] hover:text-slate-900 dark:hover:text-white transition-all">
                                   <Download size={14} /> Download
                                 </button>
                                 <button onClick={() => { toast.success('Restore initiated!'); if(masterSound) playSound('pop'); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#2563EB]/10 hover:bg-[#2563EB]/20 border border-[#2563EB]/20 rounded-lg text-xs font-bold text-[#2563EB] transition-all">
@@ -1198,12 +1198,12 @@ export default function SettingsClient() {
                 {/* ── ROLES & PERMISSIONS ── */}
                 {activeTab === 'roles' && (
                   <GlassCard>
-                    <div className="border-b border-[#232734] pb-6 mb-8 flex justify-between items-center">
+                    <div className="border-b border-slate-200 dark:border-[#232734] pb-6 mb-8 flex justify-between items-center">
                       <div>
                         <h2 className="text-xl font-bold font-jakarta mb-1">Roles & Permissions</h2>
                         <p className="text-sm text-[#94A3B8]">Define what team members can see and do.</p>
                       </div>
-                      <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#2563EB]/90 text-white text-xs font-bold transition-all shadow-sm">
+                      <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white text-xs font-bold transition-all shadow-sm">
                         <Plus size={16} /> Create Custom Role
                       </button>
                     </div>
@@ -1219,13 +1219,13 @@ export default function SettingsClient() {
                             className={`w-full text-left p-4 rounded-2xl border transition-all flex flex-col gap-2 ${
                               selectedRole === role.id 
                                 ? 'bg-[#2563EB]/10 border-[#2563EB]/50 shadow-[0_0_15px_rgba(37,99,235,0.1)]' 
-                                : 'bg-[#09090B] border-[#232734] hover:border-[#232734]/80'
+                                : 'bg-slate-50 dark:bg-[#09090B] border-slate-200 dark:border-[#232734] hover:border-[#232734]/80'
                             }`}
                           >
                             <div className="flex justify-between items-start w-full">
-                              <span className={`font-bold text-sm ${selectedRole === role.id ? 'text-white' : 'text-[#E2E8F0]'}`}>{role.name}</span>
+                              <span className={`font-bold text-sm ${selectedRole === role.id ? 'text-slate-900 dark:text-white' : 'text-[#E2E8F0]'}`}>{role.name}</span>
                               <div className="flex gap-2 items-center">
-                                {role.isSystem && <span className="text-[9px] font-bold uppercase tracking-widest bg-[#232734] text-[#94A3B8] px-1.5 py-0.5 rounded">System</span>}
+                                {role.isSystem && <span className="text-[9px] font-bold uppercase tracking-widest bg-slate-200 dark:bg-slate-700 text-[#94A3B8] px-1.5 py-0.5 rounded">System</span>}
                                 <span className="text-xs text-[#94A3B8]">{role.users} Users</span>
                               </div>
                             </div>
@@ -1235,9 +1235,9 @@ export default function SettingsClient() {
                       </div>
 
                       {/* Right: Permissions */}
-                      <div className="flex-1 bg-[#09090B] border border-[#232734] rounded-2xl p-6">
+                      <div className="flex-1 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-2xl p-6">
                         <div className="flex justify-between items-center mb-6">
-                          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                             <ShieldCheck size={16} className="text-[#2563EB]" />
                             {MOCK_ROLES.find(r => r.id === selectedRole)?.name} Permissions
                           </h3>
@@ -1247,18 +1247,18 @@ export default function SettingsClient() {
                         <div className="space-y-6">
                           {PERMISSIONS.map(category => (
                             <div key={category.category}>
-                              <h4 className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest mb-3 pb-2 border-b border-[#232734]">{category.category}</h4>
+                              <h4 className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest mb-3 pb-2 border-b border-slate-200 dark:border-[#232734]">{category.category}</h4>
                               <div className="space-y-3">
                                 {category.items.map(perm => {
                                   const isChecked = rolePerms[selectedRole]?.includes(perm.id) || false;
                                   const isDisabled = selectedRole === 'owner';
                                   
                                   return (
-                                    <label key={perm.id} className={`flex items-center justify-between p-3 rounded-xl border transition-all ${!isDisabled && 'cursor-pointer'} ${isChecked ? 'bg-[#11131A] border-[#2563EB]/30' : 'bg-transparent border-transparent hover:bg-[#11131A]'}`}>
-                                      <span className={`text-sm font-bold ${isChecked ? 'text-white' : 'text-[#94A3B8]'}`}>{perm.label}</span>
+                                    <label key={perm.id} className={`flex items-center justify-between p-3 rounded-xl border transition-all ${!isDisabled && 'cursor-pointer'} ${isChecked ? 'bg-white dark:bg-[#11131A] border-[#2563EB]/30' : 'bg-transparent border-transparent hover:bg-white dark:bg-[#11131A]'}`}>
+                                      <span className={`text-sm font-bold ${isChecked ? 'text-slate-900 dark:text-white' : 'text-[#94A3B8]'}`}>{perm.label}</span>
                                       <div className="relative">
                                         <input type="checkbox" className="sr-only" checked={isChecked} disabled={isDisabled} onChange={() => togglePermission(selectedRole, perm.id)} />
-                                        <div className={`block w-10 h-6 rounded-full transition-colors ${isDisabled ? 'opacity-50' : ''} ${isChecked ? 'bg-[#2563EB]' : 'bg-[#232734]'}`}></div>
+                                        <div className={`block w-10 h-6 rounded-full transition-colors ${isDisabled ? 'opacity-50' : ''} ${isChecked ? 'bg-[#2563EB]' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
                                         <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${isChecked ? 'transform translate-x-4' : ''}`}></div>
                                       </div>
                                     </label>
@@ -1276,7 +1276,7 @@ export default function SettingsClient() {
                 {/* ── BILLING ── */}
                 {activeTab === 'billing' && (
                   <GlassCard>
-                    <div className="border-b border-[#232734] pb-6 mb-8">
+                    <div className="border-b border-slate-200 dark:border-[#232734] pb-6 mb-8">
                       <h2 className="text-xl font-bold font-jakarta mb-1">Usage & Billing</h2>
                       <p className="text-sm text-[#94A3B8]">Manage your subscription plan and resource limits.</p>
                     </div>
@@ -1285,7 +1285,7 @@ export default function SettingsClient() {
                       <div className="absolute top-0 right-0 w-64 h-64 bg-[#2563EB]/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
                       <div className="relative z-10">
                         <span className="px-3 py-1 bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/20 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 inline-block">Enterprise Plan</span>
-                        <h3 className="text-2xl font-bold text-white mb-1">Injaazh ERP Pro</h3>
+                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">Injaazh ERP Pro</h3>
                         <p className="text-sm font-medium text-[#94A3B8] mb-6">$99.00 / month, next billing on Aug 1, 2026</p>
                         <button className="px-6 py-2.5 bg-white text-black font-bold rounded-xl text-sm transition-all shadow-sm">Manage Subscription</button>
                       </div>
@@ -1301,12 +1301,12 @@ export default function SettingsClient() {
                       <p className="text-sm text-rose-500/60">Destructive actions that cannot be undone.</p>
                     </div>
 
-                    <div className="p-6 rounded-2xl bg-[#09090B] border border-rose-500/30">
+                    <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#09090B] border border-rose-500/30">
                       <h4 className="font-bold text-rose-500 mb-2">Factory Reset Database</h4>
                       <p className="text-xs font-medium text-rose-500/60 mb-6">Permanently delete all leads, projects, transactions, and proposals.</p>
                       <div className="flex gap-4">
-                        <input type="text" value={dangerConfirm} onChange={(e) => setDangerConfirm(e.target.value)} placeholder="Type CONFIRM" className="flex-1 px-4 py-2 bg-[#11131A] border border-rose-500/30 rounded-xl focus:outline-none focus:border-rose-500/60 text-rose-500 font-bold placeholder-rose-900/50" />
-                        <button disabled={dangerConfirm !== 'CONFIRM'} onClick={() => { toast.error('Factory Reset Initiated!', { icon: '⚠️' }); if(masterSound) playSound('error'); setDangerConfirm(''); }} className={`px-6 py-2 bg-rose-500 text-white font-bold rounded-xl transition-all ${dangerConfirm === 'CONFIRM' ? 'hover:bg-rose-600' : 'opacity-50 cursor-not-allowed'}`}>Reset</button>
+                        <input type="text" value={dangerConfirm} onChange={(e) => setDangerConfirm(e.target.value)} placeholder="Type CONFIRM" className="flex-1 px-4 py-2 bg-white dark:bg-[#11131A] border border-rose-500/30 rounded-xl focus:outline-none focus:border-rose-500/60 text-rose-500 font-bold placeholder-rose-900/50" />
+                        <button disabled={dangerConfirm !== 'CONFIRM'} onClick={() => { toast.error('Factory Reset Initiated!', { icon: '⚠️' }); if(masterSound) playSound('error'); setDangerConfirm(''); }} className={`px-6 py-2 bg-rose-500 text-slate-900 dark:text-white font-bold rounded-xl transition-all ${dangerConfirm === 'CONFIRM' ? 'hover:bg-rose-600' : 'opacity-50 cursor-not-allowed'}`}>Reset</button>
                       </div>
                     </div>
                   </GlassCard>
@@ -1319,14 +1319,14 @@ export default function SettingsClient() {
           {/* Right Info Panel (Desktop Only) */}
           <div className="hidden lg:block w-72 flex-shrink-0">
             <div className="sticky top-6 space-y-4">
-              <div className="bg-[#11131A] border border-[#232734] rounded-2xl p-5 shadow-sm">
-                <h4 className="flex items-center gap-2 text-xs font-bold text-white uppercase tracking-widest mb-4">
+              <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-2xl p-5 shadow-sm">
+                <h4 className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white uppercase tracking-widest mb-4">
                   <Activity size={14} className="text-[#10B981]" /> System Status
                 </h4>
                 <div className="space-y-3 text-xs font-medium">
-                  <div className="flex justify-between items-center text-[#94A3B8]"><span>Version</span> <span className="text-white">v2.4.0-stable</span></div>
+                  <div className="flex justify-between items-center text-[#94A3B8]"><span>Version</span> <span className="text-slate-900 dark:text-white">v2.4.0-stable</span></div>
                   <div className="flex justify-between items-center text-[#94A3B8]"><span>Services</span> <span className="text-[#10B981] flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-[#10B981]"></div> Operational</span></div>
-                  <div className="flex justify-between items-center text-[#94A3B8]"><span>Last Updated</span> <span className="text-white">Today at 10:42 AM</span></div>
+                  <div className="flex justify-between items-center text-[#94A3B8]"><span>Last Updated</span> <span className="text-slate-900 dark:text-white">Today at 10:42 AM</span></div>
                 </div>
               </div>
 

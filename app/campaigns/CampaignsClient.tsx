@@ -55,7 +55,7 @@ function FilterDropdown({ label, options, value, onChange }: { label: string; op
     <div className="relative">
       <button
         onClick={() => setOpen(p => !p)}
-        className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all ${active ? 'bg-[#2563EB]/10 text-[#2563EB] border-[#2563EB]/30' : 'bg-[#11131A] text-[#94A3B8] border-[#232734] hover:text-white'}`}
+        className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all ${active ? 'bg-[#2563EB]/10 text-[#2563EB] border-[#2563EB]/30' : 'bg-white dark:bg-[#11131A] text-[#94A3B8] border-slate-200 dark:border-[#232734] hover:text-slate-900 dark:hover:text-white'}`}
       >
         {active ? value : label}
         <ChevronDown size={11} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
@@ -69,11 +69,11 @@ function FilterDropdown({ label, options, value, onChange }: { label: string; op
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -6, scale: 0.97 }}
               transition={{ duration: 0.14 }}
-              className="absolute top-full left-0 mt-2 z-40 min-w-[148px] bg-[#11131A] border border-[#232734] rounded-[14px] shadow-[0_20px_40px_rgba(0,0,0,0.5)] overflow-hidden"
+              className="absolute top-full left-0 mt-2 z-40 min-w-[148px] bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[14px] shadow-[0_20px_40px_rgba(0,0,0,0.5)] overflow-hidden"
             >
               {options.map(opt => (
                 <button key={opt} onClick={() => { onChange(opt); setOpen(false); }}
-                  className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${value === opt ? 'text-[#2563EB] bg-[#2563EB]/10' : 'text-[#94A3B8] hover:text-white hover:bg-[#232734]'}`}>
+                  className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${value === opt ? 'text-[#2563EB] bg-[#2563EB]/10' : 'text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734]'}`}>
                   {opt}
                 </button>
               ))}
@@ -125,7 +125,7 @@ function CampaignSlidePanel({
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
         onClick={onClose}
-        className="absolute inset-0 bg-[#09090B]/80 backdrop-blur-md"
+        className="absolute inset-0 bg-white/80 dark:bg-[#09090B]/80 backdrop-blur-md"
       />
       {/* Panel */}
       <motion.div
@@ -133,18 +133,18 @@ function CampaignSlidePanel({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="relative w-full max-w-3xl max-h-[90vh] bg-[#09090B] border border-[#232734] rounded-2xl z-50 flex flex-col shadow-2xl overflow-hidden"
+        className="relative w-full max-w-3xl max-h-[90vh] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-2xl z-50 flex flex-col shadow-2xl overflow-hidden"
         role="dialog" aria-label={`Campaign: ${campaign.name}`}
       >
         {/* Header */}
-        <div className="flex-shrink-0 p-6 border-b border-[#232734] bg-[#11131A]">
+        <div className="flex-shrink-0 p-6 border-b border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A]">
           <div className="flex items-center justify-between mb-5">
             <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">Campaign Details</span>
             <div className="flex items-center gap-2">
-              <button onClick={onEdit} className="p-2 rounded-[10px] text-[#94A3B8] hover:text-white hover:bg-[#232734] border border-transparent hover:border-[#232734] transition-all" aria-label="Edit campaign">
+              <button onClick={onEdit} className="p-2 rounded-[10px] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] border border-transparent hover:border-slate-200 dark:border-[#232734] transition-all" aria-label="Edit campaign">
                 <Settings size={15} />
               </button>
-              <button onClick={onClose} className="p-2 rounded-[10px] text-[#94A3B8] hover:text-white hover:bg-[#232734] border border-[#232734] transition-all" aria-label="Close">
+              <button onClick={onClose} className="p-2 rounded-[10px] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] border border-slate-200 dark:border-[#232734] transition-all" aria-label="Close">
                 <X size={15} />
               </button>
             </div>
@@ -152,11 +152,11 @@ function CampaignSlidePanel({
 
           {/* Campaign identity */}
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-[14px] bg-[#09090B] border border-[#232734] flex items-center justify-center text-[#2563EB] flex-shrink-0">
+            <div className="w-12 h-12 rounded-[14px] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center text-[#2563EB] flex-shrink-0">
               <Megaphone size={20} />
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="text-lg font-bold text-white tracking-tight truncate mb-1">{campaign.name}</h2>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight truncate mb-1">{campaign.name}</h2>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="px-2 py-0.5 rounded-md bg-[#2563EB]/10 border border-[#2563EB]/20 text-[10px] font-bold text-[#2563EB] uppercase tracking-widest">Email</span>
                 <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold border ${statusStyle.bg} ${statusStyle.border} ${statusStyle.text}`}>
@@ -174,7 +174,7 @@ function CampaignSlidePanel({
               { label: 'Open Rate', value: pct(openRate),    color: '#2563EB', icon: BarChart2 },
               { label: 'Click Rate', value: pct(clickRate),  color: '#7C3AED', icon: MousePointerClick },
             ].map(({ label, value, color, icon: Icon }) => (
-              <div key={label} className="bg-[#09090B] border border-[#232734] rounded-[12px] p-3">
+              <div key={label} className="bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-[12px] p-3">
                 <div className="flex items-center gap-1 mb-1">
                   <Icon size={11} style={{ color }} />
                   <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wide">{label}</span>
@@ -186,7 +186,7 @@ function CampaignSlidePanel({
 
           {/* Action buttons */}
           <div className="flex gap-2 mt-4">
-            <button onClick={onLogs} className="p-2.5 bg-[#09090B] border border-[#232734] text-[#94A3B8] hover:text-white rounded-[10px] transition-all" aria-label="View logs">
+            <button onClick={onLogs} className="p-2.5 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white rounded-[10px] transition-all" aria-label="View logs">
               <Activity size={15} />
             </button>
             {campaign.status === 'Active' ? (
@@ -201,7 +201,7 @@ function CampaignSlidePanel({
                 </button>
               </>
             ) : campaign.status === 'Completed' ? (
-              <button disabled className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#09090B] border border-[#232734] text-[#94A3B8] rounded-[10px] text-xs font-bold cursor-not-allowed">
+              <button disabled className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] text-[#94A3B8] rounded-[10px] text-xs font-bold cursor-not-allowed">
                 <CheckCircle size={14} /> Completed
               </button>
             ) : (
@@ -214,10 +214,10 @@ function CampaignSlidePanel({
         </div>
 
         {/* Tabs */}
-        <div className="flex-shrink-0 flex items-center border-b border-[#232734] px-6 bg-[#0D0F16]">
+        <div className="flex-shrink-0 flex items-center border-b border-slate-200 dark:border-[#232734] px-6 bg-slate-100 dark:bg-[#0D0F16]">
           {tabs.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
-              className={`relative flex items-center gap-2 px-4 py-3.5 text-xs font-bold transition-all ${tab === t.key ? 'text-white' : 'text-[#94A3B8] hover:text-white'}`}>
+              className={`relative flex items-center gap-2 px-4 py-3.5 text-xs font-bold transition-all ${tab === t.key ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>
               <t.icon size={13} />
               {t.label}
               {tab === t.key && (
@@ -235,7 +235,7 @@ function CampaignSlidePanel({
               <motion.div key="overview" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="p-6 space-y-5">
                 <div>
                   <h3 className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-3">Campaign Properties</h3>
-                  <div className="bg-[#11131A] border border-[#232734] rounded-[16px] px-5 py-1 divide-y divide-[#232734]/60">
+                  <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[16px] px-5 py-1 divide-y divide-slate-200 dark:divide-[#232734]/60">
                     {[
                       { icon: Target,    label: 'Niche',     value: campaign.niche     || 'General' },
                       { icon: Mail,      label: 'Sequences', value: `${campaign.sequences?.length || 0} emails` },
@@ -247,7 +247,7 @@ function CampaignSlidePanel({
                           <Icon size={13} className="text-[#94A3B8] flex-shrink-0" />
                           <span className="text-[11px] font-bold text-[#94A3B8] uppercase tracking-widest">{label}</span>
                         </div>
-                        <span className="flex-1 text-sm font-semibold text-white">{value}</span>
+                        <span className="flex-1 text-sm font-semibold text-slate-900 dark:text-white">{value}</span>
                       </div>
                     ))}
                   </div>
@@ -257,7 +257,7 @@ function CampaignSlidePanel({
                 {campaign.description && (
                   <div>
                     <h3 className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-3">Description</h3>
-                    <div className="bg-[#11131A] border border-[#232734] rounded-[16px] p-5">
+                    <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[16px] p-5">
                       <p className="text-sm text-[#94A3B8] leading-relaxed">{campaign.description}</p>
                     </div>
                   </div>
@@ -274,7 +274,7 @@ function CampaignSlidePanel({
                     { label: 'Replied',         value: Math.floor((campaign.leadCount || 0) * 0.3), color: '#7C3AED' },
                     { label: 'Converted',       value: Math.floor((campaign.leadCount || 0) * 0.05), color: '#10B981' },
                   ].map(({ label, value, color }) => (
-                    <div key={label} className="bg-[#11131A] border border-[#232734] rounded-[14px] p-4">
+                    <div key={label} className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[14px] p-4">
                       <p className="text-xs font-bold text-[#94A3B8] mb-1">{label}</p>
                       <p className="text-2xl font-bold font-mono" style={{ color }}>{value}</p>
                     </div>
@@ -291,7 +291,7 @@ function CampaignSlidePanel({
                     ].map(({ label, pctVal, color }) => (
                       <div key={label} className="flex items-center gap-3">
                         <span className="text-xs font-bold text-[#94A3B8] w-20 flex-shrink-0">{label}</span>
-                        <div className="flex-1 h-2 bg-[#09090B] rounded-full overflow-hidden border border-[#232734]">
+                        <div className="flex-1 h-2 bg-slate-50 dark:bg-[#09090B] rounded-full overflow-hidden border border-slate-200 dark:border-[#232734]">
                           <motion.div initial={{ width: 0 }} animate={{ width: `${pctVal}%` }} transition={{ duration: 0.8, ease: 'easeOut' }}
                             className="h-full rounded-full" style={{ backgroundColor: color }} />
                         </div>
@@ -318,12 +318,12 @@ function CampaignSlidePanel({
                         <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${color}15`, border: `1px solid ${color}30` }}>
                           <Icon size={13} style={{ color }} />
                         </div>
-                        {i < arr.length - 1 && <div className="w-px flex-1 bg-[#232734] mt-1" style={{ minHeight: 20 }} />}
+                        {i < arr.length - 1 && <div className="w-px flex-1 bg-slate-200 dark:bg-[#232734] mt-1" style={{ minHeight: 20 }} />}
                       </div>
                       <div className="pb-5 min-w-0">
-                        <p className="text-sm font-bold text-white leading-tight mb-0.5">{title}</p>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight mb-0.5">{title}</p>
                         <p className="text-xs text-[#94A3B8]">{sub}</p>
-                        <p className="text-[10px] text-[#232734] font-bold mt-1">{time}</p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-500 font-bold mt-1">{time}</p>
                       </div>
                     </div>
                   ))}
@@ -333,13 +333,13 @@ function CampaignSlidePanel({
 
             {tab === 'notes' && (
               <motion.div key="notes" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="p-6">
-                <div className="bg-[#11131A] border border-[#232734] rounded-[16px] overflow-hidden">
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-[#232734]">
+                <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[16px] overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-[#232734]">
                     <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">Notes</span>
                     <button className="text-xs font-bold text-[#2563EB] hover:text-[#2563EB]/80 transition-colors">+ Add Note</button>
                   </div>
                   <textarea
-                    className="w-full bg-transparent px-4 py-4 text-sm text-[#94A3B8] placeholder-[#94A3B8]/40 resize-none focus:outline-none leading-relaxed min-h-[160px]"
+                    className="w-full bg-transparent px-4 py-4 text-sm text-slate-700 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500 resize-none focus:outline-none leading-relaxed min-h-[160px]"
                     placeholder="Add campaign notes, strategy or reminders…"
                   />
                 </div>
@@ -455,7 +455,7 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
 
   const Th = ({ children, col, className = '' }: { children: React.ReactNode; col?: SortKey; className?: string }) => (
     <th
-      className={`px-4 py-3 text-left text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest whitespace-nowrap select-none ${col ? 'cursor-pointer group hover:text-white transition-colors' : ''} ${className}`}
+      className={`px-4 py-3 text-left text-[10px] font-bold text-slate-700 dark:text-[#94A3B8] uppercase tracking-widest whitespace-nowrap select-none ${col ? 'cursor-pointer group hover:text-slate-900 dark:hover:text-white transition-colors' : ''} ${className}`}
       onClick={col ? () => handleSort(col) : undefined}
     >
       <div className="flex items-center gap-1.5">{children}{col && <SortIcon col={col} sortKey={sortKey} sortDir={sortDir} />}</div>
@@ -463,7 +463,7 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
   );
 
   return (
-    <div className="min-h-screen bg-[#09090B] p-4 md:p-8 selection:bg-[#2563EB]/30">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#09090B] p-4 md:p-8 selection:bg-[#2563EB]/30">
       <div className="max-w-[1600px] mx-auto">
 
         {/* ── Page Header ──────────────────────────────────────────────────── */}
@@ -476,15 +476,15 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
                 </div>
                 <span className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Marketing</span>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight font-jakarta mb-1.5">Campaigns</h1>
+              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tracking-tight font-jakarta mb-1.5">Campaigns</h1>
               <p className="text-sm font-medium text-[#94A3B8]">Create and manage automated email outreach sequences.</p>
             </div>
             <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-              <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-[#11131A] text-[#94A3B8] border border-[#232734] hover:text-white hover:border-[#232734] transition-all">
+              <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-white dark:bg-[#11131A] text-[#94A3B8] border border-slate-200 dark:border-[#232734] hover:text-slate-900 dark:hover:text-white hover:border-slate-200 dark:border-[#232734] transition-all">
                 <Download size={15} /> <span className="hidden sm:inline">Export</span>
               </button>
               <button onClick={() => { setEditingCampaign(null); setIsBuilderOpen(true); }}
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
                 <Plus size={16} strokeWidth={2.5} /> New Campaign
               </button>
             </div>
@@ -499,7 +499,7 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
                   initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05, type: 'spring', stiffness: 280, damping: 26 }}
                   whileHover={{ y: -2, transition: { duration: 0.15 } }}
-                  className="relative overflow-hidden bg-[#11131A] border border-[#232734] rounded-[24px] p-5 cursor-pointer group hover:border-[#232734]/80 transition-all"
+                  className="relative overflow-hidden bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-5 cursor-pointer group hover:border-[#232734]/80 transition-all"
                 >
                   <div className="absolute inset-0 opacity-10">
                     <ResponsiveContainer width="100%" height="100%">
@@ -509,12 +509,12 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
                     </ResponsiveContainer>
                   </div>
                   <div className="relative z-10 flex items-start justify-between mb-4">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{k.label}</p>
+                    <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{k.label}</p>
                     <span className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${k.up ? 'text-emerald-500 bg-emerald-500/10' : 'text-red-500 bg-red-500/10'}`}>
                       {k.up ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />} {k.trend}
                     </span>
                   </div>
-                  <p className="relative z-10 text-3xl font-bold font-mono tracking-tight text-white">{k.value}</p>
+                  <p className="relative z-10 text-3xl font-bold font-mono tracking-tight text-slate-900 dark:text-white">{k.value}</p>
                 </motion.div>
               );
             })}
@@ -532,11 +532,11 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
                 placeholder="Search campaigns, niches…"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-[#11131A] border border-[#232734] text-white placeholder-[#94A3B8]/60 text-sm font-medium rounded-xl pl-11 pr-10 py-2.5 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all"
+                className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white placeholder-[#94A3B8]/60 text-sm font-medium rounded-xl pl-11 pr-10 py-2.5 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all"
               />
               {searchQuery && (
                 <button onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-md bg-[#232734] flex items-center justify-center text-[#94A3B8] hover:text-white transition-colors">
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-md bg-slate-200 dark:bg-[#232734] flex items-center justify-center text-[#94A3B8] hover:text-slate-900 dark:hover:text-white transition-colors">
                   <X size={11} />
                 </button>
               )}
@@ -544,15 +544,15 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
 
             {/* Filter Chips & Dropdowns Grouped Separately */}
             <div className="flex items-center gap-4 flex-wrap">
-              <div className="flex items-center gap-1 bg-[#11131A] border border-[#232734] p-1 rounded-[14px]">
+              <div className="flex items-center gap-1 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] p-1 rounded-[14px]">
                 {['All', 'Active', 'Paused', 'Completed'].map(f => (
                   <button key={f} onClick={() => setActiveFilter(f)}
-                    className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${activeFilter === f ? 'bg-[#232734] text-white shadow-sm' : 'text-[#94A3B8] hover:text-white'}`}>
+                    className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${activeFilter === f ? 'bg-slate-200 dark:bg-[#232734] text-slate-900 dark:text-white shadow-sm' : 'text-[#94A3B8] hover:text-slate-900 dark:hover:text-white'}`}>
                     {f}
                   </button>
                 ))}
               </div>
-              <div className="w-px h-5 bg-[#232734] hidden sm:block"></div>
+              <div className="w-px h-5 bg-slate-200 dark:bg-[#232734] hidden sm:block"></div>
               <div className="flex items-center gap-2">
                 <FilterDropdown label="Type" options={['All Types', 'Email', 'WhatsApp', 'Multi-channel']} value={typeFilter} onChange={setTypeFilter} />
                 <FilterDropdown label="Date" options={['Any Time', 'Today', 'Last 7 Days', 'Last 30 Days']} value={dateFilter} onChange={setDateFilter} />
@@ -560,8 +560,8 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
             </div>
 
             <div className="flex-1 hidden md:block" />
-            <div className="hidden md:flex items-center gap-1.5 px-3.5 py-2 bg-[#11131A] border border-[#232734] rounded-xl">
-              <span className="text-sm font-bold text-white font-mono">{sorted.length}</span>
+            <div className="hidden md:flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl">
+              <span className="text-sm font-bold text-slate-900 dark:text-white font-mono">{sorted.length}</span>
               <span className="text-xs font-semibold text-[#94A3B8]">campaigns</span>
             </div>
           </div>
@@ -570,15 +570,15 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
         {/* ── Table ────────────────────────────────────────────────────────── */}
         {sorted.length === 0 ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            className="py-32 flex flex-col items-center justify-center bg-[#11131A] border border-[#232734] rounded-[20px]">
-            <div className="w-16 h-16 rounded-[20px] bg-[#09090B] border border-[#232734] flex items-center justify-center mb-4">
+            className="py-32 flex flex-col items-center justify-center bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px]">
+            <div className="w-16 h-16 rounded-[20px] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center mb-4">
               <Target size={24} className="text-[#232734]" />
             </div>
-            <p className="text-sm font-bold text-white mb-1">No campaigns found</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">No campaigns found</p>
             <p className="text-xs text-[#94A3B8] mb-6">Create your first campaign or adjust your filters.</p>
             {!searchQuery && activeFilter === 'All' && (
               <button onClick={() => setIsBuilderOpen(true)}
-                className="flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white text-xs font-bold rounded-xl transition-all">
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white text-xs font-bold rounded-xl transition-all">
                 <Plus size={14} strokeWidth={2.5} /> Get Started
               </button>
             )}
@@ -586,14 +586,14 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
         ) : (
           <>
             {/* Desktop Table */}
-            <div className="hidden md:block overflow-hidden rounded-[20px] border border-[#232734] bg-[#11131A]">
+            <div className="hidden md:block overflow-hidden rounded-[20px] border border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A]">
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-sm">
-                  <thead className="sticky top-0 z-10 bg-[#0D0F16]">
-                    <tr className="border-b border-[#232734]">
+                  <thead className="sticky top-0 z-10 bg-slate-100 dark:bg-slate-900/50">
+                    <tr className="border-b border-slate-200 dark:border-[#232734]">
                       <th className="pl-5 pr-3 py-3 w-10">
                         <button onClick={toggleAll}
-                          className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all ${allSel ? 'bg-[#2563EB] border-[#2563EB] text-white' : 'border-[#232734] bg-[#09090B] hover:border-[#94A3B8]'}`}
+                          className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all ${allSel ? 'bg-[#2563EB] border-[#2563EB] text-slate-900 dark:text-white' : 'border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B] hover:border-[#94A3B8]'}`}
                           aria-label="Select all">
                           {allSel && <CheckCircle2 size={10} strokeWidth={3} />}
                         </button>
@@ -625,11 +625,11 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
                           <motion.tr key={campaign._id}
                             custom={i} variants={rowVariants} initial="hidden" animate="show" exit="exit"
                             onClick={() => setPanelCampaign(campaign)}
-                            className={`border-b border-[#232734]/60 cursor-pointer transition-all group ${isSel ? 'bg-[#2563EB]/5' : 'hover:bg-[#1E293B]/40'}`}
+                            className={`border-b border-slate-200 dark:border-[#232734]/60 cursor-pointer transition-all group ${isSel ? 'bg-[#2563EB]/5 text-slate-900 dark:text-white' : 'hover:bg-slate-50 dark:hover:bg-[#1E293B]/40 hover:text-slate-900 dark:hover:text-white'}`}
                           >
                             {/* Checkbox */}
                             <td className="pl-5 pr-3 py-4" onClick={e => toggleOne(campaign._id, e)}>
-                              <div className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all ${isSel ? 'bg-[#2563EB] border-[#2563EB] text-white' : 'border-[#232734] bg-[#09090B] group-hover:border-[#94A3B8]'}`}>
+                              <div className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all ${isSel ? 'bg-[#2563EB] border-[#2563EB] text-slate-900 dark:text-white' : 'border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B] group-hover:border-[#94A3B8]'}`}>
                                 {isSel && <CheckCircle2 size={10} strokeWidth={3} />}
                               </div>
                             </td>
@@ -637,11 +637,11 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
                             {/* Name + Niche */}
                             <td className="pl-2 pr-4 py-4">
                               <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-[10px] bg-[#09090B] border border-[#232734] flex items-center justify-center text-[#2563EB] flex-shrink-0">
+                                <div className="w-8 h-8 rounded-[10px] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center text-[#2563EB] flex-shrink-0">
                                   <Megaphone size={14} />
                                 </div>
                                 <div className="min-w-0">
-                                  <p className="font-bold text-white truncate max-w-[160px]">{campaign.name}</p>
+                                  <p className="font-bold text-slate-900 dark:text-white truncate max-w-[160px]">{campaign.name}</p>
                                   <p className="text-xs text-[#94A3B8] truncate max-w-[160px]">{campaign.niche || 'General'}</p>
                                 </div>
                               </div>
@@ -656,7 +656,7 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
                             <td className="pr-4 py-4">
                               <div className="flex items-center gap-1.5">
                                 <Users size={12} className="text-[#94A3B8]" />
-                                <span className="text-sm font-bold text-white font-mono">{campaign.leadCount || 0}</span>
+                                <span className="text-sm font-bold text-slate-900 dark:text-white font-mono">{campaign.leadCount || 0}</span>
                               </div>
                             </td>
 
@@ -692,17 +692,23 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
                             <td className="pr-5 py-4" onClick={e => e.stopPropagation()}>
                               <div className="flex items-center justify-end gap-1.5">
                                 <button onClick={() => { setLogsCampaign(campaign); setIsLogsOpen(true); }}
-                                  className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:text-white hover:bg-[#232734] transition-all" aria-label="View logs">
+                                  className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] transition-all" aria-label="View logs">
                                   <Activity size={16} />
                                 </button>
                                 <button onClick={() => { setEditingCampaign(campaign); setIsBuilderOpen(true); }}
-                                  className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:text-white hover:bg-[#232734] transition-all" aria-label="Manage">
+                                  className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] transition-all" aria-label="Manage">
                                   <Settings size={16} />
                                 </button>
                                 {campaign.status === 'Active' && (
                                   <button onClick={() => handleForceRun(campaign._id)} disabled={isForceRunning === campaign._id}
                                     className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:text-[#2563EB] hover:bg-[#2563EB]/10 transition-all disabled:opacity-50" aria-label="Force run">
                                     <Zap size={16} className={isForceRunning === campaign._id ? 'animate-pulse' : ''} />
+                                  </button>
+                                )}
+                                {(campaign.status === 'Draft' || campaign.status === 'Paused') && (
+                                  <button onClick={() => handleStatusChange(campaign._id, 'Active')}
+                                    className="w-8 h-8 rounded-lg flex items-center justify-center text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-all" aria-label="Start campaign">
+                                    <Play size={16} strokeWidth={2.5} />
                                   </button>
                                 )}
                                 <button onClick={() => setCampaignToDelete(campaign._id)}
@@ -729,15 +735,15 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
                     <motion.div key={campaign._id}
                       custom={i} variants={rowVariants} initial="hidden" animate="show" exit="exit"
                       onClick={() => setPanelCampaign(campaign)}
-                      className="bg-[#11131A] border border-[#232734] rounded-[16px] p-4 cursor-pointer hover:border-[#232734]/80 transition-all"
+                      className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[16px] p-4 cursor-pointer hover:border-[#232734]/80 transition-all"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="w-9 h-9 rounded-[10px] bg-[#09090B] border border-[#232734] flex items-center justify-center text-[#2563EB] flex-shrink-0">
+                        <div className="w-9 h-9 rounded-[10px] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center text-[#2563EB] flex-shrink-0">
                           <Megaphone size={15} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
-                            <p className="font-bold text-sm text-white truncate">{campaign.name}</p>
+                            <p className="font-bold text-sm text-slate-900 dark:text-white truncate">{campaign.name}</p>
                             <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${ss.bg} ${ss.border} ${ss.text} flex-shrink-0 ml-2`}>
                               <span className={`w-1 h-1 rounded-full ${ss.dot}`} />{campaign.status}
                             </span>
@@ -767,14 +773,14 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
           {selectedIds.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 50, x: '-50%' }} animate={{ opacity: 1, y: 0, x: '-50%' }} exit={{ opacity: 0, y: 50, x: '-50%' }}
-              className="fixed bottom-8 left-1/2 z-40 flex items-center gap-4 bg-[#09090B]/90 backdrop-blur-xl border border-[#232734] rounded-full px-5 py-3 shadow-[0_20px_40px_rgba(0,0,0,0.5)]"
+              className="fixed bottom-8 left-1/2 z-40 flex items-center gap-4 bg-white dark:bg-[#09090B]/90 border border-slate-200 dark:border-slate-700 backdrop-blur-xl rounded-full px-5 py-3 shadow-xl"
             >
-              <div className="flex items-center gap-2 border-r border-[#232734] pr-4">
-                <span className="w-6 h-6 rounded-full bg-[#2563EB] text-white text-xs font-bold flex items-center justify-center">{selectedIds.length}</span>
+              <div className="flex items-center gap-2 border-r border-slate-200 dark:border-[#232734] pr-4">
+                <span className="w-6 h-6 rounded-full bg-[#2563EB] text-slate-900 dark:text-white text-xs font-bold flex items-center justify-center">{selectedIds.length}</span>
                 <span className="text-sm font-bold text-[#94A3B8]">Selected</span>
               </div>
               <button className="px-4 py-1.5 text-xs font-bold bg-white text-black rounded-full hover:bg-slate-200 transition-colors">Bulk Action</button>
-              <button onClick={() => setSelectedIds([])} className="text-xs font-bold text-[#94A3B8] hover:text-white transition-colors">Clear</button>
+              <button onClick={() => setSelectedIds([])} className="text-xs font-bold text-[#94A3B8] hover:text-slate-900 dark:hover:text-white transition-colors">Clear</button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -817,23 +823,23 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
         {/* ── Delete Confirmation Modal (preserved) ─────────────────────────── */}
         <AnimatePresence>
           {campaignToDelete && (
-            <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#09090B]/80 backdrop-blur-md">
+            <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-white/80 dark:bg-[#09090B]/80 backdrop-blur-md">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                className="w-full max-w-md bg-[#11131A] border border-[#232734] rounded-[24px] shadow-2xl overflow-hidden"
+                className="w-full max-w-md bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] shadow-2xl overflow-hidden"
               >
                 <div className="p-8">
                   <div className="w-12 h-12 rounded-xl bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444] flex items-center justify-center mb-5">
                     <AlertTriangle size={24} />
                   </div>
-                  <h3 className="text-xl font-bold text-white tracking-tight mb-2">Delete Campaign?</h3>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight mb-2">Delete Campaign?</h3>
                   <p className="text-sm font-medium text-[#94A3B8] mb-8 leading-relaxed">
                     Are you sure you want to delete this campaign? All its leads, sequence settings, and outreach logs will be permanently removed.{' '}
                     <strong className="text-[#EF4444]">This action cannot be undone.</strong>
                   </p>
                   <div className="flex justify-end gap-3">
                     <button onClick={() => setCampaignToDelete(null)} disabled={isDeleting}
-                      className="px-5 py-2.5 rounded-xl font-bold text-xs text-[#94A3B8] bg-[#09090B] border border-[#232734] hover:text-white hover:bg-[#232734] transition-colors disabled:opacity-50">
+                      className="px-5 py-2.5 rounded-xl font-bold text-xs text-[#94A3B8] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] transition-colors disabled:opacity-50">
                       Cancel
                     </button>
                     <button onClick={confirmDelete} disabled={isDeleting}

@@ -42,12 +42,12 @@ const MenuBar = ({ editor }: { editor: any }) => {
     return `p-2 rounded-lg transition-all flex items-center justify-center ${
       isActive
         ? 'bg-[#2563EB]/10 text-[#2563EB]'
-        : 'text-[#94A3B8] hover:text-white hover:bg-[#232734]'
+        : 'text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734]'
     }`;
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-1 p-3 border-b border-[#232734] bg-[#11131A] z-10 sticky top-0">
+    <div className="flex flex-wrap items-center gap-1 p-3 border-b border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A] z-10 sticky top-0">
       <button
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
         className={getButtonClass(editor.isActive('heading', { level: 1 }))}
@@ -65,7 +65,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
         <Heading2 size={18} />
       </button>
 
-      <div className="w-px h-6 bg-[#232734] mx-1" />
+      <div className="w-px h-6 bg-slate-200 dark:bg-[#232734] mx-1" />
 
       <button
         onClick={() => editor.chain().focus().toggleBold().run()}
@@ -104,7 +104,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
         <UnderlineIcon size={18} />
       </button>
 
-      <div className="w-px h-6 bg-[#232734] mx-1" />
+      <div className="w-px h-6 bg-slate-200 dark:bg-[#232734] mx-1" />
 
       <button
         onClick={() => editor.chain().focus().setTextAlign('left').run()}
@@ -131,7 +131,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
         <AlignRight size={18} />
       </button>
 
-      <div className="w-px h-6 bg-[#232734] mx-1" />
+      <div className="w-px h-6 bg-slate-200 dark:bg-[#232734] mx-1" />
 
       <button
         onClick={() => editor.chain().focus().toggleBulletList().run()}
@@ -158,7 +158,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
         <Quote size={18} />
       </button>
 
-      <div className="w-px h-6 bg-[#232734] mx-1" />
+      <div className="w-px h-6 bg-slate-200 dark:bg-[#232734] mx-1" />
 
       <button
         onClick={() => {
@@ -191,7 +191,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
       <button
         onClick={() => editor.chain().focus().undo().run()}
         disabled={!editor.can().chain().focus().undo().run()}
-        className="p-2 flex items-center justify-center rounded-lg text-[#94A3B8] hover:text-white hover:bg-[#232734] disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+        className="p-2 flex items-center justify-center rounded-lg text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
         type="button"
         title="Undo"
       >
@@ -200,7 +200,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
       <button
         onClick={() => editor.chain().focus().redo().run()}
         disabled={!editor.can().chain().focus().redo().run()}
-        className="p-2 flex items-center justify-center rounded-lg text-[#94A3B8] hover:text-white hover:bg-[#232734] disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+        className="p-2 flex items-center justify-center rounded-lg text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
         type="button"
         title="Redo"
       >
@@ -237,7 +237,7 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Write s
     content: value,
     editorProps: {
       attributes: {
-        className: 'prose prose-invert focus:outline-none min-h-[250px] max-w-none p-6 text-white leading-relaxed',
+        className: 'prose prose-invert focus:outline-none min-h-[250px] max-w-none p-6 text-slate-900 dark:text-white leading-relaxed',
       },
     },
     onUpdate: ({ editor }) => {

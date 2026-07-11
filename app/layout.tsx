@@ -53,9 +53,9 @@ export default async function RootLayout({
           {/* Custom Electron Title Bar - Hidden on web, visible via CSS injection in Electron */}
           <div 
             id="electron-titlebar"
-            className="hidden fixed top-0 left-0 right-0 h-[35px] z-[9999] bg-slate-900/40 backdrop-blur-md border-b border-white/5 items-center justify-center transition-all duration-300" 
+            className="hidden fixed top-0 left-0 right-0 h-[35px] z-[9999] bg-slate-900/40 backdrop-blur-md border-b border-slate-200 dark:border-white/5 items-center justify-center transition-all duration-300" 
           >
-            <span className="text-xs font-semibold text-slate-400 tracking-wider">Injaazh ERP</span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 tracking-wider">Injaazh ERP</span>
           </div>
           <AppLayoutWrapper initialUser={initialUser}>
             {children}

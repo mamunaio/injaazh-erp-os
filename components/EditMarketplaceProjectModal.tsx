@@ -116,9 +116,9 @@ export default function EditMarketplaceProjectModal({
     setIsSubmitting(false);
   };
 
-  const inputClasses = "w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-11 py-3.5 text-sm font-medium focus:outline-none transition-all placeholder:text-slate-400";
+  const inputClasses = "w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-11 py-3.5 text-sm font-medium focus:outline-none transition-all placeholder:text-slate-500 dark:text-slate-400";
   const labelClasses = "block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2";
-  const iconClasses = "absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none";
+  const iconClasses = "absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none";
 
   return (
     <AnimatePresence>
@@ -157,7 +157,7 @@ export default function EditMarketplaceProjectModal({
             </div>
             <button 
               onClick={onClose} 
-              className="text-slate-400 hover:text-red-500 transition-all neu-flat p-2.5 rounded-xl hover:-translate-y-1"
+              className="text-slate-500 dark:text-slate-400 hover:text-red-500 transition-all neu-flat p-2.5 rounded-xl hover:-translate-y-1"
             >
               <X size={20} />
             </button>
@@ -252,7 +252,7 @@ export default function EditMarketplaceProjectModal({
                                     <div className="font-bold text-slate-800 dark:text-white text-sm">{c.name}</div>
                                     {c.company && <div className="text-xs text-slate-500 dark:text-gray-400">{c.company}</div>}
                                   </div>
-                                  <span className="text-[10px] uppercase font-bold text-slate-400">{c.platform}</span>
+                                  <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">{c.platform}</span>
                                 </button>
                               ))
                             ) : (
@@ -275,7 +275,7 @@ export default function EditMarketplaceProjectModal({
                     {/* Scope */}
                     <div className="group relative">
                       <label className={labelClasses}>
-                        <FileText size={16} className="text-slate-400" /> Project Scope
+                        <FileText size={16} className="text-slate-500 dark:text-slate-400" /> Project Scope
                       </label>
                       <div className="relative">
                         <textarea 
@@ -283,7 +283,7 @@ export default function EditMarketplaceProjectModal({
                           onChange={e => setFormData({...formData, scope: e.target.value})}
                           rows={8}
                           placeholder="Detailed project scope and requirements..."
-                          className="w-full neu-pressed text-slate-800 dark:text-white rounded-2xl px-5 py-4 text-sm focus:outline-none transition-all resize-none placeholder:text-slate-400 leading-relaxed"
+                          className="w-full neu-pressed text-slate-800 dark:text-white rounded-2xl px-5 py-4 text-sm focus:outline-none transition-all resize-none placeholder:text-slate-500 dark:text-slate-400 leading-relaxed"
                         />
                       </div>
                     </div>
@@ -291,7 +291,7 @@ export default function EditMarketplaceProjectModal({
                     {/* Tasks (Optional) */}
                     <div className="group relative">
                       <label className={labelClasses}>
-                        <CheckSquare size={16} className="text-slate-400" /> Initial Tasklist (Optional)
+                        <CheckSquare size={16} className="text-slate-500 dark:text-slate-400" /> Initial Tasklist (Optional)
                       </label>
                       <div className="relative">
                         <textarea 
@@ -299,9 +299,9 @@ export default function EditMarketplaceProjectModal({
                           onChange={e => setFormData({...formData, tasks: e.target.value})}
                           rows={5}
                           placeholder="1. Setup repository&#10;2. Design homepage&#10;3. Integrate API"
-                          className="w-full neu-pressed text-slate-800 dark:text-white rounded-2xl px-5 py-4 text-sm focus:outline-none transition-all resize-none placeholder:text-slate-400 font-mono leading-relaxed"
+                          className="w-full neu-pressed text-slate-800 dark:text-white rounded-2xl px-5 py-4 text-sm focus:outline-none transition-all resize-none placeholder:text-slate-500 dark:text-slate-400 font-mono leading-relaxed"
                         />
-                        <p className="absolute bottom-3 right-4 text-xs font-bold text-slate-400 pointer-events-none">One task per line</p>
+                        <p className="absolute bottom-3 right-4 text-xs font-bold text-slate-500 dark:text-slate-400 pointer-events-none">One task per line</p>
                       </div>
                     </div>
                   </div>
@@ -408,7 +408,7 @@ export default function EditMarketplaceProjectModal({
               <span className="relative flex items-center justify-center gap-2">
                 {isSubmitting ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-slate-900 dark:text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>

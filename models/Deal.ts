@@ -6,6 +6,7 @@ export interface IDeal extends Document {
   value: number;
   stage: 'Qualified' | 'Discovery' | 'Proposal' | 'Negotiation' | 'Won' | 'Lost';
   owner?: mongoose.Types.ObjectId;
+  leadId?: mongoose.Types.ObjectId;
   expectedCloseDate?: Date;
   notes?: string;
   createdAt: Date;
@@ -24,6 +25,7 @@ const DealSchema = new Schema<IDeal>(
       index: true
     },
     owner: { type: Schema.Types.ObjectId, ref: 'User' },
+    leadId: { type: Schema.Types.ObjectId, ref: 'Lead' },
     expectedCloseDate: { type: Date },
     notes: { type: String, default: '' },
   },

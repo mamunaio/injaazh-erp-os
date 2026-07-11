@@ -137,16 +137,16 @@ export default function ChatWidget() {
             }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className={`fixed bottom-6 right-6 z-[999] w-[380px] max-w-[calc(100vw-2rem)] flex flex-col rounded-2xl overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl bg-[#0B0F19]/95 ${isMinimized ? '' : 'max-h-[calc(100vh-6rem)]'}`}
+            className={`fixed bottom-6 right-6 z-[999] w-[380px] max-w-[calc(100vw-2rem)] flex flex-col rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl bg-white/95 dark:bg-[#0B0F19]/95 ${isMinimized ? '' : 'max-h-[calc(100vh-6rem)]'}`}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-500/20 to-purple-600/20 border-b border-white/5 cursor-pointer" onClick={() => setIsMinimized(!isMinimized)}>
+            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-500/20 to-purple-600/20 border-b border-slate-200 dark:border-white/5 cursor-pointer" onClick={() => setIsMinimized(!isMinimized)}>
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-slate-900 dark:text-white shadow-lg">
                   <Sparkles size={16} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-slate-100">AI Assistant</h3>
+                  <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">AI Assistant</h3>
                   <div className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
                     <span className="text-[10px] text-emerald-400 font-medium">Online</span>
@@ -156,13 +156,13 @@ export default function ChatWidget() {
               <div className="flex items-center gap-1">
                 <button 
                   onClick={(e) => { e.stopPropagation(); setIsMinimized(!isMinimized); }}
-                  className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                  className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors"
                 >
                   <Minus size={18} />
                 </button>
                 <button 
                   onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}
-                  className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                  className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors"
                 >
                   <X size={18} />
                 </button>
@@ -172,23 +172,23 @@ export default function ChatWidget() {
             {/* Chat Area */}
             {!isMinimized && (
               <>
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-gradient-to-b from-transparent to-slate-900/50">
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-gradient-to-b from-transparent to-slate-100/50 dark:to-slate-900/50">
                   {messages.map((msg) => (
                     <div 
                       key={msg.id} 
                       className={`flex gap-3 max-w-[90%] ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
                     >
-                      <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white shadow-md ${
-                        msg.role === 'user' ? 'bg-slate-700' : 'bg-gradient-to-br from-indigo-500 to-purple-600'
+                      <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-slate-700 dark:text-white shadow-md ${
+                        msg.role === 'user' ? 'bg-slate-200 dark:bg-slate-700' : 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white'
                       }`}>
                         {msg.role === 'user' ? <User size={14} /> : <Bot size={14} />}
                       </div>
                       <div className={`p-3 rounded-2xl text-sm ${
                         msg.role === 'user' 
                           ? 'bg-indigo-500 text-white rounded-tr-sm' 
-                          : 'bg-slate-800 text-slate-200 rounded-tl-sm border border-slate-700/50'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-sm border border-slate-200 dark:border-slate-700/50'
                       }`}>
-                        <div className="prose prose-sm prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-slate-900 prose-pre:border prose-pre:border-slate-700">
+                        <div className="prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-slate-100 dark:prose-pre:bg-slate-900 prose-pre:border prose-pre:border-slate-200 dark:prose-pre:border-slate-700">
                           <ReactMarkdown remarkPlugins={[remarkGfm]}>
                             {msg.content}
                           </ReactMarkdown>
@@ -202,10 +202,10 @@ export default function ChatWidget() {
                   
                   {isLoading && (
                     <div className="flex gap-3 max-w-[90%]">
-                      <div className="shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md">
+                      <div className="shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-slate-900 dark:text-white shadow-md">
                         <Bot size={14} />
                       </div>
-                      <div className="p-4 rounded-2xl bg-slate-800 text-slate-200 rounded-tl-sm border border-slate-700/50 flex items-center gap-1.5">
+                      <div className="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-sm border border-slate-200 dark:border-slate-700/50 flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
                         <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
                         <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
@@ -216,15 +216,15 @@ export default function ChatWidget() {
                 </div>
 
                 {/* Input Area */}
-                <div className="p-3 bg-slate-900 border-t border-slate-800">
-                  <div className="relative flex items-end gap-2 bg-slate-800 rounded-xl border border-slate-700/50 focus-within:border-indigo-500/50 focus-within:ring-1 focus-within:ring-indigo-500/50 transition-all p-1">
+                <div className="p-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
+                  <div className="relative flex items-end gap-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700/50 focus-within:border-indigo-500/50 focus-within:ring-1 focus-within:ring-indigo-500/50 transition-all p-1">
                     <textarea
                       ref={inputRef}
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyDown}
                       placeholder="Ask me anything..."
-                      className="flex-1 max-h-32 min-h-[40px] bg-transparent resize-none py-2 px-3 text-sm text-white placeholder-slate-400 focus:outline-none custom-scrollbar"
+                      className="flex-1 max-h-32 min-h-[40px] bg-transparent resize-none py-2 px-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none custom-scrollbar"
                       rows={1}
                       style={{
                         height: 'auto',

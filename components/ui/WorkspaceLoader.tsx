@@ -23,7 +23,7 @@ export default function WorkspaceLoader() {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative flex items-center justify-center w-16 h-16 rounded-[20px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-[#232734] shadow-2xl"
+          className="relative flex items-center justify-center w-16 h-16 rounded-[20px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-slate-200 dark:border-[#232734] shadow-2xl"
         >
           <Command className="w-8 h-8 text-[#FFFFFF]" strokeWidth={1.5} />
         </motion.div>
@@ -56,7 +56,7 @@ export default function WorkspaceLoader() {
           className="mt-8 flex flex-col items-center gap-4 w-full max-w-[200px]"
         >
           {/* Progress Bar */}
-          <div className="w-full h-1 bg-[#11131A] border border-[#232734] rounded-full overflow-hidden relative">
+          <div className="w-full h-1 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-full overflow-hidden relative">
             <motion.div
               className="absolute top-0 bottom-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-[#2563EB] to-transparent rounded-full"
               animate={{ x: ["-100%", "300%"] }}

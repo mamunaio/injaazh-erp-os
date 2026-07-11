@@ -128,7 +128,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex bg-[#09090B] overflow-hidden font-sans text-slate-200 selection:bg-[#2563EB]/30">
+    <div className="relative min-h-screen flex bg-slate-50 dark:bg-[#09090B] overflow-hidden font-sans text-slate-800 dark:text-slate-200 selection:bg-[#2563EB]/30">
       
       {/* LEFT SIDE - Brand & Atmosphere (Hidden on Mobile/Tablet) */}
       <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 overflow-hidden bg-gradient-to-br from-[#09090B] to-[#11131a]">
@@ -155,7 +155,7 @@ export default function LoginPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.5 }}
-          className="absolute top-1/2 left-[80%] -translate-x-1/2 -translate-y-1/2 w-72 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hidden xl:block overflow-hidden"
+          className="absolute top-1/2 left-[80%] -translate-x-1/2 -translate-y-1/2 w-72 bg-white/5 backdrop-blur-2xl border border-slate-200 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hidden xl:block overflow-hidden"
           style={{ transform: 'perspective(1000px) rotateY(-15deg) rotateX(10deg)' }}
         >
           <div className="p-6 h-full flex flex-col gap-6">
@@ -166,8 +166,8 @@ export default function LoginPage() {
               <span className="text-emerald-400 text-xs font-bold bg-emerald-500/10 px-2 py-1 rounded-full">+24%</span>
             </div>
             <div>
-              <p className="text-slate-400 text-xs font-semibold mb-1">Total Revenue</p>
-              <h3 className="text-white text-2xl font-bold font-mono">$128,450.00</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold mb-1">Total Revenue</p>
+              <h3 className="text-slate-900 dark:text-white text-2xl font-bold font-mono">$128,450.00</h3>
             </div>
             <div className="flex items-end gap-2 h-12 mt-auto">
               {[40, 70, 45, 90, 65, 100].map((height, i) => (
@@ -184,10 +184,10 @@ export default function LoginPage() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="relative z-10 flex items-center gap-3"
         >
-          <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-[#232734] flex items-center justify-center shadow-lg">
-            <Command className="w-5 h-5 text-white" strokeWidth={2} />
+          <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center shadow-lg">
+            <Command className="w-5 h-5 text-slate-900 dark:text-white" strokeWidth={2} />
           </div>
-          <span className="text-xl font-bold font-jakarta tracking-tight text-white">INJAAZH</span>
+          <span className="text-xl font-bold font-jakarta tracking-tight text-slate-900 dark:text-white">INJAAZH</span>
         </motion.div>
 
         {/* Center Dynamic Content */}
@@ -202,7 +202,7 @@ export default function LoginPage() {
                 transition={{ duration: 0.6, ease: "easeOut" }}
                 className="absolute inset-0"
               >
-                <h1 className="text-5xl font-bold font-jakarta text-white mb-6 leading-tight tracking-tight">
+                <h1 className="text-5xl font-bold font-jakarta text-slate-900 dark:text-white mb-6 leading-tight tracking-tight">
                   Streamline your enterprise.
                 </h1>
                 <p className="text-lg text-[#94A3B8] font-medium leading-relaxed">
@@ -218,11 +218,11 @@ export default function LoginPage() {
                 transition={{ duration: 0.6, ease: "easeOut" }}
                 className="absolute inset-0"
               >
-                <div className="w-16 h-16 rounded-[20px] bg-[#11131A] border border-[#232734] flex items-center justify-center shadow-lg mb-8 relative">
+                <div className="w-16 h-16 rounded-[20px] bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] flex items-center justify-center shadow-lg mb-8 relative">
                    <div className="absolute -inset-1 bg-[#2563EB]/20 blur-md rounded-[20px]" />
                    <ShieldCheck className="w-8 h-8 text-[#2563EB] relative z-10" strokeWidth={1.5} />
                 </div>
-                <h1 className="text-5xl font-bold font-jakarta text-white mb-6 leading-tight tracking-tight">
+                <h1 className="text-5xl font-bold font-jakarta text-slate-900 dark:text-white mb-6 leading-tight tracking-tight">
                   Two-Factor Authentication
                 </h1>
                 <p className="text-lg text-[#94A3B8] font-medium leading-relaxed">
@@ -238,9 +238,9 @@ export default function LoginPage() {
           {!requires2FA ? (
             <>
               <div className="flex -space-x-4">
-                <div className="w-10 h-10 rounded-full bg-[#11131A] border-2 border-[#09090B] flex items-center justify-center text-xs font-bold hover:z-10 hover:scale-110 transition-transform cursor-pointer relative shadow-lg">JD</div>
-                <div className="w-10 h-10 rounded-full bg-[#11131A] border-2 border-[#09090B] flex items-center justify-center text-xs font-bold text-[#2563EB] hover:z-10 hover:scale-110 transition-transform cursor-pointer relative shadow-lg">AK</div>
-                <div className="w-10 h-10 rounded-full bg-[#11131A] border-2 border-[#09090B] flex items-center justify-center text-xs font-bold text-[#10B981] hover:z-10 hover:scale-110 transition-transform cursor-pointer relative shadow-lg">SM</div>
+                <div className="w-10 h-10 rounded-full bg-white dark:bg-[#11131A] border-2 border-[#09090B] flex items-center justify-center text-xs font-bold hover:z-10 hover:scale-110 transition-transform cursor-pointer relative shadow-lg">JD</div>
+                <div className="w-10 h-10 rounded-full bg-white dark:bg-[#11131A] border-2 border-[#09090B] flex items-center justify-center text-xs font-bold text-[#2563EB] hover:z-10 hover:scale-110 transition-transform cursor-pointer relative shadow-lg">AK</div>
+                <div className="w-10 h-10 rounded-full bg-white dark:bg-[#11131A] border-2 border-[#09090B] flex items-center justify-center text-xs font-bold text-[#10B981] hover:z-10 hover:scale-110 transition-transform cursor-pointer relative shadow-lg">SM</div>
               </div>
               <span className="text-sm font-semibold text-[#94A3B8] ml-4">Join 10,000+ professionals</span>
             </>
@@ -266,17 +266,17 @@ export default function LoginPage() {
         >
           {/* Mobile Logo Fallback */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-10">
-            <div className="w-12 h-12 rounded-[14px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-[#232734] flex items-center justify-center shadow-lg">
-              <Command className="w-6 h-6 text-white" strokeWidth={2} />
+            <div className="w-12 h-12 rounded-[14px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center shadow-lg">
+              <Command className="w-6 h-6 text-slate-900 dark:text-white" strokeWidth={2} />
             </div>
-            <span className="text-2xl font-bold font-jakarta tracking-tight text-white">INJAAZH</span>
+            <span className="text-2xl font-bold font-jakarta tracking-tight text-slate-900 dark:text-white">INJAAZH</span>
           </div>
 
-          <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 p-6 sm:p-8 rounded-[24px] shadow-2xl relative overflow-hidden">
+          <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 p-6 sm:p-8 rounded-[24px] shadow-2xl relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
             
             <div className="mb-8 relative z-10">
-              <h2 className="text-3xl font-bold text-white mb-2 font-jakarta tracking-tight">
+              <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 font-jakarta tracking-tight">
                 {requires2FA ? 'Verify Your Identity' : 'Welcome back'}
               </h2>
               <p className="text-sm text-[#94A3B8] font-medium">
@@ -302,7 +302,7 @@ export default function LoginPage() {
                         onChange={(e) => handleOtpChange(index, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
                         onPaste={handleOtpPaste}
-                        className="w-10 h-12 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-bold font-mono bg-slate-800/50 backdrop-blur-md border border-slate-700/50 rounded-xl text-white focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
+                        className="w-10 h-12 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-bold font-mono bg-slate-800/50 backdrop-blur-md border border-slate-700/50 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
                         autoFocus={index === 0}
                       />
                     ))}
@@ -310,28 +310,28 @@ export default function LoginPage() {
                   
                   <div className="flex items-center justify-between pt-2">
                     <label className="flex items-center gap-2 cursor-pointer group">
-                      <input type="checkbox" name="rememberMe" className="w-4 h-4 rounded border-[#232734] bg-[#09090B] text-[#2563EB] focus:ring-[#2563EB] focus:ring-offset-0 focus:ring-offset-[#11131A] transition-colors" />
-                      <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">Trust this device for 30 days</span>
+                      <input type="checkbox" name="rememberMe" className="w-4 h-4 rounded border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B] text-[#2563EB] focus:ring-[#2563EB] focus:ring-offset-0 focus:ring-offset-[#11131A] transition-colors" />
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:hover:text-white transition-colors">Trust this device for 30 days</span>
                     </label>
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-2">
                     <button
                       type="button"
-                      className="text-sm font-bold text-slate-300 hover:text-white transition-colors text-left"
+                      className="text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors text-left"
                     >
                       Use a recovery code instead
                     </button>
 
                     <div className="flex items-center gap-2 self-start sm:self-auto">
-                      <span className="text-sm text-slate-300 font-medium hidden sm:inline">
+                      <span className="text-sm text-slate-700 dark:text-slate-300 font-medium hidden sm:inline">
                         No code?
                       </span>
                       <button
                         type="button"
                         onClick={handleResendOTP}
                         disabled={resendTimer > 0}
-                        className={`text-sm font-bold transition-colors ${resendTimer > 0 ? 'text-slate-300 cursor-not-allowed' : 'text-[#2563EB] hover:text-[#2563EB]/80'}`}
+                        className={`text-sm font-bold transition-colors ${resendTimer > 0 ? 'text-slate-700 dark:text-slate-300 cursor-not-allowed' : 'text-[#2563EB] hover:text-[#2563EB]/80'}`}
                       >
                         {resendTimer > 0 ? (
                           <>Resend in <span className="text-[#2563EB]">{resendTimer}s</span></>
@@ -352,7 +352,7 @@ export default function LoginPage() {
                           name="email"
                           required
                           placeholder="name@company.com"
-                          className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-sm text-white font-medium placeholder:text-slate-500 focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
+                          className="w-full bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-sm text-slate-900 dark:text-white font-medium placeholder:text-slate-500 focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
                         />
                       </div>
                     </div>
@@ -366,12 +366,12 @@ export default function LoginPage() {
                           name="password"
                           required
                           placeholder="••••••••"
-                          className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-xl pl-11 pr-12 py-3.5 text-sm text-white font-medium placeholder:text-slate-500 focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
+                          className="w-full bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-xl pl-11 pr-12 py-3.5 text-sm text-slate-900 dark:text-white font-medium placeholder:text-slate-500 focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
                         />
                         <button 
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-white transition-colors focus:outline-none"
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-slate-900 dark:hover:text-white transition-colors focus:outline-none"
                         >
                           {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
@@ -381,8 +381,8 @@ export default function LoginPage() {
 
                   <div className="flex items-center justify-between pt-2">
                     <label className="flex items-center gap-2 cursor-pointer group">
-                      <input type="checkbox" name="rememberMe" className="w-4 h-4 rounded border-[#232734] bg-[#09090B] text-[#2563EB] focus:ring-[#2563EB] focus:ring-offset-0 focus:ring-offset-[#11131A] transition-colors" />
-                      <span className="text-xs font-medium text-[#94A3B8] group-hover:text-white transition-colors">Remember me</span>
+                      <input type="checkbox" name="rememberMe" className="w-4 h-4 rounded border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B] text-[#2563EB] focus:ring-[#2563EB] focus:ring-offset-0 focus:ring-offset-[#11131A] transition-colors" />
+                      <span className="text-xs font-medium text-[#94A3B8] group-hover:text-slate-900 dark:hover:text-white transition-colors">Remember me</span>
                     </label>
                     <Link href="/forgot-password" className="text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors">
                       Forgot password?
@@ -394,7 +394,7 @@ export default function LoginPage() {
               <button 
                 type="submit"
                 disabled={isLoading}
-                className="w-full mt-6 bg-[#2563EB] hover:bg-[#2563EB]/90 disabled:opacity-50 disabled:hover:bg-[#2563EB] text-white font-semibold text-sm py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.2)] hover:shadow-[0_0_25px_rgba(37,99,235,0.4)] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:ring-offset-2 focus:ring-offset-[#11131A]"
+                className="w-full mt-6 bg-[#2563EB] hover:bg-[#2563EB]/90 disabled:opacity-50 disabled:hover:bg-[#2563EB] text-slate-900 dark:text-white font-semibold text-sm py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.2)] hover:shadow-[0_0_25px_rgba(37,99,235,0.4)] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:ring-offset-2 focus:ring-offset-[#11131A]"
               >
                 {isLoading ? (
                   <Loader2 size={18} className="animate-spin" />
@@ -410,19 +410,19 @@ export default function LoginPage() {
             {!requires2FA && (
               <>
                 <div className="my-6 flex items-center gap-4">
-                  <div className="h-px flex-1 bg-[#232734]"></div>
+                  <div className="h-px flex-1 bg-slate-200 dark:bg-[#232734]"></div>
                   <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">Or continue with</span>
-                  <div className="h-px flex-1 bg-[#232734]"></div>
+                  <div className="h-px flex-1 bg-slate-200 dark:bg-[#232734]"></div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 relative z-10">
-                  <button type="button" className="flex items-center justify-center gap-2 bg-white/5 backdrop-blur-sm hover:bg-white/10 border border-white/10 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-white/20">
+                  <button type="button" className="flex items-center justify-center gap-2 bg-white/5 backdrop-blur-sm hover:bg-slate-100 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-white/20">
                     <GoogleIcon />
-                    <span className="text-xs font-bold text-white">Google</span>
+                    <span className="text-xs font-bold text-slate-900 dark:text-white">Google</span>
                   </button>
-                  <button type="button" className="flex items-center justify-center gap-2 bg-white/5 backdrop-blur-sm hover:bg-white/10 border border-white/10 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-white/20">
+                  <button type="button" className="flex items-center justify-center gap-2 bg-white/5 backdrop-blur-sm hover:bg-slate-100 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-white/20">
                     <MicrosoftIcon />
-                    <span className="text-xs font-bold text-white">Microsoft</span>
+                    <span className="text-xs font-bold text-slate-900 dark:text-white">Microsoft</span>
                   </button>
                 </div>
               </>
@@ -438,14 +438,14 @@ export default function LoginPage() {
                   setCode2FA('');
                   setTempToken('');
                 }}
-                className="inline-flex items-center gap-2 text-[#94A3B8] hover:text-white font-semibold transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] rounded-md px-2 py-1"
+                className="inline-flex items-center gap-2 text-[#94A3B8] hover:text-slate-900 dark:hover:text-white font-semibold transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] rounded-md px-2 py-1"
               >
                 <ArrowLeft size={16} /> Back to Login
               </button>
             ) : (
               <p className="text-[#94A3B8] text-sm font-medium">
                 Don't have an account?{' '}
-                <Link href="/register" className="text-white font-bold hover:text-[#2563EB] transition-colors">
+                <Link href="/register" className="text-slate-900 dark:text-white font-bold hover:text-[#2563EB] transition-colors">
                   Create one now
                 </Link>
               </p>

@@ -146,16 +146,16 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-2xl"
+            className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-900 shadow-2xl"
           >
-            <div className="flex items-center justify-between border-b border-white/5 px-6 py-4">
-              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/5 px-6 py-4">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                 <Upload size={18} className="text-indigo-400" />
                 Import Leads from CSV
               </h2>
               <button
                 onClick={handleClose}
-                className="rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-white transition-colors"
+                className="rounded-lg p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 <X size={18} />
               </button>
@@ -181,26 +181,26 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
                   <div className="mb-4 rounded-full bg-indigo-500/20 p-4 text-indigo-400">
                     <Upload size={28} />
                   </div>
-                  <h3 className="mb-1 text-lg font-medium text-slate-200">
+                  <h3 className="mb-1 text-lg font-medium text-slate-800 dark:text-slate-200">
                     Click or drag file to this area to upload
                   </h3>
-                  <p className="text-sm text-slate-400">
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
                     Support for a single CSV file upload. Ensure columns match the standard format.
                   </p>
                 </div>
               ) : (
                 <div className="space-y-6">
-                  <div className="flex items-start gap-4 rounded-xl border border-white/5 bg-slate-800 p-4">
+                  <div className="flex items-start gap-4 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-800 p-4">
                     <div className="rounded-lg bg-indigo-500/20 p-3 text-indigo-400">
                       <FileText size={24} />
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-medium text-slate-200">{file.name}</h4>
-                      <p className="text-sm text-slate-400">{(file.size / 1024).toFixed(2)} KB</p>
+                      <h4 className="font-medium text-slate-800 dark:text-slate-200">{file.name}</h4>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">{(file.size / 1024).toFixed(2)} KB</p>
                     </div>
                     <button 
                       onClick={() => setFile(null)}
-                      className="p-1.5 text-slate-400 hover:text-rose-400 transition-colors"
+                      className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-rose-400 transition-colors"
                       disabled={isUploading}
                     >
                       <X size={18} />
@@ -209,11 +209,11 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
 
                   {stats && (
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="rounded-xl border border-white/5 bg-slate-800/50 p-4 text-center">
-                        <div className="text-2xl font-bold text-slate-200">{stats.total}</div>
-                        <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Total Rows</div>
+                      <div className="rounded-xl border border-slate-200 dark:border-white/5 bg-slate-800/50 p-4 text-center">
+                        <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">{stats.total}</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">Total Rows</div>
                       </div>
-                      <div className="rounded-xl border border-white/5 bg-slate-800/50 p-4 text-center">
+                      <div className="rounded-xl border border-slate-200 dark:border-white/5 bg-slate-800/50 p-4 text-center">
                         <div className="text-2xl font-bold text-emerald-400">{stats.valid}</div>
                         <div className="text-xs text-emerald-500/70 uppercase tracking-wider mt-1">Valid Leads</div>
                       </div>
@@ -232,7 +232,7 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
                       type="button"
                       onClick={handleClose}
                       disabled={isUploading}
-                      className="flex-1 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm font-medium text-slate-300 hover:bg-slate-700 transition-colors disabled:opacity-50"
+                      className="flex-1 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-700 transition-colors disabled:opacity-50"
                     >
                       Cancel
                     </button>
@@ -240,7 +240,7 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
                       type="button"
                       onClick={handleImport}
                       disabled={isUploading || !stats || stats.valid === 0}
-                      className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-600 transition-colors disabled:opacity-50"
+                      className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-medium text-slate-900 dark:text-white hover:bg-indigo-600 transition-colors disabled:opacity-50"
                     >
                       {isUploading ? (
                         <>

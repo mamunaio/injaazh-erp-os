@@ -120,7 +120,7 @@ const CustomSelect = ({ value, onChange, options, className = "", dropdownUp = f
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: dropdownUp ? 10 : -10, scale: 0.95 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className={`absolute z-[100] w-full min-w-[280px] right-0 neu-flat rounded-2xl py-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-white/5 overflow-hidden ${dropdownUp ? 'bottom-full mb-2' : 'top-full mt-2'}`}
+            className={`absolute z-[100] w-full min-w-[280px] right-0 neu-flat rounded-2xl py-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-slate-200 dark:border-white/5 overflow-hidden ${dropdownUp ? 'bottom-full mb-2' : 'top-full mt-2'}`}
           >
             {options.map((opt: any) => (
               <div 
@@ -129,7 +129,7 @@ const CustomSelect = ({ value, onChange, options, className = "", dropdownUp = f
                 className={`px-4 py-3 text-[11px] font-semibold cursor-pointer transition-all border-l-2 truncate ${
                   value === opt.value 
                     ? 'border-indigo-500 text-indigo-400 bg-indigo-500/10 font-bold' 
-                    : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                    : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5'
                 }`}
               >
                 {opt.label}
@@ -405,7 +405,7 @@ export default function OutreachComposerModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-[#09090B]/80 backdrop-blur-md"
+          className="absolute inset-0 bg-white/80 dark:bg-[#09090B]/80 backdrop-blur-md"
           onClick={isSending ? undefined : onClose}
         />
 
@@ -415,25 +415,25 @@ export default function OutreachComposerModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-5xl h-[85vh] bg-[#09090B] border border-[#232734] rounded-2xl flex flex-col overflow-hidden shadow-2xl"
+          className="relative w-full max-w-5xl h-[85vh] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-2xl flex flex-col overflow-hidden shadow-2xl"
         >
           {/* Header */}
-          <div className="flex justify-between items-center p-6 border-b border-[#232734] bg-[#11131A]">
+          <div className="flex justify-between items-center p-6 border-b border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A]">
             <div className="flex items-center gap-3">
               <div className="p-2.5 bg-[#2563EB]/10 text-[#2563EB] rounded-xl">
                 <Mail size={22} className="animate-pulse" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">CRM Cold Email Outreach</h2>
-                <p className="text-slate-400 text-xs mt-0.5">
-                  Send outreach to <span className="font-semibold text-white">{lead.company_name}</span> &bull; {lead.email}
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">CRM Cold Email Outreach</h2>
+                <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">
+                  Send outreach to <span className="font-semibold text-slate-900 dark:text-white">{lead.company_name}</span> &bull; {lead.email}
                 </p>
               </div>
             </div>
             <button
               onClick={onClose}
               disabled={isSending}
-              className="p-2 text-slate-400 hover:text-white hover:bg-[#232734] border border-transparent hover:border-[#232734] rounded-xl transition-all disabled:opacity-50"
+              className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] border border-transparent hover:border-slate-200 dark:border-[#232734] rounded-xl transition-all disabled:opacity-50"
             >
               <X size={20} />
             </button>
@@ -442,10 +442,10 @@ export default function OutreachComposerModal({
           <div className="flex flex-1 overflow-hidden">
             
             {/* Left side: Configuration Panel */}
-            <div className="w-full md:w-1/3 border-r border-[#232734] bg-[#11131A] p-6 flex flex-col gap-6 overflow-y-auto custom-scrollbar">
+            <div className="w-full md:w-1/3 border-r border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A] p-6 flex flex-col gap-6 overflow-y-auto custom-scrollbar">
               
               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">
+                <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3 block">
                   Select Template
                 </label>
                 <div className="space-y-2">
@@ -458,14 +458,14 @@ export default function OutreachComposerModal({
                         className={`w-full text-left p-3.5 rounded-xl border transition-all duration-200 flex items-start gap-3 ${
                           isSelected 
                             ? 'bg-[#2563EB]/10 border-[#2563EB]/30' 
-                            : 'bg-[#09090B] border-[#232734] hover:border-[#2563EB]/20'
+                            : 'bg-slate-50 dark:bg-[#09090B] border-slate-200 dark:border-[#232734] hover:border-[#2563EB]/20'
                         }`}
                       >
-                        <div className={`p-2 rounded-lg ${isSelected ? 'bg-[#2563EB]/20 text-[#2563EB]' : 'bg-[#11131A] text-slate-400'}`}>
+                        <div className={`p-2 rounded-lg ${isSelected ? 'bg-[#2563EB]/20 text-[#2563EB]' : 'bg-white dark:bg-[#11131A] text-slate-500 dark:text-slate-400'}`}>
                           {tmpl.icon}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className={`font-bold text-sm ${isSelected ? 'text-white' : 'text-slate-300'}`}>
+                          <div className={`font-bold text-sm ${isSelected ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-300'}`}>
                             {tmpl.name}
                           </div>
                           <div className="text-[11px] text-slate-500 truncate mt-0.5">
@@ -479,14 +479,14 @@ export default function OutreachComposerModal({
               </div>
 
               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">
+                <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3 block">
                   Placeholders
                 </label>
                 
-                <div className="bg-[#09090B] border border-[#232734] rounded-2xl p-4 space-y-4">
+                <div className="bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-2xl p-4 space-y-4">
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                      <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                         Contact Person ({'{contactName}'})
                       </label>
                       <input
@@ -494,12 +494,12 @@ export default function OutreachComposerModal({
                         value={contactName}
                         onChange={(e) => setContactName(e.target.value)}
                         placeholder="e.g. John Doe"
-                        className="w-full bg-[#11131A] border border-[#232734] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#2563EB]/50 transition-all placeholder:text-slate-600"
+                        className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/50 transition-all placeholder:text-slate-600"
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                      <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                         Company Name ({'{companyName}'})
                       </label>
                       <input
@@ -507,12 +507,12 @@ export default function OutreachComposerModal({
                         value={companyName}
                         onChange={(e) => setCompanyName(e.target.value)}
                         placeholder="e.g. Southpaw Flooring"
-                        className="w-full bg-[#11131A] border border-[#232734] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#2563EB]/50 transition-all placeholder:text-slate-600"
+                        className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/50 transition-all placeholder:text-slate-600"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                      <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                         Website Url ({'{websiteUrl}'})
                       </label>
                       <input
@@ -520,7 +520,7 @@ export default function OutreachComposerModal({
                         value={websiteUrl}
                         onChange={(e) => setWebsiteUrl(e.target.value)}
                         placeholder="e.g. southpawflooring.com"
-                        className="w-full bg-[#11131A] border border-[#232734] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#2563EB]/50 transition-all placeholder:text-slate-600"
+                        className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/50 transition-all placeholder:text-slate-600"
                       />
                     </div>
                   </div>
@@ -530,19 +530,19 @@ export default function OutreachComposerModal({
             </div>
 
             {/* Right side: Email Editor Panel */}
-            <div className="w-full md:w-2/3 flex flex-col relative h-full bg-[#09090B]">
+            <div className="w-full md:w-2/3 flex flex-col relative h-full bg-slate-50 dark:bg-[#09090B]">
               
               <div className="p-8 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-6">
                 
                 {/* Email Configuration */}
                 <div className="flex flex-col gap-5 flex-shrink-0">
-                  <div className="flex items-center gap-4 text-sm bg-[#11131A] border border-[#232734] p-3 rounded-xl">
+                  <div className="flex items-center gap-4 text-sm bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] p-3 rounded-xl">
                     <div className="flex items-center gap-3 w-1/2">
-                      <span className="font-bold text-slate-400 uppercase tracking-wider text-[10px]">Recipient:</span>
-                      <span className="font-bold text-white truncate">{lead.email}</span>
+                      <span className="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[10px]">Recipient:</span>
+                      <span className="font-bold text-slate-900 dark:text-white truncate">{lead.email}</span>
                     </div>
-                    <div className="flex items-center gap-3 w-1/2 border-l border-[#232734] pl-4">
-                      <span className="font-bold text-slate-400 uppercase tracking-wider text-[10px] whitespace-nowrap flex-shrink-0">From:</span>
+                    <div className="flex items-center gap-3 w-1/2 border-l border-slate-200 dark:border-[#232734] pl-4">
+                      <span className="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[10px] whitespace-nowrap flex-shrink-0">From:</span>
                       <CustomSelect
                         value={selectedSenderId}
                         onChange={(val: string) => setSelectedSenderId(val)}
@@ -564,15 +564,15 @@ export default function OutreachComposerModal({
                       type="text"
                       value={subject}
                       onChange={(e) => setSubject(e.target.value)}
-                      className="w-full bg-[#11131A] border border-[#232734] rounded-xl px-4 py-3.5 text-sm font-bold text-white focus:outline-none focus:border-[#2563EB]/50 transition-all placeholder:text-slate-600"
+                      className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-3.5 text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/50 transition-all placeholder:text-slate-600"
                       placeholder="Enter subject..."
                     />
                   </div>
                 </div>
 
                 {/* Email Body */}
-                <div className="flex-1 flex flex-col bg-[#11131A] border border-[#232734] rounded-2xl overflow-hidden focus-within:border-[#2563EB]/50 transition-all">
-                  <div className="flex justify-between items-center px-4 py-3 border-b border-[#232734]">
+                <div className="flex-1 flex flex-col bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-2xl overflow-hidden focus-within:border-[#2563EB]/50 transition-all">
+                  <div className="flex justify-between items-center px-4 py-3 border-b border-slate-200 dark:border-[#232734]">
                     <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Message Body</span>
                     <button 
                       onClick={handleAIGenerate}
@@ -587,7 +587,7 @@ export default function OutreachComposerModal({
                   <textarea
                     value={body}
                     onChange={(e) => setBody(e.target.value)}
-                    className="flex-1 w-full bg-transparent p-5 text-sm text-white focus:outline-none resize-none placeholder-slate-600 leading-relaxed font-mono custom-scrollbar"
+                    className="flex-1 w-full bg-transparent p-5 text-sm text-slate-900 dark:text-white focus:outline-none resize-none placeholder-slate-600 leading-relaxed font-mono custom-scrollbar"
                     placeholder="Type your email message here..."
                   />
 
@@ -626,11 +626,11 @@ export default function OutreachComposerModal({
               </div>
 
               {/* Control Action Buttons / Footer */}
-              <div className="flex items-center justify-end gap-4 px-8 py-5 border-t border-[#232734] bg-[#11131A] flex-shrink-0">
+              <div className="flex items-center justify-end gap-4 px-8 py-5 border-t border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A] flex-shrink-0">
                 <button
                   onClick={onClose}
                   disabled={isSending}
-                  className="px-6 py-2.5 text-xs font-bold text-slate-400 bg-transparent hover:bg-[#232734] border border-[#232734] transition-colors rounded-xl disabled:opacity-50 flex items-center justify-center"
+                  className="px-6 py-2.5 text-xs font-bold text-slate-500 dark:text-slate-400 bg-transparent hover:bg-slate-200 dark:bg-[#232734] border border-slate-200 dark:border-[#232734] transition-colors rounded-xl disabled:opacity-50 flex items-center justify-center"
                 >
                   Cancel
                 </button>
@@ -638,7 +638,7 @@ export default function OutreachComposerModal({
                 <button
                   onClick={handleSend}
                   disabled={isSending || !!successInfo || cooldownRemaining > 0}
-                  className="px-6 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_0_20px_rgba(37,99,235,0.25)] min-w-[150px]"
+                  className="px-6 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_0_20px_rgba(37,99,235,0.25)] min-w-[150px]"
                 >
                   {isSending ? (
                     <>

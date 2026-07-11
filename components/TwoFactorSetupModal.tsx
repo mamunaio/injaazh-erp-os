@@ -108,7 +108,7 @@ export default function TwoFactorSetupModal({ isOpen, onClose, isDisabling = fal
             </div>
             <button 
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full"
+              className="text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full"
             >
               <X size={20} />
             </button>
@@ -137,7 +137,7 @@ export default function TwoFactorSetupModal({ isOpen, onClose, isDisabling = fal
                     <img src={qrCodeUrl} alt="2FA QR Code" className="w-48 h-48" />
                   ) : (
                     <div className="w-48 h-48 bg-slate-100 flex items-center justify-center rounded-xl">
-                      <QrCode size={40} className="text-slate-300" />
+                      <QrCode size={40} className="text-slate-700 dark:text-slate-300" />
                     </div>
                   )}
                 </div>
@@ -145,13 +145,13 @@ export default function TwoFactorSetupModal({ isOpen, onClose, isDisabling = fal
                 <div className="space-y-3">
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">Or enter manually</p>
                   <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <Key size={16} className="text-slate-400 flex-shrink-0" />
+                    <Key size={16} className="text-slate-500 dark:text-slate-400 flex-shrink-0" />
                     <code className="flex-1 text-sm font-mono text-slate-700 dark:text-slate-300 break-all">
                       {secretKey}
                     </code>
                     <button 
                       onClick={handleCopy}
-                      className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
+                      className="p-2 text-slate-500 dark:text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
                       title="Copy to clipboard"
                     >
                       {copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
@@ -162,7 +162,7 @@ export default function TwoFactorSetupModal({ isOpen, onClose, isDisabling = fal
                 <button 
                   onClick={() => setStep(2)}
                   disabled={!secretKey}
-                  className="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                  className="w-full py-3 bg-indigo-600 text-slate-900 dark:text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50"
                 >
                   Continue to Verification
                 </button>
@@ -210,7 +210,7 @@ export default function TwoFactorSetupModal({ isOpen, onClose, isDisabling = fal
                     <button 
                       type="submit"
                       disabled={token.length !== 6 || isLoading}
-                      className={`flex-[2] py-3 text-white font-bold rounded-xl transition-colors disabled:opacity-50 flex justify-center items-center gap-2 ${
+                      className={`flex-[2] py-3 text-slate-900 dark:text-white font-bold rounded-xl transition-colors disabled:opacity-50 flex justify-center items-center gap-2 ${
                         isDisabling ? 'bg-rose-600 hover:bg-rose-700' : 'bg-indigo-600 hover:bg-indigo-700'
                       }`}
                     >

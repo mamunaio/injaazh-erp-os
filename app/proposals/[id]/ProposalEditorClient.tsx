@@ -305,15 +305,15 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
   const StatusIcon = currentStatus.icon;
 
   return (
-    <div className="min-h-screen bg-[#09090B] text-slate-200 font-outfit selection:bg-[#2563EB]/30">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#09090B] text-slate-800 dark:text-slate-200 font-outfit selection:bg-[#2563EB]/30">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-50 bg-[#09090B]/80 backdrop-blur-xl border-b border-[#232734]">
+      <div className="sticky top-0 z-50 bg-white/80 dark:bg-[#09090B]/80 backdrop-blur-xl border-b border-slate-200 dark:border-[#232734]">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex items-center gap-4 w-full md:w-auto">
               <button
                 onClick={() => router.push('/proposals')}
-                className="w-10 h-10 rounded-xl bg-[#11131A] border border-[#232734] flex items-center justify-center text-[#94A3B8] hover:text-white hover:bg-[#232734] transition-all flex-shrink-0"
+                className="w-10 h-10 rounded-xl bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] flex items-center justify-center text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] transition-all flex-shrink-0"
               >
                 <ArrowLeft size={18} />
               </button>
@@ -323,7 +323,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
                     type="text"
                     value={proposal.title}
                     onChange={(e) => setProposal({ ...proposal, title: e.target.value })}
-                    className="text-2xl md:text-3xl font-bold bg-transparent border-b-2 border-transparent hover:border-[#232734] focus:border-[#2563EB] outline-none text-white placeholder-[#94A3B8]/50 w-full pr-8 py-1 transition-all tracking-tight"
+                    className="text-2xl md:text-3xl font-bold bg-transparent border-b-2 border-transparent hover:border-slate-200 dark:border-[#232734] focus:border-[#2563EB] outline-none text-slate-900 dark:text-white placeholder-[#94A3B8]/50 w-full pr-8 py-1 transition-all tracking-tight"
                     placeholder="Untitled Proposal"
                   />
                   <Edit2 size={16} className="absolute right-2 text-[#94A3B8] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
@@ -343,7 +343,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
                 <button
                   onClick={() => setShowStatusMenu(!showStatusMenu)}
                   disabled={isSaving}
-                  className="flex items-center gap-2 px-4 py-2.5 font-bold rounded-xl transition-all text-xs bg-[#11131A] text-white border border-[#232734] hover:bg-[#232734] disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2.5 font-bold rounded-xl transition-all text-xs bg-white dark:bg-[#11131A] text-slate-900 dark:text-white border border-slate-200 dark:border-[#232734] hover:bg-slate-200 dark:bg-[#232734] disabled:opacity-50"
                 >
                   <StatusIcon size={14} style={{ color: currentStatus.color.includes('text-blue') ? '#2563EB' : currentStatus.color.includes('text-green') ? '#10B981' : currentStatus.color.includes('text-purple') ? '#7C3AED' : currentStatus.color.includes('text-red') ? '#EF4444' : '#94A3B8' }} />
                   {currentStatus.label}
@@ -352,7 +352,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
 
                 {/* Status Dropdown Menu */}
                 {showStatusMenu && (
-                  <div className="absolute top-full right-0 mt-2 w-48 bg-[#11131A] border border-[#232734] rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.5)] overflow-hidden z-50 p-1">
+                  <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.5)] overflow-hidden z-50 p-1">
                     {['Draft', 'Sent', 'Viewed', 'Accepted', 'Rejected'].map((status) => {
                       const config = getStatusConfig(status);
                       const Icon = config.icon;
@@ -364,7 +364,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
                            className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-xs font-bold transition-colors rounded-lg ${
                              proposal.status === status
                                ? 'bg-[#2563EB]/10 text-[#2563EB]'
-                               : 'text-[#94A3B8] hover:text-white hover:bg-[#232734]'
+                               : 'text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734]'
                            } disabled:opacity-50 mb-0.5 last:mb-0`}
                          >
                            <Icon size={14} />
@@ -400,7 +400,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
               <button
                 onClick={() => handleSave(false)}
                 disabled={isSaving}
-                className="flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold rounded-xl transition-all text-xs disabled:opacity-50 shadow-[0_0_20px_rgba(37,99,235,0.25)] border border-[#2563EB]/80"
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white font-bold rounded-xl transition-all text-xs disabled:opacity-50 shadow-[0_0_20px_rgba(37,99,235,0.25)] border border-[#2563EB]/80"
               >
                 {isSaving ? (
                   <>
@@ -426,7 +426,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
           className="space-y-6"
         >
           {/* Client Name */}
-          <div className="bg-[#11131A] border border-[#232734] rounded-[20px] p-6 shadow-sm">
+          <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] p-6 shadow-sm">
             <label className="block text-[11px] font-bold text-[#94A3B8] uppercase tracking-widest mb-3">
               Client Name
             </label>
@@ -434,17 +434,17 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
               type="text"
               value={proposal.clientName}
               onChange={(e) => setProposal({ ...proposal, clientName: e.target.value })}
-              className="w-full px-4 py-3 bg-[#09090B] border border-[#232734] rounded-xl text-white placeholder-[#94A3B8]/50 focus:border-[#2563EB]/50 focus:ring-1 focus:ring-[#2563EB]/50 outline-none transition-all text-sm font-medium"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl text-slate-900 dark:text-white placeholder-[#94A3B8]/50 focus:border-[#2563EB]/50 focus:ring-1 focus:ring-[#2563EB]/50 outline-none transition-all text-sm font-medium"
               placeholder="Enter client name"
             />
           </div>
 
           {/* Introduction */}
-          <div className="bg-[#11131A] border border-[#232734] rounded-[20px] p-6 shadow-sm">
+          <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] p-6 shadow-sm">
             <label className="block text-[11px] font-bold text-[#94A3B8] uppercase tracking-widest mb-4">
               Introduction
             </label>
-            <div className="bg-[#09090B] border border-[#232734] rounded-xl overflow-hidden focus-within:border-[#2563EB]/50 focus-within:ring-1 focus-within:ring-[#2563EB]/50 transition-all">
+            <div className="bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl overflow-hidden focus-within:border-[#2563EB]/50 focus-within:ring-1 focus-within:ring-[#2563EB]/50 transition-all">
               <RichTextEditor
                 value={proposal.introduction}
                 onChange={(value) => setProposal({ ...proposal, introduction: value })}
@@ -454,14 +454,14 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
           </div>
 
           {/* Scope of Work / Phases */}
-          <div className="bg-[#11131A] border border-[#232734] rounded-[20px] p-6 shadow-sm">
+          <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] p-6 shadow-sm">
             <div className="flex items-center justify-between mb-5">
               <label className="text-[11px] font-bold text-[#94A3B8] uppercase tracking-widest">
                 Scope of Work / Phases
               </label>
               <button
                 onClick={addPhase}
-                className="flex items-center gap-2 px-3 py-1.5 bg-[#232734] hover:bg-[#2563EB] text-white text-[11px] font-bold uppercase tracking-widest rounded-lg transition-colors border border-[#232734] hover:border-[#2563EB]"
+                className="flex items-center gap-2 px-3 py-1.5 bg-slate-200 dark:bg-[#232734] hover:bg-[#2563EB] text-slate-900 dark:text-white text-[11px] font-bold uppercase tracking-widest rounded-lg transition-colors border border-slate-200 dark:border-[#232734] hover:border-[#2563EB]"
               >
                 <Plus size={14} /> Add Phase
               </button>
@@ -469,18 +469,18 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
 
             <div className="space-y-4">
               {(!proposal.phases || proposal.phases.length === 0) ? (
-                <div className="py-12 flex flex-col items-center justify-center text-[#94A3B8] text-center border border-dashed border-[#232734] rounded-xl bg-[#09090B]/50">
-                  <div className="w-12 h-12 rounded-2xl bg-[#11131A] border border-[#232734] flex items-center justify-center mb-3">
+                <div className="py-12 flex flex-col items-center justify-center text-[#94A3B8] text-center border border-dashed border-slate-200 dark:border-[#232734] rounded-xl bg-[#09090B]/50">
+                  <div className="w-12 h-12 rounded-2xl bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] flex items-center justify-center mb-3">
                     <Plus size={20} className="text-[#232734]" />
                   </div>
-                  <p className="text-sm font-bold text-white mb-1">No phases added</p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">No phases added</p>
                   <p className="text-xs">Click "Add Phase" to outline your scope of work.</p>
                 </div>
               ) : (
                 proposal.phases.map((phase, phaseIndex) => (
                   <div
                     key={phase.id}
-                    className="bg-[#09090B] border border-[#232734] rounded-xl p-5 space-y-4 relative group"
+                    className="bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl p-5 space-y-4 relative group"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
@@ -488,7 +488,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
                           type="text"
                           value={phase.title}
                           onChange={(e) => updatePhase(phaseIndex, 'title', e.target.value)}
-                          className="w-full px-0 py-1 bg-transparent text-white placeholder-[#94A3B8]/50 focus:outline-none text-base font-bold border-b border-transparent focus:border-[#2563EB] transition-colors"
+                          className="w-full px-0 py-1 bg-transparent text-slate-900 dark:text-white placeholder-[#94A3B8]/50 focus:outline-none text-base font-bold border-b border-transparent focus:border-[#2563EB] transition-colors"
                           placeholder="Phase Title (e.g., Discovery & Research)"
                         />
                       </div>
@@ -503,7 +503,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
                     <textarea
                       value={phase.description}
                       onChange={(e) => updatePhase(phaseIndex, 'description', e.target.value)}
-                      className="w-full px-3 py-2 bg-[#11131A] border border-[#232734] rounded-lg text-white placeholder-[#94A3B8]/50 focus:border-[#2563EB]/50 focus:outline-none text-sm resize-none transition-all"
+                      className="w-full px-3 py-2 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-lg text-slate-900 dark:text-white placeholder-[#94A3B8]/50 focus:border-[#2563EB]/50 focus:outline-none text-sm resize-none transition-all"
                       placeholder="Briefly describe the objective of this phase..."
                       rows={2}
                     />
@@ -524,7 +524,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
                               onChange={(e) =>
                                 updateDeliverable(phaseIndex, deliverableIndex, e.target.value)
                               }
-                              className="flex-1 px-3 py-1.5 bg-transparent border-b border-[#232734] focus:border-[#2563EB] text-white placeholder-[#94A3B8]/50 focus:outline-none text-sm transition-colors"
+                              className="flex-1 px-3 py-1.5 bg-transparent border-b border-slate-200 dark:border-[#232734] focus:border-[#2563EB] text-slate-900 dark:text-white placeholder-[#94A3B8]/50 focus:outline-none text-sm transition-colors"
                               placeholder="e.g., Final UI/UX Design Figma File"
                             />
                             <button
@@ -550,14 +550,14 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
           </div>
 
           {/* Investment Breakdown */}
-          <div className="bg-[#11131A] border border-[#232734] rounded-[20px] p-6 shadow-sm">
+          <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] p-6 shadow-sm">
             <div className="flex items-center justify-between mb-5">
               <label className="text-[11px] font-bold text-[#94A3B8] uppercase tracking-widest">
                 Investment Breakdown
               </label>
               <button
                 onClick={addInvestmentItem}
-                className="flex items-center gap-2 px-3 py-1.5 bg-[#232734] hover:bg-[#2563EB] text-white text-[11px] font-bold uppercase tracking-widest rounded-lg transition-colors border border-[#232734] hover:border-[#2563EB]"
+                className="flex items-center gap-2 px-3 py-1.5 bg-slate-200 dark:bg-[#232734] hover:bg-[#2563EB] text-slate-900 dark:text-white text-[11px] font-bold uppercase tracking-widest rounded-lg transition-colors border border-slate-200 dark:border-[#232734] hover:border-[#2563EB]"
               >
                 <Plus size={14} /> Add Item
               </button>
@@ -565,17 +565,17 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
 
             <div className="space-y-3">
               {(!proposal.investment || proposal.investment.length === 0) ? (
-                <div className="py-12 flex flex-col items-center justify-center text-[#94A3B8] text-center border border-dashed border-[#232734] rounded-xl bg-[#09090B]/50">
-                  <div className="w-12 h-12 rounded-2xl bg-[#11131A] border border-[#232734] flex items-center justify-center mb-3">
+                <div className="py-12 flex flex-col items-center justify-center text-[#94A3B8] text-center border border-dashed border-slate-200 dark:border-[#232734] rounded-xl bg-[#09090B]/50">
+                  <div className="w-12 h-12 rounded-2xl bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] flex items-center justify-center mb-3">
                     <DollarSign size={20} className="text-[#232734]" />
                   </div>
-                  <p className="text-sm font-bold text-white mb-1">No items added</p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">No items added</p>
                   <p className="text-xs">Click "Add Item" to build your pricing table.</p>
                 </div>
               ) : (
-                <div className="bg-[#09090B] border border-[#232734] rounded-xl overflow-hidden">
+                <div className="bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl overflow-hidden">
                   {/* Table Header */}
-                  <div className="flex items-center gap-3 px-4 py-2 border-b border-[#232734] bg-[#11131A]">
+                  <div className="flex items-center gap-3 px-4 py-2 border-b border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A]">
                     <div className="flex-1 text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">Description</div>
                     <div className="w-32 text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest text-right pr-12">Cost</div>
                   </div>
@@ -591,7 +591,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
                           type="text"
                           value={item.description}
                           onChange={(e) => updateInvestmentItem(index, 'description', e.target.value)}
-                          className="flex-1 px-3 py-2 bg-transparent text-white placeholder-[#94A3B8]/50 focus:bg-[#11131A] rounded-lg focus:outline-none text-sm transition-colors"
+                          className="flex-1 px-3 py-2 bg-transparent text-slate-900 dark:text-white placeholder-[#94A3B8]/50 focus:bg-white dark:bg-[#11131A] rounded-lg focus:outline-none text-sm transition-colors"
                           placeholder="Item Description (e.g., UI/UX Design)"
                         />
                         <div className="relative flex items-center w-32">
@@ -605,7 +605,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
                             onChange={(e) =>
                               updateInvestmentItem(index, 'cost', parseFloat(e.target.value) || 0)
                             }
-                            className="w-full pl-8 pr-3 py-2 bg-transparent text-white font-mono placeholder-[#94A3B8]/30 focus:bg-[#11131A] rounded-lg focus:outline-none text-sm transition-colors text-right"
+                            className="w-full pl-8 pr-3 py-2 bg-transparent text-slate-900 dark:text-white font-mono placeholder-[#94A3B8]/30 focus:bg-white dark:bg-[#11131A] rounded-lg focus:outline-none text-sm transition-colors text-right"
                             placeholder="0"
                           />
                         </div>
@@ -620,7 +620,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
                   </div>
 
                   {/* Total */}
-                  <div className="flex items-center justify-between p-4 bg-[#11131A] border-t border-[#232734]">
+                  <div className="flex items-center justify-between p-4 bg-white dark:bg-[#11131A] border-t border-slate-200 dark:border-[#232734]">
                     <span className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">
                       Total Investment
                     </span>
@@ -637,26 +637,26 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#09090B]/80 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-white/80 dark:bg-[#09090B]/80 backdrop-blur-sm">
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}
-            className="relative w-full max-w-sm bg-[#11131A] border border-[#232734] shadow-[0_20px_60px_rgba(0,0,0,0.5)] rounded-[24px] p-6 text-center"
+            className="relative w-full max-w-sm bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] shadow-[0_20px_60px_rgba(0,0,0,0.5)] rounded-[24px] p-6 text-center"
           >
             <div className="w-14 h-14 rounded-2xl bg-[#EF4444]/10 border border-[#EF4444]/20 flex items-center justify-center mx-auto mb-4">
               <AlertTriangle size={24} className="text-[#EF4444]" />
             </div>
             
-            <h3 className="text-lg font-bold text-white tracking-tight mb-2">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight mb-2">
               Delete Proposal?
             </h3>
             
             <p className="text-sm text-[#94A3B8] mb-1">
               Are you sure you want to delete:
             </p>
-            <p className="text-sm font-bold text-white mb-5 line-clamp-2">
+            <p className="text-sm font-bold text-slate-900 dark:text-white mb-5 line-clamp-2">
               "{proposal.title || 'Untitled Proposal'}"
             </p>
             
@@ -664,14 +664,14 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
               <button
                 onClick={() => setShowDeleteModal(false)}
                 disabled={isDeleting}
-                className="flex-1 px-4 py-2.5 bg-[#09090B] border border-[#232734] text-white text-sm font-bold rounded-xl hover:bg-[#232734] transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white text-sm font-bold rounded-xl hover:bg-slate-200 dark:bg-[#232734] transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="flex-1 px-4 py-2.5 bg-[#EF4444] hover:bg-[#EF4444]/90 text-white text-sm font-bold rounded-xl shadow-[0_0_20px_rgba(239,68,68,0.25)] border border-[#EF4444]/80 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2.5 bg-[#EF4444] hover:bg-[#EF4444]/90 text-slate-900 dark:text-white text-sm font-bold rounded-xl shadow-[0_0_20px_rgba(239,68,68,0.25)] border border-[#EF4444]/80 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isDeleting ? (
                   <Loader2 size={16} className="animate-spin" />

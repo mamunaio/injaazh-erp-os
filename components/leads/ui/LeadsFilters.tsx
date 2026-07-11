@@ -34,7 +34,7 @@ function FilterDropdown({ label, options, value, onChange }: FilterDropdownProps
         className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all ${
           isActive
             ? 'bg-[#2563EB]/10 text-[#2563EB] border-[#2563EB]/30'
-            : 'bg-[#11131A] text-[#94A3B8] border-[#232734] hover:text-white hover:border-[#232734]'
+            : 'bg-white dark:bg-[#11131A] text-[#94A3B8] border-slate-200 dark:border-[#232734] hover:text-slate-900 dark:hover:text-white hover:border-slate-200 dark:border-[#232734]'
         }`}
       >
         {isActive ? value : label}
@@ -50,7 +50,7 @@ function FilterDropdown({ label, options, value, onChange }: FilterDropdownProps
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -6, scale: 0.97 }}
               transition={{ duration: 0.15 }}
-              className="absolute top-full left-0 mt-2 z-40 min-w-[160px] bg-[#11131A] border border-[#232734] rounded-[16px] shadow-[0_20px_40px_rgba(0,0,0,0.5)] overflow-hidden"
+              className="absolute top-full left-0 mt-2 z-40 min-w-[160px] bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[16px] shadow-[0_20px_40px_rgba(0,0,0,0.5)] overflow-hidden"
             >
               {options.map(opt => (
                 <button
@@ -59,7 +59,7 @@ function FilterDropdown({ label, options, value, onChange }: FilterDropdownProps
                   className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
                     value === opt
                       ? 'text-[#2563EB] bg-[#2563EB]/10'
-                      : 'text-[#94A3B8] hover:text-white hover:bg-[#232734]'
+                      : 'text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734]'
                   }`}
                 >
                   {opt}
@@ -112,12 +112,12 @@ export default function LeadsFilters({
             placeholder="Search prospects, emails, domains…"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full bg-[#11131A] border border-[#232734] text-white placeholder-[#94A3B8]/60 text-sm font-medium rounded-xl pl-11 pr-10 py-2.5 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all"
+            className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white placeholder-[#94A3B8]/60 text-sm font-medium rounded-xl pl-11 pr-10 py-2.5 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-md bg-[#232734] flex items-center justify-center text-[#94A3B8] hover:text-white transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-md bg-slate-200 dark:bg-[#232734] flex items-center justify-center text-[#94A3B8] hover:text-slate-900 dark:hover:text-white transition-colors"
             >
               <X size={12} />
             </button>
@@ -128,34 +128,34 @@ export default function LeadsFilters({
         <div className="flex-1 hidden md:block" />
 
         {/* Results count */}
-        <div className="hidden md:flex items-center gap-1.5 px-3.5 py-2 bg-[#11131A] border border-[#232734] rounded-xl">
-          <span className="text-sm font-bold text-white font-mono">{totalLeads}</span>
+        <div className="hidden md:flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl">
+          <span className="text-sm font-bold text-slate-900 dark:text-white font-mono">{totalLeads}</span>
           <span className="text-xs font-semibold text-[#94A3B8]">prospects</span>
         </div>
 
         {/* View Mode */}
-        <div className="flex items-center bg-[#11131A] border border-[#232734] rounded-xl p-1">
+        <div className="flex items-center bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl p-1">
           <button
             onClick={() => setViewMode('list')}
             className={`relative p-2 rounded-lg transition-colors z-10 ${
-              viewMode === 'list' ? 'text-white' : 'text-[#94A3B8] hover:text-[#94A3B8]/80'
+              viewMode === 'list' ? 'text-slate-900 dark:text-white' : 'text-[#94A3B8] hover:text-[#94A3B8]/80'
             }`}
             aria-label="List view"
           >
             {viewMode === 'list' && (
-              <motion.div layoutId="viewModeIndicator" className="absolute inset-0 bg-[#232734] rounded-lg -z-10 border border-white/5" />
+              <motion.div layoutId="viewModeIndicator" className="absolute inset-0 bg-slate-200 dark:bg-[#232734] rounded-lg -z-10 border border-slate-200 dark:border-white/5" />
             )}
             <List size={15} />
           </button>
           <button
             onClick={() => setViewMode('grid')}
             className={`relative p-2 rounded-lg transition-colors z-10 ${
-              viewMode === 'grid' ? 'text-white' : 'text-[#94A3B8] hover:text-[#94A3B8]/80'
+              viewMode === 'grid' ? 'text-slate-900 dark:text-white' : 'text-[#94A3B8] hover:text-[#94A3B8]/80'
             }`}
             aria-label="Grid view"
           >
             {viewMode === 'grid' && (
-              <motion.div layoutId="viewModeIndicator" className="absolute inset-0 bg-[#232734] rounded-lg -z-10 border border-white/5" />
+              <motion.div layoutId="viewModeIndicator" className="absolute inset-0 bg-slate-200 dark:bg-[#232734] rounded-lg -z-10 border border-slate-200 dark:border-white/5" />
             )}
             <LayoutGrid size={15} />
           </button>
@@ -168,13 +168,13 @@ export default function LeadsFilters({
           <SlidersHorizontal size={13} />
           <span className="hidden sm:inline">Filters</span>
           {activeFilterCount > 0 && (
-            <span className="w-4 h-4 rounded-full bg-[#2563EB] text-white text-[10px] flex items-center justify-center font-bold">
+            <span className="w-4 h-4 rounded-full bg-[#2563EB] text-slate-900 dark:text-white text-[10px] flex items-center justify-center font-bold">
               {activeFilterCount}
             </span>
           )}
         </div>
 
-        <div className="w-px h-4 bg-[#232734]" />
+        <div className="w-px h-4 bg-slate-200 dark:bg-[#232734]" />
 
         <FilterDropdown
           label="Status"
@@ -198,7 +198,7 @@ export default function LeadsFilters({
         {activeFilterCount > 0 && (
           <button
             onClick={clearAll}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-[#94A3B8] hover:text-white bg-transparent hover:bg-[#232734] border border-transparent hover:border-[#232734] transition-all"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-[#94A3B8] hover:text-slate-900 dark:hover:text-white bg-transparent hover:bg-slate-200 dark:bg-[#232734] border border-transparent hover:border-slate-200 dark:border-[#232734] transition-all"
           >
             <X size={11} /> Clear all
           </button>

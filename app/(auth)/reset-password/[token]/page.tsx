@@ -29,7 +29,7 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ token:
   const strength = calculateStrength(password);
   
   const getStrengthColor = () => {
-    if (password.length === 0) return 'bg-[#232734]';
+    if (password.length === 0) return 'bg-slate-200 dark:bg-[#232734]';
     if (strength <= 1) return 'bg-[#EF4444] shadow-[0_0_10px_rgba(239,68,68,0.4)]';
     if (strength === 2) return 'bg-[#F59E0B] shadow-[0_0_10px_rgba(245,158,11,0.4)]';
     if (strength === 3) return 'bg-[#2563EB] shadow-[0_0_10px_rgba(37,99,235,0.4)]';
@@ -54,10 +54,10 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ token:
   };
 
   return (
-    <div className="relative min-h-screen flex bg-[#09090B] overflow-hidden font-sans text-slate-200 selection:bg-[#2563EB]/30">
+    <div className="relative min-h-screen flex bg-slate-50 dark:bg-[#09090B] overflow-hidden font-sans text-slate-800 dark:text-slate-200 selection:bg-[#2563EB]/30">
       
       {/* LEFT SIDE - Brand & Atmosphere (Hidden on Mobile/Tablet) */}
-      <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 border-r border-[#232734] overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 border-r border-slate-200 dark:border-[#232734] overflow-hidden">
         {/* Breathing Abstract Glow */}
         <motion.div 
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[140px] pointer-events-none opacity-20"
@@ -75,10 +75,10 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ token:
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="relative z-10 flex items-center gap-3"
         >
-          <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-[#232734] flex items-center justify-center shadow-lg">
-            <Command className="w-5 h-5 text-white" strokeWidth={2} />
+          <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center shadow-lg">
+            <Command className="w-5 h-5 text-slate-900 dark:text-white" strokeWidth={2} />
           </div>
-          <span className="text-xl font-bold font-jakarta tracking-tight text-white">INJAAZH</span>
+          <span className="text-xl font-bold font-jakarta tracking-tight text-slate-900 dark:text-white">INJAAZH</span>
         </motion.div>
 
         {/* Center Security Context */}
@@ -88,12 +88,12 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ token:
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
           className="relative z-10 max-w-md"
         >
-          <div className="w-16 h-16 rounded-[20px] bg-[#11131A] border border-[#232734] flex items-center justify-center shadow-lg mb-8 relative">
+          <div className="w-16 h-16 rounded-[20px] bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] flex items-center justify-center shadow-lg mb-8 relative">
              <div className="absolute -inset-1 bg-[#2563EB]/20 blur-md rounded-[20px]" />
              <KeyRound className="w-8 h-8 text-[#2563EB] relative z-10" strokeWidth={1.5} />
           </div>
           
-          <h1 className="text-5xl font-bold font-jakarta text-white mb-6 leading-tight tracking-tight">
+          <h1 className="text-5xl font-bold font-jakarta text-slate-900 dark:text-white mb-6 leading-tight tracking-tight">
             Set your new password.
           </h1>
           <p className="text-lg text-[#94A3B8] font-medium leading-relaxed">
@@ -123,14 +123,14 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ token:
         >
           {/* Mobile Logo Fallback */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-10">
-            <div className="w-12 h-12 rounded-[14px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-[#232734] flex items-center justify-center shadow-lg">
-              <Command className="w-6 h-6 text-white" strokeWidth={2} />
+            <div className="w-12 h-12 rounded-[14px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center shadow-lg">
+              <Command className="w-6 h-6 text-slate-900 dark:text-white" strokeWidth={2} />
             </div>
-            <span className="text-2xl font-bold font-jakarta tracking-tight text-white">INJAAZH</span>
+            <span className="text-2xl font-bold font-jakarta tracking-tight text-slate-900 dark:text-white">INJAAZH</span>
           </div>
 
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-white mb-2 font-jakarta tracking-tight">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 font-jakarta tracking-tight">
               Reset Password
             </h2>
             <p className="text-sm text-[#94A3B8] font-medium">
@@ -138,7 +138,7 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ token:
             </p>
           </div>
 
-          <div className="bg-[#11131A] border border-[#232734] p-6 sm:p-8 rounded-[24px] shadow-2xl">
+          <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] p-6 sm:p-8 rounded-[24px] shadow-2xl">
             <form onSubmit={handleSubmit} className="space-y-6">
               
               {/* New Password */}
@@ -153,12 +153,12 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ token:
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full bg-[#09090B] border border-[#232734] rounded-xl pl-11 pr-12 py-3.5 text-sm text-white font-medium placeholder:text-[#232734] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-all shadow-inner"
+                    className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl pl-11 pr-12 py-3.5 text-sm text-slate-900 dark:text-white font-medium placeholder:text-[#232734] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-all shadow-inner"
                   />
                   <button 
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-white transition-colors focus:outline-none"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-slate-900 dark:hover:text-white transition-colors focus:outline-none"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -169,7 +169,7 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ token:
                     <div 
                       key={i} 
                       className={`h-1 w-full rounded-full transition-all duration-300 ${
-                        password.length > 0 && i < strength ? getStrengthColor() : 'bg-[#232734]'
+                        password.length > 0 && i < strength ? getStrengthColor() : 'bg-slate-200 dark:bg-[#232734]'
                       }`} 
                     />
                   ))}
@@ -186,12 +186,12 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ token:
                     name="confirmPassword"
                     required
                     placeholder="••••••••"
-                    className="w-full bg-[#09090B] border border-[#232734] rounded-xl pl-11 pr-12 py-3.5 text-sm text-white font-medium placeholder:text-[#232734] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-all shadow-inner"
+                    className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl pl-11 pr-12 py-3.5 text-sm text-slate-900 dark:text-white font-medium placeholder:text-[#232734] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-all shadow-inner"
                   />
                   <button 
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-white transition-colors focus:outline-none"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-slate-900 dark:hover:text-white transition-colors focus:outline-none"
                   >
                     {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -201,7 +201,7 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ token:
               <button 
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-[#2563EB] hover:bg-[#2563EB]/90 disabled:opacity-50 disabled:hover:bg-[#2563EB] text-white font-semibold text-sm py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.2)] hover:shadow-[0_0_25px_rgba(37,99,235,0.4)] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:ring-offset-2 focus:ring-offset-[#11131A] mt-2"
+                className="w-full bg-[#2563EB] hover:bg-[#2563EB]/90 disabled:opacity-50 disabled:hover:bg-[#2563EB] text-slate-900 dark:text-white font-semibold text-sm py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.2)] hover:shadow-[0_0_25px_rgba(37,99,235,0.4)] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:ring-offset-2 focus:ring-offset-[#11131A] mt-2"
               >
                 {isLoading ? (
                   <Loader2 size={18} className="animate-spin" />
@@ -218,7 +218,7 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ token:
           <div className="mt-8 text-center flex flex-col items-center gap-4">
             <Link 
               href="/login" 
-              className="inline-flex items-center gap-2 text-[#94A3B8] hover:text-white font-semibold transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] rounded-md px-2 py-1"
+              className="inline-flex items-center gap-2 text-[#94A3B8] hover:text-slate-900 dark:hover:text-white font-semibold transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] rounded-md px-2 py-1"
             >
               <ArrowLeft size={16} /> Back to Sign In
             </Link>

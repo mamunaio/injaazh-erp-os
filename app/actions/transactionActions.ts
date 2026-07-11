@@ -61,7 +61,7 @@ export async function createTransaction(data: any) {
     
     await transaction.save();
     
-    revalidatePath('/money');
+    revalidatePath('/finance');
     return { success: true, data: JSON.parse(JSON.stringify(transaction)) };
   } catch (error: any) {
     console.error('❌ Error creating transaction:', error);
@@ -87,7 +87,7 @@ export async function updateTransaction(transactionId: string, data: any) {
       { new: true }
     ).lean();
     
-    revalidatePath('/money');
+    revalidatePath('/finance');
     return { success: true, data: JSON.parse(JSON.stringify(updated)) };
   } catch (error: any) {
     console.error('❌ Error updating transaction:', error);
@@ -100,7 +100,7 @@ export async function deleteTransaction(transactionId: string) {
     await connectToDatabase();
     await Transaction.findByIdAndDelete(transactionId);
     
-    revalidatePath('/money');
+    revalidatePath('/finance');
     return { success: true };
   } catch (error: any) {
     console.error('❌ Error deleting transaction:', error);

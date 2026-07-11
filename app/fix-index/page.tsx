@@ -38,14 +38,14 @@ export default function FixIndexPage() {
         <button
           onClick={handleFix}
           disabled={loading}
-          className="w-full px-4 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-4 py-3 bg-indigo-600 text-slate-900 dark:text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? 'Fixing...' : 'Fix Index'}
         </button>
 
         {result && (
           <div className="mt-6 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
-            <pre className="text-sm text-white whitespace-pre-wrap">
+            <pre className="text-sm text-slate-900 dark:text-white whitespace-pre-wrap">
               {result}
             </pre>
           </div>

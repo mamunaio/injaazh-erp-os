@@ -16,11 +16,11 @@ export default function ThemeToggle() {
   }
 
   return (
-    <div className="flex items-center p-1 bg-slate-900/50 rounded-lg border border-slate-800 gap-1 w-full justify-between">
+    <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 gap-1 w-full justify-between">
       <button
         onClick={() => setTheme('light')}
         className={`w-8 h-8 flex justify-center items-center rounded-md transition-all ${
-          theme === 'light' ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-slate-300'
+          theme === 'light' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
         }`}
         aria-label="Light theme"
       >
@@ -30,7 +30,7 @@ export default function ThemeToggle() {
       <button
         onClick={() => setTheme('system')}
         className={`w-8 h-8 flex justify-center items-center rounded-md transition-all ${
-          theme === 'system' ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-slate-300'
+          theme === 'system' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
         }`}
         aria-label="System theme"
       >
@@ -40,7 +40,7 @@ export default function ThemeToggle() {
       <button
         onClick={() => setTheme('dark')}
         className={`w-8 h-8 flex justify-center items-center rounded-md transition-all ${
-          theme === 'dark' ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-slate-300'
+          theme === 'dark' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
         }`}
         aria-label="Dark theme"
       >

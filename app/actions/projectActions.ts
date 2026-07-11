@@ -19,7 +19,7 @@ export async function getProjectsBoard() {
         _id: project._id?.toString() || '',
         title: project.title || '',
         description: project.description || '',
-        status: ['Planning', 'In Progress', 'In Review', 'Completed', 'On Hold'].includes(project.status) ? project.status : 'Planning',
+        status: ['Planning', 'In Progress', 'In Review', 'Completed', 'On Hold', 'Cancelled'].includes(project.status) ? project.status : 'Planning',
         techStack: Array.isArray(project.techStack) ? project.techStack : [],
         assignees: Array.isArray(project.assignees) ? project.assignees : [],
         progress: typeof project.progress === 'number' ? project.progress : 0,
@@ -28,6 +28,8 @@ export async function getProjectsBoard() {
         priority: project.priority || 'Medium',
         tags: Array.isArray(project.tags) ? project.tags : [],
         budget: typeof project.budget === 'number' ? project.budget : undefined,
+        platformFee: typeof project.platformFee === 'number' ? project.platformFee : undefined,
+        platform: project.platform || undefined,
         clientName: project.clientName || '',
         attachments: typeof project.attachments === 'number' ? project.attachments : 0,
         comments: typeof project.comments === 'number' ? project.comments : 0,
@@ -49,11 +51,74 @@ export async function getProjectsBoard() {
   }
 }
 
+import { createTransaction } from './transactionActions';
+
+import { Transaction } from '@/models/Transaction';
+
+async function handleProjectCompletionSync(project: any) {
+  if (!project || !project.budget || project.budget <= 0) return;
+
+  // Prevent duplicate income logs, update if amount changed
+  const existingIncome = await Transaction.findOne({
+    category: 'Project Revenue',
+    description: new RegExp(project.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') // escape regex
+  });
+
+  // Calculate fee from project data
+  let calculatedFee = project.platformFee || 0;
+
+  const netIncome = project.budget - calculatedFee;
+  
+  if (netIncome > 0) {
+    if (existingIncome) {
+      if (existingIncome.amount !== netIncome) {
+        await Transaction.findByIdAndUpdate(existingIncome._id, { amount: netIncome });
+      }
+    } else {
+      await createTransaction({
+        platform: project.platform || 'Direct',
+        type: 'Income',
+        amount: netIncome,
+        category: 'Project Revenue',
+        description: `Revenue from completed project: ${project.title}`,
+        date: new Date().toISOString()
+      });
+    }
+  }
+
+
+}
+
 export async function createProject(data: any) {
   try {
     await connectToDatabase();
+    
+    // Auto-calculate platform fee if applicable
+    if (data.platform && data.budget) {
+      if (data.platform === 'Freelancer') {
+        data.platformFee = Math.max(5, data.budget * 0.10);
+      } else if (data.platform === 'Upwork') {
+        data.platformFee = data.budget * 0.10;
+      } else if (data.platform === 'Fiverr') {
+        data.platformFee = data.budget * 0.20;
+      }
+    }
+    
     const newProject = new Project(data);
     await newProject.save();
+    
+    // Automatically log platform fee as a Finance Transaction if > 0
+    if (newProject.platformFee && newProject.platformFee > 0) {
+      await createTransaction({
+        platform: newProject.platform || 'Direct',
+        type: 'Expense',
+        amount: newProject.platformFee,
+        category: 'Platform Fee',
+        description: `Platform Fee for Project: ${newProject.title}`,
+        date: new Date().toISOString()
+      });
+    }
+
     revalidatePath('/projects');
     return { success: true, data: JSON.parse(JSON.stringify(newProject)) };
   } catch (error: any) {
@@ -72,6 +137,10 @@ export async function updateProjectStatus(projectId: string, newStatus: string) 
       { new: true }
     ).lean();
     
+    if (newStatus === 'Completed') {
+      await handleProjectCompletionSync(updatedProject);
+    }
+    
     revalidatePath('/projects');
     return { success: true, data: JSON.parse(JSON.stringify(updatedProject)) };
   } catch (error: any) {
@@ -84,11 +153,67 @@ export async function updateProject(projectId: string, updateData: any) {
   try {
     await connectToDatabase();
     
+    const oldProject = await Project.findById(projectId).lean();
+    
+    // Auto-calculate platform fee if applicable
+    const budget = updateData.budget !== undefined ? updateData.budget : (oldProject ? oldProject.budget : 0);
+    const platform = updateData.platform !== undefined ? updateData.platform : (oldProject ? oldProject.platform : null);
+    
+    if (platform && budget) {
+      if (platform === 'Freelancer') {
+        updateData.platformFee = Math.max(5, budget * 0.10);
+      } else if (platform === 'Upwork') {
+        updateData.platformFee = budget * 0.10;
+      } else if (platform === 'Fiverr') {
+        updateData.platformFee = budget * 0.20;
+      } else {
+        updateData.platformFee = 0;
+      }
+    } else {
+      updateData.platformFee = 0;
+    }
+    
     const updatedProject = await Project.findByIdAndUpdate(
       projectId,
       { $set: updateData },
       { new: true }
     ).lean();
+    
+    // Log or update platform fee as a Finance Transaction
+    if (updateData.platformFee !== undefined) {
+      const feeDesc = `Platform Fee for Project: ${updateData.title || (oldProject ? oldProject.title : '')}`;
+      if (updateData.platformFee > 0) {
+        // Find existing transaction (manual or auto-calculated could have similar names previously)
+        const existingTx = await Transaction.findOne({ 
+          $or: [
+            { description: feeDesc, type: 'Expense' },
+            { description: `Auto-calculated Platform Fee for Project: ${updateData.title || (oldProject ? oldProject.title : '')}`, type: 'Expense' }
+          ]
+        });
+        if (existingTx) {
+          existingTx.description = feeDesc;
+          existingTx.amount = updateData.platformFee;
+          existingTx.platform = updateData.platform || (oldProject ? oldProject.platform : 'Direct');
+          await existingTx.save();
+        } else {
+          await createTransaction({
+            platform: updateData.platform || (oldProject ? oldProject.platform : 'Direct'),
+            type: 'Expense',
+            amount: updateData.platformFee,
+            category: 'Platform Fee',
+            description: feeDesc,
+            date: new Date().toISOString()
+          });
+        }
+      } else if (updateData.platformFee === 0) {
+        // If fee changed to 0, remove the existing transaction
+        await Transaction.deleteOne({ description: feeDesc, type: 'Expense' });
+      }
+    }
+    
+    if (updatedProject && updatedProject.status === 'Completed') {
+      await handleProjectCompletionSync(updatedProject);
+    }
     
     revalidatePath('/projects');
     return { success: true, data: JSON.parse(JSON.stringify(updatedProject)) };

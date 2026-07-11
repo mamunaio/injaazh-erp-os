@@ -85,7 +85,7 @@ export default function ClearDemosPage() {
             <button
               onClick={() => setShowConfirm('demo')}
               disabled={loading}
-              className="w-full px-4 py-3 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full px-4 py-3 bg-orange-600 text-slate-900 dark:text-white font-medium rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               <Trash2 size={18} />
               Clear Demo Proposals
@@ -108,7 +108,7 @@ export default function ClearDemosPage() {
             <button
               onClick={() => setShowConfirm('all')}
               disabled={loading}
-              className="w-full px-4 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full px-4 py-3 bg-red-600 text-slate-900 dark:text-white font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               <AlertTriangle size={18} />
               Clear ALL Proposals
@@ -118,7 +118,7 @@ export default function ClearDemosPage() {
 
         {/* Confirmation Modal */}
         {showConfirm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/50 dark:bg-black/50 backdrop-blur-sm">
             <div className="relative w-full max-w-md bg-white dark:bg-slate-900 backdrop-blur-2xl border border-red-200 dark:border-red-500/30 rounded-3xl p-8 shadow-2xl">
               <div className="flex flex-col items-center text-center">
                 <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center mb-4">
@@ -147,7 +147,7 @@ export default function ClearDemosPage() {
                   <button
                     onClick={showConfirm === 'demo' ? handleClearDemo : handleClearAll}
                     disabled={loading}
-                    className="flex-1 px-4 py-3 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-3 bg-red-600 text-slate-900 dark:text-white font-medium rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {loading ? (
                       <>
@@ -180,7 +180,7 @@ export default function ClearDemosPage() {
               ) : (
                 <AlertTriangle size={20} className="text-red-600 dark:text-red-400 mt-0.5" />
               )}
-              <pre className="text-sm text-white whitespace-pre-wrap flex-1">
+              <pre className="text-sm text-slate-900 dark:text-white whitespace-pre-wrap flex-1">
                 {result}
               </pre>
             </div>

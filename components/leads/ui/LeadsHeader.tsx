@@ -53,7 +53,7 @@ export default function LeadsHeader({
           </div>
           <span className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">CRM</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight font-jakarta mb-1.5">
+        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tracking-tight font-jakarta mb-1.5">
           Prospects
         </h1>
         <p className="text-sm font-medium text-[#94A3B8]">
@@ -69,7 +69,7 @@ export default function LeadsHeader({
           className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all border ${
             showFollowUps
               ? 'bg-[#EF4444]/10 text-[#EF4444] border-[#EF4444]/30 shadow-[0_0_15px_rgba(239,68,68,0.1)]'
-              : 'bg-[#11131A] text-[#94A3B8] border-[#232734] hover:text-white hover:border-[#232734]'
+              : 'bg-white dark:bg-[#11131A] text-[#94A3B8] border-slate-200 dark:border-[#232734] hover:text-slate-900 dark:hover:text-white hover:border-slate-200 dark:border-[#232734]'
           }`}
         >
           <span className={`w-1.5 h-1.5 rounded-full ${showFollowUps ? 'bg-[#EF4444] animate-pulse' : 'bg-[#94A3B8]'}`}></span>
@@ -78,7 +78,7 @@ export default function LeadsHeader({
         </button>
 
         {/* Export */}
-        <button onClick={handleExport} disabled={isExporting} className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-[#11131A] text-[#94A3B8] border border-[#232734] hover:text-white hover:border-[#232734] transition-all disabled:opacity-50">
+        <button onClick={handleExport} disabled={isExporting} className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-white dark:bg-[#11131A] text-[#94A3B8] border border-slate-200 dark:border-[#232734] hover:text-slate-900 dark:hover:text-white hover:border-slate-200 dark:border-[#232734] transition-all disabled:opacity-50">
           {isExporting ? <Loader2 size={15} className="animate-spin text-[#2563EB]" /> : <Download size={15} />}
           <span className="hidden sm:inline">{isExporting ? 'Exporting...' : 'Export'}</span>
         </button>
@@ -86,7 +86,7 @@ export default function LeadsHeader({
         {/* Import CSV */}
         <button
           onClick={() => setIsCSVModalOpen(true)}
-          className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-[#11131A] text-[#94A3B8] border border-[#232734] hover:text-white hover:border-[#232734] transition-all"
+          className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-white dark:bg-[#11131A] text-[#94A3B8] border border-slate-200 dark:border-[#232734] hover:text-slate-900 dark:hover:text-white hover:border-slate-200 dark:border-[#232734] transition-all"
         >
           <FileText size={15} />
           <span className="hidden sm:inline">Import CSV</span>
@@ -96,7 +96,7 @@ export default function LeadsHeader({
         {/* Add Lead — Primary */}
         <button
           onClick={() => setIsFormOpen(true)}
-          className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80"
+          className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80"
         >
           <Plus size={16} strokeWidth={2.5} />
           Add Lead

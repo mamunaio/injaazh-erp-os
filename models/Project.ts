@@ -3,7 +3,7 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 export interface IProject extends Document {
   title: string;
   description?: string;
-  status: 'Planning' | 'In Progress' | 'In Review' | 'Completed';
+  status: 'Planning' | 'In Progress' | 'In Review' | 'Completed' | 'On Hold' | 'Cancelled';
   techStack: string[]; // e.g., ['Next.js', 'Laravel', 'SEO']
   assignees: string[]; // User IDs or names
   progress: number; // 0-100
@@ -12,12 +12,15 @@ export interface IProject extends Document {
   priority: 'Low' | 'Medium' | 'High' | 'Urgent';
   tags: string[];
   budget?: number;
+  platform?: 'Upwork' | 'Freelancer' | 'Fiverr' | 'Direct' | 'Other';
+  platformFee?: number;
+  clientId?: mongoose.Types.ObjectId;
   clientName?: string;
-  attachments: number;
-  comments: number;
-  leadId?: string; // Link to Lead
-  proposalId?: string; // Link to Proposal
-  marketplaceProjectId?: string; // Link to Marketplace Project
+  leadId?: mongoose.Types.ObjectId;
+  proposalId?: mongoose.Types.ObjectId;
+  marketplaceProjectId?: mongoose.Types.ObjectId;
+  attachments?: number;
+  comments?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,7 +30,7 @@ const ProjectSchema = new Schema<IProject>({
   description: { type: String, trim: true },
   status: { 
     type: String, 
-    enum: ['Planning', 'In Progress', 'In Review', 'Completed'],
+    enum: ['Planning', 'In Progress', 'In Review', 'Completed', 'On Hold', 'Cancelled'],
     default: 'Planning',
     index: true // Index for fast filtering
   },
@@ -43,16 +46,23 @@ const ProjectSchema = new Schema<IProject>({
   },
   tags: [{ type: String }],
   budget: { type: Number },
-  clientName: { type: String, trim: true },
+  platform: { 
+    type: String, 
+    enum: ['Upwork', 'Freelancer', 'Fiverr', 'Direct', 'Other'] 
+  },
+  platformFee: { type: Number },
+  clientId: { type: Schema.Types.ObjectId, ref: 'MarketplaceClient' },
+  clientName: { type: String },
+  leadId: { type: Schema.Types.ObjectId, ref: 'Lead' },
+  proposalId: { type: Schema.Types.ObjectId, ref: 'Proposal' },
+  marketplaceProjectId: { type: Schema.Types.ObjectId, ref: 'MarketplaceProject' },
   attachments: { type: Number, default: 0 },
   comments: { type: Number, default: 0 },
-  leadId: { type: String },
-  proposalId: { type: String },
-  marketplaceProjectId: { type: String },
 }, { timestamps: true });
 
 // Compound index for efficient board queries
 ProjectSchema.index({ status: 1, createdAt: -1 });
 ProjectSchema.index({ status: 1, deadline: 1 });
 
+delete mongoose.models.Project;
 export const Project: Model<IProject> = mongoose.models.Project || mongoose.model<IProject>('Project', ProjectSchema);

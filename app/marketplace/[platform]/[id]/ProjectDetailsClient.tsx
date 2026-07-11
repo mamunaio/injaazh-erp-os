@@ -266,7 +266,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-8 neu-base-bg text-slate-200 flex flex-col items-center relative overflow-hidden">
+    <div className="min-h-screen p-4 md:p-8 neu-base-bg text-slate-800 dark:text-slate-200 flex flex-col items-center relative overflow-hidden">
 
       
       <div className="w-full max-w-6xl relative z-10">
@@ -337,7 +337,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
           <div className="flex items-center gap-4 sm:gap-6 relative z-10 min-w-min justify-end">
             {/* Client Profile Widget */}
             <div className="neu-pressed rounded-2xl p-5 min-w-[160px] flex flex-col justify-center relative overflow-hidden group transition-all">
-              <p className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+              <p className="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
                 <User size={12} /> Client Details
               </p>
               <p className="text-lg font-black text-slate-800 dark:text-white truncate">{projectData.client || 'Direct Client'}</p>
@@ -353,13 +353,13 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
 
             {/* Global Progress Widget */}
             <div className="neu-pressed rounded-2xl p-5 flex flex-col items-center justify-center min-w-[140px] relative overflow-hidden group transition-all hidden sm:flex">
-              <p className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">Progress</p>
+              <p className="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">Progress</p>
               
               <div className="relative w-16 h-16 flex items-center justify-center">
                 <svg className="w-full h-full transform -rotate-90 drop-shadow-sm" viewBox="0 0 36 36">
                   {/* Background Circle */}
                   <path
-                    className="text-slate-200 dark:text-white/10"
+                    className="text-slate-800 dark:text-slate-200 dark:text-white/10"
                     strokeWidth="3"
                     stroke="currentColor"
                     fill="none"
@@ -405,10 +405,10 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                   >
                     <div className="flex flex-col gap-1">
                       <button onClick={() => { setIsEditModalOpen(true); setIsActionsOpen(false); }} className="w-full px-3 py-2 rounded-lg text-left text-sm font-medium text-slate-700 dark:text-gray-200 hover:neu-pressed flex items-center gap-3 transition-all">
-                        <Pencil size={16} className="text-slate-400" /> Edit Project Details
+                        <Pencil size={16} className="text-slate-500 dark:text-slate-400" /> Edit Project Details
                       </button>
                       <button onClick={() => { setIsArchiveModalOpen(true); setIsActionsOpen(false); }} className="w-full px-3 py-2 rounded-lg text-left text-sm font-medium text-slate-700 dark:text-gray-200 hover:neu-pressed flex items-center gap-3 transition-all">
-                        <Archive size={16} className="text-slate-400" /> Archive Project
+                        <Archive size={16} className="text-slate-500 dark:text-slate-400" /> Archive Project
                       </button>
                       <div className="h-px w-full bg-slate-200/50 dark:bg-white/5 my-0.5" />
                       <button onClick={() => { setIsDeleteModalOpen(true); setIsActionsOpen(false); }} className="w-full px-3 py-2 rounded-lg text-left text-sm font-medium text-red-600 hover:neu-pressed hover:text-red-500 dark:text-red-400 dark:hover:text-red-300 flex items-center gap-3 transition-all">
@@ -482,10 +482,10 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                       className={`group flex items-center justify-between p-4 rounded-2xl cursor-pointer transition-all ${task.completed ? 'neu-pressed' : 'neu-flat hover:-translate-y-1'}`}
                     >
                       <div className="flex items-center gap-4">
-                        <div className={`w-6 h-6 rounded-md flex items-center justify-center border transition-colors flex-shrink-0 ${task.completed ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 dark:border-gray-600 group-hover:border-indigo-400 dark:group-hover:border-purple-400'}`}>
+                        <div className={`w-6 h-6 rounded-md flex items-center justify-center border transition-colors flex-shrink-0 ${task.completed ? 'bg-emerald-500 border-emerald-500 text-slate-900 dark:text-white' : 'border-slate-300 dark:border-gray-600 group-hover:border-indigo-400 dark:group-hover:border-purple-400'}`}>
                           {task.completed && <Check size={14} strokeWidth={3} />}
                         </div>
-                        <span className={`text-base font-medium transition-colors ${task.completed ? 'text-slate-400 dark:text-gray-500 line-through decoration-slate-300 dark:decoration-gray-600' : 'text-slate-700 dark:text-slate-200'}`}>
+                        <span className={`text-base font-medium transition-colors ${task.completed ? 'text-slate-500 dark:text-slate-400 dark:text-gray-500 line-through decoration-slate-300 dark:decoration-gray-600' : 'text-slate-700 dark:text-slate-200'}`}>
                           {task.title}
                         </span>
                       </div>
@@ -494,13 +494,13 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                       <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button 
                           onClick={(e) => { e.stopPropagation(); setEditingTask(task); setIsTaskModalOpen(true); }}
-                          className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-colors"
+                          className="p-2 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-colors"
                         >
                           <Pencil size={16} />
                         </button>
                         <button 
                           onClick={(e) => { e.stopPropagation(); setTasks(tasks.filter(t => t.id !== task.id)); }}
-                          className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
+                          className="p-2 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
                         >
                           <Trash size={16} />
                         </button>
@@ -533,7 +533,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                   
                   <div 
                     className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-bold prose-h1:text-3xl prose-h2:text-2xl prose-a:text-indigo-600 dark:prose-a:text-indigo-400 hover:prose-a:text-indigo-500 prose-img:rounded-2xl prose-img:shadow-lg prose-indigo"
-                    dangerouslySetInnerHTML={{ __html: projectData.scope || '<p class="text-slate-400 italic">No project scope provided.</p>' }}
+                    dangerouslySetInnerHTML={{ __html: projectData.scope || '<p class="text-slate-500 dark:text-slate-400 italic">No project scope provided.</p>' }}
                   />
                 </div>
               </motion.div>
@@ -576,7 +576,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                     <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                       {milestones.map((milestone) => (
                         <tr key={milestone.id} className="hover:bg-white dark:hover:bg-white/5 transition-colors group">
-                          <td className="p-4 text-slate-200 font-medium">{milestone.description}</td>
+                          <td className="p-4 text-slate-800 dark:text-slate-200 font-medium">{milestone.description}</td>
                           <td className="p-4 text-slate-500 dark:text-gray-400">{new Date(milestone.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
                           <td className="p-4">
                             <span className={`px-2.5 py-1 text-xs font-bold rounded-lg border ${
@@ -587,7 +587,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                               {milestone.status}
                             </span>
                           </td>
-                          <td className="p-4 text-slate-200 font-bold text-right">${milestone.amount.toLocaleString()}</td>
+                          <td className="p-4 text-slate-800 dark:text-slate-200 font-bold text-right">${milestone.amount.toLocaleString()}</td>
                           <td className="p-4 text-right">
                             <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button 
@@ -596,13 +596,13 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                                   setMilestoneDate(milestone.date);
                                   setIsMilestoneModalOpen(true); 
                                 }}
-                                className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-md transition-colors"
+                                className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-md transition-colors"
                               >
                                 <Pencil size={14} />
                               </button>
                               <button 
                                 onClick={() => setMilestones(milestones.filter(m => m.id !== milestone.id))}
-                                className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-colors"
+                                className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-colors"
                               >
                                 <Trash size={14} />
                               </button>
@@ -633,7 +633,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                 {/* Filters Sidebar */}
                 <div className="w-full md:w-64 flex flex-col gap-4 flex-shrink-0">
                   <div className="relative">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
                     <input 
                       type="text" 
                       value={fileSearchQuery}
@@ -671,7 +671,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                       onChange={handleFileUpload} 
                     />
                     <div className="w-12 h-12 neu-flat rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-all">
-                      <UploadCloud size={24} className="text-slate-400 dark:text-gray-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors" />
+                      <UploadCloud size={24} className="text-slate-500 dark:text-slate-400 dark:text-gray-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors" />
                     </div>
                     <h3 className="mb-1">Upload Project Assets</h3>
                     <p className="text-slate-500 dark:text-gray-400 text-xs max-w-sm">
@@ -688,7 +688,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                             <File size={20} />
                           </div>
                           <div>
-                            <p className="text-sm font-bold text-slate-200">{file.name}</p>
+                            <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{file.name}</p>
                             <div className="flex items-center gap-3 text-xs font-medium text-slate-500 dark:text-gray-400 mt-1">
                               <span>{file.size}</span>
                               <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-gray-600" />
@@ -700,11 +700,11 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                         </div>
                         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           {file.url ? (
-                            <a href={file.url} download className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-colors inline-flex">
+                            <a href={file.url} download className="p-2 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-colors inline-flex">
                               <Download size={16} />
                             </a>
                           ) : (
-                            <button className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-colors">
+                            <button className="p-2 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-colors">
                               <Download size={16} />
                             </button>
                           )}
@@ -714,7 +714,7 @@ export default function ProjectDetailsClient({ platform, projectId }: { platform
                               setFiles(updatedFiles);
                               saveToServer({ files: updatedFiles }, true);
                             }}
-                            className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
+                            className="p-2 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
                           >
                             <Trash size={16} />
                           </button>

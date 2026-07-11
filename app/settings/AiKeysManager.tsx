@@ -97,17 +97,17 @@ export default function AiKeysManager() {
 
   return (
     <div className="space-y-8">
-      <div className="bg-[#09090B] border border-[#232734] p-6 rounded-2xl">
-        <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 mb-6">
+      <div className="bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] p-6 rounded-2xl">
+        <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2 mb-6">
           <Plus size={16} className="text-indigo-400" /> Add New AI Key
         </h3>
         <form onSubmit={handleAddKey} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Provider</label>
+            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Provider</label>
             <select
               value={provider}
               onChange={(e: any) => setProvider(e.target.value)}
-              className="w-full px-4 py-3 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-white text-sm font-bold appearance-none cursor-pointer"
+              className="w-full px-4 py-3 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-slate-900 dark:text-white text-sm font-bold appearance-none cursor-pointer"
             >
               <option value="gemini">Google Gemini</option>
               <option value="openai">OpenAI (ChatGPT)</option>
@@ -118,43 +118,43 @@ export default function AiKeysManager() {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">API Key</label>
+            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">API Key</label>
             <input
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              className="w-full px-4 py-3 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-white text-sm font-bold transition-all"
+              className="w-full px-4 py-3 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-slate-900 dark:text-white text-sm font-bold transition-all"
               placeholder="sk-..."
               required
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Alias / Name (Optional)</label>
+            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Alias / Name (Optional)</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-white text-sm font-bold transition-all"
+              className="w-full px-4 py-3 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-slate-900 dark:text-white text-sm font-bold transition-all"
               placeholder="e.g. Primary Groq Key"
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Model ID (Optional)</label>
+            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Model ID (Optional)</label>
             <input
               type="text"
               value={modelId}
               onChange={(e) => setModelId(e.target.value)}
-              className="w-full px-4 py-3 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-white text-sm font-bold transition-all"
+              className="w-full px-4 py-3 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-slate-900 dark:text-white text-sm font-bold transition-all"
               placeholder="e.g. google/gemini-pro"
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Daily Request Limit</label>
+            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Daily Request Limit</label>
             <input
               type="number"
               value={dailyLimit}
               onChange={(e) => setDailyLimit(Number(e.target.value))}
-              className="w-full px-4 py-3 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-white text-sm font-bold transition-all"
+              className="w-full px-4 py-3 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-slate-900 dark:text-white text-sm font-bold transition-all"
               min="1"
             />
           </div>
@@ -172,7 +172,7 @@ export default function AiKeysManager() {
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 mb-4">
+        <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2 mb-4">
           <Key size={16} className="text-indigo-400" /> Active AI Keys
         </h3>
         
@@ -182,24 +182,24 @@ export default function AiKeysManager() {
             Loading AI Keys...
           </div>
         ) : keys.length === 0 ? (
-          <div className="bg-[#09090B] border border-[#232734] p-8 text-center rounded-2xl">
-            <div className="w-16 h-16 rounded-full bg-[#11131A] border border-[#232734] flex items-center justify-center mx-auto mb-4">
+          <div className="bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] p-8 text-center rounded-2xl">
+            <div className="w-16 h-16 rounded-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] flex items-center justify-center mx-auto mb-4">
               <Key className="text-slate-500" size={24} />
             </div>
-            <h4 className="text-white font-bold mb-2">No AI Keys Found</h4>
+            <h4 className="text-slate-900 dark:text-white font-bold mb-2">No AI Keys Found</h4>
             <p className="text-slate-500 text-xs font-bold">Add your first API key above to start using AI features.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {keys.map((k) => (
-              <div key={k._id} className="bg-[#09090B] border border-[#232734] p-5 rounded-2xl flex flex-col justify-between hover:border-indigo-500/30 transition-all">
+              <div key={k._id} className="bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] p-5 rounded-2xl flex flex-col justify-between hover:border-indigo-500/30 transition-all">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-4">
-                    <div className={`p-2.5 rounded-xl border border-[#232734] bg-[#11131A] ${getProviderColor(k.provider)}`}>
+                    <div className={`p-2.5 rounded-xl border border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A] ${getProviderColor(k.provider)}`}>
                       <Activity size={20} />
                     </div>
                     <div>
-                      <h4 className="font-bold text-white capitalize text-sm">
+                      <h4 className="font-bold text-slate-900 dark:text-white capitalize text-sm">
                         {k.provider} {k.name ? `- ${k.name}` : ''}
                       </h4>
                       <p className="text-[10px] text-slate-500 font-mono mt-0.5">
@@ -216,7 +216,7 @@ export default function AiKeysManager() {
                   </button>
                 </div>
                 
-                <div className="flex items-center justify-between mt-auto pt-4 border-t border-[#232734]">
+                <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-200 dark:border-[#232734]">
                   <div className="text-xs font-bold text-slate-500">
                     <span className="text-indigo-400">{k.sentToday}</span> / {k.dailyLimit} req today
                   </div>

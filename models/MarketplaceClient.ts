@@ -10,6 +10,7 @@ export interface IMarketplaceClient extends Document {
   profilePic?: string;
   platform: 'Upwork' | 'Freelancer' | 'Fiverr' | 'Direct' | 'Other';
   totalSpent: number;
+  leadId?: mongoose.Types.ObjectId;
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -30,6 +31,7 @@ const MarketplaceClientSchema = new Schema<IMarketplaceClient>(
       default: 'Direct' 
     },
     totalSpent: { type: Number, default: 0 },
+    leadId: { type: Schema.Types.ObjectId, ref: 'Lead' },
     notes: { type: String }
   },
   { timestamps: true }

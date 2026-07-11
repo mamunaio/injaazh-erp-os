@@ -137,7 +137,7 @@ export default function PlatformClient({ platform }: { platform: string }) {
   const pConf = getPlatformConfig();
 
   return (
-    <div className="min-h-screen p-4 md:p-8 neu-base-bg text-slate-200 relative overflow-hidden">
+    <div className="min-h-screen p-4 md:p-8 neu-base-bg text-slate-800 dark:text-slate-200 relative overflow-hidden">
 
 
       <div className="max-w-7xl mx-auto relative z-10">
@@ -168,11 +168,11 @@ export default function PlatformClient({ platform }: { platform: string }) {
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
             {/* Search Bar */}
             <div className="relative w-full sm:w-72">
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
               <input 
                 type="text" 
                 placeholder="Search projects..." 
-                className="w-full pl-11 pr-4 py-3 neu-pressed rounded-xl text-sm font-inter text-[15px] focus:outline-none text-slate-200 placeholder-slate-400 transition-all"
+                className="w-full pl-11 pr-4 py-3 neu-pressed rounded-xl text-sm font-inter text-[15px] focus:outline-none text-slate-800 dark:text-slate-200 placeholder-slate-400 transition-all"
               />
             </div>
             
@@ -198,7 +198,7 @@ export default function PlatformClient({ platform }: { platform: string }) {
         ) : (
           <div className="space-y-4 pb-20">
             {/* Column Headers (Hidden on small screens) */}
-            <div className="hidden md:grid grid-cols-12 gap-6 px-8 py-2 text-xs font-jakarta font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-2">
+            <div className="hidden md:grid grid-cols-12 gap-6 px-8 py-2 text-xs font-jakarta font-extrabold uppercase tracking-widest text-slate-500 dark:text-slate-400 dark:text-slate-500 ml-2">
               <div className="col-span-4">Project Name</div>
               <div className="col-span-2">Status</div>
               <div className="col-span-3">Progress</div>

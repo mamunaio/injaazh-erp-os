@@ -117,7 +117,7 @@ export default function DatePicker({ value, onChange, className = '', placeholde
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center gap-3 px-4 py-3 neu-pressed rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-transparent text-slate-700 dark:text-slate-200 font-bold text-left"
       >
-        <CalendarIcon size={18} className="text-slate-400" />
+        <CalendarIcon size={18} className="text-slate-500 dark:text-slate-400" />
         <span>{displayValue}</span>
       </button>
 
@@ -155,7 +155,7 @@ export default function DatePicker({ value, onChange, className = '', placeholde
             {/* Days Header */}
             <div className="grid grid-cols-7 gap-1 mb-4">
               {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
-                <div key={day} className="text-center text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">
+                <div key={day} className="text-center text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                   {day}
                 </div>
               ))}

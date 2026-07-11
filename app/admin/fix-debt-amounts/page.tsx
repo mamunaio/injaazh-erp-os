@@ -56,7 +56,7 @@ export default function FixDebtAmountsPage() {
           <button
             onClick={runFix}
             disabled={isRunning}
-            className="w-full py-3 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="w-full py-3 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-slate-900 dark:text-white rounded-xl font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {isRunning ? 'Fixing Amounts...' : 'Fix Debt Amounts'}
           </button>

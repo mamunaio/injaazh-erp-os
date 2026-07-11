@@ -43,7 +43,7 @@ function scoreColor(score: number) {
 // ─── Property Row ───────────────────────────────────────────────────────────
 function PropRow({ icon: Icon, label, value, link }: { icon: React.ElementType; label: string; value: string; link?: string }) {
   return (
-    <div className="flex items-start gap-4 py-3 border-b border-[#232734]/60 last:border-none">
+    <div className="flex items-start gap-4 py-3 border-b border-slate-200 dark:border-[#232734]/60 last:border-none">
       <div className="flex items-center gap-2 w-28 flex-shrink-0 pt-0.5">
         <Icon size={13} className="text-[#94A3B8] flex-shrink-0" />
         <span className="text-[11px] font-bold text-[#94A3B8] uppercase tracking-widest">{label}</span>
@@ -58,7 +58,7 @@ function PropRow({ icon: Icon, label, value, link }: { icon: React.ElementType; 
           {value || '—'}
         </a>
       ) : (
-        <span className="flex-1 text-sm font-semibold text-white break-words min-w-0">{value || '—'}</span>
+        <span className="flex-1 text-sm font-semibold text-slate-900 dark:text-white break-words min-w-0">{value || '—'}</span>
       )}
     </div>
   );
@@ -74,12 +74,12 @@ function ActivityItem({ icon: Icon, color, title, subtitle, time }: {
         <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${color}15`, border: `1px solid ${color}30` }}>
           <Icon size={13} style={{ color }} />
         </div>
-        <div className="w-px flex-1 bg-[#232734] mt-1" style={{ minHeight: '16px' }} />
+        <div className="w-px flex-1 bg-slate-200 dark:bg-[#232734] mt-1" style={{ minHeight: '16px' }} />
       </div>
       <div className="flex-1 pb-4 min-w-0">
-        <p className="text-sm font-bold text-white leading-tight mb-0.5">{title}</p>
+        <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight mb-0.5">{title}</p>
         {subtitle && <p className="text-xs text-[#94A3B8] truncate">{subtitle}</p>}
-        {time && <p className="text-[10px] text-[#232734] font-bold mt-1">{time}</p>}
+        {time && <p className="text-[10px] text-slate-500 dark:text-slate-500 font-bold mt-1">{time}</p>}
       </div>
     </div>
   );
@@ -120,7 +120,7 @@ export default function LeadSlidePanel({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 bg-[#09090B]/70 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/20 dark:bg-[#09090B]/70 backdrop-blur-sm z-50"
           />
 
           {/* Panel */}
@@ -130,23 +130,23 @@ export default function LeadSlidePanel({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: 'spring', damping: 30, stiffness: 280 }}
-              className="relative w-full max-w-2xl lg:max-w-3xl max-h-[90vh] bg-[#09090B] border border-[#232734] rounded-2xl z-50 flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden pointer-events-auto"
+              className="relative w-full max-w-2xl lg:max-w-3xl max-h-[90vh] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-2xl z-50 flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden pointer-events-auto"
               role="dialog"
               aria-label={`Lead details for ${lead.company_name}`}
             >
 
             {/* ─── Header ─────────────────────────────────────────────────── */}
-            <div className="flex-shrink-0 p-6 border-b border-[#232734] bg-[#11131A]">
+            <div className="flex-shrink-0 p-6 border-b border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A]">
               {/* Top bar */}
               <div className="flex items-center justify-between mb-5">
                 <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">Lead Details</span>
                 <div className="flex items-center gap-2">
-                  <button className="p-2 rounded-[10px] text-[#94A3B8] hover:text-white hover:bg-[#232734] border border-transparent hover:border-[#232734] transition-all" aria-label="Edit">
+                  <button className="p-2 rounded-[10px] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] border border-transparent hover:border-slate-200 dark:border-[#232734] transition-all" aria-label="Edit">
                     <Edit size={15} />
                   </button>
                   <button
                     onClick={onClose}
-                    className="p-2 rounded-[10px] text-[#94A3B8] hover:text-white hover:bg-[#232734] border border-[#232734] transition-all"
+                    className="p-2 rounded-[10px] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] border border-slate-200 dark:border-[#232734] transition-all"
                     aria-label="Close panel"
                   >
                     <X size={15} />
@@ -157,7 +157,7 @@ export default function LeadSlidePanel({
               {/* Company identity */}
               <div className="flex items-center gap-4">
                 <div className="relative flex-shrink-0">
-                  <div className="w-14 h-14 rounded-[16px] bg-[#09090B] border border-[#232734] flex items-center justify-center text-white text-lg font-bold shadow-inner overflow-hidden">
+                  <div className="w-14 h-14 rounded-[16px] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center text-slate-900 dark:text-white text-lg font-bold shadow-inner overflow-hidden">
                     <div className="absolute inset-0 bg-[#2563EB]/5 blur-xl rounded-full" />
                     <span className="relative z-10">{initials}</span>
                   </div>
@@ -169,7 +169,7 @@ export default function LeadSlidePanel({
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-xl font-bold text-white tracking-tight truncate">{lead.company_name || 'Unknown Company'}</h2>
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight truncate">{lead.company_name || 'Unknown Company'}</h2>
                   <p className="text-sm text-[#94A3B8] font-medium truncate">{lead.contact_person || 'No contact'}</p>
                 </div>
 
@@ -182,7 +182,7 @@ export default function LeadSlidePanel({
 
               {/* Lead Score */}
               <div className="mt-4 flex items-center gap-3">
-                <div className="flex-1 h-1.5 bg-[#09090B] rounded-full overflow-hidden border border-[#232734]">
+                <div className="flex-1 h-1.5 bg-slate-50 dark:bg-[#09090B] rounded-full overflow-hidden border border-slate-200 dark:border-[#232734]">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${score}%` }}
@@ -208,7 +208,7 @@ export default function LeadSlidePanel({
                   <button
                     key={label}
                     onClick={action}
-                    className="flex flex-col items-center gap-1.5 p-3 rounded-[14px] bg-[#09090B] border border-[#232734] text-[#94A3B8] hover:text-white hover:border-[#232734] transition-all group"
+                    className="flex flex-col items-center gap-1.5 p-3 rounded-[14px] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:border-slate-200 dark:border-[#232734] transition-all group"
                   >
                     <Icon size={17} className="group-hover:scale-110 transition-transform" style={{ color: 'inherit' }} />
                     <span className="text-[10px] font-bold">{label}</span>
@@ -218,13 +218,13 @@ export default function LeadSlidePanel({
             </div>
 
             {/* ─── Tabs ────────────────────────────────────────────────────── */}
-            <div className="flex-shrink-0 flex items-center border-b border-[#232734] px-6 bg-[#0D0F16]">
+            <div className="flex-shrink-0 flex items-center border-b border-slate-200 dark:border-[#232734] px-6 bg-slate-100 dark:bg-[#0D0F16]">
               {tabs.map(tab => (
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
                   className={`relative flex items-center gap-2 px-4 py-3.5 text-xs font-bold transition-all ${
-                    activeTab === tab.key ? 'text-white' : 'text-[#94A3B8] hover:text-white'
+                    activeTab === tab.key ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
                   <tab.icon size={13} />
@@ -256,7 +256,7 @@ export default function LeadSlidePanel({
                     {/* Contact Info */}
                     <div>
                       <h3 className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-3">Contact Information</h3>
-                      <div className="bg-[#11131A] border border-[#232734] rounded-[16px] px-5 py-1 divide-y divide-[#232734]/60">
+                      <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[16px] px-5 py-1 divide-y divide-[#232734]/60">
                         <PropRow icon={User}     label="Contact" value={lead.contact_person} />
                         <PropRow icon={Mail}     label="Email"   value={lead.email}    link={lead.email ? `mailto:${lead.email}` : undefined} />
                         <PropRow icon={Phone}    label="Phone"   value={lead.phone} />
@@ -267,7 +267,7 @@ export default function LeadSlidePanel({
                     {/* Lead Details */}
                     <div>
                       <h3 className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-3">Lead Details</h3>
-                      <div className="bg-[#11131A] border border-[#232734] rounded-[16px] px-5 py-1 divide-y divide-[#232734]/60">
+                      <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[16px] px-5 py-1 divide-y divide-[#232734]/60">
                         <PropRow icon={Tag}      label="Service"  value={lead.targetService || 'General'} />
                         <PropRow icon={Activity} label="Source"   value={lead.source || 'Manual'} />
                         <PropRow icon={Calendar} label="Added"    value={formatDate(lead.createdAt)} />
@@ -279,7 +279,7 @@ export default function LeadSlidePanel({
                     {lead.lead_context && (
                       <div>
                         <h3 className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-3">Context</h3>
-                        <div className="bg-[#11131A] border border-[#232734] rounded-[16px] p-5">
+                        <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[16px] p-5">
                           <p className="text-sm text-[#94A3B8] leading-relaxed whitespace-pre-wrap font-medium">{lead.lead_context}</p>
                         </div>
                       </div>
@@ -295,7 +295,7 @@ export default function LeadSlidePanel({
                               href={lead.linkedin_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-2 px-3 py-2 rounded-[10px] bg-[#11131A] border border-[#232734] text-xs font-bold text-[#94A3B8] hover:text-white hover:border-[#232734] transition-all"
+                              className="flex items-center gap-2 px-3 py-2 rounded-[10px] bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-xs font-bold text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:border-slate-200 dark:border-[#232734] transition-all"
                             >
                               <LinkIcon size={12} /> LinkedIn
                             </a>
@@ -305,7 +305,7 @@ export default function LeadSlidePanel({
                               href={lead.facebook_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-2 px-3 py-2 rounded-[10px] bg-[#11131A] border border-[#232734] text-xs font-bold text-[#94A3B8] hover:text-white hover:border-[#232734] transition-all"
+                              className="flex items-center gap-2 px-3 py-2 rounded-[10px] bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-xs font-bold text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:border-slate-200 dark:border-[#232734] transition-all"
                             >
                               <LinkIcon size={12} /> Facebook
                             </a>
@@ -315,7 +315,7 @@ export default function LeadSlidePanel({
                               href={lead.instagram_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-2 px-3 py-2 rounded-[10px] bg-[#11131A] border border-[#232734] text-xs font-bold text-[#94A3B8] hover:text-white hover:border-[#232734] transition-all"
+                              className="flex items-center gap-2 px-3 py-2 rounded-[10px] bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-xs font-bold text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:border-slate-200 dark:border-[#232734] transition-all"
                             >
                               <LinkIcon size={12} /> Instagram
                             </a>
@@ -336,13 +336,13 @@ export default function LeadSlidePanel({
                     transition={{ duration: 0.2 }}
                     className="p-6"
                   >
-                    <div className="bg-[#11131A] border border-[#232734] rounded-[16px] overflow-hidden">
-                      <div className="flex items-center justify-between px-4 py-3 border-b border-[#232734]">
+                    <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[16px] overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-[#232734]">
                         <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">Notes</span>
                         <button className="text-xs font-bold text-[#2563EB] hover:text-[#2563EB]/80 transition-colors">+ Add Note</button>
                       </div>
                       <textarea
-                        className="w-full bg-transparent px-4 py-4 text-sm text-[#94A3B8] placeholder-[#94A3B8]/40 resize-none focus:outline-none leading-relaxed min-h-[160px]"
+                        className="w-full bg-transparent px-4 py-4 text-sm text-slate-700 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500 resize-none focus:outline-none leading-relaxed min-h-[160px]"
                         placeholder="Add a note about this prospect…"
                         defaultValue={lead.lead_context || ''}
                       />
@@ -354,7 +354,7 @@ export default function LeadSlidePanel({
                         <Sparkles size={13} />
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-white mb-1">AI Suggestion</p>
+                        <p className="text-xs font-bold text-slate-900 dark:text-white mb-1">AI Suggestion</p>
                         <p className="text-xs text-[#94A3B8] leading-relaxed">
                           Consider personalizing your next outreach with a reference to their product line. Their website shows they recently launched a new collection.
                         </p>
@@ -391,8 +391,8 @@ export default function LeadSlidePanel({
                     </div>
 
                     {/* Add activity */}
-                    <div className="mt-6 pt-5 border-t border-[#232734]">
-                      <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[12px] bg-[#11131A] border border-[#232734] text-xs font-bold text-[#94A3B8] hover:text-white hover:border-[#232734] transition-all">
+                    <div className="mt-6 pt-5 border-t border-slate-200 dark:border-[#232734]">
+                      <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[12px] bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-xs font-bold text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:border-slate-200 dark:border-[#232734] transition-all">
                         <FileText size={13} /> Log Activity
                       </button>
                     </div>

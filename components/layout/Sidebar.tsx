@@ -58,25 +58,25 @@ export default function Sidebar() {
       {/* Mobile Backdrop */}
       {isMobileSidebarOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-white/50 dark:bg-black/50 backdrop-blur-sm lg:hidden"
           onClick={() => setIsMobileSidebarOpen(false)}
         />
       )}
       
-      <aside className={`w-[260px] fixed top-0 bottom-0 left-0 z-50 bg-[#0A0A0B] border-r border-white/5 flex flex-col transition-transform duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-[120%] lg:translate-x-0'}`}>
+      <aside className={`w-[260px] fixed top-0 bottom-0 left-0 z-50 bg-slate-50/30 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800/50 flex flex-col transition-transform duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-[120%] lg:translate-x-0'}`}>
         {/* Logo */}
         <div className="h-[72px] flex items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-3 group" onClick={() => setIsMobileSidebarOpen(false)}>
             <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 text-indigo-500 transition-all duration-300 group-hover:scale-105">
               <Hexagon size={18} fill="currentColor" />
             </div>
-            <span className="font-bold text-[15px] tracking-tight text-white">
+            <span className="font-bold text-[15px] tracking-tight text-slate-900 dark:text-white">
               Injaazh Global
             </span>
           </Link>
           <button 
             onClick={() => setIsMobileSidebarOpen(false)}
-            className="lg:hidden p-2 text-slate-500 hover:text-white rounded-lg transition-colors"
+            className="lg:hidden p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors"
           >
             <X size={20} />
           </button>
@@ -118,18 +118,9 @@ export default function Sidebar() {
           )}
         </nav>
 
-        {/* User Profile at Bottom */}
-        <div className="p-4 border-t border-white/5 space-y-3 mt-auto">
-          <div className="flex items-center justify-between">
-             <div className="flex items-center gap-3">
-               <img src={user?.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.name || 'Felix'}&backgroundColor=transparent`} className="w-8 h-8 rounded-full border border-white/10" />
-               <div className="flex flex-col">
-                 <span className="text-sm font-semibold text-white">{user?.name || 'User'}</span>
-                 <span className="text-[10px] text-slate-400 capitalize">{user?.role || 'Guest'}</span>
-               </div>
-             </div>
-             <ThemeToggle />
-          </div>
+        {/* Theme Switcher at Bottom */}
+        <div className="w-full flex justify-center py-4 border-t border-slate-200 dark:border-slate-800/50 mt-auto px-4">
+          <ThemeToggle />
         </div>
       </aside>
     </>
@@ -140,7 +131,9 @@ export default function Sidebar() {
       ? pathname === '/' || pathname === '/dashboard'
       : item.href === '/marketplace'
         ? pathname === '/marketplace' || (pathname.startsWith('/marketplace/') && !pathname.startsWith('/marketplace/clients'))
-        : pathname.startsWith(item.href);
+        : item.href === '/settings'
+          ? pathname === '/settings' || (pathname.startsWith('/settings/') && !pathname.startsWith('/settings/insights'))
+          : pathname.startsWith(item.href);
     
     const Icon = item.icon;
     return (
@@ -150,11 +143,11 @@ export default function Sidebar() {
         onClick={() => setIsMobileSidebarOpen(false)}
         className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 group ${
           isActive 
-            ? 'bg-indigo-600 text-white shadow-md' 
-            : 'text-slate-400 hover:text-white hover:bg-white/5'
+            ? 'bg-indigo-600 text-slate-900 dark:text-white shadow-md' 
+            : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
         }`}
       >
-        <Icon size={18} className={`${isActive ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors'}`} />
+        <Icon size={18} className={`${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-900 dark:hover:text-white transition-colors'}`} />
         <span className={`font-medium text-sm`}>{item.name}</span>
       </Link>
     );

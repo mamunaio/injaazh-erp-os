@@ -26,21 +26,21 @@ export default function CampaignLogsModal({ isOpen, campaign, onClose }: { isOpe
   if (!isOpen || !campaign) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/60 dark:bg-black/60 backdrop-blur-md overflow-y-auto">
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="w-full max-w-3xl bg-[#0f111a] border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+        className="w-full max-w-3xl bg-[#0f111a] border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
       >
-        <div className="flex items-center justify-between p-6 border-b border-white/10 bg-white/5">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-white/10 bg-white/5">
           <div>
-            <h2 className="text-xl font-bold text-white mb-1">Campaign Activity</h2>
-            <p className="text-sm text-slate-400">Sent emails for {campaign.name}</p>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-1">Campaign Activity</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Sent emails for {campaign.name}</p>
           </div>
           <button 
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
+            className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl transition-colors"
           >
             <X size={20} />
           </button>
@@ -52,20 +52,20 @@ export default function CampaignLogsModal({ isOpen, campaign, onClose }: { isOpe
               <Loader2 size={32} className="text-indigo-500 animate-spin" />
             </div>
           ) : logs.length === 0 ? (
-            <div className="text-center py-20 bg-white/5 border border-white/10 rounded-2xl">
+            <div className="text-center py-20 bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl">
               <Mail size={32} className="mx-auto text-slate-500 mb-3 opacity-50" />
-              <p className="text-slate-400 font-medium">No emails sent yet for this campaign.</p>
+              <p className="text-slate-500 dark:text-slate-400 font-medium">No emails sent yet for this campaign.</p>
             </div>
           ) : (
             <div className="space-y-4">
               {logs.map((log, i) => (
-                <div key={log._id || i} className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-start gap-4">
+                <div key={log._id || i} className="bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-4 flex items-start gap-4">
                   <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 mt-1">
                     <Mail size={16} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start mb-1">
-                      <h4 className="font-bold text-white text-sm truncate">
+                      <h4 className="font-bold text-slate-900 dark:text-white text-sm truncate">
                         {log.leadId?.company_name} <span className="text-slate-500 font-normal">({log.leadId?.email})</span>
                       </h4>
                       <div className={`flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md ${
@@ -75,7 +75,7 @@ export default function CampaignLogsModal({ isOpen, campaign, onClose }: { isOpe
                         {log.status}
                       </div>
                     </div>
-                    <div className="text-xs text-slate-400 flex items-center gap-2 mb-2">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2 mb-2">
                       <span className="bg-white/10 px-1.5 py-0.5 rounded text-[10px] text-white/70">{log.type} Sequence</span>
                       <span>•</span>
                       <span>{new Date(log.sentAt).toLocaleString()}</span>

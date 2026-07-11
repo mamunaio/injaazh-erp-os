@@ -93,7 +93,7 @@ export default function LeadsKPIs({ leads }: LeadsKPIsProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: idx * 0.05, type: 'spring', stiffness: 280, damping: 26 }}
           whileHover={{ y: -2, transition: { duration: 0.15 } }}
-          className="relative overflow-hidden bg-[#11131A] border border-[#232734] rounded-[24px] p-5 lg:p-6 cursor-pointer group transition-all"
+          className="relative overflow-hidden bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-5 lg:p-6 cursor-pointer group transition-all"
           style={{
             '--accent': stat.accent,
           } as React.CSSProperties}
@@ -133,8 +133,8 @@ export default function LeadsKPIs({ leads }: LeadsKPIsProps) {
 
           {/* Value */}
           <div className="relative z-10">
-            <p className="text-3xl font-bold text-white font-mono tracking-tight mb-1">{stat.value}</p>
-            <p className="text-sm font-semibold text-slate-400 uppercase tracking-wide">{stat.title}</p>
+            <p className="text-3xl font-bold text-slate-900 dark:text-white font-mono tracking-tight mb-1">{stat.value}</p>
+            <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{stat.title}</p>
           </div>
         </motion.div>
       ))}

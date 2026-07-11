@@ -101,10 +101,10 @@ export default function CampaignLeadsManager({ campaignId }: { campaignId: strin
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center bg-white/5 border border-white/10 p-4 rounded-2xl">
+      <div className="flex justify-between items-center bg-white/5 border border-slate-200 dark:border-white/10 p-4 rounded-2xl">
         <div>
-          <h3 className="font-bold text-white flex items-center gap-2"><Users size={18} className="text-indigo-400" /> Campaign Leads</h3>
-          <p className="text-xs text-slate-400 mt-1">Manage leads currently enrolled in this sequence</p>
+          <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2"><Users size={18} className="text-indigo-400" /> Campaign Leads</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Manage leads currently enrolled in this sequence</p>
         </div>
         <div>
           <label className="cursor-pointer px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 text-xs font-bold rounded-xl transition-colors flex items-center gap-2">
@@ -118,13 +118,13 @@ export default function CampaignLeadsManager({ campaignId }: { campaignId: strin
       {loading ? (
         <div className="flex justify-center py-10"><Loader2 size={24} className="animate-spin text-indigo-500" /></div>
       ) : leads.length === 0 ? (
-        <div className="text-center py-10 border border-dashed border-white/10 rounded-2xl">
-          <p className="text-sm text-slate-400">No leads in this campaign yet.</p>
+        <div className="text-center py-10 border border-dashed border-slate-200 dark:border-white/10 rounded-2xl">
+          <p className="text-sm text-slate-500 dark:text-slate-400">No leads in this campaign yet.</p>
         </div>
       ) : (
-        <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-          <table className="w-full text-left text-sm text-slate-300">
-            <thead className="bg-black/40 text-xs uppercase font-bold text-slate-500">
+        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden">
+          <table className="w-full text-left text-sm text-slate-700 dark:text-slate-300">
+            <thead className="bg-slate-100 dark:bg-black/40 text-xs uppercase font-bold text-slate-700 dark:text-slate-500">
               <tr>
                 <th className="px-4 py-3">Company</th>
                 <th className="px-4 py-3">Contact</th>
@@ -132,37 +132,37 @@ export default function CampaignLeadsManager({ campaignId }: { campaignId: strin
                 <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-slate-200 dark:divide-white/5">
               {leads.map((cl) => (
-                <tr key={cl._id} className="hover:bg-white/5 transition-colors">
+                <tr key={cl._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/5 transition-colors">
                   {editingLeadId === cl.leadId._id ? (
                     <td colSpan={4} className="px-4 py-4 bg-indigo-500/5">
                       <div className="grid grid-cols-2 gap-4 mb-4">
-                        <input value={editForm.company_name} onChange={e => setEditForm({...editForm, company_name: e.target.value})} placeholder="Company Name" className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-xs" />
-                        <input value={editForm.contact_person} onChange={e => setEditForm({...editForm, contact_person: e.target.value})} placeholder="Contact Person" className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-xs" />
-                        <input value={editForm.email} onChange={e => setEditForm({...editForm, email: e.target.value})} placeholder="Email" className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-xs" />
-                        <input value={editForm.lead_context} onChange={e => setEditForm({...editForm, lead_context: e.target.value})} placeholder="AI Context" className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-xs" />
+                        <input value={editForm.company_name} onChange={e => setEditForm({...editForm, company_name: e.target.value})} placeholder="Company Name" className="bg-black/40 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-xs" />
+                        <input value={editForm.contact_person} onChange={e => setEditForm({...editForm, contact_person: e.target.value})} placeholder="Contact Person" className="bg-black/40 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-xs" />
+                        <input value={editForm.email} onChange={e => setEditForm({...editForm, email: e.target.value})} placeholder="Email" className="bg-black/40 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-xs" />
+                        <input value={editForm.lead_context} onChange={e => setEditForm({...editForm, lead_context: e.target.value})} placeholder="AI Context" className="bg-black/40 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-xs" />
                       </div>
                       <div className="flex justify-end gap-2">
-                        <button onClick={() => setEditingLeadId(null)} className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white">Cancel</button>
-                        <button onClick={saveEdit} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-500 text-white hover:bg-indigo-600">Save</button>
+                        <button onClick={() => setEditingLeadId(null)} className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">Cancel</button>
+                        <button onClick={saveEdit} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-500 text-slate-900 dark:text-white hover:bg-indigo-600">Save</button>
                       </div>
                     </td>
                   ) : (
                     <>
-                      <td className="px-4 py-3 font-medium text-white">
+                      <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">
                         {cl.leadId.company_name}
                         {cl.leadId.lead_context && <div className="text-[10px] text-indigo-400 truncate max-w-[200px]" title={cl.leadId.lead_context}>Ctx: {cl.leadId.lead_context}</div>}
                       </td>
                       <td className="px-4 py-3">
-                        <div className="text-white">{cl.leadId.contact_person || '-'}</div>
+                        <div className="text-slate-900 dark:text-white">{cl.leadId.contact_person || '-'}</div>
                         <div className="text-xs text-slate-500">{cl.leadId.email || '-'}</div>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-col gap-1">
                           <span className={`inline-flex w-max px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
                             cl.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400' : 
-                            cl.status === 'Finished' ? 'bg-slate-500/10 text-slate-400' : 'bg-amber-500/10 text-amber-400'
+                            cl.status === 'Finished' ? 'bg-slate-500/10 text-slate-500 dark:text-slate-400' : 'bg-amber-500/10 text-amber-400'
                           }`}>{cl.status}</span>
                           <span className="text-[10px] text-slate-500 font-bold">Step {cl.currentStep}</span>
                         </div>

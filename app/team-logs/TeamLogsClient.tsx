@@ -102,7 +102,7 @@ export default function TeamLogsClient({ currentUser }: { currentUser: any }) {
             <div className="absolute -right-10 -top-10 text-indigo-500/10 rotate-12">
               <Award size={150} />
             </div>
-            <div className="w-16 h-16 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30 shrink-0">
+            <div className="w-16 h-16 rounded-2xl bg-indigo-500 text-slate-900 dark:text-white flex items-center justify-center shadow-lg shadow-indigo-500/30 shrink-0">
               <Award size={32} />
             </div>
             <div>
@@ -132,7 +132,7 @@ export default function TeamLogsClient({ currentUser }: { currentUser: any }) {
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-white/5">
+                <tr className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-white/5">
                   <th className="pb-4 px-4">Team Member</th>
                   <th className="pb-4 px-4">Start Time</th>
                   <th className="pb-4 px-4">Last Active</th>
@@ -149,7 +149,7 @@ export default function TeamLogsClient({ currentUser }: { currentUser: any }) {
                           {log.userId.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="font-bold text-slate-200">{log.userId.name}</p>
+                          <p className="font-bold text-slate-800 dark:text-slate-200">{log.userId.name}</p>
                           <p className="text-xs text-slate-500">{log.userId.role}</p>
                         </div>
                       </div>
@@ -170,7 +170,7 @@ export default function TeamLogsClient({ currentUser }: { currentUser: any }) {
                       <td className="py-4 px-4 text-right">
                         <button 
                           onClick={() => openEditModal(log)}
-                          className="p-2 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-xl transition-colors"
+                          className="p-2 text-slate-500 dark:text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-xl transition-colors"
                           title="Edit Time"
                         >
                           <Edit2 size={18} />
@@ -226,7 +226,7 @@ export default function TeamLogsClient({ currentUser }: { currentUser: any }) {
               <button 
                 onClick={handleSaveEdit}
                 disabled={isSaving}
-                className="flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold bg-indigo-500 text-white hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-500/30 disabled:opacity-70"
+                className="flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold bg-indigo-500 text-slate-900 dark:text-white hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-500/30 disabled:opacity-70"
               >
                 {isSaving ? <Activity size={16} className="animate-spin" /> : <Check size={16} />}
                 Save Changes

@@ -7,7 +7,7 @@ import Link from 'next/link';
 
 export default function WelcomeClient() {
   return (
-    <div className="fixed inset-0 z-[99999] bg-[#09090B] flex flex-col items-center justify-center font-sans overflow-hidden selection:bg-[#2563EB]/30">
+    <div className="fixed inset-0 z-[99999] bg-slate-50 dark:bg-[#09090B] flex flex-col items-center justify-center font-sans overflow-hidden selection:bg-[#2563EB]/30">
       
       {/* Subtle Background Glow */}
       <motion.div 
@@ -26,7 +26,7 @@ export default function WelcomeClient() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative flex items-center justify-center w-20 h-20 mb-8 rounded-[24px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-[#232734] shadow-2xl"
+          className="relative flex items-center justify-center w-20 h-20 mb-8 rounded-[24px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-slate-200 dark:border-[#232734] shadow-2xl"
         >
           <Command className="w-10 h-10 text-[#FFFFFF]" strokeWidth={1.5} />
         </motion.div>
@@ -60,14 +60,14 @@ export default function WelcomeClient() {
         >
           <Link 
             href="/register"
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-semibold rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.2)] hover:shadow-[0_0_25px_rgba(37,99,235,0.4)] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:ring-offset-2 focus:ring-offset-[#09090B]"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white font-semibold rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.2)] hover:shadow-[0_0_25px_rgba(37,99,235,0.4)] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:ring-offset-2 focus:ring-offset-[#09090B]"
           >
             Get Started <ArrowRight size={18} strokeWidth={2.5} />
           </Link>
           
           <Link 
             href="/login"
-            className="w-full sm:w-auto flex items-center justify-center px-8 py-3.5 bg-transparent border border-[#232734] hover:border-[#2563EB]/50 text-white font-semibold rounded-xl transition-all hover:bg-[#11131A] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:ring-offset-2 focus:ring-offset-[#09090B]"
+            className="w-full sm:w-auto flex items-center justify-center px-8 py-3.5 bg-transparent border border-slate-200 dark:border-[#232734] hover:border-[#2563EB]/50 text-slate-900 dark:text-white font-semibold rounded-xl transition-all hover:bg-white dark:bg-[#11131A] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:ring-offset-2 focus:ring-offset-[#09090B]"
           >
             Sign In
           </Link>

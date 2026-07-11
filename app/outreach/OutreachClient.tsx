@@ -232,7 +232,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
   ];
 
   return (
-    <div className="min-h-screen bg-[#09090B] p-4 md:p-8 selection:bg-[#2563EB]/30">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#09090B] p-4 md:p-8 selection:bg-[#2563EB]/30">
       <div className="max-w-[1600px] mx-auto">
 
         {/* ── Page Header ──────────────────────────────────────────────────── */}
@@ -245,7 +245,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                 </div>
                 <span className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Sales</span>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight font-jakarta mb-1.5">Outreach</h1>
+              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tracking-tight font-jakarta mb-1.5">Outreach</h1>
               <p className="text-sm font-medium text-[#94A3B8]">
                 Monitor campaigns, track quotas and respond to hot leads.
               </p>
@@ -254,12 +254,12 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
               <button
                 onClick={handleSyncInboxes}
                 disabled={isSyncing}
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-[#11131A] text-[#94A3B8] border border-[#232734] hover:text-white hover:border-[#232734] transition-all disabled:opacity-50"
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-white dark:bg-[#11131A] text-[#94A3B8] border border-slate-200 dark:border-[#232734] hover:text-slate-900 dark:hover:text-white hover:border-slate-200 dark:border-[#232734] transition-all disabled:opacity-50"
               >
                 <RefreshCw size={15} className={isSyncing ? 'animate-spin' : ''} />
                 {isSyncing ? 'Syncing…' : 'Sync Inboxes'}
               </button>
-              <button onClick={() => router.push('/prospects')} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
+              <button onClick={() => router.push('/prospects')} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
                 <Plus size={16} strokeWidth={2.5} /> New Outreach
               </button>
             </div>
@@ -280,7 +280,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05, type: 'spring', stiffness: 280, damping: 26 }}
                 whileHover={{ y: -2, transition: { duration: 0.15 } }}
-                className="relative bg-[#11131A] border border-[#232734] rounded-[20px] p-5 cursor-pointer group transition-all overflow-hidden"
+                className="relative bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] p-5 cursor-pointer group transition-all overflow-hidden"
               >
                 {/* Background Icon */}
                 <div className="absolute -right-2 -bottom-4 opacity-[0.04] pointer-events-none group-hover:opacity-[0.08] transition-opacity">
@@ -293,14 +293,14 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                 </div>
 
                 <div className="relative z-10 flex items-start justify-between mb-4">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{k.label}</p>
+                  <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{k.label}</p>
                   <span className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${k.up ? 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' : 'text-red-500 bg-red-500/10 border-red-500/20'}`}>
                     {k.up ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />} {k.trend}
                   </span>
                 </div>
                 <p className="relative z-10 text-3xl font-bold font-mono tracking-tight" style={{ color: k.color }}>{k.value}</p>
                 {k.label === 'Quota Today' && (
-                  <div className="relative z-10 mt-3 h-1.5 bg-[#09090B] rounded-full overflow-hidden border border-[#232734]">
+                  <div className="relative z-10 mt-3 h-1.5 bg-slate-50 dark:bg-[#09090B] rounded-full overflow-hidden border border-slate-200 dark:border-[#232734]">
                     <motion.div initial={{ width: 0 }} animate={{ width: `${quotaPct}%` }} transition={{ duration: 0.8, ease: 'easeOut' }}
                       className="h-full rounded-full bg-gradient-to-r from-[#7C3AED] to-[#2563EB]" />
                   </div>
@@ -314,13 +314,13 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
         <div className="flex flex-col lg:flex-row gap-5 min-h-[680px]">
 
           {/* ── LEFT PANE: Contact List ──────────────────────────────────────── */}
-          <div className={`flex flex-col bg-[#11131A] border border-[#232734] rounded-[20px] overflow-hidden ${selectedLeadId ? 'hidden lg:flex lg:w-[320px] xl:w-[360px] flex-shrink-0' : 'w-full lg:w-[360px] flex-shrink-0'}`}>
+          <div className={`flex flex-col bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] overflow-hidden ${selectedLeadId ? 'hidden lg:flex lg:w-[320px] xl:w-[360px] flex-shrink-0' : 'w-full lg:w-[360px] flex-shrink-0'}`}>
 
             {/* Tabs */}
-            <div className="flex border-b border-[#232734] bg-[#0D0F16]">
+            <div className="flex border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900">
               <button
                 onClick={() => { setActiveTab('inbox'); setSelectedLeadId(null); }}
-                className={`relative flex-1 py-4 flex items-center justify-center gap-2 text-[13px] font-bold uppercase tracking-widest transition-all ${activeTab === 'inbox' ? 'text-white bg-[#2563EB]/5' : 'text-[#94A3B8] hover:text-white hover:bg-[#232734]/30'}`}
+                className={`relative flex-1 py-4 flex items-center justify-center gap-2 text-[13px] font-bold uppercase tracking-widest transition-all ${activeTab === 'inbox' ? 'bg-white dark:bg-[#2563EB]/5 text-slate-900 dark:text-white shadow-sm dark:shadow-none' : 'text-slate-500 dark:text-[#94A3B8] hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-[#232734]/30'}`}
               >
                 <Inbox size={15} />
                 Hot Inbox
@@ -333,7 +333,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
               </button>
               <button
                 onClick={() => { setActiveTab('pipeline'); setSelectedLeadId(null); }}
-                className={`relative flex-1 py-4 flex items-center justify-center gap-2 text-[13px] font-bold uppercase tracking-widest transition-all ${activeTab === 'pipeline' ? 'text-white bg-[#2563EB]/5' : 'text-[#94A3B8] hover:text-white hover:bg-[#232734]/30'}`}
+                className={`relative flex-1 py-4 flex items-center justify-center gap-2 text-[13px] font-bold uppercase tracking-widest transition-all ${activeTab === 'pipeline' ? 'bg-white dark:bg-[#2563EB]/5 text-slate-900 dark:text-white shadow-sm dark:shadow-none' : 'text-slate-500 dark:text-[#94A3B8] hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-[#232734]/30'}`}
               >
                 <Target size={15} />
                 Pipeline
@@ -344,7 +344,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
             </div>
 
             {/* Search */}
-            <div className="p-3 border-b border-[#232734]">
+            <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
               <div className="relative group">
                 <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8] group-focus-within:text-[#2563EB] transition-colors pointer-events-none" />
                 <input
@@ -352,10 +352,10 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                   placeholder="Search contacts…"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full bg-[#09090B] border border-[#232734] text-white placeholder-[#94A3B8]/60 text-xs font-medium rounded-xl pl-9 pr-8 py-2.5 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all"
+                  className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white placeholder-[#94A3B8]/60 text-xs font-medium rounded-xl pl-9 pr-8 py-2.5 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all"
                 />
                 {searchQuery && (
-                  <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-white transition-colors">
+                  <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-slate-900 dark:hover:text-white transition-colors">
                     <X size={12} />
                   </button>
                 )}
@@ -363,10 +363,10 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
             </div>
 
             {/* Status filter pills */}
-            <div className="px-4 py-3 border-b border-[#232734] flex gap-2 overflow-x-auto scrollbar-none">
+            <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex gap-2 overflow-x-auto scrollbar-none">
               {['All', 'New', 'Contacted', 'Replied', 'Meeting Booked'].map(s => (
                 <button key={s} onClick={() => setStatusFilter(s)}
-                  className={`flex-shrink-0 px-3.5 py-1.5 rounded-lg text-xs font-bold border transition-all ${statusFilter === s ? 'bg-[#2563EB]/10 text-[#2563EB] border-[#2563EB]/30' : 'bg-[#09090B] text-[#94A3B8] border-[#232734] hover:text-white hover:bg-[#232734]'}`}>
+                  className={`flex-shrink-0 px-3.5 py-1.5 rounded-lg text-xs font-bold border transition-all ${statusFilter === s ? 'bg-[#2563EB]/10 text-[#2563EB] border-[#2563EB]/30' : 'bg-slate-50 dark:bg-[#09090B] text-[#94A3B8] border-slate-200 dark:border-[#232734] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734]'}`}>
                   {s}
                 </button>
               ))}
@@ -376,10 +376,10 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
             <div className="flex-1 overflow-y-auto p-2 space-y-1">
               {filteredLeads.length === 0 ? (
                 <div className="py-16 flex flex-col items-center justify-center text-[#94A3B8] text-center px-4">
-                  <div className="w-12 h-12 rounded-[14px] bg-[#09090B] border border-[#232734] flex items-center justify-center mb-3">
-                    <Inbox size={20} className="text-[#232734]" />
+                  <div className="w-12 h-12 rounded-[14px] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center mb-3">
+                    <Inbox size={20} className="text-slate-400 dark:text-slate-600" />
                   </div>
-                  <p className="text-sm font-bold text-white mb-1">No results</p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">No results</p>
                   <p className="text-xs">Adjust your filters or search term.</p>
                 </div>
               ) : (
@@ -394,19 +394,19 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.025, type: 'spring', stiffness: 320, damping: 28 }}
                         onClick={() => setSelectedLeadId(lead._id)}
-                        className={`w-full text-left p-3 rounded-[14px] border flex items-start gap-3 transition-all ${isSelected ? 'bg-[#2563EB]/8 border-[#2563EB]/40' : 'bg-transparent border-transparent hover:bg-[#09090B] hover:border-[#232734]'}`}
+                        className={`w-full text-left p-3 rounded-[14px] border flex items-start gap-3 transition-all ${isSelected ? 'bg-[#2563EB]/8 border-[#2563EB]/40' : 'bg-transparent border-transparent hover:bg-slate-50 dark:bg-[#09090B] hover:border-slate-200 dark:border-[#232734]'}`}
                         style={isSelected ? { borderLeftWidth: '2px', borderLeftColor: '#2563EB' } : {}}
                       >
                         <div
                           style={{ background: getAvatarGradient(lead.company_name || '?') }}
-                          className="w-9 h-9 rounded-[10px] flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-md"
+                          className="w-9 h-9 rounded-[10px] flex items-center justify-center text-slate-900 dark:text-white text-xs font-bold flex-shrink-0 shadow-md"
                         >
                           {getInitials(lead.company_name)}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-1 mb-1">
                             <div className="flex items-center gap-2 truncate">
-                              <p className="text-[15px] font-bold text-slate-200 truncate">{lead.company_name}</p>
+                              <p className="text-[15px] font-bold text-slate-800 dark:text-slate-200 truncate">{lead.company_name}</p>
                               {activeTab === 'inbox' && !isSelected && <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)] flex-shrink-0" />}
                             </div>
                             <span className={`flex-shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold border ${ss.bg} ${ss.border} ${ss.text}`}>
@@ -426,7 +426,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                             </div>
                           )}
                         </div>
-                        <ChevronRight size={16} className={`flex-shrink-0 mt-1 transition-colors ${isSelected ? 'text-[#2563EB]' : 'text-[#232734] group-hover:text-slate-400'}`} />
+                        <ChevronRight size={16} className={`flex-shrink-0 mt-1 transition-colors ${isSelected ? 'text-[#2563EB]' : 'text-slate-300 dark:text-[#232734] group-hover:text-slate-400'}`} />
                       </motion.button>
                     );
                   })}
@@ -445,26 +445,26 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ type: 'spring', stiffness: 280, damping: 28 }}
-                  className="flex flex-col bg-[#11131A] border border-[#232734] rounded-[20px] overflow-hidden h-full"
+                  className="flex flex-col bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] overflow-hidden h-full"
                 >
                   {/* Detail Header */}
-                  <div className="flex-shrink-0 p-5 border-b border-[#232734] bg-[#0D0F16]">
+                  <div className="flex-shrink-0 p-5 border-b border-slate-200 dark:border-[#232734] bg-white dark:bg-[#0D0F16]">
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div className="flex items-center gap-4">
                         {/* Mobile back button */}
                         <button onClick={() => setSelectedLeadId(null)}
-                          className="lg:hidden p-2 rounded-[10px] bg-[#232734] text-[#94A3B8] hover:text-white transition-colors" aria-label="Back">
+                          className="lg:hidden p-2 rounded-[10px] bg-slate-200 dark:bg-[#232734] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white transition-colors" aria-label="Back">
                           <X size={15} />
                         </button>
                         <div
                           style={{ background: getAvatarGradient(selectedLead.company_name || '?') }}
-                          className="w-12 h-12 rounded-[14px] flex items-center justify-center text-white text-lg font-bold shadow-md flex-shrink-0"
+                          className="w-12 h-12 rounded-[14px] flex items-center justify-center text-slate-900 dark:text-white text-lg font-bold shadow-md flex-shrink-0"
                         >
                           {getInitials(selectedLead.company_name)}
                         </div>
                         <div>
-                          <h2 className="text-lg font-bold text-white tracking-tight">{selectedLead.company_name}</h2>
-                          <div className="flex flex-wrap items-center gap-3 text-xs text-[#94A3B8] mt-1">
+                          <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{selectedLead.company_name}</h2>
+                          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-[#94A3B8] mt-1">
                             {selectedLead.contact_person && (
                               <span className="flex items-center gap-1"><User size={11} /> {selectedLead.contact_person}</span>
                             )}
@@ -476,7 +476,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                             )}
                             {selectedLead.phone && (
                               <a href={`tel:${selectedLead.phone}`} onClick={e => e.stopPropagation()}
-                                className="flex items-center gap-1 hover:text-white transition-colors">
+                                className="flex items-center gap-1 hover:text-slate-900 dark:hover:text-white transition-colors">
                                 <Phone size={11} /> {selectedLead.phone}
                               </a>
                             )}
@@ -490,7 +490,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                           <select
                             value={selectedLead.outreach_status}
                             onChange={e => handleStatusChange(e.target.value)}
-                            className="bg-[#09090B] border border-[#232734] rounded-[10px] py-2 pl-3 pr-8 text-xs font-bold text-white focus:outline-none focus:border-[#2563EB]/50 appearance-none cursor-pointer transition-all hover:border-[#232734]/80"
+                            className="bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-[10px] py-2 pl-3 pr-8 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/50 appearance-none cursor-pointer transition-all hover:border-[#232734]/80"
                             aria-label="Change status"
                           >
                             <option value="New">New</option>
@@ -507,7 +507,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                         <button
                           onClick={() => handleCreateProposal(selectedLead)}
                           disabled={isCreatingProposalFor === selectedLead._id}
-                          className="flex items-center gap-2 px-4 py-2 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold rounded-[10px] text-xs transition-all shadow-[0_0_15px_rgba(37,99,235,0.25)] hover:shadow-[0_0_20px_rgba(37,99,235,0.4)] disabled:opacity-50"
+                          className="flex items-center gap-2 px-4 py-2 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white font-bold rounded-[10px] text-xs transition-all shadow-[0_0_15px_rgba(37,99,235,0.25)] hover:shadow-[0_0_20px_rgba(37,99,235,0.4)] disabled:opacity-50"
                         >
                           {isCreatingProposalFor === selectedLead._id
                             ? 'Creating…'
@@ -519,12 +519,12 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                   </div>
 
                   {/* Detail Tabs */}
-                  <div className="flex-shrink-0 flex items-center border-b border-[#232734] px-5 bg-[#0D0F16]">
+                  <div className="flex-shrink-0 flex items-center border-b border-slate-200 dark:border-[#232734] px-5 bg-slate-100 dark:bg-[#0D0F16]">
                     {detailTabs.map(tab => (
                       <button
                         key={tab.id}
                         onClick={() => setDetailTab(tab.id)}
-                        className={`relative flex items-center gap-1.5 px-4 py-3.5 text-xs font-bold transition-all ${detailTab === tab.id ? 'text-white' : 'text-[#94A3B8] hover:text-white'}`}
+                        className={`relative flex items-center gap-1.5 px-4 py-3.5 text-xs font-bold transition-all ${detailTab === tab.id ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                       >
                         <tab.icon size={13} />
                         {tab.label}
@@ -546,15 +546,15 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                           transition={{ duration: 0.2 }} className="p-6">
                           <div className="flex items-center justify-between mb-5">
                             <h3 className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">Outreach History</h3>
-                            <div className="flex items-center gap-2 px-3 py-1 bg-[#09090B] border border-[#232734] rounded-full text-[10px] font-bold text-[#94A3B8]">
+                            <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-full text-[10px] font-bold text-[#94A3B8]">
                               <Clock size={10} /> {selectedLead.follow_up_count || 0} follow-ups
                             </div>
                           </div>
 
                           {(!selectedLead.outreach_logs || selectedLead.outreach_logs.length === 0) ? (
-                            <div className="py-16 border border-dashed border-[#232734] rounded-[16px] flex flex-col items-center justify-center text-[#94A3B8] text-center">
+                            <div className="py-16 border border-dashed border-slate-200 dark:border-[#232734] rounded-[16px] flex flex-col items-center justify-center text-[#94A3B8] text-center">
                               <Activity size={28} className="opacity-20 mb-3" />
-                              <p className="text-sm font-bold text-white mb-1">No history yet</p>
+                              <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">No history yet</p>
                               <p className="text-xs">Send an email or log a call to start the timeline.</p>
                             </div>
                           ) : (
@@ -574,15 +574,15 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                                       <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: ls.bg, border: `1px solid ${ls.color}30` }}>
                                         <LogIcon size={13} style={{ color: ls.color }} />
                                       </div>
-                                      {!isLast && <div className="w-px flex-1 bg-[#232734] mt-1" style={{ minHeight: 20 }} />}
+                                      {!isLast && <div className="w-px flex-1 bg-slate-200 dark:bg-[#232734] mt-1" style={{ minHeight: 20 }} />}
                                     </div>
                                     <div className={`flex-1 min-w-0 ${!isLast ? 'pb-5' : ''}`}>
-                                      <div className="bg-[#09090B] border border-[#232734] rounded-[14px] p-4">
+                                      <div className="bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-[14px] p-4">
                                         <div className="flex items-start justify-between gap-2 mb-2">
                                           <span className="text-xs font-bold" style={{ color: ls.color }}>{log.method} Log</span>
                                           <span className="text-[10px] text-[#94A3B8] font-medium flex-shrink-0">{formatDateTime(log.date)}</span>
                                         </div>
-                                        <p className="text-sm text-[#94A3B8] whitespace-pre-wrap leading-relaxed">{log.notes}</p>
+                                        <p className="text-sm text-slate-600 dark:text-[#94A3B8] whitespace-pre-wrap leading-relaxed">{log.notes}</p>
                                       </div>
                                     </div>
                                   </motion.div>
@@ -605,7 +605,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                               type="text"
                               value={emailSubject}
                               onChange={e => setEmailSubject(e.target.value)}
-                              className="w-full bg-[#09090B] border border-[#232734] rounded-[12px] px-4 py-3 text-sm text-white placeholder-[#94A3B8]/50 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all"
+                              className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-[12px] px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-[#94A3B8]/50 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all"
                               placeholder="e.g. Question about your website…"
                             />
                           </div>
@@ -615,13 +615,13 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                               value={emailBody}
                               onChange={e => setEmailBody(e.target.value)}
                               rows={12}
-                              className="w-full bg-[#09090B] border border-[#232734] rounded-[12px] px-4 py-3 text-sm text-white placeholder-[#94A3B8]/50 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all resize-none leading-relaxed"
+                              className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-[12px] px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-[#94A3B8]/50 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all resize-none leading-relaxed"
                               placeholder={'Hi {{first_name}},\n\nI noticed…'}
                             />
                           </div>
                           <div className="flex justify-end">
                             <button onClick={handleSaveDrafts} disabled={isSavingDraft}
-                              className="flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold rounded-[10px] text-xs transition-all disabled:opacity-50">
+                              className="flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white font-bold rounded-[10px] text-xs transition-all disabled:opacity-50">
                               <Save size={13} /> {isSavingDraft ? 'Saving…' : 'Save Draft'}
                             </button>
                           </div>
@@ -640,13 +640,13 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                               value={whatsappBody}
                               onChange={e => setWhatsappBody(e.target.value)}
                               rows={10}
-                              className="w-full bg-[#09090B] border border-[#232734] rounded-[12px] px-4 py-3 text-sm text-white placeholder-[#94A3B8]/50 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all resize-none leading-relaxed"
+                              className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-[12px] px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-[#94A3B8]/50 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all resize-none leading-relaxed"
                               placeholder={'Hey {{first_name}}! Quick question…'}
                             />
                           </div>
                           <div className="flex justify-end">
                             <button onClick={handleSaveDrafts} disabled={isSavingDraft}
-                              className="flex items-center gap-2 px-5 py-2.5 bg-[#10B981] hover:bg-[#10B981]/90 text-white font-bold rounded-[10px] text-xs transition-all disabled:opacity-50">
+                              className="flex items-center gap-2 px-5 py-2.5 bg-[#10B981] hover:bg-[#10B981]/90 text-slate-900 dark:text-white font-bold rounded-[10px] text-xs transition-all disabled:opacity-50">
                               <Save size={13} /> {isSavingDraft ? 'Saving…' : 'Save Draft'}
                             </button>
                           </div>
@@ -665,13 +665,13 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                               value={logNote}
                               onChange={e => setLogNote(e.target.value)}
                               rows={7}
-                              className="w-full bg-[#09090B] border border-[#232734] rounded-[12px] px-4 py-3 text-sm text-white placeholder-[#94A3B8]/50 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all resize-none leading-relaxed"
+                              className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-[12px] px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-[#94A3B8]/50 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all resize-none leading-relaxed"
                               placeholder="Details of the call or manual outreach note…"
                             />
                           </div>
                           <div className="flex gap-3 justify-end">
                             <button onClick={() => handleAddLog('Note')} disabled={isLogging || !logNote.trim()}
-                              className="flex items-center gap-2 px-4 py-2.5 bg-[#11131A] border border-[#232734] text-[#94A3B8] hover:text-white font-bold rounded-[10px] text-xs transition-all disabled:opacity-50">
+                              className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white font-bold rounded-[10px] text-xs transition-all disabled:opacity-50">
                               <Activity size={13} /> Log as Note
                             </button>
                             <button onClick={() => handleAddLog('Phone')} disabled={isLogging || !logNote.trim()}
@@ -691,21 +691,21 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="hidden lg:flex flex-1 h-full flex-col items-center justify-center bg-[#11131A] border border-[#232734] rounded-[20px] text-center p-8 relative overflow-hidden"
+                  className="hidden lg:flex flex-1 h-full flex-col items-center justify-center bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] text-center p-8 relative overflow-hidden"
                 >
                   {/* Subtle Grid Background */}
-                  <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+                  <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#94a3b8 1px, transparent 1px), linear-gradient(90deg, #94a3b8 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
                   
-                  <div className="relative z-10 w-16 h-16 rounded-[20px] bg-[#09090B] border border-[#232734] flex items-center justify-center mb-5 shadow-lg">
+                  <div className="relative z-10 w-16 h-16 rounded-[20px] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center mb-5 shadow-lg">
                     <Activity size={24} className="text-[#94A3B8]" />
                   </div>
-                  <p className="relative z-10 text-lg font-bold text-white mb-2">No contact selected</p>
+                  <p className="relative z-10 text-lg font-bold text-slate-900 dark:text-white mb-2">No contact selected</p>
                   <p className="relative z-10 text-sm text-[#94A3B8] max-w-[240px] leading-relaxed mb-8">
                     Select a lead from the list to view their timeline and outreach tools.
                   </p>
                   <div className="relative z-10 flex items-center gap-4 text-xs font-bold text-[#475569]">
-                    <span className="flex items-center gap-1.5"><kbd className="px-2 py-1 rounded-md bg-[#09090B] border border-[#232734] text-slate-300">⌘K</kbd> search</span>
-                    <span className="flex items-center gap-1.5"><kbd className="px-2 py-1 rounded-md bg-[#09090B] border border-[#232734] text-slate-300">C</kbd> compose</span>
+                    <span className="flex items-center gap-1.5"><kbd className="px-2 py-1 rounded-md bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] text-slate-700 dark:text-slate-300">⌘K</kbd> search</span>
+                    <span className="flex items-center gap-1.5"><kbd className="px-2 py-1 rounded-md bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] text-slate-700 dark:text-slate-300">C</kbd> compose</span>
                   </div>
                 </motion.div>
               )}

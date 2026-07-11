@@ -14,7 +14,7 @@ interface CardProps {
 
 const TAG_COLORS: Record<string, string> = {
   'LARAVEL': 'bg-rose-500/10 text-rose-400 border-rose-500/20',
-  'NEXT.JS': 'bg-slate-500/10 text-slate-300 border-slate-500/20',
+  'NEXT.JS': 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20',
   'WORDPRESS': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
   'SEO': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
   'UI/UX': 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20',
@@ -72,7 +72,7 @@ export default function Card({ card, onClick }: CardProps) {
       {...listeners}
       onClick={handleCardClick}
       suppressHydrationWarning
-      className="group bg-[#11131A] border border-[#232734] hover:border-indigo-500/50 rounded-2xl p-4 hover:-translate-y-1 transition-all duration-300 cursor-pointer shadow-sm"
+      className="group bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] hover:border-indigo-500/50 rounded-2xl p-4 hover:-translate-y-1 transition-all duration-300 cursor-pointer shadow-sm"
     >
       {/* Tech Tags */}
       {card.tags.length > 0 && (
@@ -81,7 +81,7 @@ export default function Card({ card, onClick }: CardProps) {
             <span
               key={idx}
               className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
-                TAG_COLORS[tag.toUpperCase()] || 'bg-slate-800 text-slate-400 border-slate-700'
+                TAG_COLORS[tag.toUpperCase()] || 'bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-700'
               }`}
             >
               {tag}
@@ -91,7 +91,7 @@ export default function Card({ card, onClick }: CardProps) {
       )}
 
       {/* Project Title */}
-      <h3 className="text-sm font-bold text-white my-3 line-clamp-2 leading-snug group-hover:text-indigo-400 transition-colors">
+      <h3 className="text-sm font-bold text-slate-900 dark:text-white my-3 line-clamp-2 leading-snug group-hover:text-indigo-400 transition-colors">
         {card.title}
       </h3>
 
@@ -100,9 +100,9 @@ export default function Card({ card, onClick }: CardProps) {
         <div className="mb-4">
           <div className="flex justify-between items-center mb-1.5">
             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Progress</span>
-            <span className="text-[10px] font-bold text-slate-300">{card.progress}%</span>
+            <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">{card.progress}%</span>
           </div>
-          <div className="h-1.5 w-full bg-[#09090B] border border-[#232734] rounded-full overflow-hidden">
+          <div className="h-1.5 w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-full overflow-hidden">
             <div
               className="h-full bg-indigo-500 rounded-full transition-all duration-500"
               style={{ width: `${card.progress}%` }}
@@ -112,7 +112,7 @@ export default function Card({ card, onClick }: CardProps) {
       )}
 
       {/* Footer */}
-      <div className="flex justify-between items-center mt-4 pt-4 border-t border-[#232734]">
+      <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-200 dark:border-[#232734]">
         {/* Due Date */}
         <div className={`flex items-center gap-1.5 text-xs font-bold ${
           dueInfo.isUrgent
@@ -129,7 +129,7 @@ export default function Card({ card, onClick }: CardProps) {
             {card.assignees.slice(0, 3).map((assignee, idx) => (
               <div
                 key={idx}
-                className="w-7 h-7 rounded-full border-2 border-[#11131A] bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-[10px] font-bold shadow-sm overflow-hidden"
+                className="w-7 h-7 rounded-full border-2 border-[#11131A] bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-slate-900 dark:text-white text-[10px] font-bold shadow-sm overflow-hidden"
                 title={assignee.name}
               >
                 {assignee.avatarUrl ? (
@@ -146,7 +146,7 @@ export default function Card({ card, onClick }: CardProps) {
               </div>
             ))}
             {card.assignees.length > 3 && (
-              <div className="w-7 h-7 rounded-full border-2 border-[#11131A] bg-[#232734] flex items-center justify-center text-slate-400 text-[10px] font-bold shadow-sm">
+              <div className="w-7 h-7 rounded-full border-2 border-[#11131A] bg-slate-200 dark:bg-[#232734] flex items-center justify-center text-slate-500 dark:text-slate-400 text-[10px] font-bold shadow-sm">
                 +{card.assignees.length - 3}
               </div>
             )}

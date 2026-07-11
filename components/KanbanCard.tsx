@@ -144,7 +144,7 @@ export default function KanbanCard({ project, onEdit, onDelete, onResetToLead }:
           role="button"
           tabIndex={0}
           data-no-click
-          className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 relative cursor-pointer"
+          className="text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 relative cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
             setShowMenu(!showMenu);
@@ -221,7 +221,7 @@ export default function KanbanCard({ project, onEdit, onDelete, onResetToLead }:
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div 
-          className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-white/50 dark:bg-black/50 backdrop-blur-sm"
           onClick={(e) => {
             e.stopPropagation();
             setShowDeleteConfirm(false);
@@ -251,7 +251,7 @@ export default function KanbanCard({ project, onEdit, onDelete, onResetToLead }:
                   setShowDeleteConfirm(false);
                   onDelete?.(project._id);
                 }}
-                className="px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-lg transition-all shadow-lg hover:shadow-red-500/30"
+                className="px-4 py-2 text-sm font-bold text-slate-900 dark:text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-lg transition-all shadow-lg hover:shadow-red-500/30"
               >
                 Delete Project
               </button>
@@ -305,7 +305,7 @@ export default function KanbanCard({ project, onEdit, onDelete, onResetToLead }:
 
         {/* Avatars & Meta */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-slate-400 dark:text-gray-500 text-xs">
+          <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 dark:text-gray-500 text-xs">
             {project.comments > 0 && (
               <span className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">
                 <MessageSquare size={12} /> {project.comments}
@@ -323,7 +323,7 @@ export default function KanbanCard({ project, onEdit, onDelete, onResetToLead }:
               {project.assignees.slice(0, 3).map((assignee: string, idx: number) => (
                 <div
                   key={idx}
-                  className="w-8 h-8 rounded-full border-2 border-white dark:border-slate-900 bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white text-xs font-bold shadow-md hover:scale-110 transition-transform"
+                  className="w-8 h-8 rounded-full border-2 border-white dark:border-slate-900 bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-slate-900 dark:text-white text-xs font-bold shadow-md hover:scale-110 transition-transform"
                   title={assignee}
                 >
                   {assignee.charAt(0).toUpperCase()}

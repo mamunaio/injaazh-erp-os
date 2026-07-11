@@ -31,7 +31,7 @@ export default function SplashScreen({ onComplete }: { onComplete?: () => void }
   }, [onComplete]);
 
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950 overflow-hidden font-sans text-slate-200">
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950 overflow-hidden font-sans text-slate-800 dark:text-slate-200">
       
       {/* Background Glowing Orb */}
       <motion.div 
@@ -54,12 +54,12 @@ export default function SplashScreen({ onComplete }: { onComplete?: () => void }
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           className="flex flex-col items-center mb-12"
         >
-          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-[20px] bg-gradient-to-br from-slate-900 to-slate-950 border border-white/10 flex items-center justify-center shadow-2xl shadow-violet-500/10 mb-6 relative overflow-hidden group">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-[20px] bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-200 dark:border-white/10 flex items-center justify-center shadow-2xl shadow-violet-500/10 mb-6 relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-violet-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <Command className="w-8 h-8 sm:w-10 sm:h-10 text-white relative z-10" strokeWidth={1.5} />
+            <Command className="w-8 h-8 sm:w-10 sm:h-10 text-slate-900 dark:text-white relative z-10" strokeWidth={1.5} />
           </div>
           
-          <h1 className="text-3xl sm:text-4xl font-bold font-jakarta tracking-tight text-white flex items-center gap-2">
+          <h1 className="text-3xl sm:text-4xl font-bold font-jakarta tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             INJAAZH
             <span className="text-violet-500 text-sm sm:text-base font-semibold uppercase tracking-widest mt-1">Global</span>
           </h1>
@@ -87,7 +87,7 @@ export default function SplashScreen({ onComplete }: { onComplete?: () => void }
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             className="flex items-center gap-2"
           >
-            <span className="text-xs sm:text-sm font-medium text-slate-400 tracking-wider">
+            <span className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 tracking-wider">
               Initializing Workspace...
             </span>
           </motion.div>

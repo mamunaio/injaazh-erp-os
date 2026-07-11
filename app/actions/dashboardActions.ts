@@ -13,13 +13,14 @@ export async function getDashboardData() {
     await connectToDatabase();
 
     // Fetch all data in parallel
-    const [leads, projects, proposals, transactions, marketplaceProjects, seoProjects] = await Promise.all([
+    const [leads, projects, proposals, transactions, marketplaceProjects, seoProjects, clients] = await Promise.all([
       Lead.find({}).lean(),
       Project.find({}).lean(),
       Proposal.find({}).lean(),
       Transaction.find({}).sort({ date: -1 }).lean(),
       MarketplaceProject.find({}).lean(),
       SeoProject.find({}).sort({ lastAudited: -1 }).limit(3).lean(),
+      connectToDatabase().then(() => require('@/models/MarketplaceClient').default.find({}).lean()),
     ]);
 
     // Calculate lead stats
@@ -295,6 +296,7 @@ export async function getDashboardData() {
           leadsUpdatedToday,
           newLeadsToday,
           outreachAddedToday,
+          activeClients: clients ? clients.length : 0,
         },
         upcomingDeadlines,
         recentTransactions,

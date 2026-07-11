@@ -98,29 +98,29 @@ export default function CampaignBuilderModal({ isOpen, onClose, onSave, initialD
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#09090B]/80 backdrop-blur-md overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/80 dark:bg-[#09090B]/80 backdrop-blur-md overflow-y-auto">
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="w-full max-w-4xl bg-[#11131A] border border-[#232734] rounded-3xl shadow-[0_0_40px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[90vh] min-h-[500px]"
+        className="w-full max-w-4xl bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-3xl shadow-[0_0_40px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[90vh] min-h-[500px]"
       >
-        <div className="flex justify-between items-center p-6 border-b border-[#232734] bg-[#09090B]">
+        <div className="flex justify-between items-center p-6 border-b border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B]">
           <div>
-            <h2 className="text-2xl font-black text-white tracking-tight">Campaign Builder</h2>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Campaign Builder</h2>
             <p className="text-sm font-semibold text-[#94A3B8] mt-1">Design your automated email sequence</p>
           </div>
-          <button onClick={onClose} className="p-2.5 text-[#94A3B8] hover:text-white hover:bg-[#232734] rounded-xl transition-colors">
+          <button onClick={onClose} className="p-2.5 text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] rounded-xl transition-colors">
             <X size={20} />
           </button>
         </div>
 
         {initialData && initialData._id && (
-          <div className="flex border-b border-[#232734] bg-[#09090B] px-6 pt-4">
+          <div className="flex border-b border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B] px-6 pt-4">
             <button
               onClick={() => setActiveTab('sequences')}
               className={`px-6 py-3.5 font-bold text-sm border-b-2 transition-colors ${
-                activeTab === 'sequences' ? 'border-[#2563EB] text-[#2563EB]' : 'border-transparent text-[#94A3B8] hover:text-white'
+                activeTab === 'sequences' ? 'border-[#2563EB] text-[#2563EB]' : 'border-transparent text-[#94A3B8] hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Sequences
@@ -128,7 +128,7 @@ export default function CampaignBuilderModal({ isOpen, onClose, onSave, initialD
             <button
               onClick={() => setActiveTab('leads')}
               className={`px-6 py-3.5 font-bold text-sm border-b-2 transition-colors ${
-                activeTab === 'leads' ? 'border-[#2563EB] text-[#2563EB]' : 'border-transparent text-[#94A3B8] hover:text-white'
+                activeTab === 'leads' ? 'border-[#2563EB] text-[#2563EB]' : 'border-transparent text-[#94A3B8] hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Leads
@@ -147,7 +147,7 @@ export default function CampaignBuilderModal({ isOpen, onClose, onSave, initialD
                     value={name}
                     onChange={e => setName(e.target.value)}
                     placeholder="e.g. Q3 Roofers Outreach"
-                    className="w-full bg-[#09090B] border border-[#232734] rounded-xl px-4 py-3.5 text-white font-medium focus:outline-none focus:border-[#2563EB] transition-colors"
+                    className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-3.5 text-slate-900 dark:text-white font-medium focus:outline-none focus:border-[#2563EB] transition-colors"
                   />
                 </div>
                 <div>
@@ -156,21 +156,21 @@ export default function CampaignBuilderModal({ isOpen, onClose, onSave, initialD
                     value={niche}
                     onChange={e => setNiche(e.target.value)}
                     placeholder="e.g. Roofing, Real Estate"
-                    className="w-full bg-[#09090B] border border-[#232734] rounded-xl px-4 py-3.5 text-white font-medium focus:outline-none focus:border-[#2563EB] transition-colors"
+                    className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-3.5 text-slate-900 dark:text-white font-medium focus:outline-none focus:border-[#2563EB] transition-colors"
                   />
                 </div>
               </div>
 
-              <div className="h-px bg-[#232734] w-full mb-10"></div>
+              <div className="h-px bg-slate-200 dark:bg-[#232734] w-full mb-10"></div>
 
               {/* Sequence Builder */}
               <div className="space-y-8">
-                <h3 className="text-xl font-black text-white flex items-center gap-3">
+                <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                   <Mail size={22} className="text-[#2563EB]" /> Sequence Steps
                 </h3>
                 
                 {sequences.map((step, idx) => (
-                  <div key={idx} className="bg-[#09090B] border border-[#232734] border-l-4 border-l-[#2563EB] rounded-2xl p-6 relative group shadow-sm">
+                  <div key={idx} className="bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] border-l-4 border-l-[#2563EB] rounded-2xl p-6 relative group shadow-sm">
                     {sequences.length > 1 && (
                       <button 
                         onClick={() => removeStep(idx)}
@@ -184,17 +184,17 @@ export default function CampaignBuilderModal({ isOpen, onClose, onSave, initialD
                       <div className="w-10 h-10 rounded-full bg-[#2563EB]/10 border border-[#2563EB]/20 text-[#2563EB] flex items-center justify-center font-black text-base shadow-[0_0_10px_rgba(37,99,235,0.2)]">
                         {step.stepNumber}
                       </div>
-                      <h4 className="font-bold text-lg text-white">Step {step.stepNumber}</h4>
+                      <h4 className="font-bold text-lg text-slate-900 dark:text-white">Step {step.stepNumber}</h4>
                       
                       {idx > 0 && (
-                        <div className="flex items-center gap-3 ml-6 bg-[#11131A] px-4 py-2 rounded-xl border border-[#232734]">
+                        <div className="flex items-center gap-3 ml-6 bg-white dark:bg-[#11131A] px-4 py-2 rounded-xl border border-slate-200 dark:border-[#232734]">
                           <span className="text-xs font-bold text-[#94A3B8] uppercase">Wait</span>
                           <input 
                             type="number"
                             min="1"
                             value={step.delayDays}
                             onChange={e => updateStep(idx, 'delayDays', parseInt(e.target.value))}
-                            className="w-14 bg-[#09090B] border border-[#232734] rounded-lg px-2 py-1 text-center font-bold text-white text-sm focus:outline-none focus:border-[#2563EB]"
+                            className="w-14 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-lg px-2 py-1 text-center font-bold text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#2563EB]"
                           />
                           <span className="text-xs font-bold text-[#94A3B8] uppercase">days after previous</span>
                         </div>
@@ -208,7 +208,7 @@ export default function CampaignBuilderModal({ isOpen, onClose, onSave, initialD
                           value={step.subjectTemplate}
                           onChange={e => updateStep(idx, 'subjectTemplate', e.target.value)}
                           placeholder="e.g. Quick question regarding {{company_name}}"
-                          className="w-full bg-[#11131A] border border-[#232734] rounded-xl px-4 py-3 text-white font-medium focus:outline-none focus:border-[#2563EB] text-sm"
+                          className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-3 text-slate-900 dark:text-white font-medium focus:outline-none focus:border-[#2563EB] text-sm"
                         />
                       </div>
 
@@ -217,7 +217,7 @@ export default function CampaignBuilderModal({ isOpen, onClose, onSave, initialD
                           <label className="text-xs font-black text-[#94A3B8] uppercase tracking-widest">Email Body</label>
                           <button 
                             onClick={() => updateStep(idx, 'useAI', !step.useAI)}
-                            className={`flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors border ${step.useAI ? 'bg-[#2563EB]/10 text-[#2563EB] border-[#2563EB]/20' : 'bg-[#09090B] text-[#94A3B8] border-[#232734] hover:text-white hover:border-[#94A3B8]'}`}
+                            className={`flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors border ${step.useAI ? 'bg-[#2563EB]/10 text-[#2563EB] border-[#2563EB]/20' : 'bg-slate-50 dark:bg-[#09090B] text-[#94A3B8] border-slate-200 dark:border-[#232734] hover:text-slate-900 dark:hover:text-white hover:border-[#94A3B8]'}`}
                           >
                             {step.useAI ? <Bot size={14} /> : <Type size={14} />}
                             {step.useAI ? 'AI Generated (Prompt Mode)' : 'Fixed Template'}
@@ -227,7 +227,7 @@ export default function CampaignBuilderModal({ isOpen, onClose, onSave, initialD
                           value={step.bodyTemplate}
                           onChange={e => updateStep(idx, 'bodyTemplate', e.target.value)}
                           placeholder={step.useAI ? "Write instructions for the AI on how to write this email..." : "Write the exact email body here. Use {{company_name}} for variables..."}
-                          className="w-full bg-[#11131A] border border-[#232734] rounded-xl px-4 py-4 text-white font-medium focus:outline-none focus:border-[#2563EB] text-sm resize-none h-40 leading-relaxed"
+                          className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-4 text-slate-900 dark:text-white font-medium focus:outline-none focus:border-[#2563EB] text-sm resize-none h-40 leading-relaxed"
                         />
                         {step.useAI && (
                           <p className="text-xs text-[#2563EB] mt-3 font-semibold flex items-center gap-1.5 bg-[#2563EB]/10 px-3 py-2 rounded-lg border border-[#2563EB]/20">
@@ -241,7 +241,7 @@ export default function CampaignBuilderModal({ isOpen, onClose, onSave, initialD
 
                 <button 
                   onClick={addStep}
-                  className="w-full py-5 bg-[#09090B] border border-[#232734] hover:bg-[#1E293B]/50 hover:border-[#94A3B8] rounded-2xl text-[#94A3B8] hover:text-white font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-sm"
+                  className="w-full py-5 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] hover:bg-[#1E293B]/50 hover:border-[#94A3B8] rounded-2xl text-[#94A3B8] hover:text-slate-900 dark:hover:text-white font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-sm"
                 >
                   <Plus size={18} strokeWidth={2.5} /> Add Next Step
                 </button>
@@ -253,17 +253,17 @@ export default function CampaignBuilderModal({ isOpen, onClose, onSave, initialD
         </div>
 
         {activeTab === 'sequences' && (
-          <div className="p-6 border-t border-[#232734] bg-[#09090B] flex justify-end gap-4">
+          <div className="p-6 border-t border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B] flex justify-end gap-4">
             <button 
               onClick={onClose}
-              className="px-6 py-3 rounded-xl font-bold text-[#94A3B8] hover:text-white hover:bg-[#232734] transition-colors"
+              className="px-6 py-3 rounded-xl font-bold text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] transition-colors"
             >
               Cancel
             </button>
             <button 
               onClick={handleSave}
               disabled={isSaving}
-              className="px-6 py-3 bg-[#2563EB] hover:bg-[#2563EB]/90 disabled:opacity-50 text-white font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-[#2563EB]/20"
+              className="px-6 py-3 bg-[#2563EB] hover:bg-[#2563EB]/90 disabled:opacity-50 text-slate-900 dark:text-white font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-[#2563EB]/20"
             >
               {isSaving ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} strokeWidth={2.5} />}
               Save Campaign

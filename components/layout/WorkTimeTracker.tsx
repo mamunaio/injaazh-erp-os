@@ -1,130 +1,32 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import { pingWorkSession, getTodayWorkSession } from '@/app/actions/workSessionActions';
-import { Clock } from 'lucide-react';
+import { Play, Square, Loader2 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { createTimeLog } from '@/app/actions/timesheetActions';
+import toast from 'react-hot-toast';
 
 export default function WorkTimeTracker() {
   const [totalSeconds, setTotalSeconds] = useState(0);
-  const [isActive, setIsActive] = useState(true);
+  const [isActive, setIsActive] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const pathname = usePathname();
-  const initialized = useRef(false);
-  
-  // Idle tracking refs
-  const lastActivityRef = useRef(Date.now());
-  const isIdleRef = useRef(false);
+  const startTimeRef = useRef<number | null>(null);
 
-  // 1. Initialize and get the current total seconds
-  useEffect(() => {
-    if (pathname === '/login' || pathname === '/' || pathname === '/register') return;
-    
-    if (!initialized.current) {
-      initialized.current = true;
-      getTodayWorkSession().then((res) => {
-        if (res.success && res.totalSeconds !== undefined) {
-          setTotalSeconds(res.totalSeconds);
-        }
-      });
-    }
-  }, [pathname]);
-
-  // 2. Activity listeners with throttling
+  // Timer update
   useEffect(() => {
     if (pathname === '/login' || pathname === '/' || pathname === '/register') return;
 
-    let throttleTimer: NodeJS.Timeout | null = null;
-    const updateActivity = () => {
-      if (throttleTimer) return;
-      throttleTimer = setTimeout(() => { throttleTimer = null; }, 1500);
-
-      lastActivityRef.current = Date.now();
-
-      if (isIdleRef.current) {
-        // Resume from idle
-        isIdleRef.current = false;
-        setIsActive(true);
-        // Immediately ping to set lastActiveTime on backend so we start counting from now
-        pingWorkSession().then(res => {
-          if (res.success && res.totalSeconds !== undefined) {
-            setTotalSeconds(res.totalSeconds);
-          }
-        });
-      }
-    };
-
-    const events = ['mousemove', 'keydown', 'click', 'scroll'];
-    events.forEach(e => window.addEventListener(e, updateActivity, { passive: true }));
-    
-    return () => {
-      events.forEach(e => window.removeEventListener(e, updateActivity));
-      if (throttleTimer) clearTimeout(throttleTimer);
-    };
-  }, [pathname]);
-
-  // 3. Local timer update & Idle Check (runs every second)
-  useEffect(() => {
-    if (pathname === '/login' || pathname === '/' || pathname === '/register') return;
-
-    const interval = setInterval(() => {
-      const now = Date.now();
-      const timeSinceLastActivity = now - lastActivityRef.current;
-      const isVisible = document.visibilityState === 'visible';
-
-      // 10 minutes = 600,000 ms
-      if (timeSinceLastActivity >= 600000 && !isIdleRef.current) {
-        // Just became idle!
-        isIdleRef.current = true;
-        setIsActive(false);
-        setTotalSeconds(prev => Math.max(0, prev - 600)); // retroactive deduction visually immediately
-        
-        // Inform backend to deduct 600 seconds retroactively
-        pingWorkSession(600).then(res => {
-           if (res.success && res.totalSeconds !== undefined) {
-             setTotalSeconds(res.totalSeconds);
-           }
-        });
-      }
-
-      if (!isIdleRef.current && isVisible) {
+    let interval: NodeJS.Timeout;
+    if (isActive) {
+      interval = setInterval(() => {
         setTotalSeconds(prev => prev + 1);
-        if (!isActive) setIsActive(true);
-      } else if (!isVisible && isActive) {
-        setIsActive(false); // Pause visually if window is hidden
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [isActive, pathname]);
-
-  // 4. Ping server every 60 seconds
-  useEffect(() => {
-    if (pathname === '/login' || pathname === '/' || pathname === '/register') return;
-
-    const ping = async () => {
-      if (isIdleRef.current || document.visibilityState !== 'visible') return;
-      
-      const res = await pingWorkSession();
-      if (res.success && res.totalSeconds !== undefined) {
-        setTotalSeconds(res.totalSeconds);
-      }
-    };
-
-    const interval = setInterval(ping, 60000);
-    
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && !isIdleRef.current) {
-        ping();
-      }
-    };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
+      }, 1000);
+    }
     return () => {
-      clearInterval(interval);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (interval) clearInterval(interval);
     };
-  }, [pathname]);
+  }, [isActive, pathname]);
 
   if (pathname === '/login' || pathname === '/' || pathname === '/register') return null;
 
@@ -132,20 +34,89 @@ export default function WorkTimeTracker() {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
-    
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const handleToggle = async () => {
+    if (isActive) {
+      // Stop and Save
+      setIsActive(false);
+      if (totalSeconds < 60) {
+        toast.error('Session too short to save (minimum 1 minute).');
+        setTotalSeconds(0);
+        startTimeRef.current = null;
+        return;
+      }
+
+      setIsSaving(true);
+      try {
+        const now = new Date();
+        const start = startTimeRef.current ? new Date(startTimeRef.current) : new Date(now.getTime() - totalSeconds * 1000);
+        
+        const startTimeStr = start.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        const endTimeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+        const res = await createTimeLog({
+          project: 'General',
+          task: 'Tracked Session',
+          date: now.toISOString(),
+          startTime: startTimeStr,
+          endTime: endTimeStr,
+          durationSeconds: totalSeconds
+        });
+
+        if (res.success) {
+          toast.success(`Saved ${formatTime(totalSeconds)} to Timesheet!`);
+        } else {
+          toast.error(res.error || 'Failed to save timesheet entry.');
+        }
+      } catch (error) {
+        toast.error('An error occurred.');
+      } finally {
+        setTotalSeconds(0);
+        startTimeRef.current = null;
+        setIsSaving(false);
+      }
+    } else {
+      // Start
+      setIsActive(true);
+      startTimeRef.current = Date.now();
+      toast.success('Time tracker started!');
+    }
   };
 
   return (
     <div className="fixed bottom-6 right-28 z-40">
-      <div className="flex items-center gap-3 px-4 py-2 neu-flat rounded-2xl bg-[#11131A] backdrop-blur-md border border-[#232734] shadow-2xl group hover:border-violet-500/30 transition-all cursor-default">
-        <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 'bg-amber-500'}`}></div>
-        <Clock size={16} className="text-slate-400 group-hover:text-violet-500 transition-colors" />
-        <div className="flex flex-col">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-0.5">
-            {isActive ? "Working" : "Idle"}
+      <div className="flex items-center gap-3 px-4 py-2 neu-flat rounded-2xl bg-white dark:bg-[#11131A] backdrop-blur-md border border-slate-200 dark:border-[#232734] shadow-2xl transition-all cursor-default group hover:border-[#2563EB]/30">
+        
+        <button 
+          onClick={handleToggle}
+          disabled={isSaving}
+          className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all shadow-sm ${
+            isActive 
+              ? 'bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white' 
+              : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white'
+          }`}
+        >
+          {isSaving ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : isActive ? (
+            <Square size={14} className="fill-current" />
+          ) : (
+            <Play size={14} className="fill-current ml-0.5" />
+          )}
+        </button>
+
+        <div className="flex flex-col min-w-[70px]">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
+            <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">
+              {isSaving ? "Saving" : isActive ? "Tracking" : "Ready"}
+            </span>
+          </div>
+          <span className={`text-sm font-mono font-black leading-none ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-200'}`}>
+            {formatTime(totalSeconds)}
           </span>
-          <span className="text-sm font-mono font-black text-slate-200 leading-none">{formatTime(totalSeconds)}</span>
         </div>
       </div>
     </div>
