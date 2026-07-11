@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function SettingsPage() {
   return (
-    <div className="min-h-screen neu-base-bg p-4 md:p-8 text-slate-200 overflow-hidden font-sans tracking-tight">
+    <div className="bg-[#09090B] min-h-screen text-white overflow-hidden">
       <SettingsClient />
     </div>
   );

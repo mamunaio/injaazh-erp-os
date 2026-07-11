@@ -97,17 +97,17 @@ export default function AiKeysManager() {
 
   return (
     <div className="space-y-8">
-      <div className="neu-flat p-6 rounded-2xl">
-        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-6">
-          <Plus size={20} className="text-indigo-500" /> Add New AI Key
+      <div className="bg-[#09090B] border border-[#232734] p-6 rounded-2xl">
+        <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 mb-6">
+          <Plus size={16} className="text-indigo-400" /> Add New AI Key
         </h3>
         <form onSubmit={handleAddKey} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Provider</label>
+            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Provider</label>
             <select
               value={provider}
               onChange={(e: any) => setProvider(e.target.value)}
-              className="w-full px-4 py-3 neu-pressed rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:bg-[#1a1c23] dark:text-slate-200"
+              className="w-full px-4 py-3 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-white text-sm font-bold appearance-none cursor-pointer"
             >
               <option value="gemini">Google Gemini</option>
               <option value="openai">OpenAI (ChatGPT)</option>
@@ -118,43 +118,43 @@ export default function AiKeysManager() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">API Key</label>
+            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">API Key</label>
             <input
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              className="w-full px-4 py-3 neu-pressed rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:bg-[#1a1c23] dark:text-slate-200"
+              className="w-full px-4 py-3 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-white text-sm font-bold transition-all"
               placeholder="sk-..."
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Alias / Name (Optional)</label>
+            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Alias / Name (Optional)</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 neu-pressed rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:bg-[#1a1c23] dark:text-slate-200"
+              className="w-full px-4 py-3 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-white text-sm font-bold transition-all"
               placeholder="e.g. Primary Groq Key"
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Model ID (Optional)</label>
+            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Model ID (Optional)</label>
             <input
               type="text"
               value={modelId}
               onChange={(e) => setModelId(e.target.value)}
-              className="w-full px-4 py-3 neu-pressed rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:bg-[#1a1c23] dark:text-slate-200"
+              className="w-full px-4 py-3 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-white text-sm font-bold transition-all"
               placeholder="e.g. google/gemini-pro"
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Daily Request Limit</label>
+            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Daily Request Limit</label>
             <input
               type="number"
               value={dailyLimit}
               onChange={(e) => setDailyLimit(Number(e.target.value))}
-              className="w-full px-4 py-3 neu-pressed rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:bg-[#1a1c23] dark:text-slate-200"
+              className="w-full px-4 py-3 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-white text-sm font-bold transition-all"
               min="1"
             />
           </div>
@@ -162,9 +162,9 @@ export default function AiKeysManager() {
             <button
               type="submit"
               disabled={isAdding}
-              className="flex items-center gap-2 px-6 py-3 neu-convex rounded-xl text-indigo-600 font-bold hover:text-indigo-500 transition-all disabled:opacity-50"
+              className="flex items-center gap-2 px-6 py-3 bg-white text-black font-bold rounded-xl transition-all hover:bg-slate-200 disabled:opacity-50 text-sm shadow-sm"
             >
-              {isAdding ? <Activity className="animate-spin" size={20} /> : <Save size={20} />}
+              {isAdding ? <Activity className="animate-spin" size={16} /> : <Save size={16} />}
               Save API Key
             </button>
           </div>
@@ -172,8 +172,8 @@ export default function AiKeysManager() {
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-4">
-          <Key size={20} className="text-indigo-500" /> Active AI Keys
+        <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 mb-4">
+          <Key size={16} className="text-indigo-400" /> Active AI Keys
         </h3>
         
         {isLoading ? (
@@ -182,49 +182,49 @@ export default function AiKeysManager() {
             Loading AI Keys...
           </div>
         ) : keys.length === 0 ? (
-          <div className="neu-flat p-8 text-center rounded-2xl">
-            <div className="w-16 h-16 rounded-full neu-convex flex items-center justify-center mx-auto mb-4">
-              <Key className="text-slate-400" size={24} />
+          <div className="bg-[#09090B] border border-[#232734] p-8 text-center rounded-2xl">
+            <div className="w-16 h-16 rounded-full bg-[#11131A] border border-[#232734] flex items-center justify-center mx-auto mb-4">
+              <Key className="text-slate-500" size={24} />
             </div>
-            <h4 className="text-slate-700 dark:text-slate-300 font-bold mb-2">No AI Keys Found</h4>
-            <p className="text-slate-500 text-sm">Add your first API key above to start using AI features.</p>
+            <h4 className="text-white font-bold mb-2">No AI Keys Found</h4>
+            <p className="text-slate-500 text-xs font-bold">Add your first API key above to start using AI features.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {keys.map((k) => (
-              <div key={k._id} className="neu-flat p-5 rounded-2xl flex flex-col justify-between">
+              <div key={k._id} className="bg-[#09090B] border border-[#232734] p-5 rounded-2xl flex flex-col justify-between hover:border-indigo-500/30 transition-all">
                 <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-xl neu-pressed ${getProviderColor(k.provider)}`}>
+                  <div className="flex items-center gap-4">
+                    <div className={`p-2.5 rounded-xl border border-[#232734] bg-[#11131A] ${getProviderColor(k.provider)}`}>
                       <Activity size={20} />
                     </div>
                     <div>
-                      <h4 className="font-bold text-slate-800 dark:text-slate-200 capitalize">
+                      <h4 className="font-bold text-white capitalize text-sm">
                         {k.provider} {k.name ? `- ${k.name}` : ''}
                       </h4>
-                      <p className="text-xs text-slate-500 font-mono">
+                      <p className="text-[10px] text-slate-500 font-mono mt-0.5">
                         {k.modelId ? k.modelId : (k.apiKey.substring(0, 8) + '•••••••••••')}
                       </p>
                     </div>
                   </div>
                   <button 
                     onClick={() => handleToggle(k._id, k.isActive)}
-                    className={`${k.isActive ? 'text-emerald-500' : 'text-slate-400'} hover:scale-110 transition-transform`}
+                    className={`${k.isActive ? 'text-emerald-500' : 'text-slate-500'} hover:scale-110 transition-transform`}
                     title={k.isActive ? "Active (Click to disable)" : "Disabled (Click to activate)"}
                   >
-                    {k.isActive ? <CheckCircle size={22} /> : <XCircle size={22} />}
+                    {k.isActive ? <CheckCircle size={20} /> : <XCircle size={20} />}
                   </button>
                 </div>
                 
-                <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-200 dark:border-slate-800/50">
-                  <div className="text-xs text-slate-500">
-                    <span className="font-bold text-slate-700 dark:text-slate-300">{k.sentToday}</span> / {k.dailyLimit} req today
+                <div className="flex items-center justify-between mt-auto pt-4 border-t border-[#232734]">
+                  <div className="text-xs font-bold text-slate-500">
+                    <span className="text-indigo-400">{k.sentToday}</span> / {k.dailyLimit} req today
                   </div>
                   <button 
                     onClick={() => handleDelete(k._id)}
-                    className="p-2 text-rose-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors"
+                    className="p-2 text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 rounded-lg transition-colors"
                   >
-                    <Trash2 size={18} />
+                    <Trash2 size={16} />
                   </button>
                 </div>
               </div>

@@ -63,10 +63,6 @@ export default async function MarketplaceClientsPage() {
   });
 
   return (
-    <div className="min-h-screen neu-base-bg p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
-        <ClientHubClient initialClients={clientsWithSpending} />
-      </div>
-    </div>
+    <ClientHubClient initialClients={clientsWithSpending} />
   );
 }

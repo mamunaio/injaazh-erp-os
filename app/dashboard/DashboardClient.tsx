@@ -2,73 +2,30 @@
 
 import React, { useState } from 'react';
 import { 
-  Users, 
-  Briefcase, 
-  FileText, 
-  DollarSign, 
-  TrendingUp,
-  Clock,
-  Plus,
-  ArrowRight,
-  Calendar,
-  AlertCircle,
-  Sparkles,
-  PieChart as PieChartIcon,
-  BarChart as BarChartIcon,
-  Globe,
-  ArrowUpRight,
-  TrendingDown,
-  Percent,
-  Layers,
-  ChevronRight,
-  Lightbulb,
-  CheckCircle2,
-  BookOpen,
-  Zap
+  Users, Briefcase, FileText, DollarSign, TrendingUp, Clock, Plus, ArrowRight, Calendar, AlertCircle, Sparkles, PieChart as PieChartIcon, BarChart as BarChartIcon, Globe, ArrowUpRight, TrendingDown, Percent, Layers, ChevronRight, Lightbulb, CheckCircle2, BookOpen, Zap, Mail, MessageSquare, Video, Rocket, LayoutGrid, CheckSquare, Search, Bell, Monitor, Settings, Search as SearchIcon, Activity, X
 } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 import {
-  AreaChart,
-  Area,
-  PieChart,
-  Pie,
-  Cell,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
+  AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
 import { motion } from 'framer-motion';
 import { useUser } from '@/components/layout/UserContext';
-import IslamicSplashModal from './IslamicSplashModal';
 import WorkspaceLoader from '@/components/ui/WorkspaceLoader';
-import AnimatedStatCard from '@/components/ui/AnimatedStatCard';
-import SparklineChart from '@/components/ui/SparklineChart';
 
 interface DashboardClientProps {
   dashboardData: any;
   islamicQuote: any;
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  'Planning': '#2dd4bf',
-  'In Progress': '#fbbf24',
-  'In Review': '#a78bfa',
-  'Completed': '#f472b6',
-};
-
-// Custom Glassmorphic Tooltip for Recharts
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 p-3 rounded-2xl shadow-2xl">
-        <p className="text-sm font-bold text-slate-400 mb-1">{label || payload[0].name}</p>
-        <p className="text-sm font-black text-white">
-          {payload[0].name === 'income' || payload[0].dataKey === 'value' && !['Planning', 'In Progress', 'In Review', 'Completed'].includes(payload[0].name)
+      <div className="bg-[#09090B] border border-[#232734] p-3 rounded-xl shadow-2xl">
+        <p className="text-xs font-semibold text-slate-400 mb-1">{label || payload[0].name}</p>
+        <p className="text-sm font-bold text-white">
+          {payload[0].name === 'income' || payload[0].dataKey === 'value'
             ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(payload[0].value) 
             : payload[0].value}
         </p>
@@ -78,75 +35,63 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const GlassCard = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => (
-  <div className={`relative rounded-[28px] overflow-hidden border border-white/5 bg-slate-900/40 backdrop-blur-xl shadow-2xl p-6 ${className}`}>
-
-    <div className="relative z-10 h-full flex flex-col">{children}</div>
+const Card = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => (
+  <div className={`bg-[#11131A] border border-[#232734] rounded-[24px] shadow-sm hover:shadow-2xl transition-shadow duration-300 ${className}`}>
+    {children}
   </div>
 );
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  show: { opacity: 1, transition: { staggerChildren: 0.05 } }
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 100, damping: 15 } }
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } }
 };
 
 export default function DashboardClient({ dashboardData, islamicQuote }: DashboardClientProps) {
   const { user, loading } = useUser();
+  const [isActionLoading, setIsActionLoading] = useState<string | null>(null);
+  const [activeModal, setActiveModal] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handleAction = (actionName: string, routeTo?: string) => {
+    setIsActionLoading(actionName);
+    setTimeout(() => {
+      setIsActionLoading(null);
+      if (routeTo) {
+        router.push(routeTo);
+      } else {
+        setActiveModal(actionName);
+      }
+    }, 800);
+  };
+
+  const closeModal = () => setActiveModal(null);
 
   if (loading) {
-    return (
-      <div className="min-h-screen neu-base-bg p-8 flex items-center justify-center">
-        <WorkspaceLoader />
-      </div>
-    );
+    return <div className="min-h-screen bg-[#09090B] flex items-center justify-center"><WorkspaceLoader /></div>;
   }
 
   if (!dashboardData) {
     return (
-      <div className="min-h-screen neu-base-bg p-8 flex items-center justify-center text-white">
-        <GlassCard className="text-center p-12 max-w-md w-full">
+      <div className="min-h-screen bg-[#09090B] p-8 flex items-center justify-center text-white">
+        <Card className="text-center p-12 max-w-md w-full">
           <AlertCircle size={48} className="text-rose-500 mx-auto mb-4" />
           <h2 className="text-xl font-bold">Failed to load dashboard data</h2>
-        </GlassCard>
+        </Card>
       </div>
     );
   }
 
-  const { stats, upcomingDeadlines, recentTransactions, recentLeads, projectStatusDistribution, incomeTrend } = dashboardData;
+  const { stats, incomeTrend } = dashboardData;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0,
     }).format(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = date.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    if (diffDays < 0) return 'Overdue';
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Tomorrow';
-    return `In ${diffDays} days`;
-  };
-
-  const getRelativeTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays === 1) return 'Yesterday';
-    return `${diffDays}d ago`;
   };
 
   const getGreeting = () => {
@@ -156,375 +101,571 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
     return 'Good Evening';
   };
 
-  // Prepare chart data
-  const projectStatusData = Object.entries(projectStatusDistribution).map(([status, count]) => ({
-    name: status, value: count as number,
-  }));
+  const pipelineData = [
+    { name: 'New Leads', value: 248, color: '#2563EB', gradient: 'linear-gradient(90deg, #1E3A8A 0%, #2563EB 100%)', width: '100%' },
+    { name: 'Contacted', value: 186, color: '#3B82F6', gradient: 'linear-gradient(90deg, #1E40AF 0%, #3B82F6 100%)', width: '75%' },
+    { name: 'Replied', value: 52, color: '#60A5FA', gradient: 'linear-gradient(90deg, #1D4ED8 0%, #60A5FA 100%)', width: '40%' },
+    { name: 'Meeting', value: 8, color: '#93C5FD', gradient: 'linear-gradient(90deg, #2563EB 0%, #93C5FD 100%)', width: '15%' },
+    { name: 'Closed Won', value: 5, color: '#10B981', gradient: 'linear-gradient(90deg, #047857 0%, #10B981 100%)', width: '8%' },
+  ];
 
-  // Render minimal dashboard for non-admins
-  if (user?.role !== 'admin' && user?.role !== 'owner') {
-    return (
-      <div className="min-h-screen neu-base-bg p-4 md:p-8 text-white overflow-hidden relative selection:bg-indigo-500/30">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-indigo-500/20 blur-[120px] rounded-full pointer-events-none" />
-        
-        <motion.div className="max-w-[1400px] mx-auto space-y-6 relative z-10" variants={containerVariants} initial="hidden" animate="show">
-          <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
-            <div>
-              <h1 className="text-4xl font-black mb-2 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
-                {getGreeting()}, {user?.name || 'Team Member'}
-              </h1>
-              <p className="text-slate-400 font-medium tracking-wide">
-                Here's what's happening today • {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-              </p>
-            </div>
-            
-            <div className="flex flex-wrap gap-3">
-              {user?.permissions?.includes('leads') && (
-                <Link href="/leads">
-                  <button className="flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 text-white font-bold text-sm rounded-2xl border border-white/10 transition-all backdrop-blur-md hover:shadow-[0_0_20px_rgba(45,212,191,0.2)]">
-                    <Plus size={18} className="text-teal-400" /> Add Lead
-                  </button>
-                </Link>
-              )}
-            </div>
-          </motion.div>
-
-          <IslamicSplashModal islamicQuote={islamicQuote} />
-
-          <motion.div variants={itemVariants} className="mb-6">
-            <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-white">
-              <Zap size={20} className="text-amber-500" /> Today's Work Updates
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <AnimatedStatCard
-                title="New Leads Today"
-                value={stats.newLeadsToday || 0}
-                icon={Users}
-                iconColorClass="bg-gradient-to-br from-indigo-500 to-purple-600"
-                glowColorClass="bg-indigo-500"
-              >
-                <div className="flex justify-between text-sm text-slate-400 font-medium">
-                  <span>Last 24 hours</span>
-                </div>
-              </AnimatedStatCard>
-              <AnimatedStatCard
-                title="Leads Updated Today"
-                value={stats.leadsUpdatedToday || 0}
-                icon={TrendingUp}
-                iconColorClass="bg-gradient-to-br from-teal-500 to-emerald-600"
-                glowColorClass="bg-teal-500"
-              >
-                <div className="flex justify-between text-sm text-slate-400 font-medium">
-                  <span>Followed up today</span>
-                </div>
-              </AnimatedStatCard>
-              <AnimatedStatCard
-                title="Outreach Conducted"
-                value={stats.outreachAddedToday || 0}
-                icon={CheckCircle2}
-                iconColorClass="bg-gradient-to-br from-pink-500 to-rose-600"
-                glowColorClass="bg-pink-500"
-              >
-                <div className="flex justify-between text-sm text-slate-400 font-medium">
-                  <span>Log entries recorded</span>
-                </div>
-              </AnimatedStatCard>
-            </div>
-          </motion.div>
-        </motion.div>
-      </div>
-    );
-  }
-
-  // Full Admin Dashboard
   return (
-    <div className="min-h-screen neu-base-bg p-4 md:p-8 text-white overflow-hidden relative selection:bg-pink-500/30">
+    <div className="min-h-screen bg-[#09090B] text-slate-100 font-sans selection:bg-[#2563EB]/30 overflow-x-hidden">
       
-      {/* Background Ambient Glows */}
-      <div className="absolute top-0 left-1/4 w-[800px] h-[500px] bg-pink-500/10 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-[600px] h-[400px] bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none" />
-
       <motion.div 
-        className="max-w-[1400px] mx-auto space-y-6 relative z-10"
+        className="max-w-[1600px] mx-auto p-6 md:p-8 space-y-8"
         variants={containerVariants}
         initial="hidden"
         animate="show"
       >
         
-        {/* HERO SECTION */}
-        <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
+        {/* Page Header & Quick Actions */}
+        <motion.div variants={itemVariants} className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 relative z-10 mb-2">
           <div>
-            <h1 className="text-4xl md:text-5xl font-black mb-3 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">
-              {getGreeting()}, {user?.name || 'Admin'}
+            <div className="flex items-center gap-3 mb-2">
+              <span className="px-2.5 py-1 rounded-md bg-[#2563EB]/10 border border-[#2563EB]/20 text-[#2563EB] text-xs font-bold tracking-wide uppercase">
+                {(user as any)?.workspace?.name || 'Primary Workspace'}
+              </span>
+              <span className="text-sm font-medium text-slate-400">
+                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+              </span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold font-jakarta tracking-tight text-white flex items-center gap-2">
+              {getGreeting()}, {user?.name?.split(' ')[0] || 'Admin'}
             </h1>
-            <p className="text-slate-400 font-medium tracking-wide flex items-center gap-2">
-              <Calendar size={16} className="text-pink-500" />
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-            </p>
           </div>
 
-          <div className="flex bg-slate-900/50 backdrop-blur-xl p-2 rounded-3xl border border-white/5 shadow-2xl gap-2">
-            <Link href="/leads" className="flex items-center gap-2 px-5 py-3 hover:bg-white/10 text-white font-bold text-sm rounded-2xl transition-all group">
-              <Plus size={18} className="text-teal-400 group-hover:scale-110 transition-transform" /> Add Lead
-            </Link>
-            <Link href="/money" className="flex items-center gap-2 px-5 py-3 hover:bg-white/10 text-white font-bold text-sm rounded-2xl transition-all group">
-              <DollarSign size={18} className="text-pink-400 group-hover:scale-110 transition-transform" /> Transaction
-            </Link>
+          <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+            <button onClick={() => handleAction('Task Modal')} disabled={!!isActionLoading} className="flex-1 sm:flex-none items-center justify-center gap-2 px-5 py-2.5 bg-[#09090B] hover:bg-[#11131A] border border-[#232734] hover:border-[#2563EB]/50 text-white font-semibold text-sm rounded-xl transition-all shadow-sm flex disabled:opacity-50">
+              {isActionLoading === 'Task Modal' ? <Activity size={16} className="text-slate-400 animate-spin" /> : <CheckSquare size={16} className="text-slate-400" />} Create Task
+            </button>
+            <button onClick={() => handleAction('Proposal Draft', '/proposals')} disabled={!!isActionLoading} className="flex-1 sm:flex-none items-center justify-center gap-2 px-5 py-2.5 bg-[#09090B] hover:bg-[#11131A] border border-[#232734] hover:border-[#2563EB]/50 text-white font-semibold text-sm rounded-xl transition-all shadow-sm flex disabled:opacity-50">
+              {isActionLoading === 'Proposal Draft' ? <Activity size={16} className="text-slate-400 animate-spin" /> : <FileText size={16} className="text-slate-400" />} New Proposal
+            </button>
+            <button onClick={() => handleAction('Project Setup', '/projects')} disabled={!!isActionLoading} className="flex-1 sm:flex-none items-center justify-center gap-2 px-5 py-2.5 bg-[#09090B] hover:bg-[#11131A] border border-[#232734] hover:border-[#2563EB]/50 text-white font-semibold text-sm rounded-xl transition-all shadow-sm flex disabled:opacity-50">
+              {isActionLoading === 'Project Setup' ? <Activity size={16} className="text-slate-400 animate-spin" /> : <Briefcase size={16} className="text-slate-400" />} New Project
+            </button>
+            <button onClick={() => handleAction('Lead Form', '/prospects')} disabled={!!isActionLoading} className="flex-1 sm:flex-none items-center justify-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold text-sm rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.2)] hover:shadow-[0_0_25px_rgba(37,99,235,0.4)] flex disabled:opacity-50">
+              {isActionLoading === 'Lead Form' ? <Activity size={16} className="animate-spin" /> : <Plus size={16} />} Add Lead
+            </button>
           </div>
         </motion.div>
 
-        <IslamicSplashModal islamicQuote={islamicQuote} />
-
-        {/* BENTO GRID LEVEL 1: Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          <AnimatedStatCard
-            title="Total Revenue"
-            value={formatCurrency(stats.totalIncome)}
-            icon={DollarSign}
-            iconColorClass="bg-gradient-to-br from-pink-500 to-rose-600"
-            glowColorClass="bg-pink-500"
-            href="/money"
-          >
-            <div className="flex justify-between items-center text-sm font-semibold">
-              <span className="text-slate-400">This Month</span>
-              <span className="text-pink-400 flex items-center gap-1 font-mono">
-                <ArrowUpRight size={14} /> {formatCurrency(stats.thisMonthIncome)}
-              </span>
-            </div>
-            {/* Sparkline */}
-            <div className="mt-4 -mx-2 opacity-80">
-              <SparklineChart data={incomeTrend} dataKey="income" color="#f472b6" height={40} />
-            </div>
-          </AnimatedStatCard>
-
-          <AnimatedStatCard
-            title="Active Projects"
-            value={stats.activeProjects}
-            icon={Briefcase}
-            iconColorClass="bg-gradient-to-br from-amber-500 to-orange-600"
-            glowColorClass="bg-amber-500"
-            href="/projects"
-          >
-            <div className="flex justify-between items-center text-sm font-semibold">
-              <span className="text-slate-400">Total Pipeline</span>
-              <span className="text-amber-400 font-mono">{stats.totalProjects}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm font-semibold mt-2">
-              <span className="text-slate-400">Completed</span>
-              <span className="text-white font-mono">{projectStatusDistribution['Completed'] || 0}</span>
-            </div>
-          </AnimatedStatCard>
-
-          <AnimatedStatCard
-            title="Proposal Pipeline"
-            value={formatCurrency(stats.outstandingPipelineValue)}
-            icon={FileText}
-            iconColorClass="bg-gradient-to-br from-violet-500 to-purple-600"
-            glowColorClass="bg-violet-500"
-            href="/proposals"
-          >
-            <div className="flex justify-between items-center text-sm font-semibold">
-              <span className="text-slate-400">Pending</span>
-              <span className="text-violet-400 font-mono">{stats.pendingProposals}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm font-semibold mt-2">
-              <span className="text-slate-400">Closed Won</span>
-              <span className="text-teal-400 font-mono">{formatCurrency(stats.acceptedProposalsValue)}</span>
-            </div>
-          </AnimatedStatCard>
-
-          <AnimatedStatCard
-            title="Sales Leads"
-            value={stats.totalLeads}
-            icon={Users}
-            iconColorClass="bg-gradient-to-br from-teal-500 to-emerald-600"
-            glowColorClass="bg-teal-500"
-            href="/leads"
-          >
-            <div className="flex justify-between items-center text-sm font-semibold">
-              <span className="text-slate-400">Conversion</span>
-              <span className="text-teal-400 font-mono flex items-center gap-1"><Percent size={12} />{stats.leadConversionRate}%</span>
-            </div>
-            <div className="flex justify-between items-center text-sm font-semibold mt-2">
-              <span className="text-slate-400">Active Outreach</span>
-              <span className="text-white font-mono">{stats.activeLeads}</span>
-            </div>
-          </AnimatedStatCard>
-        </div>
-
-        {/* BENTO GRID LEVEL 2: Charts and Lists */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
           
-          {/* Income Trend Chart (Spans 8 cols) */}
-          <motion.div variants={itemVariants} className="col-span-1 md:col-span-12 xl:col-span-8">
-            <GlassCard className="min-h-[400px]">
-              <div className="flex justify-between items-center mb-8">
-                <h3 className="text-lg font-bold flex items-center gap-2">
-                  <TrendingUp size={18} className="text-violet-500" /> Income Overview
-                </h3>
+          {/* LEFT COLUMN (MAIN CONTENT) */}
+          <div className="xl:col-span-8 space-y-8">
+            
+            {/* Command Center (KPI Cards) */}
+            <motion.div variants={itemVariants}>
+              <h2 className="text-lg font-bold font-jakarta text-white mb-4 tracking-tight flex items-center gap-2">
+                <LayoutGrid size={18} className="text-[#2563EB]" /> Command Center
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                
+                {/* Metric 1: Revenue */}
+                <div className="group bg-[#11131A] border border-[#232734] rounded-[20px] p-6 lg:p-8 flex flex-col gap-4 hover:border-[#2563EB]/50 hover:shadow-[0_0_30px_rgba(37,99,235,0.1)] transition-all cursor-pointer relative overflow-hidden">
+                   <div className="absolute top-0 right-0 w-32 h-32 bg-[#2563EB]/5 blur-[40px] rounded-full group-hover:bg-[#2563EB]/10 transition-colors"></div>
+                   <div className="flex justify-between items-start relative z-10">
+                     <div className="w-10 h-10 rounded-[12px] bg-[#2563EB]/10 border border-[#2563EB]/20 flex items-center justify-center text-[#2563EB]">
+                       <DollarSign size={18} />
+                     </div>
+                     <span className="text-[11px] font-bold text-[#10B981] flex items-center gap-1 bg-[#10B981]/10 px-2 py-1 rounded-md">
+                        <ArrowUpRight size={12} /> 12.5%
+                     </span>
+                   </div>
+                   <div className="relative z-10 mt-2">
+                     <p className="text-xs font-bold text-slate-300 mb-1 uppercase tracking-widest">Revenue</p>
+                     <p className="text-3xl font-bold text-white font-mono tracking-tight">{formatCurrency(stats?.thisMonthIncome || 24500)}</p>
+                   </div>
+                </div>
+
+                {/* Metric 2: Active Projects */}
+                <div className="group bg-[#11131A] border border-[#232734] rounded-[20px] p-6 lg:p-8 flex flex-col gap-4 hover:border-[#7C3AED]/50 hover:shadow-[0_0_30px_rgba(124,58,237,0.1)] transition-all cursor-pointer relative overflow-hidden">
+                   <div className="absolute top-0 right-0 w-32 h-32 bg-[#7C3AED]/5 blur-[40px] rounded-full group-hover:bg-[#7C3AED]/10 transition-colors"></div>
+                   <div className="flex justify-between items-start relative z-10">
+                     <div className="w-10 h-10 rounded-[12px] bg-[#7C3AED]/10 border border-[#7C3AED]/20 flex items-center justify-center text-[#7C3AED]">
+                       <Briefcase size={18} />
+                     </div>
+                     <span className="text-[11px] font-bold text-[#10B981] flex items-center gap-1 bg-[#10B981]/10 px-2 py-1 rounded-md">
+                        <ArrowUpRight size={12} /> 4 New
+                     </span>
+                   </div>
+                   <div className="relative z-10 mt-2">
+                     <p className="text-xs font-bold text-slate-300 mb-1 uppercase tracking-widest">Active Projects</p>
+                     <p className="text-3xl font-bold text-white font-mono tracking-tight">12</p>
+                   </div>
+                </div>
+
+                {/* Metric 3: Leads */}
+                <div className="group bg-[#11131A] border border-[#232734] rounded-[20px] p-6 lg:p-8 flex flex-col gap-4 hover:border-[#F59E0B]/50 hover:shadow-[0_0_30px_rgba(245,158,11,0.1)] transition-all cursor-pointer relative overflow-hidden">
+                   <div className="absolute top-0 right-0 w-32 h-32 bg-[#F59E0B]/5 blur-[40px] rounded-full group-hover:bg-[#F59E0B]/10 transition-colors"></div>
+                   <div className="flex justify-between items-start relative z-10">
+                     <div className="w-10 h-10 rounded-[12px] bg-[#F59E0B]/10 border border-[#F59E0B]/20 flex items-center justify-center text-[#F59E0B]">
+                       <Users size={18} />
+                     </div>
+                     <span className="text-[11px] font-bold text-[#F59E0B] flex items-center gap-1 bg-[#F59E0B]/10 px-2 py-1 rounded-md">
+                        <ArrowRight size={12} /> Steady
+                     </span>
+                   </div>
+                   <div className="relative z-10 mt-2">
+                     <p className="text-xs font-bold text-slate-300 mb-1 uppercase tracking-widest">New Leads</p>
+                     <p className="text-3xl font-bold text-white font-mono tracking-tight">{stats?.totalLeads || 248}</p>
+                   </div>
+                </div>
+
+                {/* Metric 4: Clients */}
+                <div className="group bg-[#11131A] border border-[#232734] rounded-[20px] p-6 lg:p-8 flex flex-col gap-4 hover:border-[#10B981]/50 hover:shadow-[0_0_30px_rgba(16,185,129,0.1)] transition-all cursor-pointer relative overflow-hidden">
+                   <div className="absolute top-0 right-0 w-32 h-32 bg-[#10B981]/5 blur-[40px] rounded-full group-hover:bg-[#10B981]/10 transition-colors"></div>
+                   <div className="flex justify-between items-start relative z-10">
+                     <div className="w-10 h-10 rounded-[12px] bg-[#10B981]/10 border border-[#10B981]/20 flex items-center justify-center text-[#10B981]">
+                       <Globe size={18} />
+                     </div>
+                     <span className="text-[11px] font-bold text-[#10B981] flex items-center gap-1 bg-[#10B981]/10 px-2 py-1 rounded-md">
+                        <ArrowUpRight size={12} /> 2 New
+                     </span>
+                   </div>
+                   <div className="relative z-10 mt-2">
+                     <p className="text-xs font-bold text-slate-300 mb-1 uppercase tracking-widest">Active Clients</p>
+                     <p className="text-3xl font-bold text-white font-mono tracking-tight">45</p>
+                   </div>
+                </div>
+
+                {/* Metric 5: Pending Tasks */}
+                <div className="group bg-[#11131A] border border-[#232734] rounded-[20px] p-6 lg:p-8 flex flex-col gap-4 hover:border-[#EF4444]/50 hover:shadow-[0_0_30px_rgba(239,68,68,0.1)] transition-all cursor-pointer relative overflow-hidden">
+                   <div className="absolute top-0 right-0 w-32 h-32 bg-[#EF4444]/5 blur-[40px] rounded-full group-hover:bg-[#EF4444]/10 transition-colors"></div>
+                   <div className="flex justify-between items-start relative z-10">
+                     <div className="w-10 h-10 rounded-[12px] bg-[#EF4444]/10 border border-[#EF4444]/20 flex items-center justify-center text-[#EF4444]">
+                       <Clock size={18} />
+                     </div>
+                     <span className="text-[11px] font-bold text-[#EF4444] flex items-center gap-1 bg-[#EF4444]/10 px-2 py-1 rounded-md">
+                        <AlertCircle size={12} /> 8 Overdue
+                     </span>
+                   </div>
+                   <div className="relative z-10 mt-2">
+                     <p className="text-xs font-bold text-slate-300 mb-1 uppercase tracking-widest">Pending Tasks</p>
+                     <p className="text-3xl font-bold text-white font-mono tracking-tight">24</p>
+                   </div>
+                </div>
+
+                {/* Metric 6: Monthly Growth */}
+                <div className="group bg-[#11131A] border border-[#232734] rounded-[20px] p-6 lg:p-8 flex flex-col gap-4 hover:border-[#0EA5E9]/50 hover:shadow-[0_0_30px_rgba(14,165,233,0.1)] transition-all cursor-pointer relative overflow-hidden">
+                   <div className="absolute top-0 right-0 w-32 h-32 bg-[#0EA5E9]/5 blur-[40px] rounded-full group-hover:bg-[#0EA5E9]/10 transition-colors"></div>
+                   <div className="flex justify-between items-start relative z-10">
+                     <div className="w-10 h-10 rounded-[12px] bg-[#0EA5E9]/10 border border-[#0EA5E9]/20 flex items-center justify-center text-[#0EA5E9]">
+                       <TrendingUp size={18} />
+                     </div>
+                     <span className="text-[11px] font-bold text-[#10B981] flex items-center gap-1 bg-[#10B981]/10 px-2 py-1 rounded-md">
+                        <ArrowUpRight size={12} /> Target Met
+                     </span>
+                   </div>
+                   <div className="relative z-10 mt-2">
+                     <p className="text-xs font-bold text-slate-300 mb-1 uppercase tracking-widest">Monthly Growth</p>
+                     <p className="text-3xl font-bold text-white font-mono tracking-tight">+18.2%</p>
+                   </div>
+                </div>
+
               </div>
-              <div className="flex-1 -ml-4 w-full h-[300px] min-h-[300px]">
-                {(!incomeTrend || incomeTrend.length === 0) ? (
-                  <div className="w-full h-full flex items-center justify-center text-slate-500 font-medium">No income data available.</div>
-                ) : (
+            </motion.div>
+
+            {/* Analytics Section */}
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="flex justify-between items-center mb-2">
+                <h2 className="text-lg font-bold font-jakarta text-white tracking-tight flex items-center gap-2">
+                  <BarChartIcon size={18} className="text-[#2563EB]" /> Analytics Overview
+                </h2>
+                <button className="text-xs font-bold text-[#2563EB] hover:text-[#2563EB]/80 transition-colors flex items-center gap-1">View Full Report <ChevronRight size={14} /></button>
+              </div>
+              
+              <Card className="h-[400px] flex flex-col p-6">
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h3 className="text-base font-bold text-white mb-1 tracking-tight">Revenue Trend</h3>
+                    <p className="text-xs text-slate-400 font-medium">Income generated over the last 30 days.</p>
+                  </div>
+                  <div className="px-3 py-1.5 bg-[#09090B] border border-[#232734] rounded-lg text-xs font-bold text-slate-400 cursor-pointer hover:text-white transition-colors flex items-center gap-1.5">
+                    Last 30 Days <ChevronRight size={12} className="rotate-90" />
+                  </div>
+                </div>
+                <div className="flex-1 w-full -ml-4 mt-2">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={incomeTrend} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <AreaChart data={incomeTrend?.length ? incomeTrend : [{month:'Jul 01', income: 1200}, {month:'Jul 05', income: 1500}, {month:'Jul 10', income: 1100}, {month:'Jul 15', income: 1900}, {month:'Jul 20', income: 2100}, {month:'Jul 25', income: 2800}, {month:'Jul 30', income: 3200}]} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                       <defs>
-                        <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#a78bfa" stopOpacity={0.4}/>
-                          <stop offset="95%" stopColor="#a78bfa" stopOpacity={0}/>
+                        <linearGradient id="colorRevPremium" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#2563EB" stopOpacity={0.5}/>
+                          <stop offset="95%" stopColor="#2563EB" stopOpacity={0}/>
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-white/5" opacity={0.3} vertical={false} />
-                      <XAxis dataKey="month" stroke="currentColor" className="text-slate-400" style={{ fontSize: '11px', fontWeight: 600 }} axisLine={false} tickLine={false} tickMargin={15} />
-                      <YAxis stroke="currentColor" className="text-slate-400" style={{ fontSize: '11px', fontWeight: 600 }} axisLine={false} tickLine={false} tickFormatter={(val) => `$${val}`} />
-                      <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#ffffff', strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.1 }} />
-                      <Area 
-                        type="monotone" 
-                        dataKey="income" 
-                        stroke="#a78bfa" 
-                        strokeWidth={3} 
-                        fill="url(#colorIncome)"
-                        activeDot={{ r: 6, fill: '#a78bfa', stroke: '#050505', strokeWidth: 3 }}
-                      />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#232734" vertical={false} />
+                      <XAxis dataKey="month" stroke="#CBD5E1" fontSize={12} fontWeight={600} axisLine={false} tickLine={false} tickMargin={12} />
+                      <YAxis stroke="#CBD5E1" fontSize={12} fontWeight={600} axisLine={false} tickLine={false} tickFormatter={(val) => `$${val}`} tickMargin={12} />
+                      <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#2563EB', strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.5 }} />
+                      <Area type="monotone" dataKey="income" stroke="#2563EB" strokeWidth={3} fill="url(#colorRevPremium)" activeDot={{ r: 6, fill: '#2563EB', stroke: '#11131A', strokeWidth: 3 }} />
                     </AreaChart>
                   </ResponsiveContainer>
-                )}
-              </div>
-            </GlassCard>
-          </motion.div>
+                </div>
+              </Card>
 
-          {/* Project Status Pie (Spans 4 cols) */}
-          <motion.div variants={itemVariants} className="col-span-1 md:col-span-12 xl:col-span-4">
-            <GlassCard className="min-h-[400px]">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <PieChartIcon size={18} className="text-teal-400" /> Project Status
-              </h3>
-              <div className="flex-1 flex items-center justify-center relative w-full h-[300px] min-h-[300px]">
-                <div className="absolute inset-0 bg-teal-500/10 rounded-full blur-[80px]"></div>
-                {(!projectStatusData || projectStatusData.length === 0) ? (
-                  <div className="z-10 w-full h-full flex items-center justify-center text-slate-500 font-medium">No projects available.</div>
-                ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={projectStatusData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={80}
-                        outerRadius={110}
-                        paddingAngle={4}
-                        dataKey="value"
-                        stroke="none"
-                      >
-                        {projectStatusData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.name] || '#64748b'} />
-                        ))}
-                      </Pie>
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend 
-                        verticalAlign="bottom" 
-                        height={40} 
-                        iconType="circle"
-                        wrapperStyle={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8', paddingTop: '20px' }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                )}
-              </div>
-            </GlassCard>
-          </motion.div>
-
-          {/* Upcoming Deadlines (Spans 6 cols) */}
-          <motion.div variants={itemVariants} className="col-span-1 md:col-span-12 xl:col-span-6">
-            <GlassCard className="min-h-[380px]">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold flex items-center gap-2">
-                  <Calendar size={18} className="text-indigo-400" /> Upcoming Deadlines
-                </h3>
-                <Link href="/projects" className="text-xs font-bold text-indigo-400 hover:text-white flex items-center gap-1 transition-colors">
-                  View all <ChevronRight size={14} />
-                </Link>
-              </div>
-              <div className="space-y-3 overflow-y-auto pr-2">
-                {upcomingDeadlines.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full opacity-50 py-10">
-                    <Calendar size={28} className="mb-3 text-indigo-500/50" />
-                    <p className="text-sm font-bold">No upcoming deadlines</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Lead Funnel */}
+                <Card className="flex flex-col p-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-base font-bold text-white tracking-tight">Lead Funnel</h3>
+                    <PieChartIcon size={16} className="text-slate-400" />
                   </div>
-                ) : (
-                  upcomingDeadlines.slice(0, 4).map((item: any) => {
-                    const statusColor = 
-                      item.status === 'Completed' ? 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20' :
-                      item.status === 'In Review' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' :
-                      item.status === 'In Progress' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                      'bg-slate-500/10 text-slate-400 border-slate-500/20';
-                      
-                    return (
-                      <div key={item._id} className="p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors flex flex-col gap-3">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1 min-w-0 pr-3">
-                            <h4 className="truncate font-bold text-white text-base">{item.title}</h4>
-                            <p className="text-xs font-bold text-rose-400 mt-1 flex items-center gap-1.5">
-                              <Clock size={12} /> {formatDate(item.deadline)}
-                            </p>
-                          </div>
-                          <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full border whitespace-nowrap ${statusColor}`}>
-                            {item.status || 'Active'}
-                          </span>
+                  <div className="flex-1 flex flex-col justify-center gap-5 mt-2">
+                    {pipelineData.slice(0, 4).map((stage, index) => (
+                      <div key={index} className="flex items-center gap-4">
+                        <div className="w-24 text-right flex-shrink-0">
+                          <p className="text-xs font-bold text-slate-400">{stage.name}</p>
                         </div>
-                        {item.progress > 0 && (
-                          <div>
-                            <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                              <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full" style={{ width: `${item.progress}%` }}></div>
-                            </div>
-                          </div>
-                        )}
+                        <div className="flex-1 h-8 bg-[#09090B] rounded-r-lg border border-[#232734] border-l-0 overflow-hidden flex items-center relative">
+                           <motion.div 
+                             initial={{ width: 0 }}
+                             animate={{ width: stage.width }}
+                             transition={{ duration: 1, ease: "easeOut", delay: index * 0.1 }}
+                             className="h-full absolute left-0 top-0 bottom-0"
+                             style={{ background: stage.gradient }}
+                           />
+                           <span className="ml-3 text-xs font-bold text-white font-mono relative z-10 mix-blend-difference">{stage.value}</span>
+                        </div>
                       </div>
-                    );
-                  })
-                )}
-              </div>
-            </GlassCard>
-          </motion.div>
+                    ))}
+                  </div>
+                </Card>
 
-          {/* Recent Activity (Spans 6 cols) */}
-          <motion.div variants={itemVariants} className="col-span-1 md:col-span-12 xl:col-span-6">
-            <GlassCard className="min-h-[380px]">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold flex items-center gap-2">
-                  <Sparkles size={18} className="text-pink-400" /> Recent Activity
-                </h3>
-                <Link href="/money" className="text-xs font-bold text-pink-400 hover:text-white flex items-center gap-1 transition-colors">
-                  View all <ChevronRight size={14} />
-                </Link>
+                {/* Sales Pipeline */}
+                <Card className="flex flex-col p-6">
+                   <div className="flex justify-between items-center mb-6">
+                     <h3 className="text-base font-bold text-white tracking-tight">Sales Pipeline</h3>
+                     <Layers size={16} className="text-slate-400" />
+                   </div>
+                   <div className="flex flex-col gap-4">
+                     <div className="flex items-center justify-between p-3 rounded-xl bg-[#09090B] border border-[#232734]">
+                       <div className="flex items-center gap-3">
+                         <div className="w-2.5 h-2.5 rounded-full bg-[#2563EB] ml-1"></div>
+                         <div>
+                           <p className="text-sm font-bold text-white">Proposal Sent</p>
+                           <p className="text-xs text-slate-400">12 deals</p>
+                         </div>
+                       </div>
+                       <p className="text-sm font-bold font-mono text-white">$45,000</p>
+                     </div>
+                     <div className="flex items-center justify-between p-3 rounded-xl bg-[#09090B] border border-[#232734]">
+                       <div className="flex items-center gap-3">
+                         <div className="w-2.5 h-2.5 rounded-full bg-[#F59E0B] ml-1"></div>
+                         <div>
+                           <p className="text-sm font-bold text-white">Negotiation</p>
+                           <p className="text-xs text-slate-400">5 deals</p>
+                         </div>
+                       </div>
+                       <p className="text-sm font-bold font-mono text-white">$18,500</p>
+                     </div>
+                     <div className="flex items-center justify-between p-3 rounded-xl bg-[#09090B] border border-[#232734]">
+                       <div className="flex items-center gap-3">
+                         <div className="w-2.5 h-2.5 rounded-full bg-[#10B981] ml-1"></div>
+                         <div>
+                           <p className="text-sm font-bold text-white">Closed Won</p>
+                           <p className="text-xs text-slate-400">8 deals</p>
+                         </div>
+                       </div>
+                       <p className="text-sm font-bold font-mono text-white">$24,200</p>
+                     </div>
+                   </div>
+                </Card>
               </div>
-              <div className="space-y-3 overflow-y-auto pr-2">
-                {recentTransactions.length === 0 ? (
-                  <p className="text-sm font-bold text-slate-500 text-center py-10">No recent activity.</p>
-                ) : (
-                  recentTransactions.slice(0, 4).map((transaction: any) => (
-                    <div key={transaction._id} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${transaction.type === 'Income' ? 'bg-teal-500/10 text-teal-400 border border-teal-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
-                          <DollarSign size={20} />
-                        </div>
-                        <div>
-                          <p className="text-base font-bold text-white">{transaction.category}</p>
-                          <p className="text-xs font-semibold text-slate-400 mt-0.5">{transaction.platform} • {getRelativeTime(transaction.date)}</p>
-                        </div>
-                      </div>
-                      <span className={`text-base font-black ${transaction.type === 'Income' ? 'text-teal-400' : 'text-rose-400'}`}>
-                        {transaction.type === 'Income' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                      </span>
+            </motion.div>
+          </div>
+
+          {/* RIGHT COLUMN (SIDEBAR) */}
+          <div className="xl:col-span-4 space-y-6">
+            
+            {/* AI Insights Card */}
+            <motion.div variants={itemVariants}>
+              <Card className="bg-gradient-to-br from-[#11131A] to-[#09090B] relative overflow-hidden border-[#232734] p-6 lg:p-8">
+                 <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#7C3AED]/20 blur-[50px] rounded-full pointer-events-none"></div>
+                 <div className="flex justify-between items-center mb-5 relative z-10">
+                   <h3 className="text-base font-bold text-white flex items-center gap-2 tracking-tight">
+                      <Sparkles size={16} className="text-[#7C3AED]" /> AI Insights 
+                   </h3>
+                   <span className="text-[10px] uppercase tracking-wider bg-[#7C3AED]/20 text-[#7C3AED] px-2 py-0.5 rounded-md font-bold">Beta</span>
+                 </div>
+                 <div className="relative z-10">
+                   <p className="text-sm text-slate-400 leading-relaxed mb-5 font-medium">Based on your activity, here is what you should focus on today.</p>
+                   
+                   <div className="space-y-4">
+                     <div className="flex gap-3 items-start p-3 rounded-xl bg-[#09090B] border border-[#232734]">
+                       <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 flex items-center justify-center flex-shrink-0 border border-[#2563EB]/20 text-[#2563EB]">
+                         <Mail size={14} />
+                       </div>
+                       <div>
+                         <p className="text-sm font-bold text-white mb-0.5">Follow up with TechCorp</p>
+                         <p className="text-xs text-slate-400 leading-snug">They opened your proposal 3 times in the last hour.</p>
+                       </div>
+                     </div>
+                     <div className="flex gap-3 items-start p-3 rounded-xl bg-[#09090B] border border-[#232734]">
+                       <div className="w-8 h-8 rounded-lg bg-[#F59E0B]/10 flex items-center justify-center flex-shrink-0 border border-[#F59E0B]/20 text-[#F59E0B]">
+                         <AlertCircle size={14} />
+                       </div>
+                       <div>
+                         <p className="text-sm font-bold text-white mb-0.5">Incomplete Tasks</p>
+                         <p className="text-xs text-slate-400 leading-snug">You have 8 high-priority tasks due today.</p>
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+              </Card>
+            </motion.div>
+
+            {/* Today's Tasks */}
+            <motion.div variants={itemVariants}>
+              <Card className="p-6 lg:p-8">
+                <div className="flex justify-between items-center mb-5">
+                  <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+                    <CheckSquare size={16} className="text-slate-400" /> Today's Tasks
+                  </h3>
+                  <button className="text-xs font-bold text-[#2563EB] hover:text-[#2563EB]/80 transition-colors">View All</button>
+                </div>
+                <div className="space-y-3">
+                   <div className="flex items-start gap-3 p-2 hover:bg-[#09090B] rounded-xl transition-colors cursor-pointer group border border-transparent hover:border-[#232734]">
+                     <div className="mt-0.5 w-4 h-4 rounded border-2 border-[#EF4444] bg-transparent group-hover:bg-[#EF4444]/20 transition-colors flex-shrink-0"></div>
+                     <div className="flex-1">
+                       <p className="text-sm font-bold text-white leading-tight mb-1">Finalize Q3 Marketing Report</p>
+                       <p className="text-xs font-semibold text-[#EF4444]">High Priority • 10:30 AM</p>
+                     </div>
+                   </div>
+                   <div className="flex items-start gap-3 p-2 hover:bg-[#09090B] rounded-xl transition-colors cursor-pointer group border border-transparent hover:border-[#232734]">
+                     <div className="mt-0.5 w-4 h-4 rounded border-2 border-[#F59E0B] bg-transparent group-hover:bg-[#F59E0B]/20 transition-colors flex-shrink-0"></div>
+                     <div className="flex-1">
+                       <p className="text-sm font-bold text-white leading-tight mb-1">Send Invoice to GlobalNet</p>
+                       <p className="text-xs font-semibold text-[#F59E0B]">Medium Priority • 2:00 PM</p>
+                     </div>
+                   </div>
+                   <div className="flex items-start gap-3 p-2 hover:bg-[#09090B] rounded-xl transition-colors cursor-pointer group border border-transparent hover:border-[#232734]">
+                     <div className="mt-0.5 w-4 h-4 rounded border-2 border-[#232734] bg-[#09090B] group-hover:bg-[#232734] transition-colors flex-shrink-0"></div>
+                     <div className="flex-1">
+                       <p className="text-sm font-bold text-slate-400 leading-tight mb-1 line-through">Review New Designs</p>
+                       <p className="text-xs font-medium text-slate-400">Completed</p>
+                     </div>
+                   </div>
+                </div>
+              </Card>
+            </motion.div>
+
+            {/* Upcoming Meetings */}
+            <motion.div variants={itemVariants}>
+              <Card className="p-6 lg:p-8">
+                <div className="flex justify-between items-center mb-5">
+                  <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+                    <Calendar size={16} className="text-slate-400" /> Upcoming Meetings
+                  </h3>
+                  <button className="w-6 h-6 rounded-md bg-[#09090B] border border-[#232734] flex items-center justify-center hover:text-white text-slate-400 transition-colors"><Plus size={14} /></button>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex gap-4 items-center">
+                    <div className="w-12 h-12 rounded-xl bg-[#09090B] border border-[#232734] flex flex-col items-center justify-center flex-shrink-0">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Jul</span>
+                      <span className="text-sm font-bold text-white leading-none mt-1">10</span>
                     </div>
-                  ))
+                    <div>
+                      <p className="text-sm font-bold text-white mb-0.5">Product Sync</p>
+                      <p className="text-xs font-medium text-slate-400">11:00 AM • Google Meet</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-4 items-center">
+                    <div className="w-12 h-12 rounded-xl bg-[#09090B] border border-[#232734] flex flex-col items-center justify-center flex-shrink-0">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Jul</span>
+                      <span className="text-sm font-bold text-white leading-none mt-1">11</span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-white mb-0.5">Client Demo: Acme Corp</p>
+                      <p className="text-xs font-medium text-slate-400">2:30 PM • Zoom</p>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+
+            {/* Notifications / Activity */}
+            <motion.div variants={itemVariants}>
+              <Card className="p-6 lg:p-8">
+                <div className="flex justify-between items-center mb-5">
+                  <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+                    <Bell size={16} className="text-slate-400" /> Recent Activity
+                  </h3>
+                </div>
+                <div className="space-y-5">
+                   <div className="flex gap-3 items-start">
+                     <div className="w-8 h-8 rounded-full bg-[#10B981]/10 flex items-center justify-center flex-shrink-0 border border-[#10B981]/20">
+                       <CheckCircle2 size={12} className="text-[#10B981]" />
+                     </div>
+                     <div className="flex-1 pt-0.5">
+                       <p className="text-sm font-bold text-white leading-tight mb-1">Invoice #INV-2041 Paid</p>
+                       <p className="text-xs font-medium text-slate-400">Acme Corp paid $4,500.</p>
+                     </div>
+                     <span className="text-[10px] font-bold text-[#232734] pt-1">2h</span>
+                   </div>
+                   <div className="flex gap-3 items-start">
+                     <div className="w-8 h-8 rounded-full bg-[#2563EB]/10 flex items-center justify-center flex-shrink-0 border border-[#2563EB]/20">
+                       <Users size={12} className="text-[#2563EB]" />
+                     </div>
+                     <div className="flex-1 pt-0.5">
+                       <p className="text-sm font-bold text-white leading-tight mb-1">New Team Member</p>
+                       <p className="text-xs font-medium text-slate-400">Sarah joined the workspace.</p>
+                     </div>
+                     <span className="text-[10px] font-bold text-[#232734] pt-1">5h</span>
+                   </div>
+                </div>
+              </Card>
+            </motion.div>
+
+          </div>
+        </div>
+
+        {/* BOTTOM SECTION (TABLES) */}
+        <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
+           {/* Recent Leads Table */}
+           <Card className="p-0 overflow-hidden h-full">
+             <div className="p-6 border-b border-[#232734] flex justify-between items-center bg-[#11131A]">
+               <h3 className="text-base font-bold text-white tracking-tight">Recent Leads</h3>
+               <button className="text-xs font-bold text-[#2563EB] hover:text-[#2563EB]/80 transition-colors">View All</button>
+             </div>
+             <div className="overflow-x-auto">
+               <table className="w-full text-left border-collapse">
+                 <thead>
+                   <tr className="bg-[#09090B]">
+                     <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-[#232734]">Name</th>
+                     <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-[#232734]">Company</th>
+                     <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-[#232734]">Status</th>
+                   </tr>
+                 </thead>
+                 <tbody className="divide-y divide-[#232734]">
+                   <tr className="hover:bg-[#09090B] even:bg-[#09090B]/50 transition-colors group cursor-pointer">
+                     <td className="px-6 py-5 text-sm font-bold text-white">John Doe</td>
+                     <td className="px-6 py-5 text-sm text-slate-400">Tech Solutions</td>
+                     <td className="px-6 py-5"><span className="px-2 py-1 rounded-md bg-[#2563EB]/10 text-[#2563EB] text-xs font-bold border border-[#2563EB]/20">New</span></td>
+                   </tr>
+                   <tr className="hover:bg-[#09090B] even:bg-[#09090B]/50 transition-colors group cursor-pointer">
+                     <td className="px-6 py-5 text-sm font-bold text-white">Jane Smith</td>
+                     <td className="px-6 py-5 text-sm text-slate-400">Innovate Inc</td>
+                     <td className="px-6 py-5"><span className="px-2 py-1 rounded-md bg-[#F59E0B]/10 text-[#F59E0B] text-xs font-bold border border-[#F59E0B]/20">Contacted</span></td>
+                   </tr>
+                   <tr className="hover:bg-[#09090B] even:bg-[#09090B]/50 transition-colors group cursor-pointer">
+                     <td className="px-6 py-5 text-sm font-bold text-white">Mike Johnson</td>
+                     <td className="px-6 py-5 text-sm text-slate-400">GlobalNet</td>
+                     <td className="px-6 py-5"><span className="px-2 py-1 rounded-md bg-[#10B981]/10 text-[#10B981] text-xs font-bold border border-[#10B981]/20">Qualified</span></td>
+                   </tr>
+                 </tbody>
+               </table>
+             </div>
+           </Card>
+
+           {/* Recent Transactions Table */}
+           <Card className="p-0 overflow-hidden h-full">
+             <div className="p-6 border-b border-[#232734] flex justify-between items-center bg-[#11131A]">
+               <h3 className="text-base font-bold text-white tracking-tight">Recent Transactions</h3>
+               <button className="text-xs font-bold text-[#2563EB] hover:text-[#2563EB]/80 transition-colors">View All</button>
+             </div>
+             <div className="overflow-x-auto">
+               <table className="w-full text-left border-collapse">
+                 <thead>
+                   <tr className="bg-[#09090B]">
+                     <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-[#232734]">Client</th>
+                     <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-[#232734]">Amount</th>
+                     <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-[#232734]">Date</th>
+                   </tr>
+                 </thead>
+                 <tbody className="divide-y divide-[#232734]">
+                   <tr className="hover:bg-[#09090B] even:bg-[#09090B]/50 transition-colors group cursor-pointer">
+                     <td className="px-6 py-5 text-sm font-bold text-white">Acme Corp</td>
+                     <td className="px-6 py-5 text-sm font-mono text-[#10B981] font-bold">+$4,500.00</td>
+                     <td className="px-6 py-5 text-sm text-slate-400">Today</td>
+                   </tr>
+                   <tr className="hover:bg-[#09090B] even:bg-[#09090B]/50 transition-colors group cursor-pointer">
+                     <td className="px-6 py-5 text-sm font-bold text-white">Stripe</td>
+                     <td className="px-6 py-5 text-sm font-mono text-white font-bold">-$129.00</td>
+                     <td className="px-6 py-5 text-sm text-slate-400">Yesterday</td>
+                   </tr>
+                   <tr className="hover:bg-[#09090B] even:bg-[#09090B]/50 transition-colors group cursor-pointer">
+                     <td className="px-6 py-5 text-sm font-bold text-white">Vercel Inc</td>
+                     <td className="px-6 py-5 text-sm font-mono text-[#10B981] font-bold">+$1,200.00</td>
+                     <td className="px-6 py-5 text-sm text-slate-400">Jul 08, 2026</td>
+                   </tr>
+                 </tbody>
+               </table>
+             </div>
+           </Card>
+        </motion.div>
+        
+        {/* Modals */}
+        {activeModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeModal}></div>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              className="relative w-full max-w-lg bg-[#09090B] border border-[#232734] rounded-2xl shadow-2xl overflow-hidden"
+            >
+              {/* Modal Header */}
+              <div className="flex justify-between items-center p-6 border-b border-[#232734] bg-[#11131A]">
+                <div>
+                  <h2 className="text-xl font-bold text-white mb-1">
+                    {activeModal === 'Task Modal' && 'Create New Task'}
+                    {activeModal === 'Proposal Draft' && 'Draft New Proposal'}
+                    {activeModal === 'Project Setup' && 'Setup New Project'}
+                    {activeModal === 'Lead Form' && 'Add New Lead'}
+                  </h2>
+                  <p className="text-xs text-[#94A3B8]">Fill in the details below to proceed.</p>
+                </div>
+                <button onClick={closeModal} className="p-2 bg-[#232734] hover:bg-rose-500/20 text-[#94A3B8] hover:text-rose-500 rounded-lg transition-colors">
+                  <X size={16} />
+                </button>
+              </div>
+              
+              {/* Modal Body */}
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-[#94A3B8] mb-2 uppercase tracking-widest">Title / Name</label>
+                  <input type="text" placeholder={`Enter ${activeModal.split(' ')[0]} name...`} className="w-full bg-[#11131A] border border-[#232734] focus:border-[#2563EB] rounded-xl px-4 py-3 text-sm text-white outline-none transition-colors" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[#94A3B8] mb-2 uppercase tracking-widest">Description</label>
+                  <textarea rows={3} placeholder="Add some details here..." className="w-full bg-[#11131A] border border-[#232734] focus:border-[#2563EB] rounded-xl px-4 py-3 text-sm text-white outline-none transition-colors resize-none"></textarea>
+                </div>
+                {activeModal === 'Task Modal' && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-[#94A3B8] mb-2 uppercase tracking-widest">Assignee</label>
+                      <select className="w-full bg-[#11131A] border border-[#232734] focus:border-[#2563EB] rounded-xl px-4 py-3 text-sm text-white outline-none appearance-none">
+                        <option>Mamun H.</option>
+                        <option>Alex L.</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#94A3B8] mb-2 uppercase tracking-widest">Priority</label>
+                      <select className="w-full bg-[#11131A] border border-[#232734] focus:border-[#2563EB] rounded-xl px-4 py-3 text-sm text-white outline-none appearance-none">
+                        <option>High</option>
+                        <option>Medium</option>
+                        <option>Low</option>
+                      </select>
+                    </div>
+                  </div>
                 )}
               </div>
-            </GlassCard>
-          </motion.div>
 
-        </div>
+              {/* Modal Footer */}
+              <div className="p-6 border-t border-[#232734] bg-[#11131A] flex justify-end gap-3">
+                <button onClick={closeModal} className="px-5 py-2.5 rounded-xl bg-[#232734] hover:bg-[#323746] text-white text-sm font-bold transition-colors">
+                  Cancel
+                </button>
+                <button onClick={() => { toast.success(`${activeModal.split(' ')[0]} created successfully!`); closeModal(); }} className="px-5 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#2563EB]/90 text-white text-sm font-bold transition-all shadow-[0_0_20px_rgba(37,99,235,0.2)]">
+                  Save Details
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
       </motion.div>
     </div>
   );

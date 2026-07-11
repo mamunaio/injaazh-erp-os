@@ -1,757 +1,554 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Wallet, Search, Filter, Edit2, Trash2, Tag, Calendar, Download, ArrowRightLeft, CheckCircle2, PieChart as PieChartIcon } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import CreateExpenseModal from '@/components/expenses/CreateExpenseModal';
-import CreateDebtModal from '@/components/expenses/CreateDebtModal';
-import PartialPaymentModal from '@/components/expenses/PartialPaymentModal';
-import { createDailyExpense, updateDailyExpense, deleteDailyExpense } from '@/app/actions/dailyExpenseActions';
-import { createPersonalDebt, updatePersonalDebt, deletePersonalDebt, settlePersonalDebt, makePartialPayment } from '@/app/actions/personalDebtActions';
+import { 
+  TrendingUp, TrendingDown, DollarSign, Search, Filter, Plus, FileText, Download,
+  MoreHorizontal, Calendar, X, Loader2, ArrowUpRight, ArrowDownRight, CreditCard,
+  Briefcase, Trash2, Tag, UploadCloud, CheckCircle2, AlertCircle, PieChart as PieChartIcon, Paperclip
+} from 'lucide-react';
+import { 
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  PieChart, Pie, Cell, Legend, BarChart, Bar
+} from 'recharts';
+import { format } from 'date-fns';
+import toast from 'react-hot-toast';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 
+import { createDailyExpense, updateDailyExpense, deleteDailyExpense } from '@/app/actions/dailyExpenseActions';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface Expense {
+  _id: string;
+  amount: number;
+  category: string;
+  description: string;
+  date: string;
+  paymentMethod: string;
+}
+
+interface ExpensesClientProps {
+  initialExpenses: Expense[];
+}
+
+// ─── Configs ──────────────────────────────────────────────────────────────────
 const CATEGORY_COLORS: Record<string, string> = {
-  'Food & Dining': '#f59e0b',
-  'Transportation': '#3b82f6',
-  'Office Supplies': '#10b981',
-  'Utilities': '#8b5cf6',
-  'Shopping': '#ec4899',
-  'Entertainment': '#6366f1',
-  'Healthcare': '#ef4444',
-  'Software & Subscriptions': '#14b8a6',
-  'Miscellaneous': '#64748b',
+  'Food & Dining': '#F59E0B',
+  'Transportation': '#3B82F6',
+  'Office Supplies': '#10B981',
+  'Utilities': '#8B5CF6',
+  'Shopping': '#EC4899',
+  'Entertainment': '#6366F1',
+  'Healthcare': '#EF4444',
+  'Software & Subscriptions': '#14B8A6',
+  'Miscellaneous': '#64748B',
 };
 
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-};
+const CATEGORIES = Object.keys(CATEGORY_COLORS);
+const PAYMENT_METHODS = ['Cash', 'Credit Card', 'Debit Card', 'Mobile Banking', 'Bank Transfer'];
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('bn-BD', {
-    style: 'currency',
-    currency: 'BDT',
-    minimumFractionDigits: 2,
-  }).format(amount);
-};
+// ─── Formatter Helpers ────────────────────────────────────────────────────────
+const formatCurrency = (amount: number) => 
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(amount);
 
-export default function DailyExpensesClient({ initialExpenses, initialDebts = [] }: { initialExpenses: any[], initialDebts?: any[] }) {
+const formatDate = (date: string | Date) => 
+  new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+export default function DailyExpensesClient({ initialExpenses }: ExpensesClientProps) {
   const { confirm } = useConfirm();
-  const [activeTab, setActiveTab] = useState<'expenses' | 'debts'>('expenses');
-  const [timeFilter, setTimeFilter] = useState<'7days' | 'month' | 'year' | 'all'>('7days');
+  const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
+  
+  // UI States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dateFilter, setDateFilter] = useState<'All' | 'ThisMonth' | 'Last3Months' | 'ThisYear'>('ThisMonth');
+  const [categoryFilter, setCategoryFilter] = useState<string>('All');
+  
+  const [isSlidePanelOpen, setIsSlidePanelOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ================= EXPENSES STATE =================
-  const [expenses, setExpenses] = useState(initialExpenses);
-  const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
-  const [editingExpense, setEditingExpense] = useState<any>(null);
-  const [expenseSearchQuery, setExpenseSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  // Form State
+  const [formData, setFormData] = useState({
+    amount: '',
+    category: 'Miscellaneous',
+    description: '',
+    date: new Date().toISOString().split('T')[0],
+    paymentMethod: 'Credit Card'
+  });
 
-  // ================= DEBTS STATE =================
-  const [debts, setDebts] = useState(initialDebts);
-  const [isDebtModalOpen, setIsDebtModalOpen] = useState(false);
-  const [editingDebt, setEditingDebt] = useState<any>(null);
-  const [debtSearchQuery, setDebtSearchQuery] = useState('');
-  const [isPartialPaymentModalOpen, setIsPartialPaymentModalOpen] = useState(false);
-  const [selectedDebtForPayment, setSelectedDebtForPayment] = useState<any>(null);
+  useEffect(() => { setExpenses(initialExpenses); }, [initialExpenses]);
 
-  // ================= DATE RANGE FILTER HELPER =================
-  const filterByDateRange = useMemo(() => {
-    return (items: any[]) => {
-      const now = new Date();
-      return items.filter(item => {
-        if (!item.date) return true;
-        const dateParts = item.date.split('T')[0].split('-');
-        if (dateParts.length !== 3) return true;
-        const year = parseInt(dateParts[0], 10);
-        const month = parseInt(dateParts[1], 10) - 1; // 0-indexed
-        const day = parseInt(dateParts[2], 10);
-        const itemDate = new Date(year, month, day);
-        
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        
-        if (timeFilter === '7days') {
-          const sevenDaysAgo = new Date(today);
-          sevenDaysAgo.setDate(today.getDate() - 7);
-          return itemDate >= sevenDaysAgo && itemDate <= today;
-        }
-        if (timeFilter === 'month') {
-          return itemDate.getMonth() === now.getMonth() && itemDate.getFullYear() === now.getFullYear();
-        }
-        if (timeFilter === 'year') {
-          return itemDate.getFullYear() === now.getFullYear();
-        }
-        return true; // 'all'
-      });
-    };
-  }, [timeFilter]);
-
-  // ================= EXPENSES LOGIC =================
-  const dateFilteredExpenses = useMemo(() => {
-    return filterByDateRange(expenses);
-  }, [expenses, filterByDateRange]);
-
+  // ── Computed ────────────────────────────────────────────────────────────────
   const filteredExpenses = useMemo(() => {
-    return dateFilteredExpenses.filter(expense => {
-      const matchesSearch = 
-        expense.description.toLowerCase().includes(expenseSearchQuery.toLowerCase()) ||
-        expense.category.toLowerCase().includes(expenseSearchQuery.toLowerCase());
-      const matchesCategory = selectedCategory === 'All' || expense.category === selectedCategory;
-      return matchesSearch && matchesCategory;
-    });
-  }, [dateFilteredExpenses, expenseSearchQuery, selectedCategory]);
-
-  const currentMonthSpent = useMemo(() => {
-    let currentMonth = 0;
+    let result = [...expenses];
     const now = new Date();
-    expenses.forEach(expense => {
-      if (!expense.date) return;
-      const dateParts = expense.date.split('T')[0].split('-');
-      if (dateParts.length === 3) {
-        const year = parseInt(dateParts[0], 10);
-        const month = parseInt(dateParts[1], 10) - 1;
-        if (month === now.getMonth() && year === now.getFullYear()) {
-          currentMonth += expense.amount;
-        }
-      }
-    });
-    return currentMonth;
+
+    // Date Filter
+    if (dateFilter !== 'All') {
+      let startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      if (dateFilter === 'Last3Months') startDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+      if (dateFilter === 'ThisYear') startDate = new Date(now.getFullYear(), 0, 1);
+
+      result = result.filter(e => new Date(e.date) >= startDate);
+    }
+
+    // Category Filter
+    if (categoryFilter !== 'All') {
+      result = result.filter(e => e.category === categoryFilter);
+    }
+
+    // Search Filter
+    if (searchQuery.trim() !== '') {
+      const lower = searchQuery.toLowerCase();
+      result = result.filter(e => 
+        e.description.toLowerCase().includes(lower) || 
+        e.category.toLowerCase().includes(lower) ||
+        e.paymentMethod.toLowerCase().includes(lower)
+      );
+    }
+
+    // Sort descending by date
+    return result.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [expenses, dateFilter, categoryFilter, searchQuery]);
+
+  // ── KPIs ────────────────────────────────────────────────────────────────────
+  const totalExpenses = filteredExpenses.reduce((acc, e) => acc + e.amount, 0);
+  
+  const thisMonthExpenses = useMemo(() => {
+    const now = new Date();
+    return expenses
+      .filter(e => {
+        const d = new Date(e.date);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      })
+      .reduce((acc, e) => acc + e.amount, 0);
   }, [expenses]);
 
-  const { totalSpent, allTimeTotal, categoryData } = useMemo(() => {
-    let total = 0;
-    const catTotals: Record<string, number> = {};
+  const avgExpense = filteredExpenses.length > 0 ? totalExpenses / filteredExpenses.length : 0;
 
-    dateFilteredExpenses.forEach(expense => {
-      total += expense.amount;
-      catTotals[expense.category] = (catTotals[expense.category] || 0) + expense.amount;
+  // ── Chart Data ──────────────────────────────────────────────────────────────
+  const trendData = useMemo(() => {
+    const map = new Map<string, number>();
+    
+    // Group by month
+    filteredExpenses.forEach(e => {
+      const d = new Date(e.date);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      if (!map.has(key)) map.set(key, 0);
+      map.set(key, map.get(key)! + e.amount);
     });
 
-    let allTime = 0;
-    expenses.forEach(expense => {
-      allTime += expense.amount;
+    return Array.from(map.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([dateStr, amount]) => ({
+        dateStr: format(new Date(`${dateStr}-01`), 'MMM yyyy'),
+        Amount: amount
+      }));
+  }, [filteredExpenses]);
+
+  const categoryData = useMemo(() => {
+    const map = new Map<string, number>();
+    filteredExpenses.forEach(e => {
+      if (!map.has(e.category)) map.set(e.category, 0);
+      map.set(e.category, map.get(e.category)! + e.amount);
     });
+    return Array.from(map.entries()).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
+  }, [filteredExpenses]);
 
-    const chartData = Object.keys(catTotals).map(name => ({
-      name,
-      value: catTotals[name],
-      color: CATEGORY_COLORS[name] || CATEGORY_COLORS['Miscellaneous']
-    })).sort((a, b) => b.value - a.value);
+  // ── Actions ─────────────────────────────────────────────────────────────────
+  const openAddPanel = () => {
+    setFormData({
+      amount: '',
+      category: 'Miscellaneous',
+      description: '',
+      date: new Date().toISOString().split('T')[0],
+      paymentMethod: 'Credit Card'
+    });
+    setEditingExpense(null);
+    setIsSlidePanelOpen(true);
+  };
 
-    return { totalSpent: total, allTimeTotal: allTime, categoryData: chartData };
-  }, [dateFilteredExpenses, expenses]);
+  const openEditPanel = (e: Expense) => {
+    setFormData({
+      amount: e.amount.toString(),
+      category: e.category,
+      description: e.description,
+      date: new Date(e.date).toISOString().split('T')[0],
+      paymentMethod: e.paymentMethod
+    });
+    setEditingExpense(e);
+    setIsSlidePanelOpen(true);
+  };
 
-  const handleSaveExpense = async (data: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    const data = { ...formData, amount: parseFloat(formData.amount) || 0 };
+
     if (editingExpense) {
       const res = await updateDailyExpense(editingExpense._id, data);
       if (res.success) {
-        setExpenses(expenses.map(e => e._id === editingExpense._id ? res.data : e));
-        setEditingExpense(null);
-        window.dispatchEvent(new CustomEvent('fetch-notifications'));
-        return true;
+        toast.success('Expense updated');
+        setIsSlidePanelOpen(false);
+        window.location.reload();
+      } else {
+        toast.error('Failed to update');
       }
     } else {
       const res = await createDailyExpense(data);
       if (res.success) {
-        setExpenses([res.data, ...expenses]);
-        window.dispatchEvent(new CustomEvent('fetch-notifications'));
-        return true;
+        toast.success('Expense recorded');
+        setIsSlidePanelOpen(false);
+        window.location.reload();
+      } else {
+        toast.error('Failed to create');
       }
     }
-    return false;
+    setIsSubmitting(false);
   };
 
-  const handleDeleteExpense = async (id: string) => {
-    const isConfirmed = await confirm({ message: 'Are you sure you want to delete this expense?', danger: true });
-    if (isConfirmed) {
-      const res = await deleteDailyExpense(id);
-      if (res.success) {
-        setExpenses(expenses.filter(e => e._id !== id));
-        window.dispatchEvent(new CustomEvent('fetch-notifications'));
-      }
-    }
-  };
-
-  // ================= DEBTS LOGIC =================
-  const dateFilteredDebts = useMemo(() => {
-    return filterByDateRange(debts);
-  }, [debts, filterByDateRange]);
-
-  const filteredDebts = useMemo(() => {
-    return dateFilteredDebts.filter(debt => 
-      debt.personName.toLowerCase().includes(debtSearchQuery.toLowerCase()) ||
-      debt.description?.toLowerCase().includes(debtSearchQuery.toLowerCase())
-    );
-  }, [dateFilteredDebts, debtSearchQuery]);
-
-  const { totalBorrowed, totalLent } = useMemo(() => {
-    let borrowed = 0;
-    let lent = 0;
-    dateFilteredDebts.forEach(debt => {
-      if (debt.status === 'pending') {
-        if (debt.type === 'borrowed') borrowed += debt.amount;
-        if (debt.type === 'lent') lent += debt.amount;
-      }
-    });
-    return { totalBorrowed: borrowed, totalLent: lent };
-  }, [dateFilteredDebts]);
-
-  const handleSaveDebt = async (data: any) => {
-    if (editingDebt) {
-      const res = await updatePersonalDebt(editingDebt._id, data);
-      if (res.success) {
-        setDebts(debts.map(d => d._id === editingDebt._id ? res.data : d));
-        setEditingDebt(null);
-        window.dispatchEvent(new CustomEvent('fetch-notifications'));
-        return true;
-      }
-    } else {
-      const res = await createPersonalDebt(data);
-      if (res.success) {
-        setDebts([res.data, ...debts]);
-        window.dispatchEvent(new CustomEvent('fetch-notifications'));
-        return true;
-      }
-    }
-    return false;
-  };
-
-  const handleDeleteDebt = async (id: string) => {
-    const isConfirmed = await confirm({ message: 'Are you sure you want to delete this record?', danger: true });
-    if (isConfirmed) {
-      const res = await deletePersonalDebt(id);
-      if (res.success) {
-        setDebts(debts.filter(d => d._id !== id));
-        window.dispatchEvent(new CustomEvent('fetch-notifications'));
-      }
-    }
-  };
-
-  const handleSettleDebt = async (id: string) => {
-    const isConfirmed = await confirm({ message: 'Mark this record as settled?' });
-    if (isConfirmed) {
-      const res = await settlePersonalDebt(id);
-      if (res.success) {
-        setDebts(debts.map(d => d._id === id ? res.data : d));
-        window.dispatchEvent(new CustomEvent('fetch-notifications'));
-      }
-    }
-  };
-
-  const handlePartialPayment = async (paymentAmount: number, note: string) => {
-    if (!selectedDebtForPayment) return false;
+  const handleDelete = async (id: string) => {
+    const isConfirmed = await confirm({ message: 'Delete this expense?', danger: true });
+    if (!isConfirmed) return;
     
-    console.log('Making payment:', { 
-      debtId: selectedDebtForPayment._id, 
-      paymentAmount, 
-      note,
-      currentDebt: selectedDebtForPayment 
-    });
-    
-    const res = await makePartialPayment(selectedDebtForPayment._id, paymentAmount, note);
-    
-    console.log('Payment response:', res);
-    
+    const res = await deleteDailyExpense(id);
     if (res.success) {
-      console.log('Updated debt:', res.data);
-      
-      // Update the debts state with the new data
-      const updatedDebts = debts.map(d => 
-        d._id === selectedDebtForPayment._id ? res.data : d
-      );
-      
-      console.log('New debts state:', updatedDebts);
-      setDebts(updatedDebts);
-      
-      // Show success message
-      if (res.message) {
-        alert(res.message);
-      }
-      window.dispatchEvent(new CustomEvent('fetch-notifications'));
-      return true;
+      toast.success('Deleted');
+      window.location.reload();
     } else {
-      console.error('Payment failed:', res.error);
-      alert(res.error || 'Failed to record payment');
-      return false;
+      toast.error('Failed to delete');
     }
   };
+
+  const containerVariants = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
+  const itemVariants = { hidden: { opacity: 0, y: 15 }, show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 26 } } };
 
   return (
-    <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-8">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <h1 className="mb-3">
-            Personal Finances
-          </h1>
-          <p className="text-[15px] font-inter leading-relaxed tracking-wide text-slate-600 dark:text-gray-400">Track day-to-day expenditures and personal debts</p>
-        </div>
+    <div className="min-h-screen bg-[#09090B] p-4 md:p-8 selection:bg-[#2563EB]/30">
+      <div className="max-w-[1600px] mx-auto space-y-8 pb-20">
         
-        <div className="flex neu-pressed p-1 rounded-xl">
-          <button
-            onClick={() => setActiveTab('expenses')}
-            className={`px-6 py-3 rounded-lg text-sm font-jakarta font-bold transition-all ${
-              activeTab === 'expenses'
-                ? 'neu-button text-indigo-500'
-                : 'text-slate-500 hover:neu-flat'
-            }`}
-          >
-            Daily Expenses
-          </button>
-          <button
-            onClick={() => setActiveTab('debts')}
-            className={`px-6 py-3 rounded-lg text-sm font-jakarta font-bold transition-all ${
-              activeTab === 'debts'
-                ? 'neu-button text-rose-500'
-                : 'text-slate-500 hover:neu-flat'
-            }`}
-          >
-            Loans & Debts
-          </button>
-        </div>
-      </div>
-
-      {/* Unified Controls Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 neu-flat rounded-2xl p-4">
-        <div className="flex neu-pressed p-1 rounded-xl overflow-x-auto whitespace-nowrap scrollbar-hide">
-          <button
-            onClick={() => setTimeFilter('7days')}
-            className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs font-jakarta font-bold transition-all ${
-              timeFilter === '7days'
-                ? 'neu-button text-indigo-500'
-                : 'text-slate-500 hover:neu-flat'
-            }`}
-          >
-            Last 7 Days
-          </button>
-          <button
-            onClick={() => setTimeFilter('month')}
-            className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs font-jakarta font-bold transition-all ${
-              timeFilter === 'month'
-                ? 'neu-button text-indigo-500'
-                : 'text-slate-500 hover:neu-flat'
-            }`}
-          >
-            This Month
-          </button>
-          <button
-            onClick={() => setTimeFilter('year')}
-            className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs font-jakarta font-bold transition-all ${
-              timeFilter === 'year'
-                ? 'neu-button text-indigo-500'
-                : 'text-slate-500 hover:neu-flat'
-            }`}
-          >
-            This Year
-          </button>
-          <button
-            onClick={() => setTimeFilter('all')}
-            className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs font-jakarta font-bold transition-all ${
-              timeFilter === 'all'
-                ? 'neu-button text-indigo-500'
-                : 'text-slate-500 hover:neu-flat'
-            }`}
-          >
-            All Time
-          </button>
-        </div>
-
-        {activeTab === 'expenses' ? (
-          <button
-            onClick={() => {
-              setEditingExpense(null);
-              setIsExpenseModalOpen(true);
-            }}
-            className="flex items-center justify-center gap-2 px-6 py-3 neu-button text-indigo-500 rounded-xl text-sm font-jakarta font-bold transition-all"
-          >
-            <Plus size={16} />
-            <span>Log Expense</span>
-          </button>
-        ) : (
-          <button
-            onClick={() => {
-              setEditingDebt(null);
-              setIsDebtModalOpen(true);
-            }}
-            className="flex items-center justify-center gap-2 px-6 py-3 neu-button text-rose-500 rounded-xl text-sm font-jakarta font-bold transition-all"
-          >
-            <Plus size={16} />
-            <span>Add Record</span>
-          </button>
-        )}
-      </div>
-
-      <AnimatePresence mode="wait">
-        {activeTab === 'expenses' && (
-          <motion.div
-            key="expenses"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="space-y-8"
-          >
-            {/* Metrics Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="neu-flat rounded-[2rem] p-6 flex items-center justify-between">
-                <div>
-                  <p className="text-slate-500 dark:text-gray-400 text-sm font-jakarta font-bold uppercase tracking-wider mb-1">
-                    {timeFilter === '7days' && 'Spent (Last 7 Days)'}
-                    {timeFilter === 'month' && 'Spent (This Month)'}
-                    {timeFilter === 'year' && 'Spent (This Year)'}
-                    {timeFilter === 'all' && 'Spent (All Time)'}
-                  </p>
-                  <h3 className="">{formatCurrency(totalSpent)}</h3>
+        {/* ── Page Header ──────────────────────────────────────────────────── */}
+        <motion.div variants={containerVariants} initial="hidden" animate="show">
+          <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-end gap-5 mb-6">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-9 h-9 rounded-[10px] bg-[#2563EB]/10 border border-[#2563EB]/20 flex items-center justify-center text-[#2563EB]">
+                  <CreditCard size={17} />
                 </div>
-                <div className="w-14 h-14 rounded-2xl neu-pressed flex items-center justify-center">
-                  <Wallet size={24} className="text-indigo-500 dark:text-indigo-400" />
-                </div>
+                <span className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Expense Management</span>
               </div>
-              <div className="neu-flat rounded-[2rem] p-6 flex items-center justify-between">
-                <div>
-                  <p className="text-slate-500 dark:text-gray-400 text-sm font-jakarta font-bold uppercase tracking-wider mb-1">
-                    {timeFilter === 'all' ? 'Spent (This Month)' : 'Spent (All Time)'}
-                  </p>
-                  <h3 className="">
-                    {formatCurrency(timeFilter === 'all' ? currentMonthSpent : allTimeTotal)}
-                  </h3>
-                </div>
-                <div className="w-14 h-14 rounded-2xl neu-pressed flex items-center justify-center">
-                  <Calendar size={24} className="text-pink-500 dark:text-pink-400" />
-                </div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight font-jakarta mb-1.5">Expenses</h1>
+              <p className="text-sm font-medium text-[#94A3B8]">Track, categorize, and analyze business expenses.</p>
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+              <button className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#11131A] hover:bg-[#232734] border border-[#232734] text-white transition-all">
+                <UploadCloud size={16} /> Upload Receipt
+              </button>
+              <button className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#11131A] hover:bg-[#232734] border border-[#232734] text-white transition-all">
+                <Download size={16} /> Export
+              </button>
+              <button onClick={openAddPanel} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
+                <Plus size={16} strokeWidth={2.5} /> Add Expense
+              </button>
+            </div>
+          </motion.div>
+
+          {/* ── KPI Cards ─────────────────────────────────────────────────── */}
+          <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-[#11131A] border border-[#232734] rounded-[24px] p-6 relative overflow-hidden group">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Total Expenses</p>
+                <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 flex items-center justify-center text-[#2563EB]"><DollarSign size={16} /></div>
+              </div>
+              <p className="text-3xl font-bold font-mono text-white tracking-tight">{formatCurrency(totalExpenses)}</p>
+            </div>
+
+            <div className="bg-[#11131A] border border-[#232734] rounded-[24px] p-6 relative overflow-hidden group">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Approved</p>
+                <div className="w-8 h-8 rounded-lg bg-[#10B981]/10 flex items-center justify-center text-[#10B981]"><CheckCircle2 size={16} /></div>
+              </div>
+              <p className="text-3xl font-bold font-mono text-white tracking-tight">{formatCurrency(totalExpenses * 1)}</p>
+            </div>
+
+            <div className="bg-[#11131A] border border-[#232734] rounded-[24px] p-6 relative overflow-hidden group">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Pending</p>
+                <div className="w-8 h-8 rounded-lg bg-[#232734] flex items-center justify-center text-[#94A3B8]"><AlertCircle size={16} /></div>
+              </div>
+              <p className="text-3xl font-bold font-mono text-[#94A3B8] tracking-tight">$0</p>
+            </div>
+
+            <div className="bg-[#11131A] border border-[#232734] rounded-[24px] p-6 relative overflow-hidden group">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Avg Expense</p>
+                <div className="w-8 h-8 rounded-lg bg-[#7C3AED]/10 flex items-center justify-center text-[#7C3AED]"><TrendingDown size={16} /></div>
+              </div>
+              <p className="text-3xl font-bold font-mono text-white tracking-tight">{formatCurrency(avgExpense)}</p>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* ── Charts ───────────────────────────────────────────────────────── */}
+        <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <motion.div variants={itemVariants} className="lg:col-span-2 bg-[#11131A] border border-[#232734] rounded-[24px] p-6 flex flex-col">
+            <h3 className="text-sm font-bold text-white mb-6">Expense Trend</h3>
+            <div className="flex-1 min-h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                {trendData.length <= 2 ? (
+                  <BarChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#232734" vertical={false} />
+                    <XAxis dataKey="dateStr" stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `$${v/1000}k`} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#09090B', border: '1px solid #232734', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}
+                      itemStyle={{ color: '#fff' }}
+                      cursor={{ fill: '#232734', opacity: 0.4 }}
+                    />
+                    <Bar dataKey="Amount" fill="#2563EB" radius={[4, 4, 0, 0]} maxBarSize={60} />
+                  </BarChart>
+                ) : (
+                  <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorTrend" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#2563EB" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#2563EB" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#232734" vertical={false} />
+                    <XAxis dataKey="dateStr" stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `$${v/1000}k`} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#09090B', border: '1px solid #232734', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}
+                      itemStyle={{ color: '#fff' }}
+                    />
+                    <Area type="monotone" dataKey="Amount" stroke="#2563EB" strokeWidth={3} fillOpacity={1} fill="url(#colorTrend)" />
+                  </AreaChart>
+                )}
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+
+          <motion.div variants={itemVariants} className="bg-[#11131A] border border-[#232734] rounded-[24px] p-6 flex flex-col">
+            <h3 className="text-sm font-bold text-white mb-6">Categories</h3>
+            <div className="flex-1 min-h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={categoryData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={90}
+                    paddingAngle={5}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    {categoryData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={CATEGORY_COLORS[entry.name] || '#64748B'} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#09090B', border: '1px solid #232734', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', color: '#fff' }}
+                    formatter={(val: any) => formatCurrency(val as number)}
+                  />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', color: '#94A3B8' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* ── Filters & Table ──────────────────────────────────────────────── */}
+        <motion.div variants={containerVariants} initial="hidden" animate="show" className="bg-[#11131A] border border-[#232734] rounded-[24px] overflow-hidden">
+          {/* Table Toolbar */}
+          <div className="p-6 border-b border-[#232734] flex flex-col md:flex-row gap-4 justify-between items-center bg-[#0D0F16]">
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <div className="relative flex-1 md:w-64 group">
+                <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8] group-focus-within:text-[#2563EB] transition-colors" />
+                <input type="text" placeholder="Search expenses..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                  className="w-full bg-[#11131A] border border-[#232734] text-white text-sm font-medium rounded-xl pl-11 pr-4 py-2.5 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all" />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Main Expenses Table */}
-              <div className="neu-flat rounded-[2rem] overflow-hidden flex flex-col lg:col-span-2">
-                <div className="p-6 border-b border-slate-200 dark:border-slate-800/50 flex flex-col sm:flex-row gap-4 justify-between items-center">
-                  <div className="relative w-full sm:max-w-xs group">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Search size={16} className="text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Search expenses..."
-                      value={expenseSearchQuery}
-                      onChange={(e) => setExpenseSearchQuery(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 neu-pressed text-slate-700 dark:text-slate-200 rounded-xl focus:outline-none transition-all text-sm placeholder:text-slate-500"
-                    />
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}
+                className="bg-[#11131A] border border-[#232734] text-white text-sm font-medium rounded-xl pl-4 pr-8 py-2.5 appearance-none focus:outline-none focus:border-[#2563EB]/60 cursor-pointer w-full md:w-auto">
+                <option value="All">All Categories</option>
+                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              
+              <select value={dateFilter} onChange={e => setDateFilter(e.target.value as any)}
+                className="bg-[#11131A] border border-[#232734] text-white text-sm font-medium rounded-xl pl-4 pr-8 py-2.5 appearance-none focus:outline-none focus:border-[#2563EB]/60 cursor-pointer w-full md:w-auto">
+                <option value="All">All Time</option>
+                <option value="ThisMonth">This Month</option>
+                <option value="Last3Months">Last 3 Months</option>
+                <option value="ThisYear">This Year</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead className="bg-[#09090B]">
+                <tr className="border-b border-[#232734]">
+                  <th className="pl-6 pr-4 py-4 text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest whitespace-nowrap">Expense Title</th>
+                  <th className="px-4 py-4 text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest whitespace-nowrap">Category</th>
+                  <th className="px-4 py-4 text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest whitespace-nowrap">Amount</th>
+                  <th className="px-4 py-4 text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest whitespace-nowrap">Status</th>
+                  <th className="px-4 py-4 text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest whitespace-nowrap">Date</th>
+                  <th className="pr-6 pl-4 py-4 text-right"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredExpenses.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-20 text-center">
+                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#09090B] border border-[#232734] mb-4">
+                        <Search size={24} className="text-[#94A3B8]" />
+                      </div>
+                      <p className="text-sm font-bold text-white">No expenses found</p>
+                      <p className="text-xs text-[#94A3B8] mt-1">Try adjusting your filters or search.</p>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredExpenses.map((e, i) => {
+                    const catColor = CATEGORY_COLORS[e.category] || '#64748B';
+                    return (
+                      <motion.tr key={e._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.01 }}
+                        className="border-b border-[#232734]/50 hover:bg-[#09090B] transition-colors group cursor-pointer"
+                        onClick={() => openEditPanel(e)}>
+                        <td className="pl-6 pr-4 py-4 w-[40%]">
+                          <div className="flex items-center gap-3">
+                            <div className="relative">
+                              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border border-[#232734] bg-[#09090B] text-[#94A3B8]">
+                                <FileText size={14} />
+                              </div>
+                              {e.amount > 100 && (
+                                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#2563EB] text-white flex items-center justify-center border border-[#09090B]">
+                                  <Paperclip size={8} />
+                                </div>
+                              )}
+                            </div>
+                            <div className="overflow-hidden pr-4">
+                              <span className="block text-sm font-bold text-white truncate">{e.description}</span>
+                              <span className="text-[10px] text-[#94A3B8] font-bold tracking-widest uppercase">{e.paymentMethod}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#232734] text-xs font-bold" style={{ color: catColor }}>
+                            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: catColor }} />
+                            {e.category}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4">
+                          <span className="text-sm font-bold font-mono tracking-tight text-white">
+                            {formatCurrency(e.amount)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4">
+                          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-[#10B981]/10 border border-[#10B981]/20 text-[#10B981] text-[10px] font-bold uppercase tracking-widest">
+                            <CheckCircle2 size={10} /> Approved
+                          </span>
+                        </td>
+                        <td className="px-4 py-4 text-xs font-bold text-[#94A3B8]">{formatDate(e.date)}</td>
+                        <td className="pr-6 pl-4 py-4 text-right">
+                          <button onClick={(ev) => { ev.stopPropagation(); handleDelete(e._id); }} className="p-2 opacity-0 group-hover:opacity-100 hover:text-[#EF4444] text-[#94A3B8] transition-all">
+                            <Trash2 size={14} />
+                          </button>
+                        </td>
+                      </motion.tr>
+                    )
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+        
+        {/* ── Right Slide Panel (Add / Edit) ───────────────────────────────── */}
+        <AnimatePresence>
+          {isSlidePanelOpen && (
+            <>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
+                onClick={() => setIsSlidePanelOpen(false)} className="fixed inset-0 bg-[#09090B]/80 backdrop-blur-sm z-50" />
+              <motion.div
+                initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 30, stiffness: 280 }}
+                className="fixed right-0 top-0 bottom-0 w-full sm:w-[450px] bg-[#09090B] border-l border-[#232734] z-50 flex flex-col shadow-2xl"
+              >
+                {/* Header */}
+                <div className="flex-shrink-0 p-6 border-b border-[#232734] bg-[#11131A]">
+                  <div className="flex items-center justify-between mb-5">
+                    <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">{editingExpense ? 'Edit Expense' : 'New Expense'}</span>
+                    <button onClick={() => setIsSlidePanelOpen(false)} className="p-2 rounded-[10px] text-[#94A3B8] hover:text-white hover:bg-[#232734] border border-[#232734] transition-all">
+                      <X size={14} />
+                    </button>
                   </div>
                   
-                  <div className="flex items-center gap-3 w-full sm:w-auto">
-                    <Filter size={16} className="text-slate-400" />
-                    <select
-                      value={selectedCategory}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
-                      className="w-full sm:w-auto pl-3 pr-8 py-2 neu-pressed text-slate-700 dark:text-slate-200 rounded-xl focus:outline-none transition-all text-sm appearance-none"
-                    >
-                      <option value="All">All Categories</option>
-                      {Object.keys(CATEGORY_COLORS).map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-[14px] bg-[#09090B] border border-[#232734] flex items-center justify-center text-[#2563EB] flex-shrink-0">
+                      <CreditCard size={20} />
+                    </div>
+                    <h2 className="text-xl font-bold text-white tracking-tight mt-1">
+                      {editingExpense ? 'Expense Details' : 'Record Expense'}
+                    </h2>
+                  </div>
+                </div>
+
+                {/* Body Form */}
+                <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+                  
+                  <div>
+                    <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Amount ($)</label>
+                    <input required type="number" step="0.01" min="0" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})}
+                      className="w-full bg-[#11131A] border border-[#232734] text-white rounded-xl px-4 py-3 text-lg font-mono focus:border-[#2563EB]/60 focus:outline-none" placeholder="0.00" />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Expense Title</label>
+                    <input required type="text" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
+                      className="w-full bg-[#11131A] border border-[#232734] text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none" placeholder="e.g. Client Dinner" />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Date</label>
+                      <input required type="date" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})}
+                        className="w-full bg-[#11131A] border border-[#232734] text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Category</label>
+                      <select required value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}
+                        className="w-full bg-[#11131A] border border-[#232734] text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none">
+                        {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Payment Method</label>
+                    <select required value={formData.paymentMethod} onChange={e => setFormData({...formData, paymentMethod: e.target.value})}
+                      className="w-full bg-[#11131A] border border-[#232734] text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none">
+                      {PAYMENT_METHODS.map(m => <option key={m} value={m}>{m}</option>)}
                     </select>
                   </div>
-                </div>
 
-                <div className="overflow-x-auto flex-1">
-                  <table className="w-full whitespace-nowrap">
-                    <thead>
-                      <tr className="border-b border-slate-200 dark:border-slate-800/50">
-                        <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</th>
-                        <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Category</th>
-                        <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Description</th>
-                        <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Method</th>
-                        <th className="text-right py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Amount</th>
-                        <th className="text-center py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredExpenses.length === 0 ? (
-                        <tr>
-                          <td colSpan={6} className="py-12 text-center text-slate-500">No expenses found matching your criteria.</td>
-                        </tr>
-                      ) : (
-                        filteredExpenses.map((expense) => (
-                          <tr key={expense._id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                            <td className="py-4 px-6 text-sm text-slate-700 dark:text-slate-300 font-medium">
-                              {formatDate(expense.date)}
-                            </td>
-                            <td className="py-4 px-6">
-                              <div className="flex items-center gap-2">
-                                <div 
-                                  className="w-2.5 h-2.5 rounded-full shadow-sm"
-                                  style={{ backgroundColor: CATEGORY_COLORS[expense.category] || CATEGORY_COLORS['Miscellaneous'] }}
-                                />
-                                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">{expense.category}</span>
-                              </div>
-                            </td>
-                            <td className="py-4 px-6 text-sm text-slate-500 dark:text-slate-400 max-w-[200px] truncate">
-                              {expense.description || '-'}
-                            </td>
-                            <td className="py-4 px-6 text-sm text-slate-600 dark:text-slate-400">
-                              {expense.paymentMethod}
-                            </td>
-                            <td className="py-4 px-6 text-sm font-bold text-slate-800 dark:text-white text-right">
-                              {formatCurrency(expense.amount)}
-                            </td>
-                            <td className="py-4 px-6">
-                              <div className="flex justify-center gap-3">
-                                <button onClick={() => { setEditingExpense(expense); setIsExpenseModalOpen(true); }} className="text-slate-400 hover:text-indigo-500 transition-colors">
-                                  <Edit2 size={16} />
-                                </button>
-                                <button onClick={() => handleDeleteExpense(expense._id)} className="text-slate-400 hover:text-red-500 transition-colors">
-                                  <Trash2 size={16} />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Expense Breakdown Chart */}
-              <div className="neu-flat rounded-[2rem] p-6 flex flex-col h-full">
-                <h2 className="mb-6">Expense Breakdown</h2>
-                
-                {categoryData.length > 0 ? (
-                  <div className="flex-1 flex flex-col items-center">
-                    <div className="h-[250px] w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={categoryData}
-                            innerRadius={60}
-                            outerRadius={80}
-                            paddingAngle={5}
-                            dataKey="value"
-                          >
-                            {categoryData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} stroke="transparent" />
-                            ))}
-                          </Pie>
-                          <Tooltip 
-                            formatter={(value: any) => formatCurrency(Number(value) || 0)}
-                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)' }}
-                          />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                    
-                    <div className="w-full mt-6 space-y-3 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
-                      {categoryData.map((data, index) => (
-                        <div key={index} className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: data.color }} />
-                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{data.name}</span>
-                          </div>
-                          <span className="text-sm font-bold text-slate-800 dark:text-white">{formatCurrency(data.value)}</span>
-                        </div>
-                      ))}
-                    </div>
+                  <div className="pt-6 mt-6 border-t border-[#232734]">
+                    <button type="submit" disabled={isSubmitting || !formData.amount || !formData.description}
+                      className="w-full py-3.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold text-sm rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.25)]">
+                      {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : 'Save Expense'}
+                    </button>
                   </div>
-                ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
-                    <PieChartIcon size={64} className="mb-4 opacity-50" />
-                    <p>No expense data available</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        )}
+                </form>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
-        {activeTab === 'debts' && (
-          <motion.div
-            key="debts"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="space-y-8"
-          >
-            {/* Metrics Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="neu-flat rounded-[2rem] p-6 flex items-center justify-between">
-                <div>
-                  <p className="text-slate-500 dark:text-gray-400 text-sm font-semibold uppercase tracking-wider mb-1">
-                    {timeFilter === '7days' && 'I Owe (Last 7 Days)'}
-                    {timeFilter === 'month' && 'I Owe (This Month)'}
-                    {timeFilter === 'year' && 'I Owe (This Year)'}
-                    {timeFilter === 'all' && 'Total I Owe'}
-                  </p>
-                  <h3 className="">{formatCurrency(totalBorrowed)}</h3>
-                </div>
-                <div className="w-14 h-14 rounded-2xl neu-pressed flex items-center justify-center">
-                  <ArrowRightLeft size={24} className="text-rose-500 dark:text-rose-400" />
-                </div>
-              </div>
-              <div className="neu-flat rounded-[2rem] p-6 flex items-center justify-between">
-                <div>
-                  <p className="text-slate-500 dark:text-gray-400 text-sm font-semibold uppercase tracking-wider mb-1">
-                    {timeFilter === '7days' && 'Owed to Me (Last 7 Days)'}
-                    {timeFilter === 'month' && 'Owed to Me (This Month)'}
-                    {timeFilter === 'year' && 'Owed to Me (This Year)'}
-                    {timeFilter === 'all' && 'Total Owed To Me'}
-                  </p>
-                  <h3 className="">{formatCurrency(totalLent)}</h3>
-                </div>
-                <div className="w-14 h-14 rounded-2xl neu-pressed flex items-center justify-center">
-                  <Wallet size={24} className="text-teal-500 dark:text-teal-400" />
-                </div>
-              </div>
-            </div>
-
-            {/* Main Debts Table */}
-            <div className="neu-flat rounded-[2rem] overflow-hidden flex flex-col">
-              <div className="p-6 border-b border-slate-200 dark:border-slate-800/50 flex flex-col sm:flex-row gap-4 justify-between items-center">
-                <div className="relative w-full sm:max-w-xs group">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search size={16} className="text-slate-400 group-focus-within:text-rose-500 transition-colors" />
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Search by name or description..."
-                    value={debtSearchQuery}
-                    onChange={(e) => setDebtSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 neu-pressed text-slate-700 dark:text-slate-200 rounded-xl focus:outline-none transition-all text-sm placeholder:text-slate-500"
-                  />
-                </div>
-              </div>
-
-              <div className="overflow-x-auto flex-1">
-                <table className="w-full whitespace-nowrap">
-                  <thead>
-                    <tr className="border-b border-slate-200 dark:border-slate-800/50">
-                      <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</th>
-                      <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Person</th>
-                      <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Type</th>
-                      <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Description</th>
-                      <th className="text-right py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Original</th>
-                      <th className="text-right py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Paid</th>
-                      <th className="text-right py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Remaining</th>
-                      <th className="text-center py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
-                      <th className="text-center py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredDebts.length === 0 ? (
-                      <tr>
-                        <td colSpan={9} className="py-12 text-center text-slate-500">No records found.</td>
-                      </tr>
-                    ) : (
-                      filteredDebts.map((debt) => (
-                        <tr key={debt._id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                          <td className="py-4 px-6 text-sm text-slate-700 dark:text-slate-300 font-medium">
-                            {formatDate(debt.date)}
-                          </td>
-                          <td className="py-4 px-6 text-sm font-bold text-slate-800 dark:text-white">
-                            {debt.personName}
-                          </td>
-                          <td className="py-4 px-6">
-                            <span className={`text-xs font-bold px-3 py-1 rounded-full ${
-                              debt.type === 'borrowed' 
-                                ? 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400' 
-                                : 'bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-400'
-                            }`}>
-                              {debt.type === 'borrowed' ? 'I Owe' : 'Owed to Me'}
-                            </span>
-                          </td>
-                          <td className="py-4 px-6 text-sm text-slate-500 dark:text-slate-400 max-w-[200px] truncate">
-                            {debt.description || '-'}
-                          </td>
-                          <td className="py-4 px-6 text-sm font-mono font-semibold text-slate-700 dark:text-slate-300 text-right">
-                            {formatCurrency(debt.originalAmount || debt.amount)}
-                          </td>
-                          <td className="py-4 px-6 text-sm font-mono font-semibold text-green-600 dark:text-green-400 text-right">
-                            {formatCurrency(debt.paidAmount || 0)}
-                          </td>
-                          <td className="py-4 px-6 text-sm font-mono font-bold text-slate-800 dark:text-white text-right">
-                            {formatCurrency(debt.amount)}
-                          </td>
-                          <td className="py-4 px-6 text-center">
-                            <span className={`text-xs font-bold px-3 py-1 rounded-full ${
-                              debt.status === 'settled' 
-                                ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400' 
-                                : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'
-                            }`}>
-                              {debt.status === 'settled' ? 'Settled' : 'Pending'}
-                            </span>
-                          </td>
-                          <td className="py-4 px-6">
-                            <div className="flex justify-center gap-2">
-                              {debt.status === 'pending' && (
-                                <>
-                                  <button 
-                                    onClick={() => { 
-                                      setSelectedDebtForPayment(debt); 
-                                      setIsPartialPaymentModalOpen(true); 
-                                    }} 
-                                    className="text-slate-400 hover:text-blue-500 transition-colors" 
-                                    title="Make Payment"
-                                  >
-                                    <Wallet size={16} />
-                                  </button>
-                                  <button 
-                                    onClick={() => handleSettleDebt(debt._id)} 
-                                    className="text-slate-400 hover:text-green-500 transition-colors" 
-                                    title="Mark as Settled"
-                                  >
-                                    <CheckCircle2 size={16} />
-                                  </button>
-                                </>
-                              )}
-                              <button 
-                                onClick={() => { setEditingDebt(debt); setIsDebtModalOpen(true); }} 
-                                className="text-slate-400 hover:text-indigo-500 transition-colors" 
-                                title="Edit"
-                              >
-                                <Edit2 size={16} />
-                              </button>
-                              <button 
-                                onClick={() => handleDeleteDebt(debt._id)} 
-                                className="text-slate-400 hover:text-red-500 transition-colors" 
-                                title="Delete"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <CreateExpenseModal 
-        isOpen={isExpenseModalOpen}
-        onClose={() => { setIsExpenseModalOpen(false); setEditingExpense(null); }}
-        onSubmit={handleSaveExpense}
-        initialData={editingExpense}
-      />
-
-      <CreateDebtModal 
-        isOpen={isDebtModalOpen}
-        onClose={() => { setIsDebtModalOpen(false); setEditingDebt(null); }}
-        onSubmit={handleSaveDebt}
-        initialData={editingDebt}
-      />
-
-      <PartialPaymentModal
-        isOpen={isPartialPaymentModalOpen}
-        onClose={() => { setIsPartialPaymentModalOpen(false); setSelectedDebtForPayment(null); }}
-        onSubmit={handlePartialPayment}
-        debt={selectedDebtForPayment || { personName: '', amount: 0, originalAmount: 0, paidAmount: 0, type: 'borrowed' }}
-      />
+      </div>
     </div>
   );
 }

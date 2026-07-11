@@ -71,7 +71,7 @@ export async function createLead(data: any) {
     }
     const newLead = new Lead(data);
     await newLead.save();
-    revalidatePath('/leads');
+    revalidatePath('/prospects');
     
     return { 
       success: true, 
@@ -250,7 +250,7 @@ export async function updateLeadStatus(id: string, newStatus: string) {
       }
     }
     
-    revalidatePath('/leads');
+    revalidatePath('/prospects');
     return { success: true, data: JSON.parse(JSON.stringify(updatedLead)) };
   } catch (error: any) {
     console.error('Error updating lead status:', error);
@@ -362,7 +362,7 @@ export async function updateLead(id: string, updateData: any) {
       }
     }
     
-    revalidatePath('/leads');
+    revalidatePath('/prospects');
     return { success: true, data: JSON.parse(JSON.stringify(updatedLead)) };
   } catch (error: any) {
     console.error('Error updating lead:', error);
@@ -374,7 +374,7 @@ export async function deleteLead(id: string) {
   try {
     await connectToDatabase();
     await Lead.findByIdAndDelete(id);
-    revalidatePath('/leads');
+    revalidatePath('/prospects');
     return { success: true };
   } catch (error: any) {
     console.error('Error deleting lead:', error);
@@ -568,7 +568,7 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
     
     // Safe cache revalidation
     try {
-      revalidatePath('/leads');
+      revalidatePath('/prospects');
       revalidatePath('/dashboard'); // Update metrics on dashboard too!
     } catch (error) {
       // Suppress cache warning outside browser context
@@ -666,7 +666,7 @@ export async function importCSVLeads(leadsData: any[]) {
       }
     }
 
-    revalidatePath('/leads');
+    revalidatePath('/prospects');
     return { success: true, imported, duplicates, errors };
   } catch (error: any) {
     console.error('Error importing CSV leads:', error);
@@ -689,7 +689,7 @@ export async function bulkDeleteLeads(leadIds: string[]) {
 
     const result = await Lead.deleteMany({ _id: { $in: leadIds } });
     
-    revalidatePath('/leads');
+    revalidatePath('/prospects');
     
     return { 
       success: true, 

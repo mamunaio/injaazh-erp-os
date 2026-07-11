@@ -165,7 +165,7 @@ export default function Topbar() {
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
-    <header className="h-16 fixed top-[45px] right-4 left-4 lg:left-[288px] z-40 neu-flat rounded-full px-4 md:px-8 flex items-center justify-between transition-all duration-300">
+    <header className="h-20 fixed top-0 right-0 left-0 lg:left-[260px] z-40 bg-[#0A0A0B]/80 backdrop-blur-md border-b border-white/5 px-6 flex items-center justify-between transition-all duration-300">
       {/* Left Area */}
       <div className="flex-1 flex items-center justify-start">
         <button 
@@ -188,8 +188,8 @@ export default function Topbar() {
             </div>
             <input
               type="text"
-              className="block w-full pl-11 pr-12 py-2.5 neu-pressed rounded-full leading-5 text-slate-800 dark:text-gray-200 placeholder-slate-500 dark:placeholder-gray-500 focus:outline-none transition-all sm:text-sm"
-              placeholder="Search leads, projects, proposals..."
+              className="block w-full pl-11 pr-12 py-2 bg-[#121214] border border-white/10 rounded-lg leading-5 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 transition-all sm:text-sm"
+              placeholder="Search leads, companies, emails..."
             />
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
               <span className="text-[10px] font-bold text-slate-400 dark:text-gray-500 border border-slate-200 dark:border-white/10 rounded-md px-1.5 py-0.5 bg-slate-50 dark:bg-white/5">⌘K</span>
@@ -224,9 +224,9 @@ export default function Topbar() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 transition={{ duration: 0.2 }}
-                className="absolute right-0 mt-3 w-80 neu-flat rounded-[28px] overflow-hidden z-50"
+                className="absolute right-0 mt-3 w-80 bg-[#121214] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50"
               >
-                <div className="px-5 py-4 border-b border-slate-800/50 flex justify-between items-center">
+                <div className="px-5 py-4 border-b border-white/5 flex justify-between items-center">
                   <h3 className="font-bold text-slate-800 dark:text-white">Notifications</h3>
                   {unreadCount > 0 && (
                     <button onClick={handleMarkAllRead} className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700">Mark all read</button>
@@ -243,7 +243,7 @@ export default function Topbar() {
                       <div 
                         key={notif._id} 
                         onClick={() => !notif.isRead && handleMarkAsRead(notif._id)}
-                        className={`p-4 border-b border-slate-800/50 hover:neu-pressed transition-all flex gap-4 ${!notif.isRead ? 'cursor-pointer' : ''}`}
+                        className={`p-4 border-b border-white/5 hover:bg-white/5 transition-all flex gap-4 ${!notif.isRead ? 'cursor-pointer' : ''}`}
                       >
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                           notif.type === 'payment' ? 'bg-teal-100 text-teal-600 dark:bg-teal-500/20 dark:text-teal-400' :
@@ -298,9 +298,9 @@ export default function Topbar() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 transition={{ duration: 0.2 }}
-                className="absolute right-0 mt-4 w-60 neu-flat rounded-[28px] overflow-hidden z-50 p-2"
+                className="absolute right-0 mt-4 w-60 bg-[#121214] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 p-2"
               >
-                <div className="px-4 py-3 mb-2 border-b border-slate-800/50 flex items-center gap-3">
+                <div className="px-4 py-3 mb-2 border-b border-white/5 flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 p-[1px] flex-shrink-0">
                     <div className="w-full h-full rounded-full bg-white dark:bg-black flex items-center justify-center overflow-hidden">
                       <img src={user?.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.name || 'Felix'}&backgroundColor=transparent`} alt="User Avatar" className="w-full h-full object-cover" />
@@ -313,18 +313,18 @@ export default function Topbar() {
                 </div>
 
                 <div className="space-y-1">
-                  <button onClick={() => { setShowProfile(false); router.push('/settings'); }} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl hover:neu-flat transition-all text-slate-600 dark:text-slate-300 hover:text-indigo-500 text-sm font-medium group">
-                    <Settings size={16} className="text-slate-400 group-hover:text-indigo-500" />
+                  <button onClick={() => { setShowProfile(false); router.push('/settings'); }} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-white/5 transition-all text-slate-300 hover:text-white text-sm font-medium group">
+                    <Settings size={16} className="text-slate-400 group-hover:text-white" />
                     Account Settings
                   </button>
-                  <button onClick={() => { setShowProfile(false); router.push('/settings'); }} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl hover:neu-flat transition-all text-slate-600 dark:text-slate-300 hover:text-indigo-500 text-sm font-medium group">
-                    <User size={16} className="text-slate-400 group-hover:text-indigo-500" />
+                  <button onClick={() => { setShowProfile(false); router.push('/settings'); }} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-white/5 transition-all text-slate-300 hover:text-white text-sm font-medium group">
+                    <User size={16} className="text-slate-400 group-hover:text-white" />
                     My Profile
                   </button>
                 </div>
 
-                <div className="mt-2 pt-2 border-t border-slate-800/50">
-                  <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl hover:neu-flat transition-all text-slate-600 dark:text-slate-300 hover:text-rose-500 text-sm font-medium group">
+                <div className="mt-2 pt-2 border-t border-white/5">
+                  <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-white/5 transition-all text-slate-300 hover:text-rose-500 text-sm font-medium group">
                     <LogOut size={16} className="text-slate-400 group-hover:text-rose-500" />
                     Sign Out
                   </button>

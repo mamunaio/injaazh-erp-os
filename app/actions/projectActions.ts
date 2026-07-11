@@ -19,7 +19,7 @@ export async function getProjectsBoard() {
         _id: project._id?.toString() || '',
         title: project.title || '',
         description: project.description || '',
-        status: project.status || 'Planning',
+        status: ['Planning', 'In Progress', 'In Review', 'Completed', 'On Hold'].includes(project.status) ? project.status : 'Planning',
         techStack: Array.isArray(project.techStack) ? project.techStack : [],
         assignees: Array.isArray(project.assignees) ? project.assignees : [],
         progress: typeof project.progress === 'number' ? project.progress : 0,

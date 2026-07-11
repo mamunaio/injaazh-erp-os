@@ -473,7 +473,7 @@ describe('Marketplace Integration - End-to-End Tests', () => {
 
   describe('Performance and Data Integrity', () => {
     it('should handle multiple concurrent project completions', async () => {
-      const projects = [];
+      const projects: string[] = [];
       
       // Create multiple projects
       for (let i = 0; i < 5; i++) {

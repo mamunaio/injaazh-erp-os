@@ -39,15 +39,15 @@ const MenuBar = ({ editor }: { editor: any }) => {
   }
 
   const getButtonClass = (isActive: boolean) => {
-    return `p-2 rounded-lg transition-all ${
+    return `p-2 rounded-lg transition-all flex items-center justify-center ${
       isActive
-        ? 'neu-pressed text-indigo-500 dark:text-indigo-400'
-        : 'text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-white hover:neu-pressed'
+        ? 'bg-[#2563EB]/10 text-[#2563EB]'
+        : 'text-[#94A3B8] hover:text-white hover:bg-[#232734]'
     }`;
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-1 p-2 border-b border-slate-200 dark:border-white/5 z-10 sticky top-0">
+    <div className="flex flex-wrap items-center gap-1 p-3 border-b border-[#232734] bg-[#11131A] z-10 sticky top-0">
       <button
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
         className={getButtonClass(editor.isActive('heading', { level: 1 }))}
@@ -65,7 +65,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
         <Heading2 size={18} />
       </button>
 
-      <div className="w-px h-6 bg-slate-200 dark:bg-white/10 mx-1" />
+      <div className="w-px h-6 bg-[#232734] mx-1" />
 
       <button
         onClick={() => editor.chain().focus().toggleBold().run()}
@@ -104,7 +104,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
         <UnderlineIcon size={18} />
       </button>
 
-      <div className="w-px h-6 bg-slate-200 dark:bg-white/10 mx-1" />
+      <div className="w-px h-6 bg-[#232734] mx-1" />
 
       <button
         onClick={() => editor.chain().focus().setTextAlign('left').run()}
@@ -131,7 +131,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
         <AlignRight size={18} />
       </button>
 
-      <div className="w-px h-6 bg-slate-200 dark:bg-white/10 mx-1" />
+      <div className="w-px h-6 bg-[#232734] mx-1" />
 
       <button
         onClick={() => editor.chain().focus().toggleBulletList().run()}
@@ -158,7 +158,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
         <Quote size={18} />
       </button>
 
-      <div className="w-px h-6 bg-slate-200 dark:bg-white/10 mx-1" />
+      <div className="w-px h-6 bg-[#232734] mx-1" />
 
       <button
         onClick={() => {
@@ -191,7 +191,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
       <button
         onClick={() => editor.chain().focus().undo().run()}
         disabled={!editor.can().chain().focus().undo().run()}
-        className="p-2 text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300 disabled:opacity-50 transition-colors"
+        className="p-2 flex items-center justify-center rounded-lg text-[#94A3B8] hover:text-white hover:bg-[#232734] disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
         type="button"
         title="Undo"
       >
@@ -200,7 +200,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
       <button
         onClick={() => editor.chain().focus().redo().run()}
         disabled={!editor.can().chain().focus().redo().run()}
-        className="p-2 text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300 disabled:opacity-50 transition-colors"
+        className="p-2 flex items-center justify-center rounded-lg text-[#94A3B8] hover:text-white hover:bg-[#232734] disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
         type="button"
         title="Redo"
       >
@@ -237,7 +237,7 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Write s
     content: value,
     editorProps: {
       attributes: {
-        className: 'prose dark:prose-invert prose-sm sm:prose-base focus:outline-none min-h-[220px] max-w-none p-6 text-slate-700 dark:text-gray-200',
+        className: 'prose prose-invert focus:outline-none min-h-[250px] max-w-none p-6 text-white leading-relaxed',
       },
     },
     onUpdate: ({ editor }) => {
@@ -258,15 +258,15 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Write s
         <EditorContent editor={editor} />
         {/* Custom CSS for Tiptap Placeholder */}
         <style jsx global>{`
-          .is-editor-empty:first-child::before {
-            color: #94a3b8;
+          .tiptap p.is-editor-empty:first-child::before {
+            color: rgba(148, 163, 184, 0.5);
             content: attr(data-placeholder);
             float: left;
             height: 0;
             pointer-events: none;
           }
-          .dark .is-editor-empty:first-child::before {
-            color: #6b7280;
+          .tiptap {
+            min-height: 250px;
           }
         `}</style>
       </div>

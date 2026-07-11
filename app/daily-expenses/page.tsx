@@ -1,13 +1,12 @@
 import { Metadata } from 'next';
 import DailyExpensesClient from './DailyExpensesClient';
 import { getDailyExpenses } from '@/app/actions/dailyExpenseActions';
-import { getPersonalDebts } from '@/app/actions/personalDebtActions';
 import { getCurrentUser } from '@/app/actions/authActions';
 import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
-  title: 'Daily Expenses | Injaazh ERP',
-  description: 'Track daily personal and office expenses',
+  title: 'Expenses | Injaazh ERP',
+  description: 'Track daily business expenses',
 };
 
 export const dynamic = 'force-dynamic';
@@ -20,12 +19,7 @@ export default async function DailyExpensesPage() {
     redirect('/dashboard');
   }
 
-  const [expenses, debtsResult] = await Promise.all([
-    getDailyExpenses(),
-    getPersonalDebts()
-  ]);
+  const expenses = await getDailyExpenses();
 
-  const initialDebts = debtsResult.success ? debtsResult.data : [];
-
-  return <DailyExpensesClient initialExpenses={expenses} initialDebts={initialDebts} />;
+  return <DailyExpensesClient initialExpenses={expenses} />;
 }

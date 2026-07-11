@@ -18,8 +18,8 @@ import { useRouter } from 'next/navigation';
 
 const shortcuts = [
   { id: 'dashboard', name: 'Go to Dashboard', icon: Briefcase, path: '/dashboard', color: 'text-indigo-500' },
-  { id: 'add-lead', name: 'Add New Lead', icon: Plus, path: '/leads', color: 'text-teal-500' },
-  { id: 'leads', name: 'View Prospects & Leads', icon: Users, path: '/leads', color: 'text-teal-500' },
+  { id: 'add-lead', name: 'Add New Lead', icon: Plus, path: '/prospects', color: 'text-teal-500' },
+  { id: 'leads', name: 'View Prospects & Leads', icon: Users, path: '/prospects', color: 'text-teal-500' },
   { id: 'proposals', name: 'Create Proposal', icon: FileText, path: '/proposals', color: 'text-violet-500' },
   { id: 'outreach', name: 'Outreach Automation', icon: Zap, path: '/outreach', color: 'text-amber-500' },
   { id: 'money', name: 'Finance & Transactions', icon: DollarSign, path: '/money', color: 'text-pink-500' },

@@ -1,766 +1,627 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { Plus, TrendingUp, TrendingDown, DollarSign, Filter, Search, Edit2, Trash2, Download, FileText, BarChart3, Calendar } from 'lucide-react';
-import { createTransaction, updateTransaction, deleteTransaction } from '@/app/actions/transactionActions';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import AddTransactionModal from '@/components/AddTransactionModal';
-import EditTransactionModal from '@/components/EditTransactionModal';
-import MoneyAnalytics from '@/components/MoneyAnalytics';
-import { calculateTotals, groupTransactionsByPlatform } from '@/lib/analyticsUtils';
-import { formatCurrency as formatCurrencyUtil, formatDateDisplay } from '@/lib/formattingUtils';
-import { exportToCSV, exportToPDF } from '@/lib/exportUtils';
+import React, { useState, useMemo, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  TrendingUp, TrendingDown, DollarSign, Search, Filter, Plus, FileText, Download,
+  MoreHorizontal, Calendar, X, Loader2, ArrowUpRight, ArrowDownRight, CreditCard,
+  Briefcase, Trash2
+} from 'lucide-react';
+import { 
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  BarChart, Bar, Cell 
+} from 'recharts';
+import { format } from 'date-fns';
+import toast from 'react-hot-toast';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
-import DatePicker from '@/components/ui/DatePicker';
 
-interface MoneyClientProps {
-  initialTransactions: any[];
-  platformSummary: any;
+import { createTransaction, updateTransaction, deleteTransaction } from '@/app/actions/transactionActions';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface Transaction {
+  _id: string;
+  type: 'Income' | 'Expense';
+  amount: number;
+  date: string | Date;
+  category: string;
+  description: string;
+  platform: string;
 }
 
-const PLATFORM_COLORS = {
-  'Freelancer': 'from-blue-500 to-cyan-500',
-  'Direct': 'from-purple-500 to-pink-500',
-  'Upwork': 'from-green-500 to-emerald-500',
-  'Fiverr': 'from-teal-500 to-cyan-500',
-};
+interface MoneyClientProps {
+  initialTransactions: Transaction[];
+  platformSummary: any;
+  projectAnalytics: any; // We'll pass projectAnalytics from page.tsx to render within MoneyClient
+}
 
-const PLATFORM_DOTS = {
-  'Freelancer': 'bg-gradient-to-r from-blue-500 to-cyan-500',
-  'Direct': 'bg-gradient-to-r from-purple-500 to-pink-500',
-  'Upwork': 'bg-gradient-to-r from-green-500 to-emerald-500',
-  'Fiverr': 'bg-gradient-to-r from-teal-500 to-cyan-500',
-};
+// ─── Formatter Helpers ────────────────────────────────────────────────────────
+const formatCurrency = (amount: number) => 
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(amount);
 
-export default function MoneyClient({ initialTransactions, platformSummary }: MoneyClientProps) {
-  const router = useRouter();
+const formatDate = (date: string | Date) => 
+  new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+export default function MoneyClient({ initialTransactions, platformSummary, projectAnalytics }: MoneyClientProps) {
   const { confirm } = useConfirm();
-  const [transactions, setTransactions] = useState(initialTransactions);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
-  const [filterPlatform, setFilterPlatform] = useState<string>('All');
-  const [filterType, setFilterType] = useState<string>('All');
+  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
+  
+  // UI States
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'list' | 'analytics'>('list');
-  const [viewPeriod, setViewPeriod] = useState<'monthly' | 'yearly'>('monthly');
-  const [dateRange, setDateRange] = useState<'thisMonth' | 'last3Months' | 'thisYear' | 'custom'>('thisMonth');
-  const [customStartDate, setCustomStartDate] = useState('');
-  const [customEndDate, setCustomEndDate] = useState('');
+  const [dateFilter, setDateFilter] = useState<'All' | 'ThisMonth' | 'Last3Months' | 'ThisYear'>('ThisMonth');
+  const [typeFilter, setTypeFilter] = useState<'All' | 'Income' | 'Expense'>('All');
+  
+  const [isSlidePanelOpen, setIsSlidePanelOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [dateError, setDateError] = useState<string>('');
-  const [exportStatus, setExportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  // Form State
+  const [formData, setFormData] = useState({
+    type: 'Income',
+    amount: '',
+    date: new Date().toISOString().split('T')[0],
+    category: 'Sales',
+    description: '',
+    platform: 'Direct'
+  });
 
-  // Filter transactions by date range
-  // Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 15.5, 15.9
-  const dateFilteredTransactions = useMemo(() => {
-    const now = new Date();
-    let startDate: Date;
-    let endDate: Date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+  useEffect(() => { setTransactions(initialTransactions); }, [initialTransactions]);
 
-    switch (dateRange) {
-      case 'thisMonth':
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-        break;
-      case 'last3Months':
-        startDate = new Date(now.getFullYear(), now.getMonth() - 3, 1, 0, 0, 0, 0);
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-        break;
-      case 'thisYear':
-        startDate = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0);
-        endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
-        break;
-      case 'custom':
-        if (customStartDate && customEndDate) {
-          // Validate date range
-          const customStart = new Date(customStartDate);
-          const customEnd = new Date(customEndDate);
-          
-          if (customEnd < customStart) {
-            setDateError('End date must be greater than or equal to start date');
-            return initialTransactions;
-          }
-          
-          setDateError('');
-          startDate = new Date(customStart.getFullYear(), customStart.getMonth(), customStart.getDate(), 0, 0, 0, 0);
-          endDate = new Date(customEnd.getFullYear(), customEnd.getMonth(), customEnd.getDate(), 23, 59, 59, 999);
-        }
-        break;
-      default:
-        return transactions;
-    }
-
-    // Filter with inclusive boundaries using local timezone
-    return transactions.filter((t) => {
-      const tDate = new Date(t.date);
-      return tDate >= startDate && tDate <= endDate;
-    });
-  }, [transactions, dateRange, customStartDate, customEndDate]);
-
-  // Calculate totals from date-filtered transactions
-  // Requirements: 15.6 (exclude deleted transactions)
-  const totals = useMemo(() => {
-    return calculateTotals(dateFilteredTransactions);
-  }, [dateFilteredTransactions]);
-
-  // Calculate platform breakdown from date-filtered transactions
-  const platformBreakdown = useMemo(() => {
-    return groupTransactionsByPlatform(dateFilteredTransactions);
-  }, [dateFilteredTransactions]);
-
-  // Filter transactions
+  // ── Computed ────────────────────────────────────────────────────────────────
   const filteredTransactions = useMemo(() => {
-    return dateFilteredTransactions.filter((t) => {
-      const matchesPlatform = filterPlatform === 'All' || t.platform === filterPlatform;
-      const matchesType = filterType === 'All' || t.type === filterType;
-      const matchesSearch = searchQuery === '' || 
-        t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.category.toLowerCase().includes(searchQuery.toLowerCase());
+    let result = [...transactions];
+    const now = new Date();
+
+    // Date Filter
+    if (dateFilter !== 'All') {
+      let startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      if (dateFilter === 'Last3Months') startDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+      if (dateFilter === 'ThisYear') startDate = new Date(now.getFullYear(), 0, 1);
+
+      result = result.filter(t => new Date(t.date) >= startDate);
+    }
+
+    // Type Filter
+    if (typeFilter !== 'All') {
+      result = result.filter(t => t.type === typeFilter);
+    }
+
+    // Search Filter
+    if (searchQuery.trim() !== '') {
+      const lower = searchQuery.toLowerCase();
+      result = result.filter(t => 
+        t.description.toLowerCase().includes(lower) || 
+        t.category.toLowerCase().includes(lower) ||
+        t.platform.toLowerCase().includes(lower)
+      );
+    }
+
+    // Sort descending by date
+    return result.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [transactions, dateFilter, typeFilter, searchQuery]);
+
+  // ── KPIs ────────────────────────────────────────────────────────────────────
+  const totalIncome = filteredTransactions.filter(t => t.type === 'Income').reduce((acc, t) => acc + t.amount, 0);
+  const totalExpense = filteredTransactions.filter(t => t.type === 'Expense').reduce((acc, t) => acc + t.amount, 0);
+  const netProfit = totalIncome - totalExpense;
+
+  // ── Chart Data ──────────────────────────────────────────────────────────────
+  const chartData = useMemo(() => {
+    const map = new Map<string, { dateStr: string; Income: number; Expense: number }>();
+    
+    // Group by month
+    filteredTransactions.forEach(t => {
+      const d = new Date(t.date);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      if (!map.has(key)) map.set(key, { dateStr: format(d, 'MMM yyyy'), Income: 0, Expense: 0 });
       
-      return matchesPlatform && matchesType && matchesSearch;
+      const item = map.get(key)!;
+      if (t.type === 'Income') item.Income += t.amount;
+      else item.Expense += t.amount;
     });
-  }, [dateFilteredTransactions, filterPlatform, filterType, searchQuery]);
 
-  // Sync with initialTransactions if it changes from server
-  React.useEffect(() => {
-    setTransactions(initialTransactions);
-  }, [initialTransactions]);
+    return Array.from(map.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(entry => entry[1]);
+  }, [filteredTransactions]);
 
-  const handleAddTransaction = async (data: any) => {
-    const result = await createTransaction(data);
-    if (result.success) {
-      setTransactions([result.data, ...transactions]);
-      setIsAddModalOpen(false);
-      window.dispatchEvent(new CustomEvent('fetch-notifications'));
-      router.refresh();
-    } else {
-      alert('Failed to create transaction: ' + (result.error || 'Unknown error'));
-    }
+  const profitChartData = chartData.map(d => ({
+    name: d.dateStr,
+    Profit: d.Income - d.Expense
+  }));
+
+  // ── Actions ─────────────────────────────────────────────────────────────────
+  const openAddPanel = () => {
+    setFormData({
+      type: 'Income',
+      amount: '',
+      date: new Date().toISOString().split('T')[0],
+      category: 'Sales',
+      description: '',
+      platform: 'Direct'
+    });
+    setEditingTransaction(null);
+    setIsSlidePanelOpen(true);
   };
 
-  const handleEditTransaction = async (transactionId: string, data: any) => {
-    const result = await updateTransaction(transactionId, data);
-    if (result.success) {
-      setTransactions(transactions.map(t => t._id === transactionId ? result.data : t));
-      setIsEditModalOpen(false);
-      setSelectedTransaction(null);
-      window.dispatchEvent(new CustomEvent('fetch-notifications'));
-      router.refresh();
-    } else {
-      alert('Failed to update transaction: ' + (result.error || 'Unknown error'));
-    }
+  const openEditPanel = (t: Transaction) => {
+    setFormData({
+      type: t.type,
+      amount: t.amount.toString(),
+      date: new Date(t.date).toISOString().split('T')[0],
+      category: t.category,
+      description: t.description,
+      platform: t.platform
+    });
+    setEditingTransaction(t);
+    setIsSlidePanelOpen(true);
   };
 
-  const handleDeleteTransaction = async (transactionId: string) => {
-    const isConfirmed = await confirm({ message: 'Are you sure you want to delete this transaction?', danger: true });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    const data = { ...formData, amount: parseFloat(formData.amount) || 0 };
+
+    if (editingTransaction) {
+      const res = await updateTransaction(editingTransaction._id, data);
+      if (res.success) {
+        toast.success('Transaction updated');
+        setIsSlidePanelOpen(false);
+        window.location.reload();
+      } else {
+        toast.error('Failed to update');
+      }
+    } else {
+      const res = await createTransaction(data);
+      if (res.success) {
+        toast.success('Transaction created');
+        setIsSlidePanelOpen(false);
+        window.location.reload();
+      } else {
+        toast.error('Failed to create');
+      }
+    }
+    setIsSubmitting(false);
+  };
+
+  const handleInlineSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    const data = { ...formData, amount: parseFloat(formData.amount) || 0 };
+    const res = await createTransaction(data);
+    if (res.success) {
+      toast.success('Transaction added');
+      setFormData({ type: 'Income', amount: '', date: new Date().toISOString().split('T')[0], category: 'Sales', description: '', platform: 'Direct' });
+      window.location.reload();
+    } else {
+      toast.error('Failed to create');
+    }
+    setIsSubmitting(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    const isConfirmed = await confirm({ message: 'Delete this transaction?', danger: true });
     if (!isConfirmed) return;
     
-    const result = await deleteTransaction(transactionId);
-    if (result.success) {
-      setTransactions(transactions.filter(t => t._id !== transactionId));
-      window.dispatchEvent(new CustomEvent('fetch-notifications'));
-      router.refresh();
+    const res = await deleteTransaction(id);
+    if (res.success) {
+      toast.success('Deleted');
+      window.location.reload();
     } else {
-      alert('Failed to delete transaction: ' + (result.error || 'Unknown error'));
+      toast.error('Failed to delete');
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return formatCurrencyUtil(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-    return formatDateDisplay(dateString);
-  };
-
-  const handleExportCSV = async () => {
-    // Check for large datasets
-    if (filteredTransactions.length > 100) {
-      const isConfirmed = await confirm({ message: `You are about to export ${filteredTransactions.length} transactions. This may take a moment. Continue?` });
-      if (!isConfirmed) return;
-    }
-    
-    const result = exportToCSV(filteredTransactions);
-    
-    if (result.success) {
-      setExportStatus({ type: 'success', message: 'CSV exported successfully!' });
-      setTimeout(() => setExportStatus(null), 3000);
-    } else {
-      setExportStatus({ type: 'error', message: result.error || 'Failed to export CSV. Please try again.' });
-    }
-  };
-
-  const handleExportPDF = async () => {
-    // Check for large datasets
-    if (filteredTransactions.length > 1000) {
-      const isConfirmed = await confirm({ message: `You are about to export ${filteredTransactions.length} transactions. Only the first 1000 will be included. Continue?`, danger: true });
-      if (!isConfirmed) return;
-    }
-    
-    const result = exportToPDF(filteredTransactions, platformSummary, totals);
-    
-    if (result.success) {
-      setExportStatus({ type: 'success', message: 'PDF export initiated!' });
-      setTimeout(() => setExportStatus(null), 3000);
-    } else {
-      setExportStatus({ type: 'error', message: result.error || 'Failed to export PDF. Please try again.' });
-    }
-  };
-
-  // Calculate monthly summary
-  const monthlySummary = useMemo(() => {
-    const monthMap = new Map<string, { income: number; expense: number; profit: number; transactions: number }>();
-    
-    dateFilteredTransactions.forEach((t) => {
-      const date = new Date(t.date);
-      const monthKey = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-      
-      if (!monthMap.has(monthKey)) {
-        monthMap.set(monthKey, { income: 0, expense: 0, profit: 0, transactions: 0 });
-      }
-      
-      const data = monthMap.get(monthKey)!;
-      data.transactions++;
-      
-      if (t.type === 'Income') {
-        data.income += t.amount;
-      } else {
-        data.expense += t.amount;
-      }
-      data.profit = data.income - data.expense;
-    });
-    
-    return Array.from(monthMap.entries())
-      .map(([month, data]) => ({ month, ...data }))
-      .sort((a, b) => {
-        const dateA = new Date(a.month);
-        const dateB = new Date(b.month);
-        return dateB.getTime() - dateA.getTime(); // Newest first
-      });
-  }, [dateFilteredTransactions]);
+  const containerVariants = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
+  const itemVariants = { hidden: { opacity: 0, y: 15 }, show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 26 } } };
 
   return (
-    <div className="min-h-screen neu-base-bg p-4 md:p-8 text-slate-200">
-      
-      {/* Export Status Notification */}
-      {exportStatus && (
-        <div className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg animate-fade-in ${
-          exportStatus.type === 'success' 
-            ? 'bg-green-500 text-white' 
-            : 'bg-red-500 text-white'
-        }`}>
-          {exportStatus.message}
-        </div>
-      )}
-      
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
-        <div>
-          <h1 className="mb-3">
-            💰 Money Management
-          </h1>
-          <p className="text-[15px] font-inter leading-relaxed tracking-wide text-slate-600 dark:text-gray-400">Track income, expenses, and profits across platforms</p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Date Range Filter */}
-          <div className="flex neu-pressed rounded-xl overflow-hidden">
-            <select
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value as any)}
-              className="px-6 py-3 bg-transparent text-sm font-jakarta font-bold text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer"
-            >
-              <option value="thisMonth">This Month</option>
-              <option value="last3Months">Last 3 Months</option>
-              <option value="thisYear">This Year</option>
-              <option value="custom">Custom Range</option>
-            </select>
-          </div>
-
-          {/* Custom Date Range Inputs */}
-          {dateRange === 'custom' && (
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 px-1">
-                <DatePicker
-                  value={customStartDate}
-                  onChange={(val) => setCustomStartDate(val)}
-                  placeholder="Start Date"
-                />
-                <span className="text-slate-500 dark:text-slate-400 font-bold px-2">to</span>
-                <DatePicker
-                  value={customEndDate}
-                  onChange={(val) => setCustomEndDate(val)}
-                  placeholder="End Date"
-                />
-              </div>
-              {dateError && (
-                <div className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-1 rounded-lg">
-                  {dateError}
+    <div className="min-h-screen bg-[#09090B] p-4 md:p-8 selection:bg-[#2563EB]/30">
+      <div className="max-w-[1600px] mx-auto space-y-8">
+        
+        {/* ── Page Header ──────────────────────────────────────────────────── */}
+        <motion.div variants={containerVariants} initial="hidden" animate="show">
+          <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-end gap-5 mb-6">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-9 h-9 rounded-[10px] bg-[#10B981]/10 border border-[#10B981]/20 flex items-center justify-center text-[#10B981]">
+                  <DollarSign size={17} />
                 </div>
+                <span className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Financial Overview</span>
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight font-jakarta mb-1.5">Finance Dashboard</h1>
+              <p className="text-sm font-medium text-[#94A3B8]">Manage revenue, expenses, and track cash flow.</p>
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+              <button className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#11131A] hover:bg-[#232734] border border-[#232734] text-white transition-all">
+                <Download size={16} /> Export
+              </button>
+              <button onClick={openAddPanel} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
+                <Plus size={16} strokeWidth={2.5} /> Add Transaction
+              </button>
+            </div>
+          </motion.div>
+
+          {/* ── KPI Cards ─────────────────────────────────────────────────── */}
+          <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-[#11131A] border border-[#10B981]/20 rounded-[24px] p-6 relative overflow-hidden group shadow-[0_0_15px_rgba(16,185,129,0.05)] hover:shadow-[0_0_25px_rgba(16,185,129,0.1)] transition-all">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#10B981]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#10B981]/20 transition-colors" />
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Total Revenue</p>
+                <div className="w-8 h-8 rounded-lg bg-[#10B981]/10 flex items-center justify-center text-[#10B981]">
+                  <ArrowUpRight size={16} />
+                </div>
+              </div>
+              <p className="text-4xl lg:text-5xl font-bold font-mono text-white tracking-tight drop-shadow-md">{formatCurrency(totalIncome)}</p>
+            </div>
+
+            <div className="bg-[#11131A] border border-[#EF4444]/20 rounded-[24px] p-6 relative overflow-hidden group shadow-[0_0_15px_rgba(239,68,68,0.05)] hover:shadow-[0_0_25px_rgba(239,68,68,0.1)] transition-all">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#EF4444]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#EF4444]/20 transition-colors" />
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Total Expenses</p>
+                <div className="w-8 h-8 rounded-lg bg-[#EF4444]/10 flex items-center justify-center text-[#EF4444]">
+                  <ArrowDownRight size={16} />
+                </div>
+              </div>
+              <p className="text-4xl lg:text-5xl font-bold font-mono text-white tracking-tight drop-shadow-md">{formatCurrency(totalExpense)}</p>
+            </div>
+
+            <div className="bg-[#11131A] border border-[#2563EB]/20 rounded-[24px] p-6 relative overflow-hidden group shadow-[0_0_15px_rgba(37,99,235,0.05)] hover:shadow-[0_0_25px_rgba(37,99,235,0.1)] transition-all">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#2563EB]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#2563EB]/20 transition-colors" />
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Net Profit</p>
+                <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 flex items-center justify-center text-[#2563EB]">
+                  <Briefcase size={16} />
+                </div>
+              </div>
+              <p className="text-4xl lg:text-5xl font-bold font-mono text-white tracking-tight drop-shadow-md">{formatCurrency(netProfit)}</p>
+            </div>
+
+            <div className="bg-[#11131A] border border-[#7C3AED]/20 rounded-[24px] p-6 relative overflow-hidden group shadow-[0_0_15px_rgba(124,58,237,0.05)] hover:shadow-[0_0_25px_rgba(124,58,237,0.1)] transition-all">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#7C3AED]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#7C3AED]/20 transition-colors" />
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Cash Flow Ratio</p>
+                <div className="w-8 h-8 rounded-lg bg-[#7C3AED]/10 flex items-center justify-center text-[#7C3AED]">
+                  <TrendingUp size={16} />
+                </div>
+              </div>
+              <p className="text-4xl lg:text-5xl font-bold font-mono text-white tracking-tight drop-shadow-md">
+                {totalIncome > 0 ? Math.round((netProfit / totalIncome) * 100) : 0}%
+              </p>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* ── Charts ───────────────────────────────────────────────────────── */}
+        <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <motion.div variants={itemVariants} className="lg:col-span-2 bg-[#11131A] border border-[#232734] rounded-[24px] p-6 flex flex-col relative overflow-hidden">
+            <h3 className="text-sm font-bold text-white mb-6">Revenue vs Expenses</h3>
+            <div className="flex-1 min-h-[300px] relative">
+              {filteredTransactions.length === 0 ? (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="absolute inset-0 opacity-10 pointer-events-none">
+                    <svg viewBox="0 0 100 50" preserveAspectRatio="none" className="w-full h-full">
+                      <path d="M0,50 Q25,10 50,30 T100,5" fill="none" stroke="#10B981" strokeWidth="2" strokeDasharray="4 4" />
+                      <path d="M0,50 Q25,40 50,45 T100,30" fill="none" stroke="#EF4444" strokeWidth="2" strokeDasharray="4 4" />
+                    </svg>
+                  </div>
+                  <button onClick={openAddPanel} className="z-10 bg-[#09090B]/80 backdrop-blur-md border border-[#232734] px-5 py-3 rounded-2xl flex items-center gap-3 hover:border-[#2563EB]/50 hover:shadow-[0_0_24px_rgba(37,99,235,0.2)] transition-all shadow-xl">
+                    <div className="w-8 h-8 rounded-xl bg-[#2563EB]/10 flex items-center justify-center text-[#2563EB]">
+                      <Plus size={16} />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-bold text-white">Add your first transaction</p>
+                      <p className="text-[10px] text-[#94A3B8] font-bold uppercase tracking-widest">To generate insights</p>
+                    </div>
+                  </button>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#EF4444" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#EF4444" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#232734" vertical={false} />
+                    <XAxis dataKey="dateStr" stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `$${v/1000}k`} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#09090B', border: '1px solid #232734', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}
+                      itemStyle={{ color: '#fff' }}
+                    />
+                    <Area type="monotone" dataKey="Income" stroke="#10B981" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" />
+                    <Area type="monotone" dataKey="Expense" stroke="#EF4444" strokeWidth={3} fillOpacity={1} fill="url(#colorExpense)" />
+                  </AreaChart>
+                </ResponsiveContainer>
               )}
             </div>
-          )}
+          </motion.div>
 
-          {/* View Mode Toggle */}
-          <div className="flex neu-pressed rounded-xl overflow-hidden p-1">
-            <button 
-              onClick={() => setViewMode('list')}
-              className={`px-6 py-3 rounded-lg flex items-center gap-2 text-sm font-jakarta font-bold transition-all ${viewMode === 'list' ? 'neu-button text-indigo-500' : 'text-slate-600 dark:text-gray-400 hover:neu-flat'}`}
-            >
-              <FileText size={16} /> List
-            </button>
-            <button 
-              onClick={() => setViewMode('analytics')}
-              className={`px-6 py-3 rounded-lg flex items-center gap-2 text-sm font-jakarta font-bold transition-all ${viewMode === 'analytics' ? 'neu-button text-indigo-500' : 'text-slate-600 dark:text-gray-400 hover:neu-flat'}`}
-            >
-              <BarChart3 size={16} /> Analytics
-            </button>
-          </div>
-
-          {/* Period Toggle (only show in analytics mode) */}
-          {viewMode === 'analytics' && (
-            <div className="flex neu-pressed rounded-xl overflow-hidden p-1">
-              <button 
-                onClick={() => setViewPeriod('monthly')}
-                className={`px-6 py-3 rounded-lg flex items-center gap-2 text-sm font-jakarta font-bold transition-all ${viewPeriod === 'monthly' ? 'neu-button text-indigo-500' : 'text-slate-600 dark:text-gray-400 hover:neu-flat'}`}
-              >
-                <Calendar size={16} /> Monthly
-              </button>
-              <button 
-                onClick={() => setViewPeriod('yearly')}
-                className={`px-6 py-3 rounded-lg flex items-center gap-2 text-sm font-jakarta font-bold transition-all ${viewPeriod === 'yearly' ? 'neu-button text-indigo-500' : 'text-slate-600 dark:text-gray-400 hover:neu-flat'}`}
-              >
-                <Calendar size={16} /> Yearly
-              </button>
-            </div>
-          )}
-
-          {/* Export Dropdown */}
-          <div className="relative group">
-            <button className="flex items-center gap-2 px-6 py-3 neu-button text-slate-700 dark:text-slate-300 font-jakarta font-bold rounded-xl hover:-translate-y-1 transition-all text-sm">
-              <Download size={18} /> Export
-            </button>
-            <div className="absolute right-0 mt-2 w-48 neu-flat rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 p-2">
-              <button
-                onClick={handleExportCSV}
-                className="w-full px-4 py-3 text-left text-sm font-inter text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-t-xl transition-colors flex items-center gap-2"
-              >
-                <FileText size={16} /> Export as CSV
-              </button>
-              <button
-                onClick={handleExportPDF}
-                className="w-full px-4 py-3 text-left text-sm font-inter text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-b-xl transition-colors flex items-center gap-2"
-              >
-                <FileText size={16} /> Export as PDF
-              </button>
-            </div>
-          </div>
-
-          <button 
-            onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center gap-2 px-6 py-3 neu-button text-indigo-500 dark:text-indigo-400 font-jakarta font-bold rounded-xl hover:-translate-y-1 hover:shadow-2xl hover:shadow-purple-500/40 transition-all text-sm"
-          >
-            <Plus size={20} /> Add Transaction
-          </button>
-        </div>
-      </div>
-
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        {/* Total Income */}
-        <div className="neu-flat rounded-[2rem] p-6 hover:-translate-y-1 transition-all">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 neu-pressed rounded-2xl flex items-center justify-center text-green-500">
-              <TrendingUp size={24} className="text-white" />
-            </div>
-            <span className="text-xs font-jakarta font-bold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-500/20 px-3 py-1 rounded-full">
-              Income
-            </span>
-          </div>
-          <h3 className="mb-1">
-            {formatCurrency(totals.income)}
-          </h3>
-          <p className="text-sm font-inter text-slate-600 dark:text-slate-400">Total earnings</p>
-        </div>
-
-        {/* Total Expense */}
-        <div className="neu-flat rounded-[2rem] p-6 hover:-translate-y-1 transition-all">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 neu-pressed rounded-2xl flex items-center justify-center text-red-500">
-              <TrendingDown size={24} className="text-white" />
-            </div>
-            <span className="text-xs font-jakarta font-bold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-500/20 px-3 py-1 rounded-full">
-              Expense
-            </span>
-          </div>
-          <h3 className="mb-1">
-            {formatCurrency(totals.expense)}
-          </h3>
-          <p className="text-sm font-inter text-slate-600 dark:text-slate-400">Total spending</p>
-        </div>
-
-        {/* Net Profit */}
-        <div className="neu-flat rounded-[2rem] p-6 hover:-translate-y-1 transition-all">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 neu-pressed rounded-2xl flex items-center justify-center text-purple-500">
-              <DollarSign size={24} className="text-white" />
-            </div>
-            <span className="text-xs font-jakarta font-bold text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-500/20 px-3 py-1 rounded-full">
-              Profit
-            </span>
-          </div>
-          <h3 className="mb-1">
-            {formatCurrency(totals.profit)}
-          </h3>
-          <p className="text-sm font-inter text-slate-600 dark:text-slate-400">Net earnings</p>
-        </div>
-      </div>
-
-      {/* Platform Breakdown */}
-      <div className="mb-10">
-        <h2 className="mb-6">Platform Breakdown</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {['Freelancer', 'Direct', 'Upwork', 'Fiverr'].map(platform => {
-            const data = platformBreakdown.find(p => p.platform === platform) || {
-              income: 0,
-              expense: 0,
-              profit: 0
-            };
-            return (
-              <div
-                key={platform}
-                className="neu-flat rounded-3xl p-6 hover:-translate-y-1 transition-all"
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className={`w-4 h-4 rounded-full ${PLATFORM_DOTS[platform as keyof typeof PLATFORM_DOTS] || 'bg-slate-400'} shadow-md`} />
-                  <h3 className="">{platform}</h3>
-                </div>
-                
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-inter text-slate-600 dark:text-slate-400">Income</span>
-                    <span className="text-sm font-mono font-bold text-green-600 dark:text-green-400">
-                      {formatCurrency(data.income)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-inter text-slate-600 dark:text-slate-400">Expense</span>
-                    <span className="text-sm font-mono font-bold text-red-600 dark:text-red-400">
-                      {formatCurrency(data.expense)}
-                    </span>
-                  </div>
-                  <div className="pt-3 border-t border-slate-200 dark:border-slate-700">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-jakarta font-bold text-slate-700 dark:text-slate-300">Profit</span>
-                      <span className={`text-lg font-mono font-bold ${data.profit >= 0 ? 'text-purple-600 dark:text-purple-400' : 'text-red-600 dark:text-red-400'}`}>
-                        {formatCurrency(data.profit)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Transactions List */}
-      {viewMode === 'list' && (
-        <div className="neu-flat rounded-[2rem] p-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-          <h2 className="">Recent Transactions</h2>
-          
-          {/* Filters */}
-          <div className="flex flex-wrap gap-3">
-            {/* Platform Filter */}
-            <select
-              value={filterPlatform}
-              onChange={(e) => setFilterPlatform(e.target.value)}
-              className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-4 py-2 text-sm focus:outline-none transition-all placeholder:text-slate-400 appearance-none"
-            >
-              <option value="All">All Platforms</option>
-              <option value="Freelancer">Freelancer</option>
-              <option value="Direct">Direct</option>
-              <option value="Upwork">Upwork</option>
-              <option value="Fiverr">Fiverr</option>
-            </select>
-
-            {/* Type Filter */}
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="w-full neu-pressed text-slate-800 dark:text-white rounded-xl px-4 py-2 text-sm focus:outline-none transition-all placeholder:text-slate-400 appearance-none"
-            >
-              <option value="All">All Types</option>
-              <option value="Income">Income</option>
-              <option value="Expense">Expense</option>
-            </select>
-
-            {/* Search */}
-            <div className="relative">
-              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 neu-pressed text-slate-800 dark:text-white rounded-xl text-sm focus:outline-none transition-all placeholder:text-slate-400"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Transactions Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full whitespace-nowrap">
-            <thead>
-              <tr className="border-b-2 border-slate-200 dark:border-slate-700">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Date</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Platform</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Category</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Type</th>
-                <th className="text-right py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Amount</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Description</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Project</th>
-                <th className="text-center py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+          <motion.div variants={itemVariants} className="bg-[#11131A] border border-[#232734] rounded-[24px] p-6 flex flex-col relative overflow-hidden">
+            <h3 className="text-sm font-bold text-white mb-6">Profit Trend</h3>
+            <div className="flex-1 min-h-[300px] relative">
               {filteredTransactions.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="text-center py-12 text-slate-500 dark:text-slate-400">
-                    No transactions found
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="absolute inset-0 opacity-10 pointer-events-none flex items-end justify-between px-4 pb-4 gap-2">
+                    {[20, 40, 30, 60, 45, 80].map((h, i) => (
+                      <div key={i} className="flex-1 bg-[#10B981] rounded-t-md" style={{ height: `${h}%` }} />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={profitChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#232734" vertical={false} />
+                    <XAxis dataKey="name" stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `$${v/1000}k`} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#09090B', border: '1px solid #232734', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', color: '#fff' }}
+                      cursor={{ fill: '#232734', opacity: 0.4 }}
+                    />
+                    <Bar dataKey="Profit" radius={[4, 4, 0, 0]}>
+                      {profitChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.Profit >= 0 ? '#10B981' : '#EF4444'} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* ── Filters & Table ──────────────────────────────────────────────── */}
+        <motion.div variants={containerVariants} initial="hidden" animate="show" className="bg-[#11131A] border border-[#232734] rounded-[24px] overflow-hidden">
+          {/* Table Toolbar */}
+          <div className="p-6 border-b border-[#232734] flex flex-col md:flex-row gap-4 justify-between items-center bg-[#0D0F16]">
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <div className="relative flex-1 md:w-64 group">
+                <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8] group-focus-within:text-[#2563EB] transition-colors" />
+                <input type="text" placeholder="Search transactions..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                  className="w-full bg-[#11131A] border border-[#232734] text-white text-sm font-medium rounded-xl pl-11 pr-4 py-2.5 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all" />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <select value={typeFilter} onChange={e => setTypeFilter(e.target.value as any)}
+                className="bg-[#11131A] border border-[#232734] text-white text-sm font-medium rounded-xl pl-4 pr-8 py-2.5 appearance-none focus:outline-none focus:border-[#2563EB]/60 cursor-pointer w-full md:w-auto">
+                <option value="All">All Types</option>
+                <option value="Income">Income</option>
+                <option value="Expense">Expense</option>
+              </select>
+              
+              <select value={dateFilter} onChange={e => setDateFilter(e.target.value as any)}
+                className="bg-[#11131A] border border-[#232734] text-white text-sm font-medium rounded-xl pl-4 pr-8 py-2.5 appearance-none focus:outline-none focus:border-[#2563EB]/60 cursor-pointer w-full md:w-auto">
+                <option value="All">All Time</option>
+                <option value="ThisMonth">This Month</option>
+                <option value="Last3Months">Last 3 Months</option>
+                <option value="ThisYear">This Year</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead className="bg-[#09090B]">
+                <tr className="border-b border-[#232734]">
+                  <th className="pl-6 pr-4 py-4 text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest whitespace-nowrap">Transaction</th>
+                  <th className="px-4 py-4 text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest whitespace-nowrap">Amount</th>
+                  <th className="px-4 py-4 text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest whitespace-nowrap">Category</th>
+                  <th className="px-4 py-4 text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest whitespace-nowrap">Date</th>
+                  <th className="px-4 py-4 text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest whitespace-nowrap">Platform</th>
+                  <th className="pr-6 pl-4 py-4 text-right"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {/* ── Inline Quick Add Row ── */}
+                <tr className="border-b border-[#232734]/80 bg-[#11131A] focus-within:bg-[#1C1F2E] transition-colors relative z-10 shadow-[0_4px_10px_rgba(0,0,0,0.2)]">
+                  <td className="pl-6 pr-4 py-3">
+                    <form id="inline-form" onSubmit={handleInlineSubmit} className="hidden" />
+                    <input form="inline-form" required type="text" placeholder="Add new transaction..." value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
+                      className="w-full bg-transparent border border-dashed border-[#232734] focus:border-[#2563EB]/50 text-white text-sm font-bold rounded-lg px-3 py-2 focus:outline-none transition-colors placeholder:text-[#475569]" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex gap-2">
+                      <select form="inline-form" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}
+                        className="bg-[#09090B] border border-dashed border-[#232734] focus:border-[#2563EB]/50 text-[#94A3B8] text-sm font-bold rounded-lg px-1 py-2 focus:outline-none transition-colors w-12 cursor-pointer appearance-none text-center">
+                        <option value="Income">+</option>
+                        <option value="Expense">-</option>
+                      </select>
+                      <input form="inline-form" required type="number" step="0.01" min="0" placeholder="0.00" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})}
+                        className="w-24 bg-transparent border border-dashed border-[#232734] focus:border-[#2563EB]/50 text-white text-sm font-mono font-bold rounded-lg px-3 py-2 focus:outline-none transition-colors" />
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <select form="inline-form" required value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}
+                      className="w-24 bg-transparent border border-dashed border-[#232734] focus:border-[#2563EB]/50 text-[#94A3B8] text-[10px] font-bold uppercase tracking-widest rounded-lg px-2 py-2 focus:outline-none transition-colors cursor-pointer">
+                      <option value="Sales">Sales</option>
+                      <option value="Services">Services</option>
+                      <option value="Software">Software</option>
+                      <option value="Marketing">Marketing</option>
+                      <option value="Salary">Salary</option>
+                      <option value="Office">Office</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </td>
+                  <td className="px-4 py-3">
+                    <input form="inline-form" required type="date" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})}
+                      className="w-32 bg-transparent border border-dashed border-[#232734] focus:border-[#2563EB]/50 text-[#94A3B8] text-xs font-bold rounded-lg px-3 py-2 focus:outline-none transition-colors" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <select form="inline-form" required value={formData.platform} onChange={e => setFormData({...formData, platform: e.target.value})}
+                      className="w-24 bg-transparent border border-dashed border-[#232734] focus:border-[#2563EB]/50 text-[#94A3B8] text-xs font-bold rounded-lg px-2 py-2 focus:outline-none transition-colors cursor-pointer">
+                      <option value="Direct">Direct</option>
+                      <option value="Upwork">Upwork</option>
+                      <option value="Fiverr">Fiverr</option>
+                      <option value="Freelancer">Freelancer</option>
+                    </select>
+                  </td>
+                  <td className="pr-6 pl-4 py-3 text-right">
+                    <button form="inline-form" type="submit" disabled={isSubmitting || !formData.amount || !formData.description}
+                      className="px-4 py-2 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white rounded-lg transition-colors font-bold text-xs disabled:opacity-50 shadow-md">
+                      {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : 'Save'}
+                    </button>
                   </td>
                 </tr>
-              ) : (
-                filteredTransactions.map((transaction) => (
-                  <tr
-                    key={transaction._id}
-                    className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                  >
-                    <td className="py-4 px-4 text-sm text-slate-700 dark:text-slate-300">
-                      {formatDate(transaction.date)}
+
+                {filteredTransactions.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-20 text-center">
+                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#09090B] border border-[#232734] mb-4">
+                        <Search size={24} className="text-[#94A3B8]" />
+                      </div>
+                      <p className="text-sm font-bold text-white">No transactions found</p>
+                      <p className="text-xs text-[#94A3B8] mt-1">Try adjusting your filters or search.</p>
                     </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${PLATFORM_DOTS[transaction.platform as keyof typeof PLATFORM_DOTS]}`} />
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                          {transaction.platform}
+                  </tr>
+                ) : (
+                  filteredTransactions.map((t, i) => (
+                    <motion.tr key={t._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.01 }}
+                      className="border-b border-[#232734]/50 hover:bg-[#09090B] transition-colors group cursor-pointer"
+                      onClick={() => openEditPanel(t)}>
+                      <td className="pl-6 pr-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border ${
+                            t.type === 'Income' ? 'bg-[#10B981]/10 text-[#10B981] border-[#10B981]/20' : 'bg-[#EF4444]/10 text-[#EF4444] border-[#EF4444]/20'
+                          }`}>
+                            {t.type === 'Income' ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                          </div>
+                          <span className="text-sm font-bold text-white truncate max-w-[200px]">{t.description}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className={`text-sm font-bold font-mono tracking-tight ${t.type === 'Income' ? 'text-[#10B981]' : 'text-white'}`}>
+                          {t.type === 'Income' ? '+' : '-'}{formatCurrency(t.amount)}
                         </span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 text-sm text-slate-600 dark:text-slate-400">
-                      {transaction.category}
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                        transaction.type === 'Income'
-                          ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400'
-                          : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'
-                      }`}>
-                        {transaction.type}
-                      </span>
-                    </td>
-                    <td className={`py-4 px-4 text-right text-sm font-bold ${
-                      transaction.type === 'Income'
-                        ? 'text-green-600 dark:text-green-400'
-                        : 'text-red-600 dark:text-red-400'
-                    }`}>
-                      {transaction.type === 'Income' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                    </td>
-                    <td className="py-4 px-4 text-sm text-slate-600 dark:text-slate-400 max-w-xs truncate">
-                      {transaction.description || '-'}
-                    </td>
-                    {/* 
-                      Project Link Display with Error Handling
-                      
-                      This cell displays the linked marketplace project for transactions
-                      that were created from or linked to a project. It handles three states:
-                      
-                      1. Valid Project Link: When transaction.projectId exists and contains
-                         all required fields (_id, title, platform), display a clickable
-                         link to the project details page.
-                      
-                      2. Deleted Project: When transaction.projectId exists but the populated
-                         data is incomplete (missing _id, title, or platform), this indicates
-                         the referenced project was deleted. Display "Project deleted" message.
-                      
-                      3. No Project Link: When transaction.projectId is null/undefined,
-                         the transaction was created standalone without a project link.
-                         Display a dash "-" to indicate no project association.
-                      
-                      This graceful degradation ensures the transaction list remains functional
-                      even when project references become invalid due to project deletion.
-                    */}
-                    <td className="py-4 px-4 text-sm">
-                      {transaction.projectId ? (
-                        transaction.projectId._id && transaction.projectId.title && transaction.projectId.platform ? (
-                          <Link 
-                            href={`/marketplace/${transaction.projectId.platform.toLowerCase()}/${transaction.projectId._id}`}
-                            className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium"
-                          >
-                            {transaction.projectId.title}
-                          </Link>
-                        ) : (
-                          <span className="text-slate-400 dark:text-slate-500 italic">Project deleted</span>
-                        )
-                      ) : (
-                        <span className="text-slate-400 dark:text-slate-500">-</span>
-                      )}
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => {
-                            setSelectedTransaction(transaction);
-                            setIsEditModalOpen(true);
-                          }}
-                          className="p-2 text-slate-600 hover:text-purple-600 dark:text-slate-400 dark:hover:text-purple-400 transition-colors"
-                          title="Edit"
-                        >
-                          <Edit2 size={16} />
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className="inline-flex px-2 py-1 rounded-md bg-[#232734] text-[#94A3B8] text-[10px] font-bold uppercase tracking-widest">
+                          {t.category}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-xs font-bold text-[#94A3B8]">{formatDate(t.date)}</td>
+                      <td className="px-4 py-4 text-xs font-bold text-[#94A3B8]">{t.platform}</td>
+                      <td className="pr-6 pl-4 py-4 text-right">
+                        <button onClick={(e) => { e.stopPropagation(); handleDelete(t._id); }} className="p-2 opacity-0 group-hover:opacity-100 hover:text-[#EF4444] text-[#94A3B8] transition-all">
+                          <Trash2 size={14} />
                         </button>
-                        <button
-                          onClick={() => handleDeleteTransaction(transaction._id)}
-                          className="p-2 text-slate-600 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      )}
-
-      {/* Analytics View */}
-      {viewMode === 'analytics' && (
-        <>
-          <MoneyAnalytics 
-            transactions={dateFilteredTransactions}
-            viewPeriod={viewPeriod}
-          />
-
-          {/* Monthly Summary Table */}
-          <div className="mt-10 neu-flat rounded-[2rem] p-6">
-            <h2 className="mb-6">Monthly Summary</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b-2 border-slate-200 dark:border-slate-700">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Month</th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Transactions</th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Income</th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Expense</th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Profit</th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Margin</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {monthlySummary.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="text-center py-12 text-slate-500 dark:text-slate-400">
-                        No data for selected period
                       </td>
-                    </tr>
-                  ) : (
-                    monthlySummary.map((month, idx) => {
-                      const margin = month.income > 0 ? ((month.profit / month.income) * 100).toFixed(1) : '0.0';
-                      return (
-                        <tr
-                          key={idx}
-                          className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                        >
-                          <td className="py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                            {month.month}
-                          </td>
-                          <td className="py-4 px-4 text-right text-sm text-slate-600 dark:text-slate-400">
-                            {month.transactions}
-                          </td>
-                          <td className="py-4 px-4 text-right text-sm font-bold text-green-600 dark:text-green-400">
-                            {formatCurrency(month.income)}
-                          </td>
-                          <td className="py-4 px-4 text-right text-sm font-bold text-red-600 dark:text-red-400">
-                            {formatCurrency(month.expense)}
-                          </td>
-                          <td className={`py-4 px-4 text-right text-sm font-bold ${
-                            month.profit >= 0 
-                              ? 'text-purple-600 dark:text-purple-400' 
-                              : 'text-red-600 dark:text-red-400'
-                          }`}>
-                            {formatCurrency(month.profit)}
-                          </td>
-                          <td className={`py-4 px-4 text-right text-sm font-bold ${
-                            parseFloat(margin) >= 50 
-                              ? 'text-green-600 dark:text-green-400'
-                              : parseFloat(margin) >= 30
-                              ? 'text-yellow-600 dark:text-yellow-400'
-                              : 'text-red-600 dark:text-red-400'
-                          }`}>
-                            {margin}%
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-                {monthlySummary.length > 0 && (
-                  <tfoot className="border-t-2 border-slate-300 dark:border-slate-600">
-                    <tr className="bg-slate-50 dark:bg-slate-800/50">
-                      <td className="py-4 px-4 text-sm font-bold text-slate-200">
-                        Total
-                      </td>
-                      <td className="py-4 px-4 text-right text-sm font-bold text-slate-200">
-                        {monthlySummary.reduce((sum, m) => sum + m.transactions, 0)}
-                      </td>
-                      <td className="py-4 px-4 text-right text-sm font-bold text-green-600 dark:text-green-400">
-                        {formatCurrency(monthlySummary.reduce((sum, m) => sum + m.income, 0))}
-                      </td>
-                      <td className="py-4 px-4 text-right text-sm font-bold text-red-600 dark:text-red-400">
-                        {formatCurrency(monthlySummary.reduce((sum, m) => sum + m.expense, 0))}
-                      </td>
-                      <td className="py-4 px-4 text-right text-sm font-bold text-purple-600 dark:text-purple-400">
-                        {formatCurrency(monthlySummary.reduce((sum, m) => sum + m.profit, 0))}
-                      </td>
-                      <td className="py-4 px-4 text-right text-sm font-bold text-slate-200">
-                        {(() => {
-                          const totalIncome = monthlySummary.reduce((sum, m) => sum + m.income, 0);
-                          const totalProfit = monthlySummary.reduce((sum, m) => sum + m.profit, 0);
-                          return totalIncome > 0 ? ((totalProfit / totalIncome) * 100).toFixed(1) : '0.0';
-                        })()}%
-                      </td>
-                    </tr>
-                  </tfoot>
+                    </motion.tr>
+                  ))
                 )}
-              </table>
-            </div>
+              </tbody>
+            </table>
           </div>
-        </>
-      )}
+        </motion.div>
+        
+        {/* ── Right Slide Panel (Add / Edit) ───────────────────────────────── */}
+        <AnimatePresence>
+          {isSlidePanelOpen && (
+            <>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
+                onClick={() => setIsSlidePanelOpen(false)} className="fixed inset-0 bg-[#09090B]/80 backdrop-blur-sm z-50" />
+              <motion.div
+                initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 30, stiffness: 280 }}
+                className="fixed right-0 top-0 bottom-0 w-full sm:w-[450px] bg-[#09090B] border-l border-[#232734] z-50 flex flex-col shadow-2xl"
+              >
+                {/* Header */}
+                <div className="flex-shrink-0 p-6 border-b border-[#232734] bg-[#11131A]">
+                  <div className="flex items-center justify-between mb-5">
+                    <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">{editingTransaction ? 'Edit Transaction' : 'New Transaction'}</span>
+                    <button onClick={() => setIsSlidePanelOpen(false)} className="p-2 rounded-[10px] text-[#94A3B8] hover:text-white hover:bg-[#232734] border border-[#232734] transition-all">
+                      <X size={14} />
+                    </button>
+                  </div>
+                  
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-[14px] bg-[#09090B] border border-[#232734] flex items-center justify-center text-[#2563EB] flex-shrink-0">
+                      <CreditCard size={20} />
+                    </div>
+                    <h2 className="text-xl font-bold text-white tracking-tight mt-1">
+                      {editingTransaction ? 'Update Details' : 'Record Finance'}
+                    </h2>
+                  </div>
+                </div>
 
-      {/* Modals */}
-      <AddTransactionModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onAddTransaction={handleAddTransaction}
-      />
+                {/* Body Form */}
+                <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+                  
+                  {/* Type Selector */}
+                  <div className="flex bg-[#11131A] p-1 rounded-xl border border-[#232734]">
+                    <button type="button" onClick={() => setFormData({...formData, type: 'Income'})}
+                      className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${formData.type === 'Income' ? 'bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/30' : 'text-[#94A3B8] hover:text-white'}`}>
+                      Income
+                    </button>
+                    <button type="button" onClick={() => setFormData({...formData, type: 'Expense'})}
+                      className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${formData.type === 'Expense' ? 'bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/30' : 'text-[#94A3B8] hover:text-white'}`}>
+                      Expense
+                    </button>
+                  </div>
 
-      <EditTransactionModal
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setSelectedTransaction(null);
-        }}
-        transaction={selectedTransaction}
-        onUpdateTransaction={handleEditTransaction}
-      />
+                  <div>
+                    <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Amount ($)</label>
+                    <input required type="number" step="0.01" min="0" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})}
+                      className="w-full bg-[#11131A] border border-[#232734] text-white rounded-xl px-4 py-3 text-lg font-mono focus:border-[#2563EB]/60 focus:outline-none" placeholder="0.00" />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Description</label>
+                    <input required type="text" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
+                      className="w-full bg-[#11131A] border border-[#232734] text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none" placeholder="e.g. Website Redesign Deposit" />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Date</label>
+                      <input required type="date" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})}
+                        className="w-full bg-[#11131A] border border-[#232734] text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Category</label>
+                      <select required value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}
+                        className="w-full bg-[#11131A] border border-[#232734] text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none">
+                        <option value="Sales">Sales</option>
+                        <option value="Services">Services</option>
+                        <option value="Software">Software</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Salary">Salary</option>
+                        <option value="Office">Office</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Platform / Account</label>
+                    <select required value={formData.platform} onChange={e => setFormData({...formData, platform: e.target.value})}
+                      className="w-full bg-[#11131A] border border-[#232734] text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none">
+                      <option value="Direct">Direct (Bank/Stripe)</option>
+                      <option value="Upwork">Upwork</option>
+                      <option value="Fiverr">Fiverr</option>
+                      <option value="Freelancer">Freelancer</option>
+                    </select>
+                  </div>
+
+                  <div className="pt-6 mt-6 border-t border-[#232734]">
+                    <button type="submit" disabled={isSubmitting || !formData.amount || !formData.description}
+                      className="w-full py-3.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold text-sm rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.25)]">
+                      {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : 'Save Transaction'}
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+      </div>
     </div>
   );
 }

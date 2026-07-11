@@ -18,20 +18,23 @@ export default async function ProposalsPage() {
     redirect("/dashboard");
   }
 
-  // Fetch proposals and stats
-  const proposalsResponse = await getProposals();
-  const statsResponse = await getProposalStats();
-  
-  const proposals = proposalsResponse.success ? proposalsResponse.data : [];
-  const stats = statsResponse.success ? statsResponse.data : { 
-    activeCount: 0, 
-    wonThisMonth: 0, 
+  const res = await getProposals();
+  const initialProposals = res.success && Array.isArray(res.data) ? res.data : [];
+  const statsRes = await getProposalStats();
+  const initialStats = statsRes.success ? statsRes.data : {
+    activeCount: 0,
+    wonThisMonth: 0,
     draftsCount: 0,
     acceptedCount: 0,
     rejectedCount: 0,
     totalValue: 0,
-    conversionRate: 0,
+    conversionRate: 0
   };
-  
-  return <ProposalsClient initialProposals={proposals} initialStats={stats} />;
+
+  return (
+    <ProposalsClient
+      initialProposals={initialProposals}
+      initialStats={initialStats}
+    />
+  );
 }

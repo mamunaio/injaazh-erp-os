@@ -166,9 +166,9 @@ export default function EmailAccountsManager() {
   return (
     <div className="space-y-8">
       {/* Add New Account Form */}
-      <div className="p-6 rounded-3xl bg-indigo-500/5 border border-indigo-500/10">
-        <h3 className="mb-4 flex items-center gap-2">
-          <Mail className="text-indigo-500" size={20} />
+      <div className="p-6 rounded-2xl bg-[#09090B] border border-[#232734]">
+        <h3 className="mb-4 flex items-center gap-2 text-white font-bold text-sm uppercase tracking-wider">
+          <Mail className="text-indigo-400" size={16} />
           Add New Email Account
         </h3>
         
@@ -176,14 +176,14 @@ export default function EmailAccountsManager() {
           <button
             type="button"
             onClick={() => setAccountType('gmail')}
-            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${accountType === 'gmail' ? 'neu-button text-indigo-500' : 'text-slate-500 hover:bg-white/50 dark:hover:bg-slate-800/50'}`}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${accountType === 'gmail' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-[#11131A] text-slate-500 border-[#232734] hover:bg-[#232734]'}`}
           >
             Google Workspace / Gmail
           </button>
           <button
             type="button"
             onClick={() => setAccountType('smtp')}
-            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${accountType === 'smtp' ? 'neu-button text-indigo-500' : 'text-slate-500 hover:bg-white/50 dark:hover:bg-slate-800/50'}`}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${accountType === 'smtp' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-[#11131A] text-slate-500 border-[#232734] hover:bg-[#232734]'}`}
           >
             Professional Webmail (SMTP)
           </button>
@@ -197,7 +197,7 @@ export default function EmailAccountsManager() {
 
             <form onSubmit={handleAddAccount} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
               <div className="md:col-span-1">
-                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">
+                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
                   Sender Name
                 </label>
                 <input 
@@ -205,11 +205,11 @@ export default function EmailAccountsManager() {
                   placeholder="e.g. Mamun from Injaazh"
                   value={senderName} 
                   onChange={(e) => setSenderName(e.target.value)} 
-                  className="w-full px-4 py-3 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+                  className="w-full px-4 py-3 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-white text-sm font-bold transition-all" 
                 />
               </div>
               <div className="md:col-span-1">
-                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">
+                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
                   Email Address
                 </label>
                 <input 
@@ -217,20 +217,20 @@ export default function EmailAccountsManager() {
                   placeholder="team@gmail.com"
                   value={email} 
                   onChange={(e) => setEmail(e.target.value)} 
-                  className="w-full px-4 py-3 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+                  className="w-full px-4 py-3 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-white text-sm font-bold transition-all" 
                 />
               </div>
               <div className="md:col-span-1">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">
                     App Password
                   </label>
                   <button 
                     type="button" 
                     onClick={() => setShowGuide(!showGuide)}
-                    className="text-xs font-black text-indigo-500 hover:text-indigo-600 transition-colors underline decoration-indigo-500/30 underline-offset-2"
+                    className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
                   >
-                    {showGuide ? 'Hide Guide' : 'How to get this?'}
+                    {showGuide ? 'Hide Guide' : 'How?'}
                   </button>
                 </div>
                 <input 
@@ -238,24 +238,24 @@ export default function EmailAccountsManager() {
                   placeholder="16-digit code"
                   value={appPassword} 
                   onChange={(e) => setAppPassword(e.target.value)} 
-                  className="w-full px-4 py-3 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+                  className="w-full px-4 py-3 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-white text-sm font-bold transition-all" 
                 />
               </div>
               <div className="md:col-span-1">
-                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Daily Limit</label>
+                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Daily Limit</label>
                 <input 
                   type="number" 
                   min="1"
                   value={dailyLimit} 
                   onChange={(e) => setDailyLimit(parseInt(e.target.value) || 15)} 
-                  className="w-full px-4 py-3 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+                  className="w-full px-4 py-3 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-white text-sm font-bold transition-all" 
                 />
               </div>
               <div className="md:col-span-1">
                 <button 
                   type="submit" 
                   disabled={isAdding}
-                  className="w-full flex justify-center items-center gap-2 px-6 py-3 neu-button text-indigo-500 dark:text-indigo-400 font-bold rounded-2xl transition-all text-sm disabled:opacity-70"
+                  className="w-full flex justify-center items-center gap-2 px-6 py-3 bg-white text-black font-bold rounded-xl transition-all hover:bg-slate-200 text-sm disabled:opacity-70 shadow-sm"
                 >
                   {isAdding ? <Activity size={16} className="animate-spin" /> : <Plus size={16} />}
                   {isAdding ? 'Verifying...' : 'Add Account'}
@@ -271,7 +271,7 @@ export default function EmailAccountsManager() {
 
             <form onSubmit={handleAddAccount} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
               <div className="lg:col-span-1">
-                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">
+                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
                   Sender Name
                 </label>
                 <input 
@@ -279,11 +279,11 @@ export default function EmailAccountsManager() {
                   placeholder="e.g. Sales Team"
                   value={senderName} 
                   onChange={(e) => setSenderName(e.target.value)} 
-                  className="w-full px-4 py-3 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+                  className="w-full px-4 py-3 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-white text-sm font-bold transition-all" 
                 />
               </div>
               <div className="lg:col-span-1">
-                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">
+                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
                   SMTP Username / Email
                 </label>
                 <input 
@@ -291,11 +291,11 @@ export default function EmailAccountsManager() {
                   placeholder="sales@company.com"
                   value={email} 
                   onChange={(e) => setEmail(e.target.value)} 
-                  className="w-full px-4 py-3 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+                  className="w-full px-4 py-3 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-white text-sm font-bold transition-all" 
                 />
               </div>
               <div className="lg:col-span-1">
-                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">
+                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
                   SMTP Password
                 </label>
                 <input 
@@ -303,21 +303,21 @@ export default function EmailAccountsManager() {
                   placeholder="••••••••••••"
                   value={appPassword} 
                   onChange={(e) => setAppPassword(e.target.value)} 
-                  className="w-full px-4 py-3 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+                  className="w-full px-4 py-3 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-white text-sm font-bold transition-all" 
                 />
               </div>
               <div className="lg:col-span-1">
-                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Daily Limit</label>
+                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Daily Limit</label>
                 <input 
                   type="number" 
                   min="1"
                   value={dailyLimit} 
                   onChange={(e) => setDailyLimit(parseInt(e.target.value) || 15)} 
-                  className="w-full px-4 py-3 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+                  className="w-full px-4 py-3 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-white text-sm font-bold transition-all" 
                 />
               </div>
               <div className="lg:col-span-1">
-                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">
+                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
                   SMTP Host
                 </label>
                 <input 
@@ -325,26 +325,26 @@ export default function EmailAccountsManager() {
                   placeholder="smtp.hostinger.com"
                   value={smtpHost} 
                   onChange={(e) => setSmtpHost(e.target.value)} 
-                  className="w-full px-4 py-3 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+                  className="w-full px-4 py-3 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-white text-sm font-bold transition-all" 
                   required={accountType === 'smtp'}
                 />
               </div>
               <div className="lg:col-span-1">
-                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">
+                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
                   SMTP Port
                 </label>
                 <input 
                   type="number" 
                   value={smtpPort} 
                   onChange={(e) => setSmtpPort(parseInt(e.target.value) || 465)} 
-                  className="w-full px-4 py-3 neu-flat rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+                  className="w-full px-4 py-3 bg-[#11131A] border border-[#232734] rounded-xl focus:outline-none focus:border-indigo-500/50 text-white text-sm font-bold transition-all" 
                 />
               </div>
               <div className="lg:col-span-2">
                 <button 
                   type="submit" 
                   disabled={isAdding}
-                  className="w-full flex justify-center items-center gap-2 px-6 py-3 neu-button text-indigo-500 dark:text-indigo-400 font-bold rounded-2xl transition-all text-sm disabled:opacity-70"
+                  className="w-full flex justify-center items-center gap-2 px-6 py-3 bg-white text-black font-bold rounded-xl transition-all hover:bg-slate-200 text-sm disabled:opacity-70 shadow-sm"
                 >
                   {isAdding ? <Activity size={16} className="animate-spin" /> : <Plus size={16} />}
                   {isAdding ? 'Verifying...' : 'Add Professional Webmail'}
@@ -371,7 +371,7 @@ export default function EmailAccountsManager() {
 
       {/* Accounts List */}
       <div>
-        <h3 className="mb-4">
+        <h3 className="mb-4 text-white font-bold text-sm uppercase tracking-wider">
           Connected {accountType === 'smtp' ? 'SMTP' : 'Gmail'} Accounts
         </h3>
         {isLoading ? (
@@ -379,27 +379,27 @@ export default function EmailAccountsManager() {
             <Activity className="animate-spin" />
           </div>
         ) : filteredAccounts.length === 0 ? (
-          <div className="p-8 text-center text-slate-500 bg-white/30 dark:bg-slate-800/30 rounded-3xl border border-slate-200 dark:border-slate-800">
+          <div className="p-8 text-center text-slate-500 bg-[#09090B] rounded-2xl border border-[#232734] font-bold text-xs">
             No {accountType === 'smtp' ? 'SMTP' : 'Gmail'} accounts connected yet. Add one above.
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredAccounts.map(account => (
-              <div key={account._id} className={`p-5 rounded-2xl border ${account.isActive ? 'bg-white/80 dark:bg-slate-800/80 border-indigo-500/20' : 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800'} relative overflow-hidden transition-all`}>
+              <div key={account._id} className={`p-5 rounded-2xl border bg-[#09090B] transition-all hover:border-indigo-500/30 ${account.isActive ? 'border-indigo-500/20' : 'border-[#232734] opacity-80'}`}>
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${account.isActive ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400' : 'bg-slate-200 text-slate-500 dark:bg-slate-800'}`}>
-                      <Mail size={18} />
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${account.isActive ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-[#11131A] text-slate-500 border-[#232734]'}`}>
+                      <Mail size={16} />
                     </div>
                     <div>
-                      <h4 className="truncate max-w-[150px]" title={account.email}>
-                        {account.senderName ? `${account.senderName} (${account.email})` : account.email}
+                      <h4 className="truncate max-w-[150px] text-white font-bold text-sm" title={account.email}>
+                        {account.senderName ? `${account.senderName}` : account.email}
                       </h4>
                       <div className="flex gap-1.5 mt-1">
-                        <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${account.isActive ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400' : 'bg-slate-200 text-slate-500 dark:bg-slate-800'}`}>
+                        <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${account.isActive ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-[#11131A] text-slate-500 border-[#232734]'}`}>
                           {account.isActive ? 'Active' : 'Paused'}
                         </span>
-                        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400">
+                        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#11131A] text-slate-400 border border-[#232734]">
                           {account.accountType === 'smtp' ? 'SMTP' : 'GMAIL'}
                         </span>
                       </div>
@@ -407,7 +407,7 @@ export default function EmailAccountsManager() {
                   </div>
                   <button 
                     onClick={() => handleDelete(account._id)}
-                    className="p-1.5 text-rose-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors"
+                    className="p-2 text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 rounded-lg transition-colors"
                   >
                     <Trash2 size={16} />
                   </button>
@@ -416,19 +416,19 @@ export default function EmailAccountsManager() {
                 {/* Quota Progress */}
                 <div className="mb-4">
                   <div className="flex justify-between items-end mb-1">
-                    <span className="text-xs font-semibold text-slate-500">Daily Quota</span>
-                    <span className="text-xs font-black text-slate-700 dark:text-slate-300">
+                    <span className="text-xs font-bold text-slate-500">Daily Quota</span>
+                    <span className="text-xs font-bold text-white">
                       {account.sentToday} / {account.dailyLimit}
                     </span>
                   </div>
-                  <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-1.5 w-full bg-[#11131A] rounded-full overflow-hidden border border-[#232734]">
                     <div 
-                      className={`h-full rounded-full ${account.sentToday >= account.dailyLimit ? 'bg-rose-500' : 'bg-gradient-to-r from-indigo-500 to-purple-500'}`}
+                      className={`h-full rounded-full ${account.sentToday >= account.dailyLimit ? 'bg-rose-500' : 'bg-indigo-500'}`}
                       style={{ width: `${Math.min(100, (account.sentToday / account.dailyLimit) * 100)}%` }}
                     />
                   </div>
                   {account.sentToday >= account.dailyLimit && (
-                    <p className="text-[10px] font-semibold text-rose-500 mt-1 flex items-center gap-1">
+                    <p className="text-[10px] font-bold text-rose-500 mt-1 flex items-center gap-1">
                       <AlertTriangle size={10} /> Quota Exhausted for today
                     </p>
                   )}
@@ -437,13 +437,13 @@ export default function EmailAccountsManager() {
                 {/* Warmup Status */}
                 <div className="mb-4">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
-                      <Activity size={12} className={account.warmupEnabled ? "text-green-500" : "text-slate-400"} />
+                    <span className="text-xs font-bold text-slate-500 flex items-center gap-1.5">
+                      <Activity size={12} className={account.warmupEnabled ? "text-emerald-400" : "text-slate-500"} />
                       Auto-Warmup
                     </span>
                     <button 
                       onClick={() => handleToggleWarmup(account._id, account)}
-                      className={`text-[10px] font-bold px-2 py-1 rounded-lg transition-colors ${account.warmupEnabled ? 'bg-green-100 text-green-600 dark:bg-green-500/20 dark:text-green-400' : 'bg-slate-200 text-slate-500 dark:bg-slate-800'}`}
+                      className={`text-[9px] font-bold px-2 py-1 rounded-md transition-colors border ${account.warmupEnabled ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-[#11131A] text-slate-500 border-[#232734]'}`}
                     >
                       {account.warmupEnabled ? 'ON' : 'OFF'}
                     </button>
@@ -452,14 +452,14 @@ export default function EmailAccountsManager() {
                   {account.warmupEnabled && (
                     <>
                       <div className="flex justify-between items-end mb-1">
-                        <span className="text-[10px] text-slate-400">Warmup Quota</span>
-                        <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
+                        <span className="text-[10px] font-bold text-slate-500">Warmup Quota</span>
+                        <span className="text-[10px] font-bold text-slate-400">
                           {account.warmupSentToday || 0} / {account.warmupDailyLimit || 5}
                         </span>
                       </div>
-                      <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div className="h-1 w-full bg-[#11131A] rounded-full overflow-hidden border border-[#232734]">
                         <div 
-                          className="h-full rounded-full bg-green-500"
+                          className="h-full rounded-full bg-emerald-500"
                           style={{ width: `${Math.min(100, ((account.warmupSentToday || 0) / (account.warmupDailyLimit || 5)) * 100)}%` }}
                         />
                       </div>
@@ -469,7 +469,7 @@ export default function EmailAccountsManager() {
 
                 <button 
                   onClick={() => handleToggleStatus(account._id, account.isActive)}
-                  className={`w-full py-2 rounded-xl text-xs font-bold border transition-colors ${account.isActive ? 'border-amber-200 text-amber-600 hover:bg-amber-50 dark:border-amber-500/30 dark:text-amber-400 dark:hover:bg-amber-500/10' : 'border-indigo-200 text-indigo-600 hover:bg-indigo-50 dark:border-indigo-500/30 dark:text-indigo-400 dark:hover:bg-indigo-500/10'}`}
+                  className={`w-full py-2.5 rounded-xl text-xs font-bold border transition-colors ${account.isActive ? 'border-[#232734] text-slate-400 hover:bg-[#11131A]' : 'border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10'}`}
                 >
                   {account.isActive ? 'Pause Account' : 'Activate Account'}
                 </button>

@@ -22,24 +22,24 @@ export default function Column({ column }: ColumnProps) {
   return (
     <div
       ref={setNodeRef}
-      className={`w-full md:w-80 flex-shrink-0 flex flex-col neu-pressed ${
-        isOver ? 'ring-2 ring-indigo-500' : ''
+      className={`w-full md:w-80 flex-shrink-0 flex flex-col bg-[#09090B] border border-[#232734] rounded-[24px] shadow-sm ${
+        isOver ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-[#09090B]' : ''
       } overflow-hidden transition-all duration-300`}
     >
       {/* Column Header */}
-      <div className="p-4 border-b border-slate-200 dark:border-white/5">
+      <div className="p-5 border-b border-[#232734] bg-[#11131A]">
         <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             {/* Status Dot */}
             <div
-              className={`w-3 h-3 rounded-full shadow-md ${column.dotColor}`}
+              className={`w-2.5 h-2.5 rounded-full ${column.dotColor}`}
             />
             {/* Title */}
-            <h2 className="font-bold text-base text-slate-800 dark:text-slate-200">
+            <h2 className="font-bold text-sm tracking-wide text-white uppercase">
               {column.title}
             </h2>
             {/* Count Pill */}
-            <span className="flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 text-xs font-bold">
+            <span className="flex items-center justify-center min-w-[24px] h-6 px-2 rounded-lg bg-[#232734] text-slate-300 text-[11px] font-bold">
               {column.cards.length}
             </span>
           </div>

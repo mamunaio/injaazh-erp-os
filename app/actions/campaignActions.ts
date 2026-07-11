@@ -97,7 +97,7 @@ export async function addLeadsToCampaign(campaignId: string, leadIds: string[]) 
     await CampaignLead.bulkWrite(operations);
     
     revalidatePath('/campaigns');
-    revalidatePath('/leads');
+    revalidatePath('/prospects');
     
     return { success: true };
   } catch (error: any) {

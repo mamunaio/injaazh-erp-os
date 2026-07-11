@@ -75,41 +75,6 @@
   }
 }
 
-/* Animated radial gradient mesh */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background: 
-    radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.04), transparent 40%),
-    radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.04), transparent 40%);
-  filter: blur(100px);
-  pointer-events: none;
-  animation: pulseMesh 15s ease-in-out infinite alternate;
-}
-
-.dark body::before {
-  background: 
-    radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.08), transparent 40%),
-    radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.08), transparent 40%);
-}
-
-@keyframes pulseMesh {
-  0% { transform: scale(1); opacity: 0.8; }
-  100% { transform: scale(1.1); opacity: 1; }
-}
-
-/* Shimmer animation for card hover effect */
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-.animate-shimmer {
-  animation: shimmer 2s infinite;
-}
-
 /* Custom Ultra-thin Scrollbars */
 ::-webkit-scrollbar {
   width: 4px;
@@ -128,102 +93,85 @@ body::before {
 
 @layer utilities {
   .neu-base-bg {
-    background-color: #050505;
-    background-image: radial-gradient(circle at 50% 0%, rgba(76, 29, 149, 0.2) 0%, rgba(5, 5, 5, 1) 70%);
+    background-color: #0A0A0B;
   }
   .dark .neu-base-bg {
-    background-color: #050505;
-    background-image: radial-gradient(circle at 50% 0%, rgba(76, 29, 149, 0.2) 0%, rgba(5, 5, 5, 1) 70%);
+    background-color: #0A0A0B;
   }
   
   .neu-flat {
-    background-color: rgba(15, 23, 42, 0.4);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    background-color: #121214;
     border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 1.5rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    border-radius: 1.5rem; /* 24px */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
 
   .dark .neu-flat {
-    background-color: rgba(15, 23, 42, 0.4);
+    background-color: #121214;
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
 
   .neu-pressed {
-    background-color: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.02);
+    background-color: #0E0E10;
+    border: 1px solid rgba(255, 255, 255, 0.03);
     border-radius: 1rem;
-    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.4);
   }
   .dark .neu-pressed {
-    background-color: rgba(255, 255, 255, 0.03);
+    background-color: #0E0E10;
   }
   
   .neu-button {
-    background-color: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    background-color: #18181B;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0.75rem;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     color: white;
   }
   .neu-button:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
+    background-color: #27272A;
+    border: 1px solid rgba(255, 255, 255, 0.12);
   }
   .dark .neu-button {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: #18181B;
   }
   .dark .neu-button:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: #27272A;
   }
   
   .neu-button:active, .neu-button-active {
-    transform: translateY(1px);
-    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.2);
-    background-color: rgba(255, 255, 255, 0.02);
+    background-color: #27272A;
+    border: 1px solid rgba(255, 255, 255, 0.15);
   }
   .dark .neu-button:active, .dark .neu-button-active {
-    transform: translateY(1px);
-    background-color: rgba(255, 255, 255, 0.02);
+    background-color: #27272A;
   }
 
-  /* React Datepicker Neumorphism Styles */
+  /* React Datepicker Custom Styles for Dark Minimal Look */
   .react-datepicker-wrapper {
     width: 100%;
   }
   .react-datepicker {
     font-family: inherit !important;
-    border: none !important;
-    background-color: #e0e5ec !important;
-    box-shadow: 
-      10px 10px 20px rgba(163, 177, 198, 0.6), 
-      -10px -10px 20px rgba(255, 255, 255, 0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background-color: #121214 !important;
     border-radius: 1rem !important;
     padding: 0.5rem;
   }
   .dark .react-datepicker {
-    background-color: #1A1D24 !important;
-    box-shadow: 
-      -6px -6px 12px rgba(255, 255, 255, 0.03),
-      6px 6px 12px rgba(0, 0, 0, 0.6) !important;
+    background-color: #121214 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
   }
   .react-datepicker__header {
     background-color: transparent !important;
-    border-bottom: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
   }
   .react-datepicker__current-month, .react-datepicker-time__header, .react-datepicker-year-header {
-    color: inherit !important;
-    font-weight: 700 !important;
-  }
-  .dark .react-datepicker__current-month, .dark .react-datepicker-time__header, .dark .react-datepicker-year-header {
     color: #fff !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
   }
   .react-datepicker__day-name, .react-datepicker__day, .react-datepicker__time-name {
-    color: #475569 !important;
+    color: #94a3b8 !important;
     width: 2rem !important;
     height: 2rem !important;
     line-height: 2rem !important;
@@ -231,34 +179,14 @@ body::before {
     border-radius: 0.5rem !important;
     transition: all 0.2s !important;
   }
-  .dark .react-datepicker__day-name, .dark .react-datepicker__day, .dark .react-datepicker__time-name {
-    color: #94a3b8 !important;
-  }
   .react-datepicker__day:hover {
-    background-color: transparent !important;
-    box-shadow: 
-      inset 3px 3px 6px rgba(163, 177, 198, 0.6),
-      inset -3px -3px 6px rgba(255, 255, 255, 0.6) !important;
-  }
-  .dark .react-datepicker__day:hover {
-    background-color: transparent !important;
-    box-shadow: 
-      inset -2px -2px 4px rgba(255, 255, 255, 0.03),
-      inset 2px 2px 4px rgba(0, 0, 0, 0.5) !important;
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: #fff !important;
   }
   .react-datepicker__day--selected, .react-datepicker__day--keyboard-selected {
-    background-color: transparent !important;
-    color: #6366f1 !important;
-    font-weight: 700 !important;
-    box-shadow: 
-      inset 4px 4px 8px rgba(163, 177, 198, 0.6),
-      inset -4px -4px 8px rgba(255, 255, 255, 0.6) !important;
-  }
-  .dark .react-datepicker__day--selected, .dark .react-datepicker__day--keyboard-selected {
-    color: #818cf8 !important;
-    box-shadow: 
-      inset -3px -3px 6px rgba(255, 255, 255, 0.03),
-      inset 3px 3px 6px rgba(0, 0, 0, 0.5) !important;
+    background-color: #6366f1 !important;
+    color: #fff !important;
+    font-weight: 600 !important;
   }
   .react-datepicker__triangle {
     display: none !important;

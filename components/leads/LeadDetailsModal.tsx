@@ -1,12 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Calendar, MessageCircle, Mail, Globe, Phone, FileText, Sparkles, Loader2, Zap, Building, User, Target, Link as LinkIcon, Activity, ChevronDown } from 'lucide-react';
+import { X, Calendar, MessageCircle, Mail, Globe, Phone, FileText, Sparkles, Loader2, Zap, Building, User, Target, Link as LinkIcon, Activity, ChevronDown, CheckCircle, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 
-// Custom Select Component for Neumorphic Dropdowns
+// Custom Select Component for Enterprise Dropdowns
 const CustomSelect = ({ value, onChange, options, className = "", dropdownUp = false }: any) => {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
@@ -22,34 +20,35 @@ const CustomSelect = ({ value, onChange, options, className = "", dropdownUp = f
   }, []);
 
   return (
-    <div className="relative" ref={selectRef}>
+    <div className="relative w-full" ref={selectRef}>
       <div 
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center justify-between cursor-pointer select-none ${className}`}
+        className={`w-full flex items-center justify-between cursor-pointer select-none bg-[#09090B] border border-[#232734] rounded-xl px-4 py-3 text-sm text-white focus-within:border-indigo-500/50 transition-all ${className}`}
       >
-        <span>{value}</span>
+        <span className="font-semibold">{value}</span>
         <ChevronDown size={14} className={`text-slate-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </div>
       
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: dropdownUp ? 10 : -10, scale: 0.95 }}
+            initial={{ opacity: 0, y: dropdownUp ? 5 : -5, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: dropdownUp ? 10 : -10, scale: 0.95 }}
+            exit={{ opacity: 0, y: dropdownUp ? 5 : -5, scale: 0.98 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className={`absolute z-[100] w-full neu-flat rounded-2xl py-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-white/5 overflow-hidden ${dropdownUp ? 'bottom-full mb-2' : 'top-full mt-2'}`}
+            className={`absolute z-[100] w-full bg-[#11131A] rounded-xl py-2 shadow-2xl border border-[#232734] overflow-hidden ${dropdownUp ? 'bottom-full mb-2' : 'top-full mt-2'}`}
           >
             {options.map((opt: string) => (
               <div 
                 key={opt}
                 onClick={() => { onChange(opt); setIsOpen(false); }}
-                className={`px-4 py-3 text-sm cursor-pointer transition-all border-l-2 ${
+                className={`px-4 py-2.5 text-sm cursor-pointer transition-all flex items-center gap-2 ${
                   value === opt 
-                    ? 'border-indigo-500 text-indigo-400 bg-indigo-500/10 font-bold' 
-                    : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                    ? 'text-indigo-400 bg-indigo-500/10 font-bold' 
+                    : 'text-slate-400 hover:text-white hover:bg-[#232734]/50'
                 }`}
               >
+                {value === opt ? <CheckCircle size={14} className="text-indigo-500" /> : <div className="w-3.5" />}
                 {opt}
               </div>
             ))}
@@ -60,10 +59,10 @@ const CustomSelect = ({ value, onChange, options, className = "", dropdownUp = f
   );
 };
 
-const InputField = ({ label, icon: Icon, type = "text", value, onChange, placeholder = "" }: any) => (
-  <div className="relative group">
-    <label className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-slate-400 uppercase mb-2 ml-1">
-      {Icon && <Icon size={12} className="text-slate-500 group-focus-within:text-indigo-400 transition-colors" />}
+const InputField = ({ label, icon: Icon, type = "text", value, onChange, placeholder = "", disabled = false }: any) => (
+  <div className="relative group w-full">
+    <label className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-slate-500 uppercase mb-2 ml-1">
+      {Icon && <Icon size={12} className="text-slate-600 group-focus-within:text-indigo-400 transition-colors" />}
       {label}
     </label>
     <input 
@@ -71,7 +70,8 @@ const InputField = ({ label, icon: Icon, type = "text", value, onChange, placeho
       value={value || ''}
       onChange={onChange}
       placeholder={placeholder}
-      className="w-full neu-pressed rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all placeholder-slate-500"
+      disabled={disabled}
+      className="w-full bg-[#09090B] border border-[#232734] rounded-xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder-slate-600 disabled:opacity-50"
     />
   </div>
 );
@@ -91,7 +91,6 @@ export default function LeadDetailsModal({
   const [newLog, setNewLog] = useState({ type: 'Note', note: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEnriching, setIsEnriching] = useState(false);
-  const [activeQuickAction, setActiveQuickAction] = useState<string | null>(null);
 
   const getLeadScore = () => {
     let score = 20;
@@ -122,23 +121,6 @@ export default function LeadDetailsModal({
     }
   };
 
-  const handleQuickAction = async (actionType: string) => {
-    setActiveQuickAction(actionType);
-    try {
-      const { generateQuickAction } = await import('@/app/actions/aiActions');
-      const result = await generateQuickAction(actionType, formData);
-      if (result.success && result.data) {
-        setNewLog(prev => ({ ...prev, note: result.data || '' }));
-      } else {
-        alert(result.error || 'Failed to generate action');
-      }
-    } catch(err) {
-      console.error("Action failed", err);
-    } finally {
-      setActiveQuickAction(null);
-    }
-  };
-
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -157,7 +139,7 @@ export default function LeadDetailsModal({
         contact_person: lead.contact_person || '',
         email: lead.email || '',
         phone: lead.phone || '',
-        outreach_status: lead.outreach_status || 'New',
+        outreach_status: lead.outreach_status || lead.status || 'New',
         targetService: lead.targetService || 'High-end Web Development',
         website_url: lead.website_url || '',
         facebook_url: lead.facebook_url || '',
@@ -178,7 +160,15 @@ export default function LeadDetailsModal({
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await onUpdateLead(lead._id, formData);
+    
+    // Convert modal's "outreach_status" back to main "status" field for saving if needed, 
+    // but preserving outreach_status logic from before.
+    const payload = {
+        ...formData,
+        status: formData.outreach_status
+    };
+
+    await onUpdateLead(lead._id, payload);
     setIsSubmitting(false);
     onClose();
   };
@@ -190,7 +180,7 @@ export default function LeadDetailsModal({
       { method: newLog.type, notes: newLog.note, date: new Date().toISOString() },
       ...(formData.outreach_logs || [])
     ];
-    const updatePayload = { ...formData, outreach_logs: updatedLogs };
+    const updatePayload = { ...formData, outreach_logs: updatedLogs, status: formData.outreach_status };
     await onUpdateLead(lead._id, updatePayload);
     setFormData(updatePayload);
     setNewLog({ type: 'Note', note: '' });
@@ -200,21 +190,22 @@ export default function LeadDetailsModal({
   const getLogIcon = (method: string) => {
     switch (method) {
       case 'Email': return <Mail size={14} className="text-blue-400" />;
-      case 'WhatsApp': return <MessageCircle size={14} className="text-green-400" />;
+      case 'WhatsApp': return <MessageCircle size={14} className="text-emerald-400" />;
       case 'Phone': return <Phone size={14} className="text-purple-400" />;
       case 'Facebook': return <Globe size={14} className="text-indigo-400" />;
+      case 'Meeting': return <Calendar size={14} className="text-amber-400" />;
       default: return <FileText size={14} className="text-slate-400" />;
     }
   };
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-6 lg:p-10">
         <motion.div 
           initial={{ opacity: 0 }} 
           animate={{ opacity: 1 }} 
           exit={{ opacity: 0 }} 
-          className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md" 
+          className="absolute inset-0 bg-[#09090B]/80 backdrop-blur-md" 
           onClick={onClose} 
         />
         
@@ -222,175 +213,250 @@ export default function LeadDetailsModal({
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-6xl h-[90vh] neu-flat rounded-3xl flex flex-col overflow-hidden"
+          transition={{ type: "spring", damping: 30, stiffness: 350 }}
+          className="relative w-full max-w-7xl h-full md:h-[90vh] bg-[#11131A] border border-[#232734] md:rounded-[32px] flex flex-col overflow-hidden shadow-2xl"
         >
           {/* Header */}
-          <div className="flex justify-between items-start p-8 border-b border-slate-200/10 bg-transparent">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-4">
-                <h2 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-3">
-                  {lead.company_name}
-                  <div className={`px-3 py-1.5 text-xs font-bold rounded-full flex items-center gap-2 neu-button ${
-                    leadScore >= 80 ? 'text-orange-500' : 
-                    leadScore >= 50 ? 'text-indigo-500' : 
-                    'text-slate-500'
+          <div className="flex justify-between items-start p-6 md:p-8 border-b border-[#232734] bg-[#09090B]">
+            <div className="flex items-center gap-5">
+              <div className="w-16 h-16 rounded-[20px] bg-[#11131A] border border-[#232734] flex items-center justify-center text-slate-300 font-bold text-xl shadow-inner shrink-0 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-12 h-12 bg-indigo-500/20 blur-xl rounded-full"></div>
+                  <span className="relative z-10">{lead.company_name?.substring(0,2).toUpperCase() || '??'}</span>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <h2 className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+                  {formData.company_name || 'Unknown Company'}
+                  <div className={`px-2.5 py-1 text-[10px] font-bold rounded-lg border flex items-center gap-1.5 shadow-sm ${
+                    leadScore >= 80 ? 'text-amber-400 border-amber-500/30 bg-amber-500/10' : 
+                    leadScore >= 50 ? 'text-indigo-400 border-indigo-500/30 bg-indigo-500/10' : 
+                    'text-slate-400 border-[#232734] bg-[#11131A]'
                   }`}>
-                    {leadScore >= 80 ? <Sparkles size={12} className="animate-pulse" /> : <Zap size={12} />} 
-                    Score: {leadScore}
+                    {leadScore >= 80 ? <Sparkles size={12} /> : <Zap size={12} />} 
+                    SCORE: {leadScore}
                   </div>
                 </h2>
+                <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleAutoEnrich}
+                      disabled={isEnriching}
+                      className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors disabled:opacity-50"
+                    >
+                      {isEnriching ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                      {isEnriching ? 'Enriching...' : 'Auto-Enrich Profile'}
+                    </button>
+                </div>
               </div>
-              <p className="text-slate-500 text-sm flex items-center gap-2">
-                <Activity size={14} className="text-indigo-400" />
-                Manage lead details, enrich data, and track outreach activity.
-              </p>
             </div>
-            <button onClick={onClose} className="p-2 neu-button rounded-xl text-slate-500 hover:text-indigo-500 transition-all">
+            <button onClick={onClose} className="p-2.5 bg-[#11131A] border border-[#232734] rounded-xl text-slate-400 hover:text-white transition-all shadow-sm">
               <X size={20} />
             </button>
           </div>
           
-          <div className="flex flex-1 overflow-hidden">
-            {/* Left Column: Lead Info */}
-            <div className="w-1/2 p-8 overflow-y-auto border-r border-slate-200/10 custom-scrollbar bg-transparent">
-              
-              <div className="flex justify-between items-end mb-8">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                  <User size={18} className="text-indigo-500" />
-                  Lead Profile
-                </h3>
-                <button
-                  type="button"
-                  onClick={handleAutoEnrich}
-                  disabled={isEnriching}
-                  className="flex items-center gap-2 px-4 py-2 neu-button text-indigo-500 text-xs font-bold rounded-xl transition-all hover:text-indigo-400 disabled:opacity-50"
-                >
-                  {isEnriching ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-                  <span>{isEnriching ? 'Enriching Data...' : 'Auto-Enrich'}</span>
-                </button>
-              </div>
-              
-              <form id="lead-details-form" onSubmit={handleSave} className="space-y-6">
-                <div className="grid grid-cols-2 gap-5">
-                  <InputField label="Company Name" icon={Building} value={formData.company_name} onChange={(e:any) => setFormData({...formData, company_name: e.target.value})} />
-                  <InputField label="Contact Person" icon={User} value={formData.contact_person} onChange={(e:any) => setFormData({...formData, contact_person: e.target.value})} />
-                </div>
+          <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+            {/* Left Column: Contact & Pipeline */}
+            <div className="w-full lg:w-1/2 overflow-y-auto custom-scrollbar border-r border-[#232734] bg-[#09090B]">
+              <form id="lead-details-form" onSubmit={handleSave} className="p-6 md:p-8 space-y-8">
+                
+                <section>
+                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <User size={14} /> Profile & Contact
+                    </h3>
+                    <div className="bg-[#11131A] border border-[#232734] p-5 rounded-[24px] space-y-5">
+                        <InputField label="Company Name" icon={Building} value={formData.company_name} onChange={(e:any) => setFormData({...formData, company_name: e.target.value})} />
+                        <InputField label="Contact Person" icon={User} value={formData.contact_person} onChange={(e:any) => setFormData({...formData, contact_person: e.target.value})} />
+                        <div className="w-full h-px bg-[#232734]"></div>
+                        <InputField type="email" label="Email Address" icon={Mail} value={formData.email} onChange={(e:any) => setFormData({...formData, email: e.target.value})} />
+                        <InputField type="tel" label="Phone Number" icon={Phone} value={formData.phone} onChange={(e:any) => setFormData({...formData, phone: e.target.value})} />
+                    </div>
+                </section>
 
-                <div className="grid grid-cols-2 gap-5 relative z-20">
-                  <div className="relative group">
-                    <label className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-slate-400 uppercase mb-2 ml-1">
-                      <Activity size={12} className="text-slate-500 group-focus-within:text-indigo-400 transition-colors" /> Status
-                    </label>
-                    <CustomSelect 
-                      value={formData.outreach_status || 'New'}
-                      onChange={(val: string) => setFormData({...formData, outreach_status: val})}
-                      options={['New', 'Contacted', 'Replied', 'Meeting Booked', 'Closed', 'Not Interested']}
-                      className="neu-pressed rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white"
-                    />
-                  </div>
-                  <div className="relative group">
-                    <label className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-slate-400 uppercase mb-2 ml-1">
-                      <Target size={12} className="text-slate-500 group-focus-within:text-indigo-400 transition-colors" /> Target Service
-                    </label>
-                    <CustomSelect 
-                      value={formData.targetService || 'High-end Web Development'}
-                      onChange={(val: string) => setFormData({...formData, targetService: val})}
-                      options={['High-end Web Development', 'Next.js / Laravel App', 'WordPress Development', 'Custom ERP / SaaS', 'Technical SEO', 'Answer Engine Optimization (AEO)', 'Generative Engine Optimization (GEO)', 'UI/UX Design']}
-                      className="neu-pressed rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white"
-                    />
-                  </div>
-                </div>
+                <section>
+                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <Activity size={14} /> Pipeline Details
+                    </h3>
+                    <div className="bg-[#11131A] border border-[#232734] p-5 rounded-[24px] space-y-5">
+                        <div className="relative group">
+                            <label className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-slate-500 uppercase mb-2 ml-1">
+                                <Activity size={12} className="text-slate-600" /> Status
+                            </label>
+                            <CustomSelect 
+                                value={formData.outreach_status || 'New'}
+                                onChange={(val: string) => setFormData({...formData, outreach_status: val})}
+                                options={['New', 'Contacted', 'Replied', 'Meeting Booked', 'Closed', 'Not Interested']}
+                            />
+                        </div>
+                        <div className="relative group">
+                            <label className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-slate-500 uppercase mb-2 ml-1">
+                                <Target size={12} className="text-slate-600" /> Target Service
+                            </label>
+                            <CustomSelect 
+                                value={formData.targetService || 'High-end Web Development'}
+                                onChange={(val: string) => setFormData({...formData, targetService: val})}
+                                options={['High-end Web Development', 'Next.js / Laravel App', 'WordPress Development', 'Custom ERP / SaaS', 'Technical SEO', 'Answer Engine Optimization (AEO)', 'Generative Engine Optimization (GEO)', 'UI/UX Design']}
+                            />
+                        </div>
+                    </div>
+                </section>
 
-                <div className="grid grid-cols-2 gap-5 relative z-10">
-                  <InputField type="email" label="Email Address" icon={Mail} value={formData.email} onChange={(e:any) => setFormData({...formData, email: e.target.value})} />
-                  <InputField type="tel" label="Phone Number" icon={Phone} value={formData.phone} onChange={(e:any) => setFormData({...formData, phone: e.target.value})} />
-                </div>
-
-                <InputField type="url" label="Website URL" icon={Globe} placeholder="https://..." value={formData.website_url} onChange={(e:any) => setFormData({...formData, website_url: e.target.value})} />
-
-                <div className="pt-4 mt-4 border-t border-slate-200/10">
-                  <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <LinkIcon size={12} /> Social & External Links
-                  </h4>
-                  <div className="space-y-4">
-                    <InputField type="url" label="LinkedIn URL" value={formData.linkedin_url} placeholder="https://linkedin.com/in/..." onChange={(e:any) => setFormData({...formData, linkedin_url: e.target.value})} />
-                    <InputField type="url" label="Facebook URL" value={formData.facebook_url} placeholder="https://facebook.com/..." onChange={(e:any) => setFormData({...formData, facebook_url: e.target.value})} />
-                    <InputField type="url" label="Instagram URL" value={formData.instagram_url} placeholder="https://instagram.com/..." onChange={(e:any) => setFormData({...formData, instagram_url: e.target.value})} />
-                    <InputField type="url" label="Report / Drive URL" value={formData.reportFileUrl} placeholder="https://drive.google.com/..." onChange={(e:any) => setFormData({...formData, reportFileUrl: e.target.value})} />
-                  </div>
-                </div>
+                <section>
+                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <LinkIcon size={14} /> Web & Links
+                    </h3>
+                    <div className="bg-[#11131A] border border-[#232734] p-5 rounded-[24px] space-y-5">
+                        <InputField type="url" label="Website URL" icon={Globe} placeholder="https://..." value={formData.website_url} onChange={(e:any) => setFormData({...formData, website_url: e.target.value})} />
+                        <div className="w-full h-px bg-[#232734]"></div>
+                        <InputField type="url" label="LinkedIn Profile" value={formData.linkedin_url} placeholder="https://linkedin.com/in/..." onChange={(e:any) => setFormData({...formData, linkedin_url: e.target.value})} />
+                        <InputField type="url" label="Facebook Page" value={formData.facebook_url} placeholder="https://facebook.com/..." onChange={(e:any) => setFormData({...formData, facebook_url: e.target.value})} />
+                        <InputField type="url" label="Instagram" value={formData.instagram_url} placeholder="https://instagram.com/..." onChange={(e:any) => setFormData({...formData, instagram_url: e.target.value})} />
+                        <div className="w-full h-px bg-[#232734]"></div>
+                        <InputField type="url" label="Report / Drive URL" value={formData.reportFileUrl} placeholder="https://drive.google.com/..." onChange={(e:any) => setFormData({...formData, reportFileUrl: e.target.value})} />
+                    </div>
+                </section>
                 
               </form>
             </div>
 
-            {/* Right Column: Activity Timeline */}
-            <div className="w-1/2 flex flex-col bg-transparent">
-              {/* Facebook Draft Area */}
-              <div className="p-8 border-b border-slate-200/10 relative z-30">
-                <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-4">
-                  <Globe size={16} className="text-indigo-500" /> Facebook Message Draft
-                </h4>
-                <div className="relative group">
-                  <textarea
-                    value={formData.facebook_draft}
-                    onChange={(e:any) => setFormData({...formData, facebook_draft: e.target.value})}
-                    placeholder="Write your Facebook outreach message here..."
-                    className="w-full neu-pressed rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all placeholder-slate-500 min-h-[180px] resize-y"
-                  />
-                </div>
-              </div>
-
-              {/* Scrollable Area for Draft & Timeline */}
-              <div className="flex-1 p-8 overflow-y-auto custom-scrollbar relative z-10">
-                {/* Automated Outreach Draft Card */}
-                <div className="neu-flat rounded-2xl p-6 mb-10 relative z-20 border border-white/5">
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-4">
-                    <Sparkles size={16} className="text-indigo-500" /> Automated Outreach Draft
-                  </h4>
-                  <div className="space-y-4">
-                    <InputField 
-                      label="Email Subject" 
-                      icon={Mail} 
-                      value={formData.email_subject_draft} 
-                      onChange={(e:any) => setFormData({...formData, email_subject_draft: e.target.value})} 
-                      placeholder="Custom Subject..." 
-                    />
-                    <div className="relative group">
-                      <label className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-slate-400 uppercase mb-2 ml-1">
-                        <FileText size={12} className="text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
-                        Email Body
-                      </label>
-                      <textarea
-                        value={formData.email_draft}
-                        onChange={(e:any) => setFormData({...formData, email_draft: e.target.value})}
-                        placeholder="Custom email body..."
-                        className="w-full neu-pressed rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all placeholder-slate-500 min-h-[180px] resize-y"
-                      />
+            {/* Right Column: Timeline & Notes */}
+            <div className="w-full lg:w-1/2 flex flex-col bg-[#11131A]">
+                
+                {/* Notes Input Area */}
+                <div className="p-6 md:p-8 border-b border-[#232734] bg-[#11131A] shrink-0">
+                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <FileText size={14} /> Add Note or Activity
+                    </h3>
+                    <div className="bg-[#09090B] border border-[#232734] rounded-2xl p-4 focus-within:border-indigo-500/50 transition-all shadow-sm">
+                        <textarea
+                            value={newLog.note}
+                            onChange={(e) => setNewLog({ ...newLog, note: e.target.value })}
+                            placeholder="Log a call, meeting, or note..."
+                            className="w-full bg-transparent text-sm font-medium text-white placeholder-slate-600 focus:outline-none resize-none min-h-[80px]"
+                        />
+                        <div className="flex items-center justify-between pt-3 mt-2 border-t border-[#232734]">
+                            <div className="flex items-center gap-2">
+                                {['Note', 'Email', 'Call', 'Meeting'].map(type => (
+                                    <button
+                                        key={type}
+                                        type="button"
+                                        onClick={() => setNewLog({ ...newLog, type })}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                                            newLog.type === type 
+                                            ? 'bg-[#232734] border-slate-500 text-white' 
+                                            : 'bg-transparent border-transparent text-slate-500 hover:text-slate-300 hover:bg-[#232734]/50'
+                                        }`}
+                                    >
+                                        {type}
+                                    </button>
+                                ))}
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handleAddLog}
+                                disabled={isSubmitting || !newLog.note.trim()}
+                                className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition-all shadow-sm disabled:opacity-50"
+                            >
+                                Post Note
+                            </button>
+                        </div>
                     </div>
-                  </div>
                 </div>
-              </div>
+
+                {/* Activity Timeline */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 bg-[#09090B] shadow-inner">
+                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6 flex items-center gap-2">
+                        <Clock size={14} /> Activity Timeline
+                    </h3>
+                    
+                    <div className="space-y-6">
+                        {formData.outreach_logs && formData.outreach_logs.length > 0 ? (
+                            formData.outreach_logs.map((log: any, idx: number) => (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: idx * 0.05 }}
+                                    key={idx} 
+                                    className="relative pl-6"
+                                >
+                                    {/* Timeline line connecting items */}
+                                    {idx !== formData.outreach_logs.length - 1 && (
+                                        <div className="absolute left-2 top-8 bottom-[-24px] w-px bg-[#232734]"></div>
+                                    )}
+                                    {/* Timeline dot */}
+                                    <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-[#11131A] border border-[#232734] flex items-center justify-center">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-slate-500"></div>
+                                    </div>
+                                    
+                                    <div className="bg-[#11131A] border border-[#232734] rounded-[20px] p-5 shadow-sm">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <div className="flex items-center gap-2">
+                                                {getLogIcon(log.method || 'Note')}
+                                                <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">{log.method || 'Note'}</span>
+                                            </div>
+                                            <span className="text-[10px] font-semibold text-slate-500">
+                                                {new Date(log.date).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                                            </span>
+                                        </div>
+                                        <p className="text-sm font-medium text-slate-300 leading-relaxed whitespace-pre-wrap">
+                                            {log.notes}
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            ))
+                        ) : (
+                            <div className="text-center py-12 bg-[#11131A] border border-[#232734] border-dashed rounded-3xl">
+                                <FileText size={24} className="text-slate-600 mx-auto mb-3" />
+                                <p className="text-sm font-bold text-slate-400">No activity logged yet.</p>
+                                <p className="text-xs text-slate-600 mt-1">Notes, emails, and calls will appear here.</p>
+                            </div>
+                        )}
+
+                        {/* Collapsible Drafts (Optional display if data exists) */}
+                        {(formData.email_draft || formData.facebook_draft) && (
+                            <div className="pt-8 mt-8 border-t border-[#232734]">
+                                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6 flex items-center gap-2">
+                                    <Sparkles size={14} /> Saved Drafts
+                                </h3>
+                                
+                                {formData.email_draft && (
+                                    <div className="bg-[#11131A] border border-[#232734] rounded-[20px] p-5 mb-4 shadow-sm">
+                                        <h4 className="text-xs font-bold text-white mb-2 flex items-center gap-2"><Mail size={12} className="text-indigo-400"/> Email Draft</h4>
+                                        <div className="text-xs text-slate-400 mb-2 font-semibold">Subject: {formData.email_subject_draft || 'No subject'}</div>
+                                        <p className="text-sm text-slate-300 whitespace-pre-wrap font-medium">{formData.email_draft}</p>
+                                    </div>
+                                )}
+
+                                {formData.facebook_draft && (
+                                    <div className="bg-[#11131A] border border-[#232734] rounded-[20px] p-5 shadow-sm">
+                                        <h4 className="text-xs font-bold text-white mb-2 flex items-center gap-2"><Globe size={12} className="text-blue-400"/> Facebook Draft</h4>
+                                        <p className="text-sm text-slate-300 whitespace-pre-wrap font-medium">{formData.facebook_draft}</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
             </div>
-          </div>
-          {/* Footer Actions */}
-          <div className="p-6 border-t border-slate-200/10 bg-transparent flex justify-end gap-4">
-            <button 
-              type="button" 
-              onClick={onClose}
-              className="px-6 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white transition-all neu-button"
-            >
-              Cancel
-            </button>
-            <button 
-              form="lead-details-form"
-              type="submit" 
-              disabled={isSubmitting}
-              className="px-8 py-2.5 neu-button text-indigo-500 font-black rounded-xl transition-all duration-300 disabled:opacity-50 flex items-center gap-2"
-            >
-              {isSubmitting && <Loader2 size={16} className="animate-spin" />}
-              {isSubmitting ? 'Saving...' : 'Save Lead Details'}
-            </button>
+
+            {/* Footer Actions */}
+            <div className="p-6 border-t border-[#232734] bg-[#09090B] flex justify-end gap-3 shrink-0">
+              <button 
+                type="button" 
+                onClick={onClose}
+                className="px-6 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white bg-[#11131A] hover:bg-[#232734] border border-[#232734] transition-all shadow-sm"
+              >
+                Cancel
+              </button>
+              <button 
+                form="lead-details-form"
+                type="submit" 
+                disabled={isSubmitting}
+                className="px-8 py-2.5 text-xs font-bold rounded-xl bg-white text-black hover:bg-slate-200 transition-all shadow-sm disabled:opacity-50 flex items-center gap-2"
+              >
+                {isSubmitting && <Loader2 size={14} className="animate-spin text-black" />}
+                {isSubmitting ? 'Saving...' : 'Save Lead Details'}
+              </button>
+            </div>
           </div>
         </motion.div>
       </div>
