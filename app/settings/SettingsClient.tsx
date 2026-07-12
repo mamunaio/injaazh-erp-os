@@ -28,6 +28,12 @@ const MOCK_ROLES = [
   { id: 'viewer', name: 'Viewer', description: 'Read-only access to dashboards and basic records.', users: 12, isSystem: false },
 ];
 
+const THEMES = [
+  { id: 'light', name: 'Light', icon: Sun },
+  { id: 'dark', name: 'Dark', icon: Moon },
+  { id: 'system', name: 'System', icon: Monitor }
+];
+
 const PERMISSIONS = [
   { category: 'CRM & Deals', items: [{ id: 'crm_read', label: 'View Leads & Deals' }, { id: 'crm_write', label: 'Edit Leads & Deals' }, { id: 'crm_delete', label: 'Delete Records' }] },
   { category: 'Finance', items: [{ id: 'fin_read', label: 'View Revenue & Expenses' }, { id: 'fin_write', label: 'Manage Invoices' }] },
@@ -181,6 +187,9 @@ export default function SettingsClient() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  
   // 2FA States
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
   const [is2FAModalOpen, setIs2FAModalOpen] = useState(false);
@@ -203,7 +212,6 @@ export default function SettingsClient() {
   const [profileImage, setProfileImage] = useState<string | undefined>(undefined);
 
   // Appearance States
-  const [theme, setTheme] = useState('dark');
   const [accent, setAccent] = useState('violet');
   const [sidebarLayout, setSidebarLayout] = useState('expanded');
 
@@ -295,6 +303,7 @@ export default function SettingsClient() {
   const tabsToRender = TABS.filter(t => !t.adminOnly || (t.adminOnly && (user?.role === 'admin' || user?.role === 'owner')));
 
   useEffect(() => {
+    setMounted(true);
     checkTwoFactorStatus().then(res => { if (res.success) setIs2FAEnabled(res.enabled || false); });
     getSystemSettings('smtp').then(res => { if (res.success && res.data) setSmtpSettings(res.data); });
   }, []);
@@ -950,15 +959,11 @@ export default function SettingsClient() {
                       <div>
                         <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Theme Preference</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          {[
-                            { id: 'light', label: 'Light', icon: Sun },
-                            { id: 'dark', label: 'Dark', icon: Moon },
-                            { id: 'system', label: 'System', icon: Monitor }
-                          ].map(t => (
-                            <button key={t.id} onClick={() => { setTheme(t.id); triggerChange(); }} className={`relative flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 transition-all ${theme === t.id ? 'bg-[#2563EB]/5 border-[#2563EB] text-[#2563EB]' : 'bg-slate-50 dark:bg-[#09090B] border-slate-200 dark:border-[#232734] text-[#94A3B8] hover:border-[#232734]/80'}`}>
-                              <t.icon size={24} />
-                              <span className="font-bold text-sm">{t.label}</span>
-                              {theme === t.id && <div className="absolute top-3 right-3"><CheckCircle2 size={16} /></div>}
+                          {THEMES.map(t => (
+                            <button key={t.id} onClick={() => { setTheme(t.id); triggerChange(); }} className={`relative flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 transition-all ${mounted && theme === t.id ? 'bg-[#2563EB]/5 border-[#2563EB] text-[#2563EB]' : 'bg-slate-50 dark:bg-[#09090B] border-slate-200 dark:border-[#232734] text-[#94A3B8] hover:border-[#232734]/80'}`}>
+                              <t.icon size={24} className={mounted && theme === t.id ? 'text-[#2563EB]' : 'text-[#94A3B8]'} />
+                              <span className={`text-sm font-bold ${mounted && theme === t.id ? 'text-slate-900 dark:text-white' : 'text-[#94A3B8]'}`}>{t.name}</span>
+                              {mounted && theme === t.id && <div className="absolute top-3 right-3"><CheckCircle2 size={16} /></div>}
                             </button>
                           ))}
                         </div>
