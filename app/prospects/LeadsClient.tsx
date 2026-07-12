@@ -315,7 +315,7 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
 
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, showFollowUps]);
+  }, [searchQuery, showFollowUps, activeFilter]);
 
   const totalPages = Math.ceil(searchedLeads.length / leadsPerPage);
   const paginatedLeads = searchedLeads.slice(
