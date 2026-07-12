@@ -36,7 +36,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 const Card = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => (
-  <div className={`bg-white dark:bg-[#11131A] border border-slate-200 dark:border-slate-800/50 rounded-[24px] shadow-sm dark:shadow-none hover:shadow-xl dark:hover:shadow-none transition-shadow duration-300 ${className}`}>
+  <div className={`bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none transition-shadow duration-300 ${className}`}>
     {children}
   </div>
 );
