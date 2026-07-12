@@ -499,7 +499,7 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
                   initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05, type: 'spring', stiffness: 280, damping: 26 }}
                   whileHover={{ y: -2, transition: { duration: 0.15 } }}
-                  className="relative overflow-hidden bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-5 cursor-pointer group hover:border-[#232734]/80 transition-all"
+                  className="relative overflow-hidden bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-5 cursor-pointer group hover:border-slate-300 dark:hover:border-[#232734]/80 shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none transition-all"
                 >
                   <div className="absolute inset-0 opacity-10">
                     <ResponsiveContainer width="100%" height="100%">
@@ -544,10 +544,10 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
 
             {/* Filter Chips & Dropdowns Grouped Separately */}
             <div className="flex items-center gap-4 flex-wrap">
-              <div className="flex items-center gap-1 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] p-1 rounded-[14px]">
+              <div className="flex items-center gap-1 bg-slate-50 dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] p-1 rounded-[14px]">
                 {['All', 'Active', 'Paused', 'Completed'].map(f => (
                   <button key={f} onClick={() => setActiveFilter(f)}
-                    className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${activeFilter === f ? 'bg-slate-200 dark:bg-[#232734] text-slate-900 dark:text-white shadow-sm' : 'text-[#94A3B8] hover:text-slate-900 dark:hover:text-white'}`}>
+                    className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${activeFilter === f ? 'bg-white dark:bg-[#232734] text-slate-900 dark:text-white shadow-sm' : 'text-[#94A3B8] hover:text-slate-900 dark:hover:text-white'}`}>
                     {f}
                   </button>
                 ))}
@@ -570,7 +570,7 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
         {/* ── Table ────────────────────────────────────────────────────────── */}
         {sorted.length === 0 ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            className="py-32 flex flex-col items-center justify-center bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px]">
+            className="py-32 flex flex-col items-center justify-center bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] shadow-sm">
             <div className="w-16 h-16 rounded-[20px] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center mb-4">
               <Target size={24} className="text-[#232734]" />
             </div>
@@ -578,7 +578,7 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
             <p className="text-xs text-[#94A3B8] mb-6">Create your first campaign or adjust your filters.</p>
             {!searchQuery && activeFilter === 'All' && (
               <button onClick={() => setIsBuilderOpen(true)}
-                className="flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white text-xs font-bold rounded-xl transition-all">
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white text-xs font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)]">
                 <Plus size={14} strokeWidth={2.5} /> Get Started
               </button>
             )}
