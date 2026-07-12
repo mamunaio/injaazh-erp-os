@@ -101,6 +101,7 @@ export default function EmailAccountsManager() {
     });
     
     if (res.success && res.account) {
+      toast.success('Account added successfully!', { id: 'add-acc' });
       window.dispatchEvent(new CustomEvent('fetch-notifications'));
       setEmail('');
       setSenderName('');
