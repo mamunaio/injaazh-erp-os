@@ -75,12 +75,12 @@ async function main() {
       throw new Error('Test lead not found after email dispatch!');
     }
     
-    console.log(`  - Expected Status: 'Contacted'`);
+    console.log(`  - Expected Status: 'Email Sent'`);
     console.log(`  - Actual Status:   '${updatedLead.outreach_status}'`);
-    if (updatedLead.outreach_status !== 'Contacted') {
-      throw new Error(`Lead status was not progressed to 'Contacted'! Found: ${updatedLead.outreach_status}`);
+    if (updatedLead.outreach_status !== 'Email Sent') {
+      throw new Error(`Lead status was not progressed to 'Email Sent'! Found: ${updatedLead.outreach_status}`);
     }
-    console.log('  ✅ Outreach Status successfully progressed to contacted!');
+    console.log('  ✅ Outreach Status successfully progressed to Email Sent!');
     
     console.log(`  - Timeline Activity Logs count: ${updatedLead.outreach_logs.length}`);
     if (updatedLead.outreach_logs.length !== 1) {
