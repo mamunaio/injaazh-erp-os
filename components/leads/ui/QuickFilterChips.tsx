@@ -23,7 +23,7 @@ export default function QuickFilterChips({ activeFilter, setActiveFilter, leads 
 
   return (
     <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-2 hide-scrollbar">
-      <div className="flex items-center p-1 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-2xl shadow-sm w-max">
+      <div className="flex items-center p-1 bg-slate-50 dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-2xl shadow-sm w-max">
         {chips.map(chip => {
           const isActive = activeFilter === chip.value;
           return (

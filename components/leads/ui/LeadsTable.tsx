@@ -181,7 +181,7 @@ export default function LeadsTable({
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-[#232734]/50">
+          <tbody className="divide-y divide-slate-200 dark:divide-[#232734]/50">
             <AnimatePresence>
               {sorted.map((lead, i) => {
                 const isSelected = selectedLeads.includes(lead._id);
