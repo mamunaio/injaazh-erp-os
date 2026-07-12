@@ -165,7 +165,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis }: { u
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05, type: 'spring', stiffness: 280, damping: 26 }}
               key={i} 
-              className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] p-5 group hover:border-[#2563EB]/40 transition-all relative overflow-hidden"
+              className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] p-5 group hover:border-[#2563EB]/40 shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none transition-all relative overflow-hidden"
             >
               <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
                 <kpi.icon size={100} style={{ color: kpi.color }} />
@@ -187,7 +187,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis }: { u
           {/* Chart Section */}
           <motion.div 
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-            className="xl:col-span-1 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] p-6 flex flex-col"
+            className="xl:col-span-1 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] p-6 flex flex-col shadow-sm dark:shadow-none"
           >
             <h2 className="text-sm font-bold text-slate-900 dark:text-white mb-6 uppercase tracking-widest">Activity (Last 7 Days)</h2>
             <div className="flex-1 flex items-end justify-between gap-2 h-[200px] mt-auto">
@@ -219,7 +219,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis }: { u
           {/* Table Section */}
           <motion.div 
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            className="xl:col-span-2 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] overflow-hidden flex flex-col"
+            className="xl:col-span-2 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] overflow-hidden flex flex-col shadow-sm dark:shadow-none"
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between p-6 border-b border-slate-200 dark:border-[#232734] gap-4">
               <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest">Detailed Log</h2>
