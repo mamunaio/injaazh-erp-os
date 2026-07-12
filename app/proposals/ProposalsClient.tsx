@@ -371,7 +371,7 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05, type: 'spring', stiffness: 280, damping: 26 }}
                 whileHover={{ y: -2, transition: { duration: 0.15 } }}
-                className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[18px] p-4 cursor-default group transition-all"
+                className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[18px] p-4 cursor-default group transition-all shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none"
               >
                 <div className="flex items-start justify-between mb-3">
                   <p className="text-[11px] font-bold text-[#94A3B8]">{k.label}</p>
@@ -385,7 +385,7 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
           </motion.div>
 
           {/* ── Total Value Banner ────────────────────────────────────────── */}
-          <motion.div variants={itemVariants} className="flex items-center justify-between bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[16px] px-5 py-4 mb-6">
+          <motion.div variants={itemVariants} className="flex items-center justify-between bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[16px] px-5 py-4 mb-6 shadow-sm dark:shadow-none">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-[10px] bg-[#10B981]/10 border border-[#10B981]/20 flex items-center justify-center text-[#10B981]">
                 <TrendingUp size={15} />
@@ -450,15 +450,15 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
             </div>
 
             {/* View toggle */}
-            <div className="flex items-center bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl p-1">
+            <div className="flex items-center bg-slate-50 dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl p-1">
               <button onClick={() => setViewMode('list')}
                 className={`relative p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'text-slate-900 dark:text-white' : 'text-[#94A3B8] hover:text-[#94A3B8]/80'}`} aria-label="List view">
-                {viewMode === 'list' && <motion.div layoutId="proposalView" className="absolute inset-0 bg-slate-200 dark:bg-[#232734] rounded-lg -z-10 border border-slate-200 dark:border-white/5" />}
+                {viewMode === 'list' && <motion.div layoutId="proposalView" className="absolute inset-0 bg-white dark:bg-[#232734] rounded-lg -z-10 border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none" />}
                 <List size={15} />
               </button>
               <button onClick={() => setViewMode('grid')}
                 className={`relative p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'text-slate-900 dark:text-white' : 'text-[#94A3B8] hover:text-[#94A3B8]/80'}`} aria-label="Grid view">
-                {viewMode === 'grid' && <motion.div layoutId="proposalView" className="absolute inset-0 bg-slate-200 dark:bg-[#232734] rounded-lg -z-10 border border-slate-200 dark:border-white/5" />}
+                {viewMode === 'grid' && <motion.div layoutId="proposalView" className="absolute inset-0 bg-white dark:bg-[#232734] rounded-lg -z-10 border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none" />}
                 <LayoutGrid size={15} />
               </button>
             </div>
@@ -484,7 +484,7 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
         ) : viewMode === 'list' ? (
 
           /* ─ Table View ───────────────────────────────────────────────────── */
-          <div className="overflow-hidden rounded-[20px] border border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A]">
+          <div className="overflow-hidden rounded-[20px] border border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A] shadow-sm dark:shadow-none">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm">
                 <thead className="sticky top-0 z-10 bg-slate-100 dark:bg-slate-900/50">
