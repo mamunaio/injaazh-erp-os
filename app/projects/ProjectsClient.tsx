@@ -99,7 +99,7 @@ function DroppableColumn({ id, title, items }: { id: string, title: string, item
   const Icon = conf.icon;
   
   return (
-    <div className="flex flex-col w-[320px] flex-shrink-0 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-[24px] overflow-hidden shadow-lg">
+    <div className="flex flex-col w-[320px] flex-shrink-0 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-[#232734] rounded-[24px] overflow-hidden shadow-sm dark:shadow-none">
       {/* Header */}
       <div className={`p-4 border-b border-slate-200 dark:border-[#232734] flex items-center justify-between bg-white dark:bg-[#11131A] ${isOver ? 'bg-[#232734]/30' : ''} transition-colors`}>
         <div className="flex items-center gap-2.5">
@@ -136,7 +136,7 @@ function SortableProjectCard({ project }: { project: Project }) {
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}
-      className={`bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] p-4 rounded-[20px] cursor-grab active:cursor-grabbing hover:border-[#2563EB]/40 transition-colors shadow-sm group relative overflow-hidden flex flex-col gap-3`}>
+      className={`bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] p-4 rounded-[20px] cursor-grab active:cursor-grabbing hover:border-[#2563EB]/40 transition-colors shadow-sm dark:shadow-none group relative overflow-hidden flex flex-col gap-3`}>
       <div className={`absolute left-0 top-0 bottom-0 w-1 ${getStatusConfig(project.status).bg}`} />
       
       <div className="flex justify-between items-start pl-2">
@@ -381,7 +381,7 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
               const isSelected = statusFilter === k.id;
               return (
                 <button key={k.id} onClick={() => setStatusFilter(k.id as any)}
-                  className={`relative text-left bg-white dark:bg-[#11131A] border rounded-[18px] p-4 flex flex-col justify-center overflow-hidden transition-all duration-300
+                  className={`relative text-left bg-white dark:bg-[#11131A] border rounded-[18px] p-4 flex flex-col justify-center overflow-hidden transition-all duration-300 shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none
                     ${isSelected 
                       ? 'border-[#2563EB] shadow-md dark:shadow-none' 
                       : 'border-slate-200 dark:border-[#232734] hover:border-[#2563EB]/40'}`}>
@@ -396,11 +396,11 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
           {/* ── Filter Bar & View Switcher ────────────────────────────────── */}
           <motion.div variants={itemVariants} className="flex flex-col md:flex-row items-center gap-3">
             {/* View Switcher */}
-            <div className="flex items-center bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl p-1 w-full md:w-auto overflow-x-auto hide-scrollbar">
+            <div className="flex items-center bg-slate-50 dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl p-1 w-full md:w-auto overflow-x-auto hide-scrollbar">
               {[{ id: 'grid', icon: LayoutGrid, label: 'Grid' }, { id: 'list', icon: List, label: 'List' }, { id: 'kanban', icon: Columns, label: 'Kanban' }, { id: 'timeline', icon: GitMerge, label: 'Timeline' }].map(v => (
                 <button key={v.id} onClick={() => setViewMode(v.id as ViewMode)}
                   className={`relative flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-colors ${viewMode === v.id ? 'text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-[#94A3B8] dark:hover:text-[#94A3B8]/80'}`}>
-                  {viewMode === v.id && <motion.div layoutId="projectViews" className="absolute inset-0 bg-white dark:bg-[#232734] rounded-lg shadow-sm border border-slate-200 dark:border-white/5" />}
+                  {viewMode === v.id && <motion.div layoutId="projectViews" className="absolute inset-0 bg-white dark:bg-[#232734] rounded-lg shadow-sm dark:shadow-none border border-slate-200 dark:border-white/5" />}
                   <v.icon size={14} className="relative z-10" /> <span className="relative z-10">{v.label}</span>
                 </button>
               ))}
@@ -510,7 +510,7 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
             {/* ── List View ── */}
             {viewMode === 'list' && (
               <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="overflow-hidden rounded-[20px] border border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A]">
+                className="overflow-hidden rounded-[20px] border border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A] shadow-sm dark:shadow-none">
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse text-sm">
                     <thead className="sticky top-0 z-10 bg-slate-100 dark:bg-slate-900/50">
