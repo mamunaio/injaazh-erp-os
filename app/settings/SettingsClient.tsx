@@ -587,7 +587,7 @@ export default function SettingsClient() {
                           className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-sm ${
                             isActive 
                               ? tab.danger ? 'bg-rose-500/10 text-rose-500' : 'bg-white shadow-sm border border-slate-200 text-slate-900 dark:bg-slate-900 dark:border-slate-800 dark:text-white'
-                              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent dark:text-slate-400 dark:hover:bg-slate-800/50'
+                              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/50'
                           }`}
                         >
                           <Icon size={18} className={isActive ? (tab.danger ? 'text-rose-500' : 'text-primary-600') : 'opacity-70'} />
