@@ -678,12 +678,12 @@ export default function SettingsClient() {
                   </GlassCard>
                 )}
 
-                {/* ── COMPANY & WORKSPACE ── */}
-                {(activeTab === 'company' || activeTab === 'workspace') && (
+                {/* ── COMPANY ── */}
+                {activeTab === 'company' && (
                   <GlassCard>
                     <div className="border-b border-slate-200 dark:border-[#232734] pb-6 mb-8">
-                      <h2 className="text-xl font-bold font-jakarta mb-1">{activeTab === 'company' ? 'Company Details' : 'Workspace Configuration'}</h2>
-                      <p className="text-sm text-[#94A3B8]">Manage global settings and branding.</p>
+                      <h2 className="text-xl font-bold font-jakarta mb-1">Company Details</h2>
+                      <p className="text-sm text-[#94A3B8]">Manage company information and branding.</p>
                     </div>
                     
                     <div className="space-y-6">
@@ -691,6 +691,29 @@ export default function SettingsClient() {
                         <label className="block text-xs font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">Company Name</label>
                         <input type="text" defaultValue="Injaazh Global" className="w-full px-4 py-3 bg-slate-50 border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500/50 rounded-xl focus:outline-none dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 font-medium text-sm transition-all" onChange={triggerChange} />
                       </div>
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-xs font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">Tax / VAT ID</label>
+                          <input type="text" defaultValue="GB123456789" className="w-full px-4 py-3 bg-slate-50 border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500/50 rounded-xl focus:outline-none dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 font-medium text-sm transition-all" onChange={triggerChange} />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">Company Website</label>
+                          <input type="url" defaultValue="https://injaazh.com" className="w-full px-4 py-3 bg-slate-50 border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500/50 rounded-xl focus:outline-none dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 font-medium text-sm transition-all" onChange={triggerChange} />
+                        </div>
+                      </div>
+                    </div>
+                  </GlassCard>
+                )}
+
+                {/* ── WORKSPACE ── */}
+                {activeTab === 'workspace' && (
+                  <GlassCard>
+                    <div className="border-b border-slate-200 dark:border-[#232734] pb-6 mb-8">
+                      <h2 className="text-xl font-bold font-jakarta mb-1">Workspace Configuration</h2>
+                      <p className="text-sm text-[#94A3B8]">Manage global settings and localization.</p>
+                    </div>
+                    
+                    <div className="space-y-6">
                       <div className="grid grid-cols-2 gap-6">
                         <div>
                           <label className="block text-xs font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">Timezone</label>
@@ -704,6 +727,22 @@ export default function SettingsClient() {
                           <select className="w-full px-4 py-3 bg-slate-50 border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500/50 rounded-xl focus:outline-none dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 font-medium text-sm transition-all appearance-none" onChange={triggerChange}>
                             <option>USD ($)</option>
                             <option>EUR (€)</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-xs font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">Date Format</label>
+                          <select className="w-full px-4 py-3 bg-slate-50 border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500/50 rounded-xl focus:outline-none dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 font-medium text-sm transition-all appearance-none" onChange={triggerChange}>
+                            <option>MM/DD/YYYY</option>
+                            <option>DD/MM/YYYY</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">System Language</label>
+                          <select className="w-full px-4 py-3 bg-slate-50 border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500/50 rounded-xl focus:outline-none dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 font-medium text-sm transition-all appearance-none" onChange={triggerChange}>
+                            <option>English (US)</option>
+                            <option>Bengali (BD)</option>
                           </select>
                         </div>
                       </div>
