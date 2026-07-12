@@ -299,7 +299,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
 
           {/* ── KPI Cards ─────────────────────────────────────────────────── */}
           <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 relative overflow-hidden group">
+            <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 relative overflow-hidden group shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none transition-all">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Total Expenses</p>
                 <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 flex items-center justify-center text-[#2563EB]"><DollarSign size={16} /></div>
@@ -307,7 +307,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
               <p className="text-3xl font-bold font-mono text-slate-900 dark:text-white tracking-tight">{formatCurrency(totalExpenses)}</p>
             </div>
 
-            <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 relative overflow-hidden group">
+            <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 relative overflow-hidden group shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none transition-all">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Approved</p>
                 <div className="w-8 h-8 rounded-lg bg-[#10B981]/10 flex items-center justify-center text-[#10B981]"><CheckCircle2 size={16} /></div>
@@ -315,7 +315,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
               <p className="text-3xl font-bold font-mono text-slate-900 dark:text-white tracking-tight">{formatCurrency(totalExpenses * 1)}</p>
             </div>
 
-            <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 relative overflow-hidden group">
+            <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 relative overflow-hidden group shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none transition-all">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Pending</p>
                 <div className="w-8 h-8 rounded-lg bg-slate-200 dark:bg-[#232734] flex items-center justify-center text-[#94A3B8]"><AlertCircle size={16} /></div>
@@ -323,7 +323,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
               <p className="text-3xl font-bold font-mono text-[#94A3B8] tracking-tight">৳0</p>
             </div>
 
-            <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 relative overflow-hidden group">
+            <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 relative overflow-hidden group shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none transition-all">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Avg Expense</p>
                 <div className="w-8 h-8 rounded-lg bg-[#7C3AED]/10 flex items-center justify-center text-[#7C3AED]"><TrendingDown size={16} /></div>
@@ -335,7 +335,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
 
         {/* ── Charts ───────────────────────────────────────────────────────── */}
         <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <motion.div variants={itemVariants} className="lg:col-span-2 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 flex flex-col">
+          <motion.div variants={itemVariants} className="lg:col-span-2 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 flex flex-col shadow-sm dark:shadow-none">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-6">Expense Trend</h3>
             <div className="flex-1 min-h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -397,7 +397,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
             </div>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 flex flex-col">
+          <motion.div variants={itemVariants} className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 flex flex-col shadow-sm dark:shadow-none">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-6">Categories</h3>
             <div className="flex-1 min-h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -428,7 +428,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
         </motion.div>
 
         {/* ── Filters & Table ──────────────────────────────────────────────── */}
-        <motion.div variants={containerVariants} initial="hidden" animate="show" className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] overflow-hidden">
+        <motion.div variants={containerVariants} initial="hidden" animate="show" className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] overflow-hidden shadow-sm dark:shadow-none">
           {/* Table Toolbar */}
           {/* Table Toolbar */}
           <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row gap-4 justify-between items-center bg-white shadow-sm dark:bg-slate-900/80">
