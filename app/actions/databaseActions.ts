@@ -10,7 +10,22 @@ import SeoProject from '@/models/SeoProject';
 import { Campaign } from '@/models/Campaign';
 import { EmailCampaignLog } from '@/models/EmailCampaignLog';
 import { EmailAccount } from '@/models/EmailAccount';
-import { requireAdmin } from './authActions';
+import { getAuthUser } from '@/lib/auth';
+import User from '@/models/User';
+
+// Middleware helper to check if logged in user is admin
+async function requireAdmin() {
+  const authUser = await getAuthUser();
+  if (!authUser) {
+    throw new Error('Unauthorized. Admin access required.');
+  }
+  await connectToDatabase();
+  const dbUser = await User.findById(authUser.id);
+  if (!dbUser || (dbUser.role !== 'admin' && dbUser.role !== 'owner')) {
+    throw new Error('Unauthorized. Admin access required.');
+  }
+  return authUser;
+}
 
 export async function factoryResetDatabase() {
   try {
