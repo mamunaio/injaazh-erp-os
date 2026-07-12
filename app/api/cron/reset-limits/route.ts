@@ -5,6 +5,9 @@ import { EmailAccount } from '@/models/EmailAccount';
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
+    if (!process.env.CRON_SECRET) {
+      return NextResponse.json({ error: 'CRON_SECRET is not configured' }, { status: 500 });
+    }
     if (searchParams.get('token') !== process.env.CRON_SECRET) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

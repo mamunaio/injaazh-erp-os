@@ -14,7 +14,7 @@ export interface UserJwtPayload {
 export const getJwtSecretKey = () => {
   const secret = process.env.JWT_SECRET;
   if (!secret || secret.length === 0) {
-    return 'super-secret-fallback-key-for-dev-and-prod-12345';
+    throw new Error('JWT_SECRET environment variable is not set. This is a critical security risk.');
   }
   return secret;
 };

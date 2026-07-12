@@ -4,7 +4,8 @@ import { jwtVerify } from 'jose';
 
 const getJwtSecretKey = () => {
   const secret = process.env.JWT_SECRET;
-  return secret || 'super-secret-fallback-key-for-dev-and-prod-12345';
+  if (!secret) throw new Error('JWT_SECRET is missing');
+  return secret;
 };
 
 export async function middleware(request: NextRequest) {

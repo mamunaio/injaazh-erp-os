@@ -5,11 +5,13 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   try {
-    // In production, we should protect this route with a secret key
-    // const { searchParams } = new URL(request.url);
-    // if (searchParams.get('token') !== process.env.CRON_SECRET) {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    // }
+    const { searchParams } = new URL(request.url);
+    if (!process.env.CRON_SECRET) {
+      return NextResponse.json({ error: 'CRON_SECRET is not configured' }, { status: 500 });
+    }
+    if (searchParams.get('token') !== process.env.CRON_SECRET) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const result = await executeWarmupBatch();
 
