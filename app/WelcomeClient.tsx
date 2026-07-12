@@ -4,11 +4,16 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Command, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import ThemeToggle from '@/components/layout/ThemeToggle';
 
 export default function WelcomeClient() {
   return (
     <div className="fixed inset-0 z-[99999] bg-slate-50 dark:bg-[#09090B] flex flex-col items-center justify-center font-sans overflow-hidden selection:bg-[#2563EB]/30">
       
+      {/* Theme Toggle */}
+      <div className="absolute top-6 right-6 z-[100]">
+        <ThemeToggle />
+      </div>
       {/* Subtle Background Glow */}
       <motion.div 
         className="absolute w-[800px] h-[800px] rounded-full blur-[140px] pointer-events-none opacity-20"
@@ -28,7 +33,7 @@ export default function WelcomeClient() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="relative flex items-center justify-center w-20 h-20 mb-8 rounded-[24px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-slate-200 dark:border-[#232734] shadow-2xl"
         >
-          <Command className="w-10 h-10 text-[#FFFFFF]" strokeWidth={1.5} />
+          <Command className="w-10 h-10 text-white" strokeWidth={1.5} />
         </motion.div>
 
         {/* Heading */}
@@ -36,7 +41,7 @@ export default function WelcomeClient() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-          className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-[#FFFFFF] mb-6 font-jakarta"
+          className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 dark:text-white mb-6 font-jakarta"
         >
           Welcome to <br className="md:hidden" /> INJAAZH ERP OS
         </motion.h1>
@@ -60,7 +65,7 @@ export default function WelcomeClient() {
         >
           <Link 
             href="/register"
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white font-semibold rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.2)] hover:shadow-[0_0_25px_rgba(37,99,235,0.4)] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:ring-offset-2 focus:ring-offset-[#09090B]"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-semibold rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.2)] hover:shadow-[0_0_25px_rgba(37,99,235,0.4)] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:ring-offset-2 focus:ring-offset-[#09090B]"
           >
             Get Started <ArrowRight size={18} strokeWidth={2.5} />
           </Link>
