@@ -592,6 +592,60 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
   }
 }
 
+export async function scheduleOutreachEmail(leadId: string, subject: string, body: string, scheduledTime: string) {
+  try {
+    const currentUser = await getAuthUser();
+    await connectToDatabase();
+    const { Lead } = await import('@/models/Lead');
+    const lead = await Lead.findById(leadId);
+    
+    if (!lead || !lead.email) {
+      return { success: false, error: 'Lead or lead email not found.' };
+    }
+
+    const requestedTime = new Date(scheduledTime);
+    if (isNaN(requestedTime.getTime())) {
+      return { success: false, error: 'Invalid schedule time provided.' };
+    }
+
+    if (requestedTime < new Date()) {
+      return { success: false, error: 'Schedule time must be in the future.' };
+    }
+
+    const latestQueuedLead = await Lead.findOne({
+      outreach_status: 'Queued',
+      outreach_scheduled_for: { $gte: requestedTime }
+    }).sort({ outreach_scheduled_for: -1 });
+
+    let finalScheduledTime = new Date(requestedTime);
+
+    if (latestQueuedLead && latestQueuedLead.outreach_scheduled_for) {
+      finalScheduledTime = new Date(latestQueuedLead.outreach_scheduled_for.getTime() + 2 * 60000);
+    }
+
+    lead.email_subject_draft = subject;
+    lead.email_draft = body;
+    lead.outreach_status = 'Queued';
+    lead.outreach_scheduled_for = finalScheduledTime;
+
+    await lead.save();
+
+    const { revalidatePath } = await import('next/cache');
+    try {
+      revalidatePath('/prospects');
+    } catch (error) {}
+
+    return { 
+      success: true, 
+      scheduledFor: finalScheduledTime,
+      data: JSON.parse(JSON.stringify(lead)) 
+    };
+  } catch (error: any) {
+    console.error('❌ Outreach email scheduling failed:', error);
+    return { success: false, error: error.message || 'Outreach failed to schedule' };
+  }
+}
+
 export async function importCSVLeads(leadsData: any[]) {
   try {
     await connectToDatabase();

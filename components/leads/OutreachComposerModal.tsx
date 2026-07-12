@@ -1,9 +1,12 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Mail, Send, Loader2, Sparkles, Code, Search, AlertCircle, CheckCircle, Info, FileText, ChevronDown } from 'lucide-react';
+import { X, Mail, Send, Loader2, Sparkles, Code, Search, AlertCircle, CheckCircle, Info, FileText, ChevronDown, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { sendOutreachEmail } from '@/app/actions/leadActions';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { fromZonedTime } from 'date-fns-tz';
+import { sendOutreachEmail, scheduleOutreachEmail } from '@/app/actions/leadActions';
 import { getEmailAccounts } from '@/app/actions/emailAccountActions';
 import { generateAIEmailDraft } from '@/app/actions/aiActions';
 
@@ -245,8 +248,10 @@ export default function OutreachComposerModal({
   const [activeAccounts, setActiveAccounts] = useState<any[]>([]);
   const [selectedSenderId, setSelectedSenderId] = useState<string>('auto');
   
-  // Anti-Spam Cooldown State
+  // Anti-Spam Cooldown & Scheduling State
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
+  const [scheduleTime, setScheduleTime] = useState<Date | null>(null);
+  const [isScheduling, setIsScheduling] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -408,6 +413,50 @@ export default function OutreachComposerModal({
       setErrorMessage(err.message || 'An unexpected error occurred.');
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleSchedule = async () => {
+    if (!subject || !body || !scheduleTime) {
+      setErrorMessage('Subject, Body and Schedule Time are required.');
+      return;
+    }
+
+    playStatusSound('loading');
+    setIsScheduling(true);
+    setErrorMessage(null);
+
+    try {
+      // Treat the selected time as if it was in 'America/New_York' (EST/EDT)
+      const y = scheduleTime.getFullYear();
+      const m = String(scheduleTime.getMonth() + 1).padStart(2, '0');
+      const d = String(scheduleTime.getDate()).padStart(2, '0');
+      const h = String(scheduleTime.getHours()).padStart(2, '0');
+      const min = String(scheduleTime.getMinutes()).padStart(2, '0');
+      const sec = String(scheduleTime.getSeconds()).padStart(2, '0');
+      
+      const timeString = `${y}-${m}-${d} ${h}:${min}:${sec}`;
+      const utcDate = fromZonedTime(timeString, 'America/New_York');
+
+      const response = await scheduleOutreachEmail(lead._id, subject, body, utcDate.toISOString());
+      if (response.success && response.data) {
+        playStatusSound('success');
+        setSuccessInfo({ isSimulated: false, sentVia: 'Queued for later' });
+        
+        setTimeout(() => {
+          onEmailSent(response.data);
+          onClose();
+        }, 2000);
+      } else {
+        playStatusSound('error');
+        setErrorMessage(response.error || 'Outreach email failed to schedule.');
+      }
+    } catch (err: any) {
+      console.error('Outreach modal schedule error:', err);
+      playStatusSound('error');
+      setErrorMessage(err.message || 'An unexpected error occurred.');
+    } finally {
+      setIsScheduling(false);
     }
   };
 
@@ -640,18 +689,46 @@ export default function OutreachComposerModal({
               </div>
 
               {/* Control Action Buttons / Footer */}
-              <div className="flex items-center justify-end gap-4 px-8 py-5 border-t border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A] flex-shrink-0">
-                <button
-                  onClick={onClose}
-                  disabled={isSending}
-                  className="px-6 py-2.5 text-xs font-bold text-slate-500 dark:text-slate-400 bg-transparent hover:bg-slate-200 dark:bg-[#232734] border border-slate-200 dark:border-[#232734] transition-colors rounded-xl disabled:opacity-50 flex items-center justify-center"
-                >
-                  Cancel
-                </button>
+              <div className="flex items-center justify-between px-8 py-5 border-t border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A] flex-shrink-0">
                 
-                <button
+                <div className="flex items-center gap-3">
+                  <div className="relative z-[100] flex flex-col">
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1 ml-1 uppercase tracking-wider">Timezone: EST/EDT (US)</span>
+                    <DatePicker
+                      selected={scheduleTime}
+                      onChange={(date: Date | null) => setScheduleTime(date)}
+                      showTimeSelect
+                      timeFormat="h:mm aa"
+                      timeIntervals={15}
+                      timeCaption="Time"
+                      dateFormat="MM/dd/yyyy h:mm aa"
+                      placeholderText="Select Date & Time"
+                      portalId="root-portal"
+                      className="px-3 py-2 text-xs bg-slate-50 dark:bg-[#232734] border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white outline-none focus:border-[#2563EB] w-[200px]"
+                    />
+                  </div>
+                  <button
+                    onClick={handleSchedule}
+                    disabled={!scheduleTime || isScheduling || isSending || !!successInfo}
+                    className="px-4 py-2.5 mt-4 bg-slate-100 dark:bg-[#232734] hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 font-bold rounded-xl text-xs flex items-center justify-center gap-2 disabled:opacity-50 transition-colors h-[34px]"
+                  >
+                    {isScheduling ? <Loader2 size={14} className="animate-spin" /> : <Calendar size={14} />}
+                    Schedule
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={onClose}
+                    disabled={isSending || isScheduling}
+                    className="px-6 py-2.5 text-xs font-bold text-slate-500 dark:text-slate-400 bg-transparent hover:bg-slate-200 dark:bg-[#232734] border border-slate-200 dark:border-[#232734] transition-colors rounded-xl disabled:opacity-50 flex items-center justify-center"
+                  >
+                    Cancel
+                  </button>
+                  
+                  <button
                   onClick={handleSend}
-                  disabled={isSending || !!successInfo || cooldownRemaining > 0}
+                  disabled={isSending || isScheduling || !!successInfo || cooldownRemaining > 0}
                   className="px-6 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_0_20px_rgba(37,99,235,0.25)] min-w-[150px]"
                 >
                   {isSending ? (
@@ -676,6 +753,7 @@ export default function OutreachComposerModal({
                     </>
                   )}
                 </button>
+                </div>
               </div>
 
             </div>

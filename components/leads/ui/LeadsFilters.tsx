@@ -12,7 +12,7 @@ interface LeadsFiltersProps {
   totalLeads: number;
 }
 
-const STATUS_OPTIONS = ['All', 'New', 'Email Sent', 'Replied', 'Meeting Booked', 'Closed', 'Not Interested'];
+const STATUS_OPTIONS = ['All', 'New', 'Queued', 'Email Sent', 'Replied', 'Meeting Booked', 'Closed', 'Not Interested'];
 const SOURCE_OPTIONS = ['All Sources', 'Apollo', 'LinkedIn', 'Google', 'Referral', 'Manual', 'Other'];
 const DATE_OPTIONS   = ['Any Time', 'Today', 'Last 7 Days', 'Last 30 Days', 'Last 3 Months'];
 

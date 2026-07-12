@@ -8,6 +8,9 @@ export interface IEmailAccount extends Document {
   smtpHost?: string;
   smtpPort?: number;
   smtpSecure?: boolean;
+  imapHost?: string;
+  imapPort?: number;
+  imapSecure?: boolean;
   isActive: boolean;
   dailyLimit: number;
   sentToday: number;
@@ -15,6 +18,7 @@ export interface IEmailAccount extends Document {
   warmupEnabled?: boolean;
   warmupDailyLimit?: number;
   warmupSentToday?: number;
+  lastWarmupCheck?: Date;
   userId?: mongoose.Types.ObjectId;
   isGlobal?: boolean;
   createdAt: Date;
@@ -29,6 +33,9 @@ const EmailAccountSchema = new Schema<IEmailAccount>({
   smtpHost: { type: String },
   smtpPort: { type: Number },
   smtpSecure: { type: Boolean, default: true },
+  imapHost: { type: String },
+  imapPort: { type: Number },
+  imapSecure: { type: Boolean, default: true },
   isActive: { type: Boolean, default: true },
   dailyLimit: { type: Number, default: 15 },
   sentToday: { type: Number, default: 0 },
@@ -36,6 +43,7 @@ const EmailAccountSchema = new Schema<IEmailAccount>({
   warmupEnabled: { type: Boolean, default: false },
   warmupDailyLimit: { type: Number, default: 5 },
   warmupSentToday: { type: Number, default: 0 },
+  lastWarmupCheck: { type: Date },
   userId: { type: Schema.Types.ObjectId, ref: 'User' },
   isGlobal: { type: Boolean, default: false },
 }, { timestamps: true });

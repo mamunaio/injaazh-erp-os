@@ -22,6 +22,7 @@ type TabKey = 'overview' | 'notes' | 'activity';
 
 const STATUS_STYLES: Record<string, { text: string; dot: string; bg: string; border: string }> = {
   'New':            { text: 'text-[#2563EB]', dot: 'bg-[#2563EB]', bg: 'bg-[#2563EB]/10', border: 'border-[#2563EB]/20' },
+  'Queued':         { text: 'text-[#06B6D4]', dot: 'bg-[#06B6D4]', bg: 'bg-[#06B6D4]/10', border: 'border-[#06B6D4]/20' },
   'Email Sent':      { text: 'text-[#F59E0B]', dot: 'bg-[#F59E0B]', bg: 'bg-[#F59E0B]/10', border: 'border-[#F59E0B]/20' },
   'Replied':        { text: 'text-[#7C3AED]', dot: 'bg-[#7C3AED]', bg: 'bg-[#7C3AED]/10', border: 'border-[#7C3AED]/20' },
   'Meeting Booked': { text: 'text-[#0EA5E9]', dot: 'bg-[#0EA5E9]', bg: 'bg-[#0EA5E9]/10', border: 'border-[#0EA5E9]/20' },
@@ -201,6 +202,7 @@ export default function LeadSlidePanel({
                     className={`appearance-none cursor-pointer flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold border ${statusStyle.bg} ${statusStyle.border} ${statusStyle.text} focus:outline-none transition-all hover:brightness-110`}
                   >
                     <option value="New">New</option>
+                    <option value="Queued">Queued</option>
                     <option value="Email Sent">Email Sent</option>
                     <option value="Replied">Replied</option>
                     <option value="Meeting Booked">Meeting Booked</option>

@@ -5,6 +5,7 @@ import { Mail, Plus, Trash2, CheckCircle, XCircle, Activity, AlertTriangle } fro
 import { toast } from 'react-hot-toast';
 import { addEmailAccount, getEmailAccounts, deleteEmailAccount, updateEmailAccountStatus, updateWarmupSettings } from '@/app/actions/emailAccountActions';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
+import WarmupConfigModal from '@/components/settings/WarmupConfigModal';
 
 // Helper to play sounds without external files
 const playStatusSound = (type: 'success' | 'error' | 'loading') => {
@@ -62,6 +63,8 @@ export default function EmailAccountsManager() {
   const [smtpSecure, setSmtpSecure] = useState(true);
   const [dailyLimit, setDailyLimit] = useState(15);
   const [showGuide, setShowGuide] = useState(false);
+  const [warmupModalOpen, setWarmupModalOpen] = useState(false);
+  const [activeAccountForWarmup, setActiveAccountForWarmup] = useState<any>(null);
 
   const fetchAccounts = async () => {
     setIsLoading(true);
@@ -125,22 +128,45 @@ export default function EmailAccountsManager() {
   };
 
   const handleToggleWarmup = async (id: string, account: any) => {
-    const newStatus = !account.warmupEnabled;
-    let newLimit = account.warmupDailyLimit || 5;
-    
-    if (newStatus) {
-      const limitStr = prompt('Enter daily warmup limit (emails per day):', newLimit.toString());
-      if (limitStr === null) return; // cancelled
-      const parsedLimit = parseInt(limitStr, 10);
-      if (!isNaN(parsedLimit) && parsedLimit > 0) {
-        newLimit = parsedLimit;
+    if (account.warmupEnabled) {
+      // Turning off
+      const res = await updateWarmupSettings(id, false, account.warmupDailyLimit || 5);
+      if (res.success) {
+        setAccounts(accounts.map(acc => acc._id === id ? { ...acc, warmupEnabled: false } : acc));
+        window.dispatchEvent(new CustomEvent('fetch-notifications'));
+      } else {
+        playStatusSound('error');
+        toast.error('Failed to update warmup settings');
       }
+    } else {
+      // Turning on
+      setActiveAccountForWarmup(account);
+      setWarmupModalOpen(true);
     }
+  };
 
-    const res = await updateWarmupSettings(id, newStatus, newLimit);
+  const handleSaveWarmupConfig = async (config: any) => {
+    if (!activeAccountForWarmup) return;
+    const res = await updateWarmupSettings(
+      activeAccountForWarmup._id, 
+      true, 
+      config.warmupDailyLimit, 
+      config.imapHost, 
+      config.imapPort, 
+      config.imapSecure
+    );
     if (res.success) {
-      setAccounts(accounts.map(acc => acc._id === id ? { ...acc, warmupEnabled: newStatus, warmupDailyLimit: newLimit } : acc));
+      setAccounts(accounts.map(acc => acc._id === activeAccountForWarmup._id ? { 
+        ...acc, 
+        warmupEnabled: true, 
+        warmupDailyLimit: config.warmupDailyLimit,
+        imapHost: config.imapHost || acc.imapHost,
+        imapPort: config.imapPort || acc.imapPort,
+        imapSecure: config.imapSecure !== undefined ? config.imapSecure : acc.imapSecure
+      } : acc));
       window.dispatchEvent(new CustomEvent('fetch-notifications'));
+      setWarmupModalOpen(false);
+      setActiveAccountForWarmup(null);
     } else {
       playStatusSound('error');
       toast.error('Failed to update warmup settings');
@@ -478,6 +504,13 @@ export default function EmailAccountsManager() {
           </div>
         )}
       </div>
+
+      <WarmupConfigModal 
+        isOpen={warmupModalOpen}
+        onClose={() => { setWarmupModalOpen(false); setActiveAccountForWarmup(null); }}
+        onSave={handleSaveWarmupConfig}
+        account={activeAccountForWarmup}
+      />
     </div>
   );
 }

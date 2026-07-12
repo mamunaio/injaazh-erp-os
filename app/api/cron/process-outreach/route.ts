@@ -20,9 +20,9 @@ export async function GET(request: Request) {
       await new Promise(r => setTimeout(r, 2000));
     }
 
-    // 2. Process Legacy Initial Outreach
+    // 2. Process Scheduled/Queued Outreach
     const newLeads = await Lead.find({
-      outreach_status: 'New',
+      outreach_status: 'Queued',
       outreach_scheduled_for: { $lte: new Date() },
       source: { $ne: 'CSV Upload (Campaign)' }
     });

@@ -13,6 +13,7 @@ export default function QuickFilterChips({ activeFilter, setActiveFilter, leads 
   const chips = [
     { label: 'All Leads', value: 'All', count: leads.length, color: 'bg-slate-500' },
     { label: 'New', value: 'New', count: leads.filter(l => l.outreach_status === 'New').length, color: 'bg-blue-500' },
+    { label: 'Queued', value: 'Queued', count: leads.filter(l => l.outreach_status === 'Queued').length, color: 'bg-cyan-500' },
     { label: 'Email Sent', value: 'Email Sent', count: leads.filter(l => l.outreach_status === 'Email Sent').length, color: 'bg-yellow-500' },
     { label: 'Replied', value: 'Replied', count: leads.filter(l => l.outreach_status === 'Replied').length, color: 'bg-purple-500' },
     { label: 'Meeting', value: 'Meeting Booked', count: leads.filter(l => l.outreach_status === 'Meeting Booked').length, color: 'bg-emerald-500' },

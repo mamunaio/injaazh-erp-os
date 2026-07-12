@@ -272,7 +272,7 @@ export default function LoginPage() {
             <span className="text-2xl font-bold font-jakarta tracking-tight text-slate-900 dark:text-white">INJAAZH</span>
           </div>
 
-          <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 p-6 sm:p-8 rounded-[24px] shadow-2xl relative overflow-hidden">
+          <div className="bg-white dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/60 dark:border-white/10 p-6 sm:p-8 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
             
             <div className="mb-8 relative z-10">
@@ -302,7 +302,7 @@ export default function LoginPage() {
                         onChange={(e) => handleOtpChange(index, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
                         onPaste={handleOtpPaste}
-                        className="w-10 h-12 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-bold font-mono bg-slate-800/50 backdrop-blur-md border border-slate-700/50 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
+                        className="w-10 h-12 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-bold font-mono bg-slate-50 dark:bg-slate-800/50 backdrop-blur-md border border-slate-200 dark:border-slate-700/50 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
                         autoFocus={index === 0}
                       />
                     ))}
@@ -344,34 +344,34 @@ export default function LoginPage() {
                 <>
                   <div className="space-y-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-[#94A3B8] ml-1">Email</label>
+                      <label className="text-xs font-bold text-slate-500 dark:text-[#94A3B8] ml-1">Email</label>
                       <div className="relative group">
-                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8] group-focus-within:text-[#2563EB] transition-colors" size={18} />
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-[#94A3B8] group-focus-within:text-[#2563EB] transition-colors" size={18} />
                         <input 
                           type="email" 
                           name="email"
                           required
                           placeholder="name@company.com"
-                          className="w-full bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-sm text-slate-900 dark:text-white font-medium placeholder:text-slate-500 focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
+                          className="w-full bg-slate-50 dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-sm text-slate-900 dark:text-white font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all"
                         />
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-[#94A3B8] ml-1">Password</label>
+                      <label className="text-xs font-bold text-slate-500 dark:text-[#94A3B8] ml-1">Password</label>
                       <div className="relative group">
-                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8] group-focus-within:text-[#2563EB] transition-colors" size={18} />
+                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-[#94A3B8] group-focus-within:text-[#2563EB] transition-colors" size={18} />
                         <input 
                           type={showPassword ? "text" : "password"} 
                           name="password"
                           required
                           placeholder="••••••••"
-                          className="w-full bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-xl pl-11 pr-12 py-3.5 text-sm text-slate-900 dark:text-white font-medium placeholder:text-slate-500 focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
+                          className="w-full bg-slate-50 dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-xl pl-11 pr-12 py-3.5 text-sm text-slate-900 dark:text-white font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all"
                         />
                         <button 
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-slate-900 dark:hover:text-white transition-colors focus:outline-none"
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white transition-colors focus:outline-none"
                         >
                           {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
@@ -382,7 +382,7 @@ export default function LoginPage() {
                   <div className="flex items-center justify-between pt-2">
                     <label className="flex items-center gap-2 cursor-pointer group">
                       <input type="checkbox" name="rememberMe" className="w-4 h-4 rounded border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B] text-[#2563EB] focus:ring-[#2563EB] focus:ring-offset-0 focus:ring-offset-[#11131A] transition-colors" />
-                      <span className="text-xs font-medium text-[#94A3B8] group-hover:text-slate-900 dark:hover:text-white transition-colors">Remember me</span>
+                      <span className="text-xs font-medium text-slate-600 dark:text-[#94A3B8] group-hover:text-slate-900 dark:hover:text-white transition-colors">Remember me</span>
                     </label>
                     <Link href="/forgot-password" className="text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors">
                       Forgot password?
@@ -394,7 +394,7 @@ export default function LoginPage() {
               <button 
                 type="submit"
                 disabled={isLoading}
-                className="w-full mt-6 bg-[#2563EB] hover:bg-[#2563EB]/90 disabled:opacity-50 disabled:hover:bg-[#2563EB] text-slate-900 dark:text-white font-semibold text-sm py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.2)] hover:shadow-[0_0_25px_rgba(37,99,235,0.4)] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:ring-offset-2 focus:ring-offset-[#11131A]"
+                className="w-full mt-6 bg-[#2563EB] hover:bg-[#2563EB]/90 disabled:opacity-50 disabled:hover:bg-[#2563EB] text-white font-semibold text-sm py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.2)] hover:shadow-[0_0_25px_rgba(37,99,235,0.4)] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-[#11131A]"
               >
                 {isLoading ? (
                   <Loader2 size={18} className="animate-spin" />
@@ -411,16 +411,16 @@ export default function LoginPage() {
               <>
                 <div className="my-6 flex items-center gap-4">
                   <div className="h-px flex-1 bg-slate-200 dark:bg-[#232734]"></div>
-                  <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">Or continue with</span>
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-[#94A3B8] uppercase tracking-widest">Or continue with</span>
                   <div className="h-px flex-1 bg-slate-200 dark:bg-[#232734]"></div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 relative z-10">
-                  <button type="button" className="flex items-center justify-center gap-2 bg-white/5 backdrop-blur-sm hover:bg-slate-100 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-white/20">
+                  <button type="button" className="flex items-center justify-center gap-2 bg-slate-50 dark:bg-white/5 backdrop-blur-sm hover:bg-slate-100 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-white/20">
                     <GoogleIcon />
                     <span className="text-xs font-bold text-slate-900 dark:text-white">Google</span>
                   </button>
-                  <button type="button" className="flex items-center justify-center gap-2 bg-white/5 backdrop-blur-sm hover:bg-slate-100 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-white/20">
+                  <button type="button" className="flex items-center justify-center gap-2 bg-slate-50 dark:bg-white/5 backdrop-blur-sm hover:bg-slate-100 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-white/20">
                     <MicrosoftIcon />
                     <span className="text-xs font-bold text-slate-900 dark:text-white">Microsoft</span>
                   </button>
@@ -443,7 +443,7 @@ export default function LoginPage() {
                 <ArrowLeft size={16} /> Back to Login
               </button>
             ) : (
-              <p className="text-[#94A3B8] text-sm font-medium">
+              <p className="text-slate-500 dark:text-[#94A3B8] text-sm font-medium">
                 Don't have an account?{' '}
                 <Link href="/register" className="text-slate-900 dark:text-white font-bold hover:text-[#2563EB] transition-colors">
                   Create one now

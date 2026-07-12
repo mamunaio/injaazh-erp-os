@@ -126,10 +126,15 @@ export async function updateEmailAccountStatus(id: string, isActive: boolean) {
   }
 }
 
-export async function updateWarmupSettings(id: string, warmupEnabled: boolean, warmupDailyLimit: number) {
+export async function updateWarmupSettings(id: string, warmupEnabled: boolean, warmupDailyLimit: number, imapHost?: string, imapPort?: number, imapSecure?: boolean) {
   try {
     await connectDB();
-    const account = await EmailAccount.findByIdAndUpdate(id, { warmupEnabled, warmupDailyLimit }, { new: true });
+    const updateData: any = { warmupEnabled, warmupDailyLimit };
+    if (imapHost !== undefined) updateData.imapHost = imapHost;
+    if (imapPort !== undefined) updateData.imapPort = imapPort;
+    if (imapSecure !== undefined) updateData.imapSecure = imapSecure;
+
+    const account = await EmailAccount.findByIdAndUpdate(id, updateData, { new: true });
     if (account) {
       await createNotification('system', `Auto-Warmup for ${account.email} is now ${warmupEnabled ? 'ON' : 'OFF'}.`);
     }
