@@ -115,8 +115,11 @@ export async function deleteTeamMember(memberId: string) {
     await connectToDatabase();
 
     const member = await User.findById(memberId);
-    if (!member || member.role !== 'team_member') {
+    if (!member) {
       return { success: false, error: 'Team member not found' };
+    }
+    if (member.role === 'owner') {
+      return { success: false, error: 'Cannot delete workspace owner' };
     }
 
     await User.findByIdAndDelete(memberId);
