@@ -286,7 +286,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
 
           {/* ── KPI Cards ─────────────────────────────────────────────────── */}
           <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-[#11131A] border border-[#10B981]/20 rounded-[24px] p-6 relative overflow-hidden group shadow-[0_0_15px_rgba(16,185,129,0.05)] hover:shadow-[0_0_25px_rgba(16,185,129,0.1)] transition-all">
+            <div className="bg-white dark:bg-[#11131A] border border-[#10B981]/20 rounded-[24px] p-6 relative overflow-hidden group shadow-sm hover:shadow-md dark:shadow-[0_0_15px_rgba(16,185,129,0.05)] dark:hover:shadow-[0_0_25px_rgba(16,185,129,0.1)] transition-all">
               <div className="absolute top-0 right-0 w-32 h-32 bg-[#10B981]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#10B981]/20 transition-colors" />
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Total Revenue</p>
@@ -297,7 +297,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
               <p className="text-4xl lg:text-5xl font-bold font-mono text-slate-900 dark:text-white tracking-tight drop-shadow-md">{formatCurrency(totalIncome)}</p>
             </div>
 
-            <div className="bg-white dark:bg-[#11131A] border border-[#EF4444]/20 rounded-[24px] p-6 relative overflow-hidden group shadow-[0_0_15px_rgba(239,68,68,0.05)] hover:shadow-[0_0_25px_rgba(239,68,68,0.1)] transition-all">
+            <div className="bg-white dark:bg-[#11131A] border border-[#EF4444]/20 rounded-[24px] p-6 relative overflow-hidden group shadow-sm hover:shadow-md dark:shadow-[0_0_15px_rgba(239,68,68,0.05)] dark:hover:shadow-[0_0_25px_rgba(239,68,68,0.1)] transition-all">
               <div className="absolute top-0 right-0 w-32 h-32 bg-[#EF4444]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#EF4444]/20 transition-colors" />
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Total Expenses</p>
@@ -308,7 +308,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
               <p className="text-4xl lg:text-5xl font-bold font-mono text-slate-900 dark:text-white tracking-tight drop-shadow-md">{formatCurrency(totalExpense)}</p>
             </div>
 
-            <div className="bg-white dark:bg-[#11131A] border border-[#2563EB]/20 rounded-[24px] p-6 relative overflow-hidden group shadow-[0_0_15px_rgba(37,99,235,0.05)] hover:shadow-[0_0_25px_rgba(37,99,235,0.1)] transition-all">
+            <div className="bg-white dark:bg-[#11131A] border border-[#2563EB]/20 rounded-[24px] p-6 relative overflow-hidden group shadow-sm hover:shadow-md dark:shadow-[0_0_15px_rgba(37,99,235,0.05)] dark:hover:shadow-[0_0_25px_rgba(37,99,235,0.1)] transition-all">
               <div className="absolute top-0 right-0 w-32 h-32 bg-[#2563EB]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#2563EB]/20 transition-colors" />
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Net Profit</p>
@@ -319,7 +319,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
               <p className="text-4xl lg:text-5xl font-bold font-mono text-slate-900 dark:text-white tracking-tight drop-shadow-md">{formatCurrency(netProfit)}</p>
             </div>
 
-            <div className="bg-white dark:bg-[#11131A] border border-[#7C3AED]/20 rounded-[24px] p-6 relative overflow-hidden group shadow-[0_0_15px_rgba(124,58,237,0.05)] hover:shadow-[0_0_25px_rgba(124,58,237,0.1)] transition-all">
+            <div className="bg-white dark:bg-[#11131A] border border-[#7C3AED]/20 rounded-[24px] p-6 relative overflow-hidden group shadow-sm hover:shadow-md dark:shadow-[0_0_15px_rgba(124,58,237,0.05)] dark:hover:shadow-[0_0_25px_rgba(124,58,237,0.1)] transition-all">
               <div className="absolute top-0 right-0 w-32 h-32 bg-[#7C3AED]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#7C3AED]/20 transition-colors" />
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Cash Flow Ratio</p>
@@ -336,7 +336,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
 
         {/* ── Charts ───────────────────────────────────────────────────────── */}
         <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <motion.div variants={itemVariants} className="lg:col-span-2 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 flex flex-col relative overflow-hidden">
+          <motion.div variants={itemVariants} className="lg:col-span-2 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 flex flex-col relative overflow-hidden shadow-sm dark:shadow-none">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-6">Revenue vs Expenses</h3>
             <div className="flex-1 min-h-[300px] relative">
               {filteredTransactions.length === 0 ? (
@@ -385,7 +385,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
             </div>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 flex flex-col relative overflow-hidden">
+          <motion.div variants={itemVariants} className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 flex flex-col relative overflow-hidden shadow-sm dark:shadow-none">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-6">Profit Trend</h3>
             <div className="flex-1 min-h-[300px] relative">
               {filteredTransactions.length === 0 ? (
@@ -419,7 +419,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
         </motion.div>
 
         {/* ── Filters & Table ──────────────────────────────────────────────── */}
-        <motion.div variants={containerVariants} initial="hidden" animate="show" className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] overflow-hidden">
+        <motion.div variants={containerVariants} initial="hidden" animate="show" className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] overflow-hidden shadow-sm dark:shadow-none">
           {/* Table Toolbar */}
           <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row gap-4 justify-between items-center bg-white shadow-sm dark:bg-slate-900/80">
             <div className="flex items-center gap-3 w-full md:w-auto">
