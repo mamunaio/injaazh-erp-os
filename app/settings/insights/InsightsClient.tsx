@@ -131,7 +131,7 @@ export default function InsightsClient() {
 
           {/* ── KPI Cards ─────────────────────────────────────────────────── */}
           <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 relative overflow-hidden group">
+            <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 relative overflow-hidden group shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none transition-all">
               <div className="absolute top-0 right-0 w-32 h-32 bg-[#10B981]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#10B981]/10 transition-colors" />
               <div className="flex items-center justify-between mb-4 relative z-10">
                 <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Revenue Growth</p>
@@ -152,7 +152,7 @@ export default function InsightsClient() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 relative overflow-hidden group">
+            <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 relative overflow-hidden group shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none transition-all">
               <div className="absolute top-0 right-0 w-32 h-32 bg-[#2563EB]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#2563EB]/10 transition-colors" />
               <div className="flex items-center justify-between mb-4 relative z-10">
                 <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">New Clients</p>
@@ -173,7 +173,7 @@ export default function InsightsClient() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 relative overflow-hidden group">
+            <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 relative overflow-hidden group shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none transition-all">
               <div className="absolute top-0 right-0 w-32 h-32 bg-[#F59E0B]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#F59E0B]/10 transition-colors" />
               <div className="flex items-center justify-between mb-4 relative z-10">
                 <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Conversion Rate</p>
@@ -194,7 +194,7 @@ export default function InsightsClient() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 relative overflow-hidden group">
+            <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 relative overflow-hidden group shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none transition-all">
               <div className="absolute top-0 right-0 w-32 h-32 bg-[#7C3AED]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#7C3AED]/10 transition-colors" />
               <div className="flex items-center justify-between mb-4 relative z-10">
                 <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Health Score</p>
@@ -224,7 +224,7 @@ export default function InsightsClient() {
           <motion.div variants={containerVariants} initial="hidden" animate="show" className="lg:col-span-2 space-y-6">
             
             {/* Revenue Analytics */}
-            <motion.div variants={itemVariants} className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6">
+            <motion.div variants={itemVariants} className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 shadow-sm dark:shadow-none">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                 <ArrowUpRight size={16} className="text-[#10B981]" /> Revenue vs Target
               </h3>
@@ -274,7 +274,7 @@ export default function InsightsClient() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Conversion Pie */}
-              <motion.div variants={itemVariants} className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6">
+              <motion.div variants={itemVariants} className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 shadow-sm dark:shadow-none">
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-6">Lead Sources</h3>
                 <div className="h-[200px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -298,7 +298,7 @@ export default function InsightsClient() {
               </motion.div>
 
               {/* Health Bar */}
-              <motion.div variants={itemVariants} className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6">
+              <motion.div variants={itemVariants} className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 shadow-sm dark:shadow-none">
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-6">Health Score Trend</h3>
                 <div className="h-[200px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -328,7 +328,7 @@ export default function InsightsClient() {
           {/* AI Insights Column */}
           <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
             
-            <motion.div variants={itemVariants} className="bg-white dark:bg-[#11131A] border border-[#7C3AED]/30 rounded-[24px] p-6 relative overflow-hidden shadow-[0_0_40px_rgba(124,58,237,0.1)]">
+            <motion.div variants={itemVariants} className="bg-white dark:bg-[#11131A] border border-[#7C3AED]/30 rounded-[24px] p-6 relative overflow-hidden shadow-md dark:shadow-[0_0_40px_rgba(124,58,237,0.1)]">
               <div className="absolute top-0 right-0 w-64 h-64 bg-[#7C3AED]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
               
               <div className="flex items-center gap-3 mb-8 relative z-10">
