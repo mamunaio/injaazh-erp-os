@@ -188,7 +188,7 @@ export default function RegisterPage() {
             <span className="text-2xl font-bold font-jakarta tracking-tight text-slate-900 dark:text-white">INJAAZH</span>
           </div>
 
-          <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 p-6 sm:p-8 rounded-[24px] shadow-2xl relative overflow-hidden">
+          <div className="bg-white dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/60 dark:border-white/10 p-6 sm:p-8 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
             
             <div className="mb-8 relative z-10">
