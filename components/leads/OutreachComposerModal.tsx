@@ -469,7 +469,7 @@ export default function OutreachComposerModal({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="absolute inset-0 bg-white/80 dark:bg-[#09090B]/80 backdrop-blur-md"
-          onClick={isSending ? undefined : onClose}
+          onClick={(e) => { e.stopPropagation(); if (!isSending) onClose(); }}
         />
 
         {/* Modal Container */}
@@ -479,6 +479,7 @@ export default function OutreachComposerModal({
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           className="relative w-full max-w-5xl h-[85vh] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-2xl flex flex-col overflow-hidden shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           <div className="flex justify-between items-center p-6 border-b border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A]">
@@ -494,7 +495,7 @@ export default function OutreachComposerModal({
               </div>
             </div>
             <button
-              onClick={onClose}
+              onClick={(e) => { e.stopPropagation(); onClose(); }}
               disabled={isSending}
               className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] border border-transparent hover:border-slate-200 dark:border-[#232734] rounded-xl transition-all disabled:opacity-50"
             >
