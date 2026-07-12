@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Bell, ChevronDown, User, Settings, LogOut, CheckCircle2, DollarSign, Users, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ThemeToggle from '@/components/layout/ThemeToggle';
 import { useRouter } from 'next/navigation';
 import { getRecentNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '@/app/actions/notificationActions';
 import { logoutUser } from '@/app/actions/authActions';
@@ -199,8 +200,13 @@ export default function Topbar() {
       </div>
 
       {/* Right Controls */}
-      <div className="flex-1 flex items-center justify-end gap-4 md:gap-6">
+      <div className="flex-1 flex items-center justify-end gap-3 md:gap-4">
         
+        {/* Theme Toggle */}
+        <div className="hidden sm:block">
+          <ThemeToggle />
+        </div>
+
         {/* Notifications */}
         <div 
           className="relative" 

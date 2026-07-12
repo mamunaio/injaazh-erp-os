@@ -2,49 +2,45 @@
 
 import * as React from 'react';
 import { useTheme } from 'next-themes';
-import { Sun, Moon, Laptop } from 'lucide-react';
+import { Monitor, Moon, Sun } from 'lucide-react';
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  
-  // Prevent hydration mismatch
-  const [isMounted, setIsMounted] = React.useState(false);
-  React.useEffect(() => setIsMounted(true), []);
+  const [mounted, setMounted] = React.useState(false);
 
-  if (!isMounted) {
-    return <div className="h-10 w-full neu-pressed rounded-xl"></div>;
+  // Avoid hydration mismatch by only rendering after mount
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return <div className="w-[104px] h-9 neu-flat bg-white dark:bg-[#11131A] rounded-full animate-pulse" />;
   }
 
   return (
-    <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 gap-1 w-full justify-between">
+    <div className="flex items-center gap-1 p-1 neu-flat bg-white dark:bg-[#11131A] rounded-full backdrop-blur-md">
       <button
         onClick={() => setTheme('light')}
-        className={`w-8 h-8 flex justify-center items-center rounded-md transition-all ${
-          theme === 'light' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-        }`}
-        aria-label="Light theme"
+        className={`p-1.5 rounded-full transition-all duration-300 ${theme === 'light' ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'}`}
+        title="Light Mode"
       >
-        <Sun size={14} />
+        <Sun className="w-4 h-4" />
       </button>
-
+      
       <button
         onClick={() => setTheme('system')}
-        className={`w-8 h-8 flex justify-center items-center rounded-md transition-all ${
-          theme === 'system' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-        }`}
-        aria-label="System theme"
+        className={`p-1.5 rounded-full transition-all duration-300 ${theme === 'system' ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'}`}
+        title="System Preference"
       >
-        <Laptop size={14} />
+        <Monitor className="w-4 h-4" />
       </button>
 
       <button
         onClick={() => setTheme('dark')}
-        className={`w-8 h-8 flex justify-center items-center rounded-md transition-all ${
-          theme === 'dark' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-        }`}
-        aria-label="Dark theme"
+        className={`p-1.5 rounded-full transition-all duration-300 ${theme === 'dark' ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'}`}
+        title="Dark Mode"
       >
-        <Moon size={14} />
+        <Moon className="w-4 h-4" />
       </button>
     </div>
   );

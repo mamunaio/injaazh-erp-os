@@ -108,7 +108,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#09090B] text-slate-100 font-sans selection:bg-[#2563EB]/30 overflow-x-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#09090B] text-slate-900 dark:text-slate-100 font-sans selection:bg-[#2563EB]/30 overflow-x-hidden">
       
       <motion.div 
         className="max-w-[1600px] mx-auto p-6 md:p-8 space-y-8"
