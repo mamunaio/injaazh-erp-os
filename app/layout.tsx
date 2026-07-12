@@ -30,6 +30,8 @@ export const metadata: Metadata = {
   description: "Enterprise Resource Planning for Injaazh Global",
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function RootLayout({
   children,
 }: Readonly<{
