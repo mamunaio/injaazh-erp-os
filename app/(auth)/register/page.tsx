@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Mail, Lock, User, ArrowRight, Eye, EyeOff, Loader2, Command, Building2, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { registerUser } from '@/app/actions/authActions';
+import ThemeToggle from '@/components/layout/ThemeToggle';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 
@@ -72,6 +73,10 @@ export default function RegisterPage() {
   return (
     <div className="relative min-h-screen flex bg-slate-50 dark:bg-[#09090B] overflow-hidden font-sans text-slate-800 dark:text-slate-200 selection:bg-[#2563EB]/30">
       
+      {/* Theme Toggle */}
+      <div className="absolute top-6 right-6 z-[100]">
+        <ThemeToggle />
+      </div>
       {/* LEFT SIDE - Brand & Atmosphere (Hidden on Mobile/Tablet) */}
       <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 overflow-hidden bg-gradient-to-br from-[#09090B] to-[#11131a]">
         {/* Breathing Abstract Glow & Orbs */}
@@ -207,7 +212,7 @@ export default function RegisterPage() {
                     name="name"
                     required
                     placeholder="John Doe"
-                    className="w-full bg-white/5 backdrop-blur-md border border-slate-700/50 rounded-xl pl-11 pr-4 py-3.5 text-sm text-slate-900 dark:text-white font-medium placeholder:text-slate-500 focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
+                    className="w-full bg-slate-50 dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-sm text-slate-900 dark:text-white font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
                   />
                 </div>
               </div>
@@ -222,7 +227,7 @@ export default function RegisterPage() {
                     name="email"
                     required
                     placeholder="name@company.com"
-                    className="w-full bg-white/5 backdrop-blur-md border border-slate-700/50 rounded-xl pl-11 pr-4 py-3.5 text-sm text-slate-900 dark:text-white font-medium placeholder:text-slate-500 focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
+                    className="w-full bg-slate-50 dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-sm text-slate-900 dark:text-white font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
                   />
                 </div>
               </div>
@@ -236,7 +241,7 @@ export default function RegisterPage() {
                     type="text" 
                     name="companyName"
                     placeholder="Acme Corp"
-                    className="w-full bg-white/5 backdrop-blur-md border border-slate-700/50 rounded-xl pl-11 pr-4 py-3.5 text-sm text-slate-900 dark:text-white font-medium placeholder:text-slate-500 focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
+                    className="w-full bg-slate-50 dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-sm text-slate-900 dark:text-white font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
                   />
                 </div>
               </div>
@@ -253,7 +258,7 @@ export default function RegisterPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full bg-white/5 backdrop-blur-md border border-slate-700/50 rounded-xl pl-11 pr-12 py-3.5 text-sm text-slate-900 dark:text-white font-medium placeholder:text-slate-500 focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
+                    className="w-full bg-slate-50 dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-xl pl-11 pr-12 py-3.5 text-sm text-slate-900 dark:text-white font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
                   />
                   <button 
                     type="button"
@@ -295,7 +300,7 @@ export default function RegisterPage() {
                     name="confirmPassword"
                     required
                     placeholder="••••••••"
-                    className="w-full bg-white/5 backdrop-blur-md border border-slate-700/50 rounded-xl pl-11 pr-12 py-3.5 text-sm text-slate-900 dark:text-white font-medium placeholder:text-slate-500 focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
+                    className="w-full bg-slate-50 dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-xl pl-11 pr-12 py-3.5 text-sm text-slate-900 dark:text-white font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/20 transition-all shadow-inner"
                   />
                   <button 
                     type="button"

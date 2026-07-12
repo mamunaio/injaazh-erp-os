@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Lock, ArrowRight, ShieldCheck, Command, Eye, EyeOff, Loader2, ArrowLeft, KeyRound } from 'lucide-react';
 import { resetPassword } from '@/app/actions/authActions';
+import ThemeToggle from '@/components/layout/ThemeToggle';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { use } from 'react';
@@ -56,6 +57,10 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ token:
   return (
     <div className="relative min-h-screen flex bg-slate-50 dark:bg-[#09090B] overflow-hidden font-sans text-slate-800 dark:text-slate-200 selection:bg-[#2563EB]/30">
       
+      {/* Theme Toggle */}
+      <div className="absolute top-6 right-6 z-[100]">
+        <ThemeToggle />
+      </div>
       {/* LEFT SIDE - Brand & Atmosphere (Hidden on Mobile/Tablet) */}
       <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 border-r border-slate-200 dark:border-[#232734] overflow-hidden">
         {/* Breathing Abstract Glow */}

@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Mail, ArrowRight, ArrowLeft, Loader2, Command, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { requestPasswordReset } from '@/app/actions/authActions';
+import ThemeToggle from '@/components/layout/ThemeToggle';
 import toast from 'react-hot-toast';
 
 export default function ForgotPasswordPage() {
@@ -31,6 +32,10 @@ export default function ForgotPasswordPage() {
   return (
     <div className="relative min-h-screen flex bg-slate-50 dark:bg-[#09090B] overflow-hidden font-sans text-slate-800 dark:text-slate-200 selection:bg-[#2563EB]/30">
       
+      {/* Theme Toggle */}
+      <div className="absolute top-6 right-6 z-[100]">
+        <ThemeToggle />
+      </div>
       {/* LEFT SIDE - Brand & Atmosphere (Hidden on Mobile/Tablet) */}
       <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 overflow-hidden bg-gradient-to-br from-[#09090B] to-[#11131a]">
         {/* Breathing Abstract Glow & Orbs */}
