@@ -70,7 +70,7 @@ export default function Sidebar() {
         {/* Logo */}
         <div className={`h-[72px] flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-6'}`}>
           <Link href="/" className="flex items-center gap-3 group" onClick={() => setIsMobileSidebarOpen(false)}>
-            <div className="w-8 h-8 rounded-lg bg-[var(--color-primary-500)]/10 flex items-center justify-center border border-[var(--color-primary-500)]/20 text-[var(--color-primary-500)] transition-all duration-300 group-hover:scale-105">
+            <div className="w-8 h-8 rounded-lg bg-primary-500/10 flex items-center justify-center border border-primary-500/20 text-primary-500 transition-all duration-300 group-hover:scale-105">
               <Hexagon size={18} fill="currentColor" />
             </div>
             {!isCollapsed && (
@@ -149,7 +149,7 @@ export default function Sidebar() {
         onClick={() => setIsMobileSidebarOpen(false)}
         className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-3'} py-2 rounded-xl transition-all duration-200 group relative ${
           isActive 
-            ? 'bg-[var(--color-primary-600)] text-slate-900 dark:text-white shadow-md' 
+            ? 'bg-primary-600 text-slate-900 dark:text-white shadow-md' 
             : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
         }`}
       >
