@@ -80,10 +80,10 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ token:
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="relative z-10 flex items-center gap-3"
         >
-          <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center shadow-lg">
-            <Command className="w-5 h-5 text-slate-900 dark:text-white" strokeWidth={2} />
+          <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-[#232734] flex items-center justify-center shadow-lg">
+            <Command className="w-5 h-5 text-white" strokeWidth={2} />
           </div>
-          <span className="text-xl font-bold font-jakarta tracking-tight text-slate-900 dark:text-white">INJAAZH</span>
+          <span className="text-xl font-bold font-jakarta tracking-tight text-white">INJAAZH</span>
         </motion.div>
 
         {/* Center Security Context */}
@@ -93,12 +93,12 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ token:
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
           className="relative z-10 max-w-md"
         >
-          <div className="w-16 h-16 rounded-[20px] bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] flex items-center justify-center shadow-lg mb-8 relative">
+          <div className="w-16 h-16 rounded-[20px] bg-[#11131A] border border-[#232734] flex items-center justify-center shadow-lg mb-8 relative">
              <div className="absolute -inset-1 bg-[#2563EB]/20 blur-md rounded-[20px]" />
              <KeyRound className="w-8 h-8 text-[#2563EB] relative z-10" strokeWidth={1.5} />
           </div>
           
-          <h1 className="text-5xl font-bold font-jakarta text-slate-900 dark:text-white mb-6 leading-tight tracking-tight">
+          <h1 className="text-5xl font-bold font-jakarta text-white mb-6 leading-tight tracking-tight">
             Set your new password.
           </h1>
           <p className="text-lg text-[#94A3B8] font-medium leading-relaxed">

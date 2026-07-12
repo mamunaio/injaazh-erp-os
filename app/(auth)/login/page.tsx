@@ -173,7 +173,7 @@ export default function LoginPage() {
             </div>
             <div>
               <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold mb-1">Total Revenue</p>
-              <h3 className="text-slate-900 dark:text-white text-2xl font-bold font-mono">$128,450.00</h3>
+              <h3 className="text-white text-2xl font-bold font-mono">$128,450.00</h3>
             </div>
             <div className="flex items-end gap-2 h-12 mt-auto">
               {[40, 70, 45, 90, 65, 100].map((height, i) => (
@@ -190,10 +190,10 @@ export default function LoginPage() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="relative z-10 flex items-center gap-3"
         >
-          <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center shadow-lg">
-            <Command className="w-5 h-5 text-slate-900 dark:text-white" strokeWidth={2} />
+          <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-[#232734] flex items-center justify-center shadow-lg">
+            <Command className="w-5 h-5 text-white" strokeWidth={2} />
           </div>
-          <span className="text-xl font-bold font-jakarta tracking-tight text-slate-900 dark:text-white">INJAAZH</span>
+          <span className="text-xl font-bold font-jakarta tracking-tight text-white">INJAAZH</span>
         </motion.div>
 
         {/* Center Dynamic Content */}
@@ -208,7 +208,7 @@ export default function LoginPage() {
                 transition={{ duration: 0.6, ease: "easeOut" }}
                 className="absolute inset-0"
               >
-                <h1 className="text-5xl font-bold font-jakarta text-slate-900 dark:text-white mb-6 leading-tight tracking-tight">
+                <h1 className="text-5xl font-bold font-jakarta text-white mb-6 leading-tight tracking-tight">
                   Streamline your enterprise.
                 </h1>
                 <p className="text-lg text-[#94A3B8] font-medium leading-relaxed">
@@ -224,11 +224,11 @@ export default function LoginPage() {
                 transition={{ duration: 0.6, ease: "easeOut" }}
                 className="absolute inset-0"
               >
-                <div className="w-16 h-16 rounded-[20px] bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] flex items-center justify-center shadow-lg mb-8 relative">
+                <div className="w-16 h-16 rounded-[20px] bg-[#11131A] border border-[#232734] flex items-center justify-center shadow-lg mb-8 relative">
                    <div className="absolute -inset-1 bg-[#2563EB]/20 blur-md rounded-[20px]" />
                    <ShieldCheck className="w-8 h-8 text-[#2563EB] relative z-10" strokeWidth={1.5} />
                 </div>
-                <h1 className="text-5xl font-bold font-jakarta text-slate-900 dark:text-white mb-6 leading-tight tracking-tight">
+                <h1 className="text-5xl font-bold font-jakarta text-white mb-6 leading-tight tracking-tight">
                   Two-Factor Authentication
                 </h1>
                 <p className="text-lg text-[#94A3B8] font-medium leading-relaxed">
@@ -244,9 +244,9 @@ export default function LoginPage() {
           {!requires2FA ? (
             <>
               <div className="flex -space-x-4">
-                <div className="w-10 h-10 rounded-full bg-white dark:bg-[#11131A] border-2 border-[#09090B] flex items-center justify-center text-xs font-bold hover:z-10 hover:scale-110 transition-transform cursor-pointer relative shadow-lg">JD</div>
-                <div className="w-10 h-10 rounded-full bg-white dark:bg-[#11131A] border-2 border-[#09090B] flex items-center justify-center text-xs font-bold text-[#2563EB] hover:z-10 hover:scale-110 transition-transform cursor-pointer relative shadow-lg">AK</div>
-                <div className="w-10 h-10 rounded-full bg-white dark:bg-[#11131A] border-2 border-[#09090B] flex items-center justify-center text-xs font-bold text-[#10B981] hover:z-10 hover:scale-110 transition-transform cursor-pointer relative shadow-lg">SM</div>
+                <div className="w-10 h-10 rounded-full bg-[#11131A] border-2 border-[#09090B] flex items-center justify-center text-xs font-bold hover:z-10 hover:scale-110 transition-transform cursor-pointer relative shadow-lg text-white">JD</div>
+                <div className="w-10 h-10 rounded-full bg-[#11131A] border-2 border-[#09090B] flex items-center justify-center text-xs font-bold text-[#2563EB] hover:z-10 hover:scale-110 transition-transform cursor-pointer relative shadow-lg">AK</div>
+                <div className="w-10 h-10 rounded-full bg-[#11131A] border-2 border-[#09090B] flex items-center justify-center text-xs font-bold text-[#10B981] hover:z-10 hover:scale-110 transition-transform cursor-pointer relative shadow-lg">SM</div>
               </div>
               <span className="text-sm font-semibold text-[#94A3B8] ml-4">Join 10,000+ professionals</span>
             </>

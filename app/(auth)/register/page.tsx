@@ -124,10 +124,10 @@ export default function RegisterPage() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="relative z-10 flex items-center gap-3"
         >
-          <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center shadow-lg">
-            <Command className="w-5 h-5 text-slate-900 dark:text-white" strokeWidth={2} />
+          <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-[#232734] flex items-center justify-center shadow-lg">
+            <Command className="w-5 h-5 text-white" strokeWidth={2} />
           </div>
-          <span className="text-xl font-bold font-jakarta tracking-tight text-slate-900 dark:text-white">INJAAZH</span>
+          <span className="text-xl font-bold font-jakarta tracking-tight text-white">INJAAZH</span>
         </motion.div>
 
         {/* Center Welcome Message */}
@@ -137,7 +137,7 @@ export default function RegisterPage() {
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
           className="relative z-10 max-w-md"
         >
-          <h1 className="text-5xl font-bold font-jakarta text-slate-900 dark:text-white mb-6 leading-tight tracking-tight">
+          <h1 className="text-5xl font-bold font-jakarta text-white mb-6 leading-tight tracking-tight">
             Start your journey.
           </h1>
           <p className="text-lg text-[#94A3B8] font-medium leading-relaxed">
@@ -158,10 +158,10 @@ export default function RegisterPage() {
         <div className="relative z-10 flex flex-col gap-4">
           <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">Trusted by forward-thinking companies</span>
           <div className="flex items-center gap-6 opacity-30 grayscale mix-blend-screen">
-            <div className="font-bold text-xl italic tracking-tighter text-slate-900 dark:text-white">ACME</div>
-            <div className="font-bold text-xl font-mono text-slate-900 dark:text-white">NEXUS</div>
-            <div className="font-bold text-lg font-serif text-slate-900 dark:text-white">Stark Industries</div>
-            <div className="font-bold text-xl tracking-widest text-slate-900 dark:text-white">GLOBEX</div>
+            <div className="font-bold text-xl italic tracking-tighter text-white">ACME</div>
+            <div className="font-bold text-xl font-mono text-white">NEXUS</div>
+            <div className="font-bold text-lg font-serif text-white">Stark Industries</div>
+            <div className="font-bold text-xl tracking-widest text-white">GLOBEX</div>
           </div>
         </div>
       </div>

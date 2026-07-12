@@ -83,10 +83,10 @@ export default function ForgotPasswordPage() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="relative z-10 flex items-center gap-3"
         >
-          <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center shadow-lg">
-            <Command className="w-5 h-5 text-slate-900 dark:text-white" strokeWidth={2} />
+          <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-[#232734] flex items-center justify-center shadow-lg">
+            <Command className="w-5 h-5 text-white" strokeWidth={2} />
           </div>
-          <span className="text-xl font-bold font-jakarta tracking-tight text-slate-900 dark:text-white">INJAAZH</span>
+          <span className="text-xl font-bold font-jakarta tracking-tight text-white">INJAAZH</span>
         </motion.div>
 
         {/* Center Security Context */}
@@ -96,7 +96,7 @@ export default function ForgotPasswordPage() {
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
           className="relative z-10 max-w-md"
         >
-          <div className="w-16 h-16 rounded-[20px] bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] flex items-center justify-center shadow-lg mb-4">
+          <div className="w-16 h-16 rounded-[20px] bg-[#11131A] border border-[#232734] flex items-center justify-center shadow-lg mb-4">
              <ShieldCheck className="w-8 h-8 text-[#2563EB]" strokeWidth={1.5} />
           </div>
           <div className="inline-flex items-center gap-2 mb-8 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1">
@@ -104,7 +104,7 @@ export default function ForgotPasswordPage() {
             <span className="text-sm font-semibold text-emerald-400">Enterprise-grade encryption and privacy</span>
           </div>
           
-          <h1 className="text-5xl font-bold font-jakarta text-slate-900 dark:text-white mb-6 leading-tight tracking-tight">
+          <h1 className="text-4xl font-bold font-jakarta text-white mb-6 leading-tight tracking-tight">
             Secure your workspace.
           </h1>
           <p className="text-lg text-[#94A3B8] font-medium leading-relaxed">
