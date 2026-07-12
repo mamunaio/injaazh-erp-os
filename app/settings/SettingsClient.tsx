@@ -1362,7 +1362,18 @@ export default function SettingsClient() {
                       <p className="text-xs font-medium text-rose-500/60 mb-6">Permanently delete all leads, projects, transactions, and proposals.</p>
                       <div className="flex gap-4">
                         <input type="text" value={dangerConfirm} onChange={(e) => setDangerConfirm(e.target.value)} placeholder="Type CONFIRM" className="flex-1 px-4 py-2 bg-white dark:bg-[#11131A] border border-rose-500/30 rounded-xl focus:outline-none focus:border-rose-500/60 text-rose-500 font-bold placeholder-rose-900/50" />
-                        <button disabled={dangerConfirm !== 'CONFIRM'} onClick={() => { toast.error('Factory Reset Initiated!', { icon: '⚠️' }); if(masterSound) playSound('error'); setDangerConfirm(''); }} className={`px-6 py-2 bg-rose-500 text-slate-900 dark:text-white font-bold rounded-xl transition-all ${dangerConfirm === 'CONFIRM' ? 'hover:bg-rose-600' : 'opacity-50 cursor-not-allowed'}`}>Reset</button>
+                        <button disabled={dangerConfirm !== 'CONFIRM'} onClick={async () => { 
+                          if(masterSound) playSound('error'); 
+                          toast.loading('Resetting database...', { id: 'reset' });
+                          const { factoryResetDatabase } = await import('@/app/actions/databaseActions');
+                          const res = await factoryResetDatabase();
+                          if (res.success) {
+                            toast.success('Database factory reset successful!', { id: 'reset' });
+                          } else {
+                            toast.error(res.error || 'Failed to reset', { id: 'reset' });
+                          }
+                          setDangerConfirm(''); 
+                        }} className={`px-6 py-2 bg-rose-500 text-slate-900 dark:text-white font-bold rounded-xl transition-all ${dangerConfirm === 'CONFIRM' ? 'hover:bg-rose-600' : 'opacity-50 cursor-not-allowed'}`}>Reset</button>
                       </div>
                     </div>
                   </GlassCard>
