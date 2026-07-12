@@ -191,6 +191,17 @@ export default function SettingsClient() {
   
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [systemTime, setSystemTime] = useState<string>("Today at 10:42 AM");
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setSystemTime(`Today at ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 60000);
+    return () => clearInterval(interval);
+  }, []);
   
   // 2FA States
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
@@ -1332,7 +1343,7 @@ export default function SettingsClient() {
                 <div className="space-y-3 text-xs font-medium">
                   <div className="flex justify-between items-center text-[#94A3B8]"><span>Version</span> <span className="text-slate-900 dark:text-white">v2.4.0-stable</span></div>
                   <div className="flex justify-between items-center text-[#94A3B8]"><span>Services</span> <span className="text-[#10B981] flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-[#10B981]"></div> Operational</span></div>
-                  <div className="flex justify-between items-center text-[#94A3B8]"><span>Last Updated</span> <span className="text-slate-900 dark:text-white">Today at 10:42 AM</span></div>
+                  <div className="flex justify-between items-center text-[#94A3B8]"><span>Last Updated</span> <span className="text-slate-900 dark:text-white">{systemTime}</span></div>
                 </div>
               </div>
 
