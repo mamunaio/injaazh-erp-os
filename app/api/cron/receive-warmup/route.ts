@@ -81,7 +81,7 @@ export async function GET(request: Request) {
               unspammedCount++;
             } else {
               // Mark as read
-              await connection.addFlags(String(msg.attributes.uid), ['\\Seen']);
+              await connection.addFlags(msg.attributes.uid, ['\\Seen']);
               readCount++;
             }
 
