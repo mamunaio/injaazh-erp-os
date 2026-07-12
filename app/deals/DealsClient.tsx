@@ -90,7 +90,7 @@ function SortableDealCard({ deal, isOverlay, onSelect }: { deal: Deal; isOverlay
       {...attributes}
       {...listeners}
       onClick={() => !isDragging && onSelect?.(deal)}
-      className={`group relative bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] p-4 rounded-[16px] cursor-grab active:cursor-grabbing transition-all select-none
+      className={`group relative bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] p-4 rounded-[16px] cursor-grab active:cursor-grabbing transition-all select-none shadow-sm dark:shadow-none
         hover:border-[#2563EB]/40 hover:shadow-[0_0_20px_rgba(37,99,235,0.06)]
         ${isOverlay ? 'shadow-[0_20px_60px_rgba(0,0,0,0.6)] scale-[1.04] rotate-1 border-[#2563EB]/40' : ''}
       `}
@@ -158,7 +158,7 @@ function DroppableColumn({ stage, deals, onSelectDeal }: { stage: typeof STAGES[
   return (
     <div
       ref={setNodeRef}
-      className={`flex flex-col min-w-[320px] max-w-[320px] flex-shrink-0 rounded-[20px] bg-slate-50/50 dark:bg-slate-900/50 border transition-all overflow-hidden ${
+      className={`flex flex-col min-w-[320px] max-w-[320px] flex-shrink-0 rounded-[20px] bg-white dark:bg-slate-900/50 shadow-sm dark:shadow-none border transition-all overflow-hidden ${
         isOver ? 'border-[#2563EB]/50 shadow-[0_0_0_1px_rgba(37,99,235,0.3),0_0_30px_rgba(37,99,235,0.08)]' : 'border-slate-200 dark:border-[#232734]'
       }`}
       style={{ height: 'calc(100vh - 340px)', minHeight: '400px' }}
@@ -511,7 +511,7 @@ export default function DealsClient({ initialDeals }: { initialDeals: Deal[] }) 
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05, type: 'spring', stiffness: 280, damping: 26 }}
                 whileHover={{ y: -2, transition: { duration: 0.15 } }}
-                className="relative bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] p-5 group transition-all overflow-hidden cursor-default"
+                className="relative bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] p-5 group transition-all overflow-hidden cursor-default shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none"
               >
                 {/* Background Icon */}
                 <div className="absolute -right-2 -bottom-4 opacity-[0.04] pointer-events-none group-hover:opacity-[0.08] transition-opacity">
@@ -593,17 +593,17 @@ export default function DealsClient({ initialDeals }: { initialDeals: Deal[] }) 
             </div>
 
             {/* View Toggle */}
-            <div className="flex items-center bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl p-1">
+            <div className="flex items-center bg-slate-50 dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl p-1">
               <button onClick={() => setViewMode('kanban')}
                 className={`relative p-2 rounded-lg transition-colors ${viewMode === 'kanban' ? 'text-slate-900 dark:text-white' : 'text-[#94A3B8] hover:text-[#94A3B8]/80'}`}
                 aria-label="Kanban view">
-                {viewMode === 'kanban' && <motion.div layoutId="dealViewMode" className="absolute inset-0 bg-slate-200 dark:bg-[#232734] rounded-lg -z-10 border border-slate-200 dark:border-white/5" />}
+                {viewMode === 'kanban' && <motion.div layoutId="dealViewMode" className="absolute inset-0 bg-white dark:bg-[#232734] rounded-lg -z-10 border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none" />}
                 <LayoutGrid size={15} />
               </button>
               <button onClick={() => setViewMode('list')}
                 className={`relative p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'text-slate-900 dark:text-white' : 'text-[#94A3B8] hover:text-[#94A3B8]/80'}`}
                 aria-label="List view">
-                {viewMode === 'list' && <motion.div layoutId="dealViewMode" className="absolute inset-0 bg-slate-200 dark:bg-[#232734] rounded-lg -z-10 border border-slate-200 dark:border-white/5" />}
+                {viewMode === 'list' && <motion.div layoutId="dealViewMode" className="absolute inset-0 bg-white dark:bg-[#232734] rounded-lg -z-10 border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none" />}
                 <List size={15} />
               </button>
             </div>
