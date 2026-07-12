@@ -88,10 +88,12 @@
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
+    "@jest/globals": "^30.4.1",
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^2.4.6",
     "@types/canvas-confetti": "^1.9.0",
     "@types/imap-simple": "^4.2.10",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/node-cron": "^3.0.11",
     "@types/nodemailer": "^8.0.1",

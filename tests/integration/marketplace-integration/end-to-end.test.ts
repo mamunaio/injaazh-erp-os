@@ -93,7 +93,7 @@ describe('Marketplace Integration - End-to-End Tests', () => {
       expect(autoTransaction.amount).toBe(2500); // Parsed from "$2,500"
       expect(autoTransaction.category).toBe('Project Income');
       expect(autoTransaction.description).toContain('Test Auto-Transaction Project');
-      expect(autoTransaction.projectId.toString()).toBe(projectId);
+      expect(autoTransaction?.projectId?.toString()).toBe(projectId);
     });
 
     it('should not create duplicate transactions if status is changed to Completed multiple times', async () => {
@@ -243,10 +243,10 @@ describe('Marketplace Integration - End-to-End Tests', () => {
       );
 
       expect(linkedTransaction).toBeDefined();
-      expect(linkedTransaction.projectId).toBeDefined();
-      expect(linkedTransaction.projectId._id).toBe(projectId);
-      expect(linkedTransaction.projectId.title).toBe('Test Project Link Display');
-      expect(linkedTransaction.projectId.platform).toBe('Freelancer');
+      expect(linkedTransaction?.projectId).toBeDefined();
+      expect(linkedTransaction?.projectId?._id).toBe(projectId);
+      expect(linkedTransaction?.projectId?.title).toBe('Test Project Link Display');
+      expect(linkedTransaction?.projectId?.platform).toBe('Freelancer');
     });
 
     it('should handle transactions without project links', async () => {
@@ -271,7 +271,7 @@ describe('Marketplace Integration - End-to-End Tests', () => {
       );
 
       expect(standaloneTransaction).toBeDefined();
-      expect(standaloneTransaction.projectId).toBeNull();
+      expect(standaloneTransaction?.projectId).toBeNull();
     });
 
     it('should handle deleted project references gracefully', async () => {
@@ -305,7 +305,7 @@ describe('Marketplace Integration - End-to-End Tests', () => {
 
       expect(orphanedTransaction).toBeDefined();
       // The projectId field will exist but populated data will be null
-      expect(orphanedTransaction.projectId).toBeNull();
+      expect(orphanedTransaction?.projectId).toBeNull();
     });
   });
 
@@ -410,7 +410,7 @@ describe('Marketplace Integration - End-to-End Tests', () => {
           );
 
           expect(transaction).toBeDefined();
-          expect(transaction.amount).toBe(expected);
+          expect(transaction?.amount).toBe(expected);
         });
       });
     });
