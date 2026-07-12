@@ -139,7 +139,7 @@ export default function InsightsClient() {
               </div>
               <p className="text-3xl font-bold font-mono text-slate-900 dark:text-white tracking-tight relative z-10">+24.5%</p>
               <div className="absolute bottom-0 left-0 w-full h-14 opacity-50 pointer-events-none">
-                <svg viewBox="0 0 100 30" preserveAspectRatio="none" className="w-full h-full">
+                <svg viewBox="0 0 100 30" preserveAspectRatio="none" className="w-full h-full overflow-visible">
                   <defs>
                     <linearGradient id="sg1" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#10B981" stopOpacity={0.4}/>
@@ -147,7 +147,7 @@ export default function InsightsClient() {
                     </linearGradient>
                   </defs>
                   <path d="M0,30 L0,20 Q10,15 20,25 T40,10 T60,20 T80,5 T100,15 L100,30 Z" fill="url(#sg1)" />
-                  <path d="M0,20 Q10,15 20,25 T40,10 T60,20 T80,5 T100,15" fill="none" stroke="#10B981" strokeWidth="2.5" />
+                  <path d="M0,20 Q10,15 20,25 T40,10 T60,20 T80,5 T100,15" fill="none" stroke="#10B981" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
                 </svg>
               </div>
             </div>
@@ -160,7 +160,7 @@ export default function InsightsClient() {
               </div>
               <p className="text-3xl font-bold font-mono text-slate-900 dark:text-white tracking-tight relative z-10">142</p>
               <div className="absolute bottom-0 left-0 w-full h-14 opacity-50 pointer-events-none">
-                <svg viewBox="0 0 100 30" preserveAspectRatio="none" className="w-full h-full">
+                <svg viewBox="0 0 100 30" preserveAspectRatio="none" className="w-full h-full overflow-visible">
                   <defs>
                     <linearGradient id="sg2" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#2563EB" stopOpacity={0.4}/>
@@ -168,7 +168,7 @@ export default function InsightsClient() {
                     </linearGradient>
                   </defs>
                   <path d="M0,30 L0,25 Q15,25 25,15 T50,20 T75,10 T100,5 L100,30 Z" fill="url(#sg2)" />
-                  <path d="M0,25 Q15,25 25,15 T50,20 T75,10 T100,5" fill="none" stroke="#2563EB" strokeWidth="2.5" />
+                  <path d="M0,25 Q15,25 25,15 T50,20 T75,10 T100,5" fill="none" stroke="#2563EB" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
                 </svg>
               </div>
             </div>
@@ -181,7 +181,7 @@ export default function InsightsClient() {
               </div>
               <p className="text-3xl font-bold font-mono text-slate-900 dark:text-white tracking-tight relative z-10">4.2%</p>
               <div className="absolute bottom-0 left-0 w-full h-14 opacity-50 pointer-events-none">
-                <svg viewBox="0 0 100 30" preserveAspectRatio="none" className="w-full h-full">
+                <svg viewBox="0 0 100 30" preserveAspectRatio="none" className="w-full h-full overflow-visible">
                   <defs>
                     <linearGradient id="sg3" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#F59E0B" stopOpacity={0.4}/>
@@ -189,7 +189,7 @@ export default function InsightsClient() {
                     </linearGradient>
                   </defs>
                   <path d="M0,30 L0,15 Q20,25 40,15 T60,10 T80,20 T100,10 L100,30 Z" fill="url(#sg3)" />
-                  <path d="M0,15 Q20,25 40,15 T60,10 T80,20 T100,10" fill="none" stroke="#F59E0B" strokeWidth="2.5" />
+                  <path d="M0,15 Q20,25 40,15 T60,10 T80,20 T100,10" fill="none" stroke="#F59E0B" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
                 </svg>
               </div>
             </div>
@@ -202,7 +202,7 @@ export default function InsightsClient() {
               </div>
               <p className="text-3xl font-bold font-mono text-slate-900 dark:text-white tracking-tight relative z-10">95/100</p>
               <div className="absolute bottom-0 left-0 w-full h-14 opacity-50 pointer-events-none">
-                <svg viewBox="0 0 100 30" preserveAspectRatio="none" className="w-full h-full">
+                <svg viewBox="0 0 100 30" preserveAspectRatio="none" className="w-full h-full overflow-visible">
                   <defs>
                     <linearGradient id="sg4" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#7C3AED" stopOpacity={0.4}/>
@@ -210,7 +210,7 @@ export default function InsightsClient() {
                     </linearGradient>
                   </defs>
                   <path d="M0,30 L0,10 Q25,10 50,20 T75,15 T100,5 L100,30 Z" fill="url(#sg4)" />
-                  <path d="M0,10 Q25,10 50,20 T75,15 T100,5" fill="none" stroke="#7C3AED" strokeWidth="2.5" />
+                  <path d="M0,10 Q25,10 50,20 T75,15 T100,5" fill="none" stroke="#7C3AED" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
                 </svg>
               </div>
             </div>
