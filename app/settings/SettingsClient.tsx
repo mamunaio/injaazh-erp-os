@@ -159,7 +159,7 @@ const playSound = (type: 'success' | 'pop' | 'error' | 'cash') => {
 };
 
 const GlassCard = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => (
-  <div className={`bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 relative ${className}`}>
+  <div className={`bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 relative shadow-sm dark:shadow-none ${className}`}>
     {children}
   </div>
 );
@@ -1325,7 +1325,7 @@ export default function SettingsClient() {
           {/* Right Info Panel (Desktop Only) */}
           <div className="hidden lg:block w-72 flex-shrink-0">
             <div className="sticky top-6 space-y-4">
-              <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-2xl p-5 shadow-sm">
+              <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-2xl p-5 shadow-sm dark:shadow-none">
                 <h4 className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white uppercase tracking-widest mb-4">
                   <Activity size={14} className="text-[#10B981]" /> System Status
                 </h4>
@@ -1336,7 +1336,7 @@ export default function SettingsClient() {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-br from-primary-600/10 to-transparent border border-primary-600/20 rounded-2xl p-5 shadow-sm">
+              <div className="bg-gradient-to-br from-primary-600/10 to-transparent border border-primary-600/20 rounded-2xl p-5 shadow-sm dark:shadow-none">
                 <h4 className="flex items-center gap-2 text-xs font-bold text-primary-600 uppercase tracking-widest mb-3">
                   <Lightbulb size={14} /> Quick Tip
                 </h4>
