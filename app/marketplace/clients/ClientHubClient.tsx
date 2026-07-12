@@ -256,7 +256,7 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05, type: 'spring', stiffness: 280, damping: 26 }}
                 whileHover={{ y: -2, transition: { duration: 0.15 } }}
-                className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[18px] p-4 cursor-default group transition-all"
+                className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[18px] p-4 cursor-default group transition-all shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none"
               >
                 <div className="flex items-start justify-between mb-3">
                   <p className="text-[11px] font-bold text-[#94A3B8] leading-tight max-w-[80px]">{k.label}</p>
@@ -326,7 +326,7 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
             </button>
           </motion.div>
         ) : (
-          <div className="overflow-hidden rounded-[20px] border border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A]">
+          <div className="overflow-hidden rounded-[20px] border border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A] shadow-sm dark:shadow-none">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm">
                 <thead className="sticky top-0 z-10 bg-slate-100 dark:bg-slate-900/50">
