@@ -303,7 +303,7 @@ export default function RoadmapClient({ initialProjects }: RoadmapClientProps) {
               { label: 'Delayed Items',  value: delayedCount,color: '#EF4444' },
               { label: 'Overall Progress',value: `${overallProg}%`, color: '#7C3AED' },
             ].map(k => (
-              <div key={k.label} className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[18px] p-4 flex flex-col justify-center">
+              <div key={k.label} className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[18px] p-4 flex flex-col justify-center shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none transition-all">
                 <p className="text-[11px] font-bold text-[#94A3B8] leading-tight mb-2">{k.label}</p>
                 <p className="text-xl font-bold font-mono tracking-tight" style={{ color: k.color }}>{k.value}</p>
               </div>
@@ -312,11 +312,11 @@ export default function RoadmapClient({ initialProjects }: RoadmapClientProps) {
 
           {/* ── Filter Bar & View Switcher ────────────────────────────────── */}
           <motion.div variants={itemVariants} className="flex flex-col md:flex-row items-center gap-3">
-            <div className="flex items-center bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl p-1 w-full md:w-auto overflow-x-auto hide-scrollbar">
+            <div className="flex items-center bg-slate-50 dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl p-1 w-full md:w-auto overflow-x-auto hide-scrollbar">
               {[{ id: 'timeline', icon: Target, label: 'Roadmap' }, { id: 'kanban', icon: Columns, label: 'Kanban' }, { id: 'gantt', icon: AlignLeft, label: 'List' }].map(v => (
                 <button key={v.id} onClick={() => setViewMode(v.id as ViewMode)}
                   className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-colors ${viewMode === v.id ? 'text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-[#94A3B8] dark:hover:text-[#94A3B8]/80'}`}>
-                  {viewMode === v.id && <motion.div layoutId="roadmapViews" className="absolute inset-0 bg-white dark:bg-[#232734] rounded-lg shadow-sm border border-slate-200 dark:border-white/5" />}
+                  {viewMode === v.id && <motion.div layoutId="roadmapViews" className="absolute inset-0 bg-white dark:bg-[#232734] rounded-lg shadow-sm dark:shadow-none border border-slate-200 dark:border-white/5" />}
                   <v.icon size={14} className="relative z-10" /> <span className="relative z-10">{v.label}</span>
                 </button>
               ))}
@@ -357,7 +357,7 @@ export default function RoadmapClient({ initialProjects }: RoadmapClientProps) {
             {viewMode === 'timeline' && (
               <motion.div key="timeline" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-8 pb-8">
                 {groupedByCategory.map(([category, items], idx) => (
-                  <div key={category} className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] overflow-hidden">
+                  <div key={category} className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] overflow-hidden shadow-sm dark:shadow-none">
                     <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/80">
                       <h3 className="text-[11px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest">{category} Epic</h3>
                     </div>
@@ -386,7 +386,7 @@ export default function RoadmapClient({ initialProjects }: RoadmapClientProps) {
                                 <div className={`relative w-3 h-3 rounded-full border-2 transition-colors ${nodeColor}`} />
                               </div>
                               
-                              <div className="bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-[20px] p-5 hover:border-[#2563EB]/60 hover:shadow-[0_0_24px_rgba(37,99,235,0.15)] transition-all relative overflow-hidden">
+                              <div className="bg-white dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-[20px] p-5 hover:border-[#2563EB]/60 hover:shadow-md shadow-sm dark:shadow-none transition-all relative overflow-hidden">
                                 {/* Glassmorphic gradient on hover */}
                                 <div className="absolute inset-0 bg-gradient-to-br from-[#2563EB]/0 to-[#2563EB]/[0.02] opacity-0 group-hover:opacity-100 transition-opacity" />
                                 
@@ -436,7 +436,7 @@ export default function RoadmapClient({ initialProjects }: RoadmapClientProps) {
             {/* ── Gantt (List) View ── */}
             {viewMode === 'gantt' && (
               <motion.div key="gantt" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="overflow-hidden rounded-[20px] border border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A]">
+                className="overflow-hidden rounded-[20px] border border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A] shadow-sm dark:shadow-none">
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse text-sm">
                     <thead className="sticky top-0 z-10 bg-slate-100 dark:bg-slate-900/50">
