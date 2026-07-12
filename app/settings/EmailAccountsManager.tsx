@@ -89,32 +89,37 @@ export default function EmailAccountsManager() {
     setIsAdding(true);
     toast.loading('Verifying and adding account...', { id: 'add-acc' });
 
-    const res = await addEmailAccount({ 
-      email, 
-      senderName,
-      appPassword, 
-      dailyLimit,
-      accountType,
-      smtpHost: accountType === 'smtp' ? smtpHost : undefined,
-      smtpPort: accountType === 'smtp' ? smtpPort : undefined,
-      smtpSecure: accountType === 'smtp' ? smtpSecure : undefined
-    });
-    
-    if (res.success && res.account) {
-      toast.success('Account added successfully!', { id: 'add-acc' });
-      window.dispatchEvent(new CustomEvent('fetch-notifications'));
-      setEmail('');
-      setSenderName('');
-      setAppPassword('');
-      // setAccountType('gmail'); // Keep the last used type
-      // setSmtpHost(''); // Keep the last used host
-      setDailyLimit(15);
-      setAccounts([res.account, ...accounts]);
-    } else {
+    try {
+      const res = await addEmailAccount({ 
+        email, 
+        senderName,
+        appPassword, 
+        dailyLimit,
+        accountType,
+        smtpHost: accountType === 'smtp' ? smtpHost : undefined,
+        smtpPort: accountType === 'smtp' ? smtpPort : undefined,
+        smtpSecure: accountType === 'smtp' ? smtpSecure : undefined
+      });
+      
+      if (res.success && res.account) {
+        toast.success('Account added successfully!', { id: 'add-acc' });
+        window.dispatchEvent(new CustomEvent('fetch-notifications'));
+        setEmail('');
+        setSenderName('');
+        setAppPassword('');
+        setDailyLimit(15);
+        setAccounts([res.account, ...accounts]);
+      } else {
+        playStatusSound('error');
+        toast.error(res.error || 'Failed to add account', { id: 'add-acc' });
+      }
+    } catch (err: any) {
+      console.error('Frontend add email error:', err);
       playStatusSound('error');
-      toast.error(res.error || 'Failed to add account', { id: 'add-acc' });
+      toast.error('Network or server error occurred', { id: 'add-acc' });
+    } finally {
+      setIsAdding(false);
     }
-    setIsAdding(false);
   };
 
   const handleToggleStatus = async (id: string, currentStatus: boolean) => {
