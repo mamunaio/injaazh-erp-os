@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
+import { useTheme } from 'next-themes';
 import TwoFactorSetupModal from '@/components/TwoFactorSetupModal';
 import { checkTwoFactorStatus } from '@/app/actions/twoFactorActions';
 import { 
