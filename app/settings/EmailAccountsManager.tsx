@@ -423,11 +423,16 @@ export default function EmailAccountsManager() {
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${account.isActive ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-white dark:bg-[#11131A] text-slate-500 border-slate-200 dark:border-[#232734]'}`}>
                       <Mail size={16} />
                     </div>
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <h4 className="truncate max-w-[150px] text-slate-900 dark:text-white font-bold text-sm" title={account.email}>
-                        {account.senderName ? `${account.senderName}` : account.email}
+                        {account.senderName ? account.senderName : account.email}
                       </h4>
-                      <div className="flex gap-1.5 mt-1">
+                      {account.senderName && (
+                        <p className="truncate max-w-[150px] text-[10px] font-bold text-slate-500 mt-0.5" title={account.email}>
+                          {account.email}
+                        </p>
+                      )}
+                      <div className="flex gap-1.5 mt-2">
                         <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${account.isActive ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-white dark:bg-[#11131A] text-slate-500 border-slate-200 dark:border-[#232734]'}`}>
                           {account.isActive ? 'Active' : 'Paused'}
                         </span>
