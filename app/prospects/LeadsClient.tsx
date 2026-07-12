@@ -292,8 +292,8 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
       if (followUpDate > today) return false;
     }
     // Quick chips filter
-    if (activeFilter !== 'All') {
-      if (lead.status !== activeFilter) return false;
+    if (activeFilter !== 'All' && activeFilter !== 'All Leads') {
+      if (lead.outreach_status !== activeFilter) return false;
     }
     return true;
   });
