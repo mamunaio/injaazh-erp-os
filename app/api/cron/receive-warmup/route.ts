@@ -77,11 +77,11 @@ export async function GET(request: Request) {
 
             if (isSpam) {
               // Move to inbox
-              await connection.moveMessage(msg.attributes.uid, 'INBOX');
+              await connection.moveMessage(String(msg.attributes.uid), 'INBOX');
               unspammedCount++;
             } else {
               // Mark as read
-              await connection.addFlags(msg.attributes.uid, ['\\Seen']);
+              await connection.addFlags(String(msg.attributes.uid), ['\\Seen']);
               readCount++;
             }
 
