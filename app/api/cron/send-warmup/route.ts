@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/db';
+import connectToDatabase from '@/lib/mongodb';
 import { EmailAccount } from '@/models/EmailAccount';
 import { WarmupLog } from '@/models/WarmupLog';
 import nodemailer from 'nodemailer';
