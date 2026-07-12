@@ -13,6 +13,7 @@ import {
   Lightbulb, Clock, Camera, Moon, Sun, Monitor, Check, PanelLeft, PanelLeftClose, Plus, ChevronRight,
   MessageSquare, Video, Code2, FileText, ExternalLink, Database, RotateCcw, FileArchive
 } from 'lucide-react';
+import { useAppearance } from '@/components/layout/AppearanceContext';
 import { getSystemSettings, saveSystemSettings, testSmtpConnection } from '@/app/actions/settingsActions';
 import { sendTestEmail } from '@/app/actions/emailActions';
 import { useUser } from '@/components/layout/UserContext';
@@ -213,8 +214,7 @@ export default function SettingsClient() {
   const [profileImage, setProfileImage] = useState<string | undefined>(undefined);
 
   // Appearance States
-  const [accent, setAccent] = useState('violet');
-  const [sidebarLayout, setSidebarLayout] = useState('expanded');
+  const { accentColor, setAccentColor, sidebarLayout, setSidebarLayout } = useAppearance();
 
   // Roles States
   const [selectedRole, setSelectedRole] = useState('admin');
@@ -512,14 +512,14 @@ export default function SettingsClient() {
   };
 
   return (
-    <div className="bg-slate-50 dark:bg-[#09090B] min-h-screen text-slate-900 dark:text-white font-inter selection:bg-[#2563EB]/30 pb-32">
+    <div className="bg-slate-50 dark:bg-[#09090B] min-h-screen text-slate-900 dark:text-white font-inter selection:bg-[var(--color-primary-600)]/30 pb-32">
       
       {/* ── Page Header ──────────────────────────────────────────────────── */}
       <div className="max-w-[1600px] mx-auto p-4 md:p-8 pt-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-5 mb-8">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-9 h-9 rounded-[10px] bg-[#2563EB]/10 border border-[#2563EB]/20 flex items-center justify-center text-[#2563EB]">
+              <div className="w-9 h-9 rounded-[10px] bg-[var(--color-primary-600)]/10 border border-[var(--color-primary-600)]/20 flex items-center justify-center text-[var(--color-primary-600)]">
                 <Blocks size={17} />
               </div>
               <span className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">System Configuration</span>
@@ -540,7 +540,7 @@ export default function SettingsClient() {
                   exit={{ opacity: 0, scale: 0.9 }}
                   onClick={handleSave} 
                   disabled={isSaving} 
-                  className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-[0_0_20px_rgba(37,99,235,0.25)] border bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white border-[#2563EB]/80"
+                  className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-[0_0_20px_rgba(37,99,235,0.25)] border bg-[var(--color-primary-600)] hover:bg-[var(--color-primary-600)]/90 text-slate-900 dark:text-white border-[var(--color-primary-600)]/80"
                 >
                   {isSaving ? <Activity size={16} className="animate-spin" /> : <Save size={16} />} 
                   {isSaving ? 'Saving...' : 'Save Changes'}
@@ -579,7 +579,7 @@ export default function SettingsClient() {
                               : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent dark:text-slate-400 dark:hover:bg-slate-800/50'
                           }`}
                         >
-                          <Icon size={18} className={isActive ? (tab.danger ? 'text-rose-500' : 'text-[#2563EB]') : 'opacity-70'} />
+                          <Icon size={18} className={isActive ? (tab.danger ? 'text-rose-500' : 'text-[var(--color-primary-600)]') : 'opacity-70'} />
                           {tab.label}
                         </button>
                       );
@@ -610,11 +610,11 @@ export default function SettingsClient() {
                     </div>
                     
                     <div className="flex items-center gap-6 mb-10">
-                      <label className="w-24 h-24 rounded-full bg-slate-50 dark:bg-[#09090B] border-2 border-slate-200 dark:border-[#232734] flex items-center justify-center cursor-pointer hover:border-[#2563EB]/50 transition-all group relative overflow-hidden">
+                      <label className="w-24 h-24 rounded-full bg-slate-50 dark:bg-[#09090B] border-2 border-slate-200 dark:border-[#232734] flex items-center justify-center cursor-pointer hover:border-[var(--color-primary-600)]/50 transition-all group relative overflow-hidden">
                         {profileImage ? (
                           <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
-                          <User size={32} className="text-[#94A3B8] group-hover:scale-110 group-hover:text-[#2563EB] transition-all" />
+                          <User size={32} className="text-[#94A3B8] group-hover:scale-110 group-hover:text-[var(--color-primary-600)] transition-all" />
                         )}
                         <div className="absolute inset-0 bg-white/60 dark:bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity gap-1 backdrop-blur-[2px]">
                           <Camera size={16} className="text-slate-900 dark:text-white" />
@@ -659,7 +659,7 @@ export default function SettingsClient() {
                             <input type="password" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500/50 rounded-xl focus:outline-none dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 text-sm font-bold transition-all shadow-sm" />
                           </div>
                         </div>
-                        <button type="submit" disabled={isChangingPassword} className="px-6 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-[#2563EB]/20 hover:text-[#2563EB] text-slate-900 dark:text-white font-bold rounded-xl transition-all text-sm disabled:opacity-50 border border-transparent hover:border-[#2563EB]/30">
+                        <button type="submit" disabled={isChangingPassword} className="px-6 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-[var(--color-primary-600)]/20 hover:text-[var(--color-primary-600)] text-slate-900 dark:text-white font-bold rounded-xl transition-all text-sm disabled:opacity-50 border border-transparent hover:border-[var(--color-primary-600)]/30">
                           {isChangingPassword ? 'Updating...' : 'Update Password'}
                         </button>
                       </form>
@@ -712,7 +712,7 @@ export default function SettingsClient() {
                         <span className="text-xs font-bold uppercase tracking-widest text-[#94A3B8]">Master Sound</span>
                         <div className="relative">
                           <input type="checkbox" className="sr-only" checked={masterSound} onChange={() => { setMasterSound(!masterSound); if (!masterSound) playSound('success'); triggerChange(); }} />
-                          <div className={`block w-10 h-6 rounded-full transition-colors ${masterSound ? 'bg-[#2563EB]' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
+                          <div className={`block w-10 h-6 rounded-full transition-colors ${masterSound ? 'bg-[var(--color-primary-600)]' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
                           <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${masterSound ? 'transform translate-x-4' : ''}`}></div>
                         </div>
                       </label>
@@ -724,9 +724,9 @@ export default function SettingsClient() {
                         { id: 'leadConverted', label: 'Lead Converted', desc: 'Plays a success chime when a deal is won.', sound: 'success' as const },
                         { id: 'paymentReceived', label: 'Payment Received', desc: 'Plays a distinct coin chime when income is logged.', sound: 'cash' as const },
                       ].map(item => (
-                        <div key={item.id} className={`flex items-center justify-between p-5 rounded-xl border transition-all ${soundSettings[item.id as keyof typeof soundSettings] && masterSound ? 'bg-slate-50 dark:bg-[#09090B] border-[#2563EB]/30 shadow-[0_0_15px_rgba(37,99,235,0.05)]' : 'bg-slate-50 dark:bg-[#09090B] border-slate-200 dark:border-[#232734]'}`}>
+                        <div key={item.id} className={`flex items-center justify-between p-5 rounded-xl border transition-all ${soundSettings[item.id as keyof typeof soundSettings] && masterSound ? 'bg-slate-50 dark:bg-[#09090B] border-[var(--color-primary-600)]/30 shadow-[0_0_15px_rgba(37,99,235,0.05)]' : 'bg-slate-50 dark:bg-[#09090B] border-slate-200 dark:border-[#232734]'}`}>
                           <div className="flex items-center gap-4">
-                            <button onClick={() => masterSound ? playSound(item.sound) : toast.error("Master sound muted")} className="w-10 h-10 rounded-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] flex items-center justify-center text-[#94A3B8] hover:text-[#2563EB] transition-all" title="Preview Sound">
+                            <button onClick={() => masterSound ? playSound(item.sound) : toast.error("Master sound muted")} className="w-10 h-10 rounded-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] flex items-center justify-center text-[#94A3B8] hover:text-[var(--color-primary-600)] transition-all" title="Preview Sound">
                               <Play size={14} className="ml-1" />
                             </button>
                             <div>
@@ -736,7 +736,7 @@ export default function SettingsClient() {
                           </div>
                           <label className="relative cursor-pointer">
                             <input type="checkbox" className="sr-only" disabled={!masterSound} checked={soundSettings[item.id as keyof typeof soundSettings]} onChange={() => handleSoundToggle(item.id as keyof typeof soundSettings)} />
-                            <div className={`block w-10 h-6 rounded-full transition-colors ${!masterSound ? 'bg-slate-200 dark:bg-slate-700 opacity-50' : soundSettings[item.id as keyof typeof soundSettings] ? 'bg-[#2563EB]' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
+                            <div className={`block w-10 h-6 rounded-full transition-colors ${!masterSound ? 'bg-slate-200 dark:bg-slate-700 opacity-50' : soundSettings[item.id as keyof typeof soundSettings] ? 'bg-[var(--color-primary-600)]' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
                             <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${!masterSound ? 'opacity-50' : ''} ${soundSettings[item.id as keyof typeof soundSettings] ? 'transform translate-x-4' : ''}`}></div>
                           </label>
                         </div>
@@ -765,7 +765,7 @@ export default function SettingsClient() {
                           Disable 2FA
                         </button>
                       ) : (
-                        <button onClick={() => { setIsDisabling2FA(false); setIs2FAModalOpen(true); }} className="px-5 py-2 bg-[#2563EB] text-slate-900 dark:text-white font-bold rounded-lg text-sm hover:bg-[#2563EB]/90 shadow-sm border border-[#2563EB]/80">
+                        <button onClick={() => { setIsDisabling2FA(false); setIs2FAModalOpen(true); }} className="px-5 py-2 bg-[var(--color-primary-600)] text-slate-900 dark:text-white font-bold rounded-lg text-sm hover:bg-[var(--color-primary-600)]/90 shadow-sm border border-[var(--color-primary-600)]/80">
                           Enable 2FA
                         </button>
                       )}
@@ -777,7 +777,7 @@ export default function SettingsClient() {
                     </h3>
                     <div className="space-y-3">
                       {isLoadingSessions ? (
-                        <div className="p-8 text-center flex justify-center"><Activity className="animate-spin text-[#2563EB]" /></div>
+                        <div className="p-8 text-center flex justify-center"><Activity className="animate-spin text-[var(--color-primary-600)]" /></div>
                       ) : activeSessions.length === 0 ? (
                         <div className="p-6 text-center text-xs font-bold text-[#94A3B8]">No active sessions found.</div>
                       ) : activeSessions.map((session) => (
@@ -823,21 +823,21 @@ export default function SettingsClient() {
                     <form onSubmit={handleInviteMember} className="mb-10 p-6 rounded-xl bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                       <div>
                         <label className="block text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">Name</label>
-                        <input type="text" placeholder="John Doe" value={inviteName} onChange={(e) => setInviteName(e.target.value)} className="w-full px-4 py-2.5 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl focus:outline-none focus:border-[#2563EB]/60 text-slate-900 dark:text-white text-sm transition-all" />
+                        <input type="text" placeholder="John Doe" value={inviteName} onChange={(e) => setInviteName(e.target.value)} className="w-full px-4 py-2.5 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl focus:outline-none focus:border-[var(--color-primary-600)]/60 text-slate-900 dark:text-white text-sm transition-all" />
                       </div>
                       <div>
                         <label className="block text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">Email</label>
-                        <input type="email" placeholder="john@company.com" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="w-full px-4 py-2.5 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl focus:outline-none focus:border-[#2563EB]/60 text-slate-900 dark:text-white text-sm transition-all" />
+                        <input type="email" placeholder="john@company.com" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="w-full px-4 py-2.5 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl focus:outline-none focus:border-[var(--color-primary-600)]/60 text-slate-900 dark:text-white text-sm transition-all" />
                       </div>
                       <div>
                         <label className="block text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">Role</label>
-                        <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value)} className="w-full px-4 py-2.5 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl focus:outline-none focus:border-[#2563EB]/60 text-slate-900 dark:text-white text-sm transition-all appearance-none cursor-pointer">
+                        <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value)} className="w-full px-4 py-2.5 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl focus:outline-none focus:border-[var(--color-primary-600)]/60 text-slate-900 dark:text-white text-sm transition-all appearance-none cursor-pointer">
                           <option value="admin">Admin</option>
                           <option value="editor">Editor</option>
                           <option value="marketplace_team">Marketplace Team</option>
                         </select>
                       </div>
-                      <button type="submit" disabled={isInviting} className="w-full px-4 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white font-bold rounded-xl transition-all text-sm h-[42px]">
+                      <button type="submit" disabled={isInviting} className="w-full px-4 py-2.5 bg-[var(--color-primary-600)] hover:bg-[var(--color-primary-600)]/90 text-slate-900 dark:text-white font-bold rounded-xl transition-all text-sm h-[42px]">
                         {isInviting ? 'Inviting...' : 'Invite Member'}
                       </button>
                     </form>
@@ -860,7 +860,7 @@ export default function SettingsClient() {
                                 <span className="text-xs text-[#94A3B8]">{member.email}</span>
                               </td>
                               <td className="py-4 px-5">
-                                <select value={member.role} onChange={(e) => handleToggleRole(member._id, e.target.value)} className="px-3 py-1.5 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-lg focus:outline-none focus:border-[#2563EB]/50 text-slate-900 dark:text-white text-xs font-bold appearance-none cursor-pointer">
+                                <select value={member.role} onChange={(e) => handleToggleRole(member._id, e.target.value)} className="px-3 py-1.5 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-lg focus:outline-none focus:border-[var(--color-primary-600)]/50 text-slate-900 dark:text-white text-xs font-bold appearance-none cursor-pointer">
                                   <option value="owner">Owner</option>
                                   <option value="admin">Admin</option>
                                   <option value="editor">Editor</option>
@@ -911,22 +911,22 @@ export default function SettingsClient() {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="md:col-span-2">
                           <label className="block text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">SMTP Host</label>
-                          <input type="text" value={smtpSettings.host} onChange={(e) => { setSmtpSettings(prev => ({ ...prev, host: e.target.value })); triggerChange(); }} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl focus:border-[#2563EB]/60 text-slate-900 dark:text-white font-medium text-sm focus:outline-none" />
+                          <input type="text" value={smtpSettings.host} onChange={(e) => { setSmtpSettings(prev => ({ ...prev, host: e.target.value })); triggerChange(); }} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl focus:border-[var(--color-primary-600)]/60 text-slate-900 dark:text-white font-medium text-sm focus:outline-none" />
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">Port</label>
-                          <input type="number" value={smtpSettings.port} onChange={(e) => { setSmtpSettings(prev => ({ ...prev, port: parseInt(e.target.value) || 587 })); triggerChange(); }} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl focus:border-[#2563EB]/60 text-slate-900 dark:text-white font-medium text-sm focus:outline-none" />
+                          <input type="number" value={smtpSettings.port} onChange={(e) => { setSmtpSettings(prev => ({ ...prev, port: parseInt(e.target.value) || 587 })); triggerChange(); }} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl focus:border-[var(--color-primary-600)]/60 text-slate-900 dark:text-white font-medium text-sm focus:outline-none" />
                         </div>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                           <label className="block text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">Username / Email</label>
-                          <input type="email" value={smtpSettings.user} onChange={(e) => { setSmtpSettings(prev => ({ ...prev, user: e.target.value })); triggerChange(); }} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl focus:border-[#2563EB]/60 text-slate-900 dark:text-white font-medium text-sm focus:outline-none" />
+                          <input type="email" value={smtpSettings.user} onChange={(e) => { setSmtpSettings(prev => ({ ...prev, user: e.target.value })); triggerChange(); }} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl focus:border-[var(--color-primary-600)]/60 text-slate-900 dark:text-white font-medium text-sm focus:outline-none" />
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-2 ml-1">App Password</label>
                           <div className="relative">
-                            <input type={showSmtpPass ? 'text' : 'password'} value={smtpSettings.pass} onChange={(e) => { setSmtpSettings(prev => ({ ...prev, pass: e.target.value })); triggerChange(); }} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl focus:border-[#2563EB]/60 text-slate-900 dark:text-white font-mono text-sm focus:outline-none pr-10" />
+                            <input type={showSmtpPass ? 'text' : 'password'} value={smtpSettings.pass} onChange={(e) => { setSmtpSettings(prev => ({ ...prev, pass: e.target.value })); triggerChange(); }} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl focus:border-[var(--color-primary-600)]/60 text-slate-900 dark:text-white font-mono text-sm focus:outline-none pr-10" />
                             <button type="button" onClick={() => setShowSmtpPass(!showSmtpPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8]"><Eye size={16} /></button>
                           </div>
                         </div>
@@ -961,8 +961,8 @@ export default function SettingsClient() {
                         <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Theme Preference</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           {THEMES.map(t => (
-                            <button key={t.id} onClick={() => { setTheme(t.id); triggerChange(); }} className={`relative flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 transition-all ${mounted && theme === t.id ? 'bg-[#2563EB]/5 border-[#2563EB] text-[#2563EB]' : 'bg-slate-50 dark:bg-[#09090B] border-slate-200 dark:border-[#232734] text-[#94A3B8] hover:border-[#232734]/80'}`}>
-                              <t.icon size={24} className={mounted && theme === t.id ? 'text-[#2563EB]' : 'text-[#94A3B8]'} />
+                            <button key={t.id} onClick={() => { setTheme(t.id); triggerChange(); }} className={`relative flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 transition-all ${mounted && theme === t.id ? 'bg-[var(--color-primary-600)]/5 border-[var(--color-primary-600)] text-[var(--color-primary-600)]' : 'bg-slate-50 dark:bg-[#09090B] border-slate-200 dark:border-[#232734] text-[#94A3B8] hover:border-[#232734]/80'}`}>
+                              <t.icon size={24} className={mounted && theme === t.id ? 'text-[var(--color-primary-600)]' : 'text-[#94A3B8]'} />
                               <span className={`text-sm font-bold ${mounted && theme === t.id ? 'text-slate-900 dark:text-white' : 'text-[#94A3B8]'}`}>{t.name}</span>
                               {mounted && theme === t.id && <div className="absolute top-3 right-3"><CheckCircle2 size={16} /></div>}
                             </button>
@@ -976,14 +976,14 @@ export default function SettingsClient() {
                         <div className="flex flex-wrap items-center gap-4">
                           {[
                             { id: 'violet', color: '#7C3AED', name: 'Violet' },
-                            { id: 'blue', color: '#2563EB', name: 'Blue' },
+                            { id: 'blue', color: 'var(--color-primary-600)', name: 'Blue' },
                             { id: 'emerald', color: '#10B981', name: 'Emerald' },
                             { id: 'rose', color: '#E11D48', name: 'Rose' },
                             { id: 'amber', color: '#F59E0B', name: 'Amber' }
                           ].map(c => (
-                            <button key={c.id} onClick={() => { setAccent(c.id); triggerChange(); }} className={`group flex flex-col items-center gap-2`} title={c.name}>
-                              <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${accent === c.id ? 'ring-[3px] ring-white ring-offset-4 ring-offset-[#11131A]' : 'hover:scale-110'}`} style={{ backgroundColor: c.color }}>
-                                {accent === c.id && <Check size={20} className="text-slate-900 dark:text-white" />}
+                            <button key={c.id} onClick={() => { setAccentColor(c.id as any); triggerChange(); }} className={`group flex flex-col items-center gap-2`} title={c.name}>
+                              <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${accentColor === c.id ? 'ring-[3px] ring-white ring-offset-4 ring-offset-[#11131A]' : 'hover:scale-110'}`} style={{ backgroundColor: c.color }}>
+                                {accentColor === c.id && <Check size={20} className="text-slate-900 dark:text-white" />}
                               </div>
                             </button>
                           ))}
@@ -998,8 +998,8 @@ export default function SettingsClient() {
                             { id: 'expanded', label: 'Expanded (Default)', icon: PanelLeft, desc: 'Full menu with labels.' },
                             { id: 'collapsed', label: 'Collapsed', icon: PanelLeftClose, desc: 'Icons only to save space.' }
                           ].map(l => (
-                            <button key={l.id} onClick={() => { setSidebarLayout(l.id); triggerChange(); }} className={`flex items-start text-left gap-4 p-5 rounded-2xl border-2 transition-all ${sidebarLayout === l.id ? 'bg-[#2563EB]/5 border-[#2563EB]' : 'bg-slate-50 dark:bg-[#09090B] border-slate-200 dark:border-[#232734] hover:border-[#232734]/80'}`}>
-                              <div className={`mt-0.5 ${sidebarLayout === l.id ? 'text-[#2563EB]' : 'text-[#94A3B8]'}`}>
+                            <button key={l.id} onClick={() => { setSidebarLayout(l.id); triggerChange(); }} className={`flex items-start text-left gap-4 p-5 rounded-2xl border-2 transition-all ${sidebarLayout === l.id ? 'bg-[var(--color-primary-600)]/5 border-[var(--color-primary-600)]' : 'bg-slate-50 dark:bg-[#09090B] border-slate-200 dark:border-[#232734] hover:border-[#232734]/80'}`}>
+                              <div className={`mt-0.5 ${sidebarLayout === l.id ? 'text-[var(--color-primary-600)]' : 'text-[#94A3B8]'}`}>
                                 <l.icon size={20} />
                               </div>
                               <div>
@@ -1026,7 +1026,7 @@ export default function SettingsClient() {
                         <button onClick={handleRefreshLogs} disabled={isRefreshingLogs} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-[#11131A] hover:bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white text-xs font-bold transition-all border border-slate-200 dark:border-[#232734] disabled:opacity-50">
                           <RefreshCcw size={14} className={isRefreshingLogs ? 'animate-spin' : ''} /> Refresh
                         </button>
-                        <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2563EB]/10 hover:bg-[#2563EB]/20 text-[#2563EB] border border-[#2563EB]/20 text-xs font-bold transition-all">
+                        <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-primary-600)]/10 hover:bg-[var(--color-primary-600)]/20 text-[var(--color-primary-600)] border border-[var(--color-primary-600)]/20 text-xs font-bold transition-all">
                           <Download size={14} /> Export CSV
                         </button>
                       </div>
@@ -1108,7 +1108,7 @@ export default function SettingsClient() {
                                 <button onClick={() => { toast.success(`${app.name} disconnected`); if(masterSound) playSound('pop'); toggleIntegration(app.id); }} className="text-xs font-bold text-rose-500 hover:text-rose-400 transition-colors">Disconnect</button>
                               </>
                             ) : (
-                              <button onClick={() => { toast.success(`${app.name} connected`); if(masterSound) playSound('success'); toggleIntegration(app.id); }} className="w-full py-2 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white rounded-lg text-xs font-bold transition-all shadow-sm">
+                              <button onClick={() => { toast.success(`${app.name} connected`); if(masterSound) playSound('success'); toggleIntegration(app.id); }} className="w-full py-2 bg-[var(--color-primary-600)] hover:bg-[var(--color-primary-600)]/90 text-slate-900 dark:text-white rounded-lg text-xs font-bold transition-all shadow-sm">
                                 Connect App
                               </button>
                             )}
@@ -1130,7 +1130,7 @@ export default function SettingsClient() {
                       <button 
                         onClick={handleCreateBackup} 
                         disabled={isBackingUp} 
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white text-sm font-bold transition-all shadow-[0_0_20px_rgba(37,99,235,0.25)] border border-[#2563EB]/80 disabled:opacity-70"
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--color-primary-600)] hover:bg-[var(--color-primary-600)]/90 text-slate-900 dark:text-white text-sm font-bold transition-all shadow-[0_0_20px_rgba(37,99,235,0.25)] border border-[var(--color-primary-600)]/80 disabled:opacity-70"
                       >
                         {isBackingUp ? <Activity size={16} className="animate-spin" /> : <Database size={16} />}
                         {isBackingUp ? 'Creating Backup...' : 'Create Backup'}
@@ -1138,14 +1138,14 @@ export default function SettingsClient() {
                     </div>
 
                     {isBackingUp && (
-                      <div className="mb-8 p-6 rounded-2xl bg-slate-50 dark:bg-[#09090B] border border-[#2563EB]/30 relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#2563EB]/10 to-transparent animate-[shimmer_2s_infinite]" style={{ backgroundSize: '200% 100%' }}></div>
+                      <div className="mb-8 p-6 rounded-2xl bg-slate-50 dark:bg-[#09090B] border border-[var(--color-primary-600)]/30 relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[var(--color-primary-600)]/10 to-transparent animate-[shimmer_2s_infinite]" style={{ backgroundSize: '200% 100%' }}></div>
                         <div className="relative z-10 flex flex-col items-center justify-center py-4">
-                          <Database size={32} className="text-[#2563EB] animate-pulse mb-4" />
+                          <Database size={32} className="text-[var(--color-primary-600)] animate-pulse mb-4" />
                           <h4 className="font-bold text-slate-900 dark:text-white mb-1">Generating Database Snapshot</h4>
                           <p className="text-xs text-[#94A3B8]">Compressing leads, deals, and configurations...</p>
                           <div className="w-full max-w-md h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mt-6 overflow-hidden">
-                            <div className="h-full bg-[#2563EB] rounded-full animate-[progress_2.5s_ease-in-out_forwards]" style={{ width: '0%' }}></div>
+                            <div className="h-full bg-[var(--color-primary-600)] rounded-full animate-[progress_2.5s_ease-in-out_forwards]" style={{ width: '0%' }}></div>
                           </div>
                         </div>
                         <style>{`
@@ -1168,7 +1168,7 @@ export default function SettingsClient() {
                           {backups.map(backup => (
                             <div key={backup.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] hover:border-[#232734]/80 transition-all group">
                               <div className="flex items-center gap-4 mb-4 md:mb-0">
-                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${backup.type === 'Manual' ? 'bg-[#2563EB]/10 text-[#2563EB]' : 'bg-[#10B981]/10 text-[#10B981]'}`}>
+                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${backup.type === 'Manual' ? 'bg-[var(--color-primary-600)]/10 text-[var(--color-primary-600)]' : 'bg-[#10B981]/10 text-[#10B981]'}`}>
                                   <FileArchive size={18} />
                                 </div>
                                 <div>
@@ -1186,7 +1186,7 @@ export default function SettingsClient() {
                                 <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#11131A] hover:bg-slate-200 dark:bg-slate-700 border border-slate-200 dark:border-[#232734] rounded-lg text-xs font-bold text-[#94A3B8] hover:text-slate-900 dark:hover:text-white transition-all">
                                   <Download size={14} /> Download
                                 </button>
-                                <button onClick={() => { toast.success('Restore initiated!'); if(masterSound) playSound('pop'); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#2563EB]/10 hover:bg-[#2563EB]/20 border border-[#2563EB]/20 rounded-lg text-xs font-bold text-[#2563EB] transition-all">
+                                <button onClick={() => { toast.success('Restore initiated!'); if(masterSound) playSound('pop'); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--color-primary-600)]/10 hover:bg-[var(--color-primary-600)]/20 border border-[var(--color-primary-600)]/20 rounded-lg text-xs font-bold text-[var(--color-primary-600)] transition-all">
                                   <RotateCcw size={14} /> Restore
                                 </button>
                                 <button onClick={() => handleDeleteBackup(backup.id)} className="p-1.5 text-[#64748B] hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all ml-1">
@@ -1209,7 +1209,7 @@ export default function SettingsClient() {
                         <h2 className="text-xl font-bold font-jakarta mb-1">Roles & Permissions</h2>
                         <p className="text-sm text-[#94A3B8]">Define what team members can see and do.</p>
                       </div>
-                      <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white text-xs font-bold transition-all shadow-sm">
+                      <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-primary-600)] hover:bg-[var(--color-primary-600)]/90 text-slate-900 dark:text-white text-xs font-bold transition-all shadow-sm">
                         <Plus size={16} /> Create Custom Role
                       </button>
                     </div>
@@ -1224,7 +1224,7 @@ export default function SettingsClient() {
                             onClick={() => setSelectedRole(role.id)}
                             className={`w-full text-left p-4 rounded-2xl border transition-all flex flex-col gap-2 ${
                               selectedRole === role.id 
-                                ? 'bg-[#2563EB]/10 border-[#2563EB]/50 shadow-[0_0_15px_rgba(37,99,235,0.1)]' 
+                                ? 'bg-[var(--color-primary-600)]/10 border-[var(--color-primary-600)]/50 shadow-[0_0_15px_rgba(37,99,235,0.1)]' 
                                 : 'bg-slate-50 dark:bg-[#09090B] border-slate-200 dark:border-[#232734] hover:border-[#232734]/80'
                             }`}
                           >
@@ -1244,7 +1244,7 @@ export default function SettingsClient() {
                       <div className="flex-1 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-2xl p-6">
                         <div className="flex justify-between items-center mb-6">
                           <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                            <ShieldCheck size={16} className="text-[#2563EB]" />
+                            <ShieldCheck size={16} className="text-[var(--color-primary-600)]" />
                             {MOCK_ROLES.find(r => r.id === selectedRole)?.name} Permissions
                           </h3>
                           {selectedRole === 'owner' && <span className="text-xs text-[#F59E0B] font-bold bg-[#F59E0B]/10 border border-[#F59E0B]/20 px-3 py-1 rounded-md">Full Access</span>}
@@ -1260,11 +1260,11 @@ export default function SettingsClient() {
                                   const isDisabled = selectedRole === 'owner';
                                   
                                   return (
-                                    <label key={perm.id} className={`flex items-center justify-between p-3 rounded-xl border transition-all ${!isDisabled && 'cursor-pointer'} ${isChecked ? 'bg-white dark:bg-[#11131A] border-[#2563EB]/30' : 'bg-transparent border-transparent hover:bg-white dark:bg-[#11131A]'}`}>
+                                    <label key={perm.id} className={`flex items-center justify-between p-3 rounded-xl border transition-all ${!isDisabled && 'cursor-pointer'} ${isChecked ? 'bg-white dark:bg-[#11131A] border-[var(--color-primary-600)]/30' : 'bg-transparent border-transparent hover:bg-white dark:bg-[#11131A]'}`}>
                                       <span className={`text-sm font-bold ${isChecked ? 'text-slate-900 dark:text-white' : 'text-[#94A3B8]'}`}>{perm.label}</span>
                                       <div className="relative">
                                         <input type="checkbox" className="sr-only" checked={isChecked} disabled={isDisabled} onChange={() => togglePermission(selectedRole, perm.id)} />
-                                        <div className={`block w-10 h-6 rounded-full transition-colors ${isDisabled ? 'opacity-50' : ''} ${isChecked ? 'bg-[#2563EB]' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
+                                        <div className={`block w-10 h-6 rounded-full transition-colors ${isDisabled ? 'opacity-50' : ''} ${isChecked ? 'bg-[var(--color-primary-600)]' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
                                         <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${isChecked ? 'transform translate-x-4' : ''}`}></div>
                                       </div>
                                     </label>
@@ -1287,10 +1287,10 @@ export default function SettingsClient() {
                       <p className="text-sm text-[#94A3B8]">Manage your subscription plan and resource limits.</p>
                     </div>
                     
-                    <div className="p-8 rounded-2xl bg-gradient-to-br from-[#11131A] to-[#09090B] border border-[#2563EB]/20 relative overflow-hidden mb-8">
-                      <div className="absolute top-0 right-0 w-64 h-64 bg-[#2563EB]/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+                    <div className="p-8 rounded-2xl bg-gradient-to-br from-[#11131A] to-[#09090B] border border-[var(--color-primary-600)]/20 relative overflow-hidden mb-8">
+                      <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--color-primary-600)]/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
                       <div className="relative z-10">
-                        <span className="px-3 py-1 bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/20 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 inline-block">Enterprise Plan</span>
+                        <span className="px-3 py-1 bg-[var(--color-primary-600)]/10 text-[var(--color-primary-600)] border border-[var(--color-primary-600)]/20 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 inline-block">Enterprise Plan</span>
                         <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">Injaazh ERP Pro</h3>
                         <p className="text-sm font-medium text-[#94A3B8] mb-6">$99.00 / month, next billing on Aug 1, 2026</p>
                         <button className="px-6 py-2.5 bg-white text-black font-bold rounded-xl text-sm transition-all shadow-sm">Manage Subscription</button>
@@ -1336,8 +1336,8 @@ export default function SettingsClient() {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-br from-[#2563EB]/10 to-transparent border border-[#2563EB]/20 rounded-2xl p-5 shadow-sm">
-                <h4 className="flex items-center gap-2 text-xs font-bold text-[#2563EB] uppercase tracking-widest mb-3">
+              <div className="bg-gradient-to-br from-[var(--color-primary-600)]/10 to-transparent border border-[var(--color-primary-600)]/20 rounded-2xl p-5 shadow-sm">
+                <h4 className="flex items-center gap-2 text-xs font-bold text-[var(--color-primary-600)] uppercase tracking-widest mb-3">
                   <Lightbulb size={14} /> Quick Tip
                 </h4>
                 <p className="text-xs font-medium text-[#94A3B8] leading-relaxed">

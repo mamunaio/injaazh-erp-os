@@ -11,6 +11,13 @@
   --blur-3xl: 64px;
   --blur-4xl: 100px;
   
+  --color-primary-50: var(--accent-50);
+  --color-primary-100: var(--accent-100);
+  --color-primary-400: var(--accent-400);
+  --color-primary-500: var(--accent-500);
+  --color-primary-600: var(--accent-600);
+  --color-primary-700: var(--accent-700);
+  
   /* Typography Scale - Perfect Ratios */
   --font-size-xs: 0.75rem;      /* 12px */
   --font-size-sm: 0.875rem;     /* 14px */
@@ -42,6 +49,51 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
+  :root, [data-accent="violet"] {
+    --accent-50: #f5f3ff;
+    --accent-100: #ede9fe;
+    --accent-400: #a78bfa;
+    --accent-500: #8b5cf6;
+    --accent-600: #7c3aed;
+    --accent-700: #6d28d9;
+  }
+  
+  [data-accent="blue"] {
+    --accent-50: #eff6ff;
+    --accent-100: #dbeafe;
+    --accent-400: #60a5fa;
+    --accent-500: #3b82f6;
+    --accent-600: #2563eb;
+    --accent-700: #1d4ed8;
+  }
+
+  [data-accent="green"] {
+    --accent-50: #ecfdf5;
+    --accent-100: #d1fae5;
+    --accent-400: #34d399;
+    --accent-500: #10b981;
+    --accent-600: #059669;
+    --accent-700: #047857;
+  }
+
+  [data-accent="rose"] {
+    --accent-50: #fff1f2;
+    --accent-100: #ffe4e6;
+    --accent-400: #fb7185;
+    --accent-500: #f43f5e;
+    --accent-600: #e11d48;
+    --accent-700: #be123c;
+  }
+
+  [data-accent="amber"] {
+    --accent-50: #fffbeb;
+    --accent-100: #fef3c7;
+    --accent-400: #fbbf24;
+    --accent-500: #f59e0b;
+    --accent-600: #d97706;
+    --accent-700: #b45309;
+  }
+
   body {
     @apply bg-slate-50 text-slate-900 dark:bg-[#0A0A0B] dark:text-slate-200 antialiased transition-colors duration-300;
   }
