@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import Sidebar from '@/components/layout/Sidebar';
 import Topbar from '@/components/layout/Topbar';
 import { SidebarProvider } from '@/components/layout/SidebarContext';
-import { AppearanceProvider, useAppearance } from '@/components/layout/AppearanceContext';
 import { UserProvider } from '@/components/layout/UserContext';
 import { ConfirmDialogProvider } from '@/components/layout/ConfirmDialogProvider';
 import { logoutUser } from '@/app/actions/authActions';
@@ -40,28 +39,16 @@ export default function AppLayoutWrapper({ children, initialUser }: { children: 
   }
 
   return (
-    <AppearanceProvider>
-      <UserProvider initialUser={initialUser}>
-        <ConfirmDialogProvider>
-          <SidebarProvider>
-            <AppContent children={children} initialUser={initialUser} />
-          </SidebarProvider>
-        </ConfirmDialogProvider>
-      </UserProvider>
-    </AppearanceProvider>
-  );
-}
-
-function AppContent({ children, initialUser }: { children: React.ReactNode, initialUser?: any }) {
-  const { sidebarLayout } = useAppearance();
-  
-  return (
-    <>
-      <Sidebar />
-      <Topbar />
-      <main className={`pt-[100px] pr-4 pb-4 min-h-screen transition-all duration-300 relative z-0 ${sidebarLayout === 'collapsed' ? 'pl-4 lg:pl-[88px]' : 'pl-4 lg:pl-[288px]'}`}>
-        {children}
-      </main>
-    </>
+    <UserProvider initialUser={initialUser}>
+      <ConfirmDialogProvider>
+        <SidebarProvider>
+          <Sidebar />
+          <Topbar />
+          <main className="pl-4 lg:pl-[288px] pt-[100px] pr-4 pb-4 min-h-screen transition-all duration-300 relative z-0">
+            {children}
+          </main>
+        </SidebarProvider>
+      </ConfirmDialogProvider>
+    </UserProvider>
   );
 }

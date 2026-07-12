@@ -7,7 +7,6 @@ import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Users, FileText, Briefcase, Store, DollarSign, Settings, Globe, Activity, X, Wallet, Mail, Map, Clock, BookOpen, Hexagon } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import { useSidebar } from './SidebarContext';
-import { useAppearance } from './AppearanceContext';
 import { useUser } from './UserContext';
 
 const navItems = [
@@ -30,9 +29,7 @@ const navItems = [
 export default function Sidebar() {
   const pathname = usePathname();
   const { isMobileSidebarOpen, setIsMobileSidebarOpen } = useSidebar();
-  const { sidebarLayout } = useAppearance();
   const { user, loading } = useUser();
-  const isCollapsed = sidebarLayout === 'collapsed';
 
   const filteredNavItems = navItems.filter((item) => {
     if (!user) return false;
@@ -66,18 +63,16 @@ export default function Sidebar() {
         />
       )}
       
-      <aside className={`${isCollapsed ? 'w-[88px]' : 'w-[260px]'} fixed top-0 bottom-0 left-0 z-50 bg-slate-50/30 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800/50 flex flex-col transition-all duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-[120%] lg:translate-x-0'}`}>
+      <aside className={`w-[260px] fixed top-0 bottom-0 left-0 z-50 bg-slate-50/30 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800/50 flex flex-col transition-transform duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-[120%] lg:translate-x-0'}`}>
         {/* Logo */}
-        <div className={`h-[72px] flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-6'}`}>
+        <div className="h-[72px] flex items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-3 group" onClick={() => setIsMobileSidebarOpen(false)}>
-            <div className="w-8 h-8 rounded-lg bg-primary-500/10 flex items-center justify-center border border-primary-500/20 text-primary-500 transition-all duration-300 group-hover:scale-105">
+            <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 text-indigo-500 transition-all duration-300 group-hover:scale-105">
               <Hexagon size={18} fill="currentColor" />
             </div>
-            {!isCollapsed && (
-              <span className="font-bold text-[15px] tracking-tight text-slate-900 dark:text-white">
-                Injaazh Global
-              </span>
-            )}
+            <span className="font-bold text-[15px] tracking-tight text-slate-900 dark:text-white">
+              Injaazh Global
+            </span>
           </Link>
           <button 
             onClick={() => setIsMobileSidebarOpen(false)}
@@ -102,22 +97,22 @@ export default function Sidebar() {
             <>
               {/* Grouping based on the image: HOME, LEADS, SALES, WORK, FINANCE, SYSTEM */}
               
-              {!isCollapsed && <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2 mb-2 px-3 transition-opacity">Home</div>}
+              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2 mb-2 px-3">Home</div>
               {filteredNavItems.filter(i => ['/dashboard'].includes(i.href)).map(renderNavItem)}
 
-              {!isCollapsed && <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3 transition-opacity">Leads</div>}
+              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3">Leads</div>
               {filteredNavItems.filter(i => ['/prospects', '/campaigns', '/outreach'].includes(i.href)).map(renderNavItem)}
 
-              {!isCollapsed && <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3 transition-opacity">Sales</div>}
+              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3">Sales</div>
               {filteredNavItems.filter(i => ['/deals', '/proposals', '/marketplace/clients'].includes(i.href)).map(renderNavItem)}
 
-              {!isCollapsed && <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3 transition-opacity">Work</div>}
+              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3">Work</div>
               {filteredNavItems.filter(i => ['/projects', '/roadmap', '/timesheets'].includes(i.href)).map(renderNavItem)}
 
-              {!isCollapsed && <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3 transition-opacity">Finance</div>}
+              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3">Finance</div>
               {filteredNavItems.filter(i => ['/finance', '/daily-expenses'].includes(i.href)).map(renderNavItem)}
 
-              {!isCollapsed && <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3 transition-opacity">System</div>}
+              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3">System</div>
               {filteredNavItems.filter(i => ['/settings/insights', '/settings'].includes(i.href)).map(renderNavItem)}
             </>
           )}
@@ -145,20 +140,15 @@ export default function Sidebar() {
       <Link
         key={item.name}
         href={item.href}
-        title={isCollapsed ? item.name : undefined}
         onClick={() => setIsMobileSidebarOpen(false)}
-        className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-3'} py-2 rounded-xl transition-all duration-200 group relative ${
+        className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 group ${
           isActive 
-            ? 'bg-primary-600 text-slate-900 dark:text-white shadow-md' 
+            ? 'bg-indigo-600 text-slate-900 dark:text-white shadow-md' 
             : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
         }`}
       >
-        <Icon size={isCollapsed ? 22 : 18} className={`${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-900 dark:hover:text-white transition-colors'}`} />
-        {!isCollapsed && (
-          <span className={`font-semibold text-[13px] ${isActive ? 'text-white' : ''}`}>
-            {item.name}
-          </span>
-        )}
+        <Icon size={18} className={`${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-900 dark:hover:text-white transition-colors'}`} />
+        <span className={`font-medium text-sm`}>{item.name}</span>
       </Link>
     );
   }
