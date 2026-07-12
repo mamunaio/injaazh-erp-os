@@ -280,7 +280,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05, type: 'spring', stiffness: 280, damping: 26 }}
                 whileHover={{ y: -2, transition: { duration: 0.15 } }}
-                className="relative bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] p-5 cursor-pointer group transition-all overflow-hidden"
+                className="relative bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] p-5 cursor-pointer group transition-all overflow-hidden shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none"
               >
                 {/* Background Icon */}
                 <div className="absolute -right-2 -bottom-4 opacity-[0.04] pointer-events-none group-hover:opacity-[0.08] transition-opacity">
@@ -314,7 +314,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
         <div className="flex flex-col lg:flex-row gap-5 min-h-[680px]">
 
           {/* ── LEFT PANE: Contact List ──────────────────────────────────────── */}
-          <div className={`flex flex-col bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] overflow-hidden ${selectedLeadId ? 'hidden lg:flex lg:w-[320px] xl:w-[360px] flex-shrink-0' : 'w-full lg:w-[360px] flex-shrink-0'}`}>
+          <div className={`flex flex-col bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] overflow-hidden shadow-sm dark:shadow-none ${selectedLeadId ? 'hidden lg:flex lg:w-[320px] xl:w-[360px] flex-shrink-0' : 'w-full lg:w-[360px] flex-shrink-0'}`}>
 
             {/* Tabs */}
             <div className="flex border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900">
@@ -691,7 +691,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="hidden lg:flex flex-1 h-full flex-col items-center justify-center bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] text-center p-8 relative overflow-hidden"
+                  className="hidden lg:flex flex-1 h-full flex-col items-center justify-center bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] text-center p-8 relative overflow-hidden shadow-sm dark:shadow-none"
                 >
                   {/* Subtle Grid Background */}
                   <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#94a3b8 1px, transparent 1px), linear-gradient(90deg, #94a3b8 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
