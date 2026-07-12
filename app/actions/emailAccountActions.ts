@@ -5,6 +5,7 @@ import { EmailAccount } from '@/models/EmailAccount';
 import nodemailer from 'nodemailer';
 import { getAuthUser } from '@/lib/auth';
 import { createNotification } from './notificationActions';
+import { encrypt } from '@/lib/encryption';
 
 export async function addEmailAccount(data: { 
   email: string; 
@@ -49,7 +50,7 @@ export async function addEmailAccount(data: {
     const newAccount = await EmailAccount.create({
       email: data.email,
       senderName: data.senderName,
-      appPassword: data.appPassword,
+      appPassword: encrypt(data.appPassword),
       dailyLimit: data.dailyLimit,
       accountType: data.accountType || 'gmail',
       smtpHost: data.smtpHost,

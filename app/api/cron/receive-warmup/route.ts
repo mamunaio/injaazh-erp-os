@@ -4,6 +4,7 @@ import { EmailAccount } from '@/models/EmailAccount';
 import { WarmupLog } from '@/models/WarmupLog';
 import imaps from 'imap-simple';
 import { simpleParser } from 'mailparser';
+import { decrypt } from '@/lib/encryption';
 
 export const maxDuration = 60; // 60 seconds (Vercel max)
 
@@ -38,7 +39,7 @@ export async function GET(request: Request) {
     const config = {
       imap: {
         user: account.email,
-        password: account.appPassword,
+        password: decrypt(account.appPassword),
         host: account.imapHost || 'imap.gmail.com',
         port: account.imapPort || 993,
         tls: account.imapSecure !== false,

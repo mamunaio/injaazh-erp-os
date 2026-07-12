@@ -3,6 +3,7 @@
 import connectDB from '@/lib/mongodb';
 import { EmailAccount } from '@/models/EmailAccount';
 import nodemailer from 'nodemailer';
+import { decrypt } from '@/lib/encryption';
 
 const WARMUP_TEMPLATES = [
   { subject: 'Following up on yesterday', body: 'Hi there,\n\nJust wanted to quickly follow up on our conversation from yesterday. Let me know if you need any further details.\n\nBest,\n[Name]' },
@@ -59,13 +60,13 @@ export async function executeWarmupBatch() {
         secure: sender.smtpSecure,
         auth: {
           user: sender.email,
-          pass: sender.appPassword,
+          pass: decrypt(sender.appPassword),
         },
       } : {
         service: 'gmail',
         auth: {
           user: sender.email,
-          pass: sender.appPassword,
+          pass: decrypt(sender.appPassword),
         },
       });
 

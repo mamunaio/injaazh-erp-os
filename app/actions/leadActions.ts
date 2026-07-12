@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import connectToDatabase from '@/lib/mongodb';
 import { Lead } from '@/models/Lead';
 import { getAuthUser } from '@/lib/auth';
+import { decrypt } from '@/lib/encryption';
 
 export async function createLead(data: any) {
   try {
@@ -454,13 +455,13 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
           secure: selectedAccount.smtpSecure,
           auth: {
             user: selectedAccount.email,
-            pass: selectedAccount.appPassword,
+            pass: decrypt(selectedAccount.appPassword),
           },
         } : {
           service: 'gmail',
           auth: {
             user: selectedAccount.email,
-            pass: selectedAccount.appPassword,
+            pass: decrypt(selectedAccount.appPassword),
           },
         });
 

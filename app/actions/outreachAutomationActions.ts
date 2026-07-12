@@ -9,6 +9,7 @@ import { EmailAccount } from '@/models/EmailAccount';
 import { EmailCampaignLog } from '@/models/EmailCampaignLog';
 import nodemailer from 'nodemailer';
 import { generateAIContent } from '@/lib/aiProvider';
+import { decrypt } from '@/lib/encryption';
 
 /**
  * Automatically select an available email account that hasn't reached its daily limit.
@@ -112,7 +113,7 @@ export async function executeAutomatedOutreach(leadId: string, isFollowUp = fals
       service: 'gmail',
       auth: {
         user: account.email,
-        pass: account.appPassword,
+        pass: decrypt(account.appPassword),
       },
     });
 
@@ -289,7 +290,7 @@ export async function executeCampaignSequence(campaignLeadId: string) {
 
     const transporter = nodemailer.createTransport({
       service: 'gmail',
-      auth: { user: account.email, pass: account.appPassword },
+      auth: { user: account.email, pass: decrypt(account.appPassword) },
       connectionTimeout: 10000,
       greetingTimeout: 10000,
       socketTimeout: 10000,

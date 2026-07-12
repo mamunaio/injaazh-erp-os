@@ -3,12 +3,13 @@ import { EmailAccount } from '@/models/EmailAccount';
 import { EmailCampaignLog } from '@/models/EmailCampaignLog';
 import { Lead } from '@/models/Lead';
 import connectDB from '@/lib/mongodb';
+import { decrypt } from '@/lib/encryption';
 
 export async function checkRepliesForAccount(account: any) {
   const config = {
     imap: {
       user: account.email,
-      password: account.appPassword,
+      password: decrypt(account.appPassword),
       host: 'imap.gmail.com',
       port: 993,
       tls: true,

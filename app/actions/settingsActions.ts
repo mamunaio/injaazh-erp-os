@@ -4,14 +4,19 @@ import nodemailer from 'nodemailer';
 import connectToDatabase from '@/lib/mongodb';
 import { SystemSettings } from '@/models/SystemSettings';
 import { EmailAccount } from '@/models/EmailAccount';
+import { encrypt, decrypt } from '@/lib/encryption';
 
 export async function getSystemSettings(key: string) {
   try {
     await connectToDatabase();
     const settings = await SystemSettings.findOne({ key }).lean();
+    let data = settings ? (settings.value as any) : null;
+    if (key === 'smtp' && data && data.pass) {
+      data.pass = decrypt(data.pass);
+    }
     return {
       success: true,
-      data: settings ? (settings.value as any) : null,
+      data,
     };
   } catch (error: any) {
     console.error(`❌ Error fetching system settings for key ${key}:`, error);
@@ -25,9 +30,15 @@ export async function getSystemSettings(key: string) {
 export async function saveSystemSettings(key: string, value: any) {
   try {
     await connectToDatabase();
+    
+    const valueToSave = { ...value };
+    if (key === 'smtp' && valueToSave.pass) {
+      valueToSave.pass = encrypt(valueToSave.pass);
+    }
+
     const settings = await SystemSettings.findOneAndUpdate(
       { key },
-      { value },
+      { value: valueToSave },
       { new: true, upsert: true }
     );
 
@@ -36,7 +47,7 @@ export async function saveSystemSettings(key: string, value: any) {
       await EmailAccount.findOneAndUpdate(
         { email: value.user },
         {
-          appPassword: value.pass,
+          appPassword: encrypt(value.pass),
           accountType: 'smtp',
           smtpHost: value.host,
           smtpPort: Number(value.port) || 465,

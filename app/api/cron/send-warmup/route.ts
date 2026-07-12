@@ -3,6 +3,7 @@ import connectToDatabase from '@/lib/mongodb';
 import { EmailAccount } from '@/models/EmailAccount';
 import { WarmupLog } from '@/models/WarmupLog';
 import nodemailer from 'nodemailer';
+import { decrypt } from '@/lib/encryption';
 
 export const maxDuration = 60; // 60 seconds (Vercel max for some plans)
 
@@ -83,13 +84,13 @@ export async function GET(request: Request) {
         secure: senderAccount.smtpSecure,
         auth: {
           user: senderAccount.email,
-          pass: senderAccount.appPassword,
+          pass: decrypt(senderAccount.appPassword),
         },
       } : {
         service: 'gmail',
         auth: {
           user: senderAccount.email,
-          pass: senderAccount.appPassword,
+          pass: decrypt(senderAccount.appPassword),
         },
       });
 
