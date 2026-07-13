@@ -281,6 +281,12 @@ export default function OutreachComposerModal({
         setSelectedTemplateId(TEMPLATES[0].id);
       }
       
+      if (lead.outreach_scheduled_for && new Date(lead.outreach_scheduled_for) > new Date()) {
+        setScheduleTime(new Date(lead.outreach_scheduled_for));
+      } else {
+        setScheduleTime(null);
+      }
+      
       // Fetch active accounts for sender selection
       const fetchAccounts = async () => {
         const res = await getEmailAccounts();
@@ -714,7 +720,7 @@ export default function OutreachComposerModal({
                     className="px-4 py-2.5 mt-4 bg-slate-100 dark:bg-[#232734] hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 font-bold rounded-xl text-xs flex items-center justify-center gap-2 disabled:opacity-50 transition-colors h-[34px]"
                   >
                     {isScheduling ? <Loader2 size={14} className="animate-spin" /> : <Calendar size={14} />}
-                    Schedule
+                    {lead?.outreach_status === 'Queued' ? 'Update Schedule' : 'Schedule'}
                   </button>
                 </div>
 
