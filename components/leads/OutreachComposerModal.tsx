@@ -378,7 +378,7 @@ export default function OutreachComposerModal({
     }
   };
 
-  if (!isOpen || !lead) return null;
+
 
   const handleAIGenerate = async () => {
     setIsGeneratingAI(true);
@@ -481,9 +481,11 @@ export default function OutreachComposerModal({
   };
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        {/* Glass backdrop */}
+    <>
+      <AnimatePresence>
+        {isOpen && lead && (
+          <div key="main-modal" className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Glass backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -829,11 +831,12 @@ export default function OutreachComposerModal({
           </div>
         </motion.div>
       </div>
-
+        )}
+      </AnimatePresence>
       {/* Mini Modal for Saving Template */}
       <AnimatePresence>
         {isTemplateModalOpen && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div key="mini-modal" className="fixed inset-0 z-[60] flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -883,6 +886,6 @@ export default function OutreachComposerModal({
           </div>
         )}
       </AnimatePresence>
-    </AnimatePresence>
+    </>
   );
 }
