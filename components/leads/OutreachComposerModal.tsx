@@ -267,7 +267,7 @@ export default function OutreachComposerModal({
     };
   }, [isOpen]);
 
-  // Initialize and update fields when lead changes
+  // Initialize and update fields when lead changes or modal opens
   useEffect(() => {
     if (lead && isOpen) {
       setContactName(lead.contact_person || 'there');
@@ -275,16 +275,24 @@ export default function OutreachComposerModal({
       setWebsiteUrl(lead.website_url || 'your website');
       setSuccessInfo(null);
       setErrorMessage(null);
-      if (lead.email_draft) {
-        setSelectedTemplateId('custom-draft');
-      } else {
-        setSelectedTemplateId(TEMPLATES[0].id);
-      }
       
-      if (lead.outreach_scheduled_for && new Date(lead.outreach_scheduled_for) > new Date()) {
-        setScheduleTime(new Date(lead.outreach_scheduled_for));
+      const draftTemplateId = lead.email_draft ? 'custom-draft' : TEMPLATES[0].id;
+      setSelectedTemplateId(draftTemplateId);
+      
+      // Immediately set subject and body based on the lead data
+      if (lead.email_draft) {
+        setSubject(lead.email_subject_draft || 'Custom Subject');
+        setBody(lead.email_draft);
       } else {
-        setScheduleTime(null);
+        const activeTemplate = TEMPLATES[0];
+        const compile = (text: string) => {
+          return text
+            .replace(/{companyName}/g, lead.company_name || 'your company')
+            .replace(/{contactName}/g, lead.contact_person || 'there')
+            .replace(/{websiteUrl}/g, lead.website_url || 'your website');
+        };
+        setSubject(compile(activeTemplate.subject));
+        setBody(compile(activeTemplate.body));
       }
       
       // Fetch active accounts for sender selection
@@ -296,7 +304,7 @@ export default function OutreachComposerModal({
       };
       fetchAccounts();
     }
-  }, [lead, isOpen]);
+  }, [lead, isOpen]); // Only run when lead or isOpen changes
 
   // Anti-Spam Cooldown Timer
   useEffect(() => {
@@ -319,11 +327,10 @@ export default function OutreachComposerModal({
     return () => clearInterval(interval);
   }, [isOpen, isSending]); // Re-run when modal opens or after sending finishes
 
-  // Compile template whenever variables or template selection changes
+  // Compile template whenever template selection changes
   useEffect(() => {
-    if (!lead || !selectedTemplateId || selectedTemplateId === 'ai-draft') return;
+    if (!lead || !selectedTemplateId || selectedTemplateId === 'ai-draft' || !isOpen) return;
     
-    // For custom-draft, we don't compile placeholders if it's already compiled manually by user
     if (selectedTemplateId === 'custom-draft') {
       const activeTemplate = dynamicTemplates.find(t => t.id === 'custom-draft');
       if (activeTemplate) {
@@ -344,7 +351,7 @@ export default function OutreachComposerModal({
 
     setSubject(compile(activeTemplate.subject));
     setBody(compile(activeTemplate.body));
-  }, [selectedTemplateId, contactName, companyName, websiteUrl, lead, isOpen, dynamicTemplates]);
+  }, [selectedTemplateId, dynamicTemplates]); // Only depend on selectedTemplateId to avoid overwriting user edits
 
   if (!isOpen || !lead) return null;
 

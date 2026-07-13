@@ -532,6 +532,9 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
         onEmailSent={(updatedLead) => {
           if(updatedLead) {
             setLeads(leads.map(l => l._id === updatedLead._id ? updatedLead : l));
+            if (selectedLead?._id === updatedLead._id) {
+              setSelectedLead(updatedLead);
+            }
           }
         }}
       />
