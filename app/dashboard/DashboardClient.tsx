@@ -478,7 +478,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                      <tr key={lead._id} onClick={() => router.push('/prospects')} className="hover:bg-slate-100 dark:hover:bg-[#09090B] even:bg-slate-50/50 dark:even:bg-[#09090B]/50 transition-colors group cursor-pointer">
                        <td className="px-6 py-5 text-sm font-bold text-slate-900 dark:text-white">{lead.company_name}</td>
                        <td className="px-6 py-5 text-sm text-slate-500 dark:text-slate-400">{lead.targetService || 'N/A'}</td>
-                       <td className="px-6 py-5"><span className="px-2 py-1 rounded-md bg-[#2563EB]/10 text-[#2563EB] text-xs font-bold border border-[#2563EB]/20">{lead.outreach_status}</span></td>
+                       <td className="px-6 py-5"><span className="inline-block whitespace-nowrap px-2 py-1 rounded-md bg-[#2563EB]/10 text-[#2563EB] text-xs font-bold border border-[#2563EB]/20">{lead.outreach_status}</span></td>
                      </tr>
                    )) : (
                      <tr>
