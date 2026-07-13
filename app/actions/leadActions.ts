@@ -549,9 +549,9 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
       usedAccountEmail = 'sandbox@simulation.local';
     }
     
-    // Progress Lead outreach_status to 'Contacted'!
+    // Progress Lead outreach_status to 'Email Sent'!
     const oldStatus = lead.outreach_status;
-    const newStatus = oldStatus === 'New' ? 'Email Sent' : oldStatus; // Only progress if it was 'New'
+    const newStatus = (oldStatus === 'New' || oldStatus === 'Queued') ? 'Email Sent' : oldStatus; // Progress if it was 'New' or 'Queued'
     
     // Create outreach log entry
     const newLog = {
