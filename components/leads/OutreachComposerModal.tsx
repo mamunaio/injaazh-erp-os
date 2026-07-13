@@ -707,7 +707,24 @@ export default function OutreachComposerModal({
                 </div>
 
                 {/* Composer Form */}
-                <div className="space-y-4">
+                <div className="space-y-4 pb-4">
+                  {errorMessage && (
+                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-3 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 flex items-start gap-3">
+                      <AlertCircle size={16} className="text-red-500 mt-0.5 shrink-0" />
+                      <p className="text-xs font-medium text-red-600 dark:text-red-400">{errorMessage}</p>
+                    </motion.div>
+                  )}
+
+                  {successInfo && (
+                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-3 rounded-xl bg-green-50 dark:bg-emerald-500/10 border border-green-200 dark:border-emerald-500/20 flex items-start gap-3">
+                      <CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-xs font-bold text-green-700 dark:text-emerald-400">Successfully sent!</p>
+                        <p className="text-[11px] text-green-600/80 dark:text-emerald-400/80 font-medium">Via: {successInfo.sentVia}{successInfo.isSimulated && ' (Simulated Sandbox Mode)'}</p>
+                      </div>
+                    </motion.div>
+                  )}
+
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Subject Line</label>
                     <input 
@@ -719,7 +736,7 @@ export default function OutreachComposerModal({
                     />
                   </div>
 
-                  <div className="space-y-1.5 flex flex-col h-full">
+                  <div className="space-y-1.5 flex flex-col">
                     <div className="flex items-center justify-between ml-1">
                       <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email Body</label>
                       <button
@@ -740,23 +757,6 @@ export default function OutreachComposerModal({
                       className="w-full flex-1 min-h-[250px] neu-flat bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-4 text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all resize-y leading-relaxed font-medium"
                     />
                   </div>
-
-                  {errorMessage && (
-                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-3 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 flex items-start gap-3">
-                      <AlertCircle size={16} className="text-red-500 mt-0.5 shrink-0" />
-                      <p className="text-xs font-medium text-red-600 dark:text-red-400">{errorMessage}</p>
-                    </motion.div>
-                  )}
-
-                  {successInfo && (
-                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-3 rounded-xl bg-green-50 dark:bg-emerald-500/10 border border-green-200 dark:border-emerald-500/20 flex items-start gap-3">
-                      <CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" />
-                      <div>
-                        <p className="text-xs font-bold text-green-700 dark:text-emerald-400">Successfully sent!</p>
-                        <p className="text-[11px] text-green-600/80 dark:text-emerald-400/80 font-medium">Via: {successInfo.sentVia}{successInfo.isSimulated && ' (Simulated Sandbox Mode)'}</p>
-                      </div>
-                    </motion.div>
-                  )}
                 </div>
               </div>
             </div>
