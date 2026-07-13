@@ -1,6 +1,7 @@
 import React from 'react';
 import { getMarketplaceClients } from '@/actions/marketplaceClientActions';
 import { getMarketplaceProjects } from '@/app/actions/marketplaceActions';
+import { getProjectsBoard } from '@/app/actions/projectActions';
 import ClientHubClient from './ClientHubClient';
 import { Metadata } from 'next';
 import { getAuthUser } from '@/lib/auth';
@@ -19,20 +20,22 @@ export default async function MarketplaceClientsPage() {
     redirect('/dashboard');
   }
 
-  const [result, projects] = await Promise.all([
+  const [result, projects, generalProjectsRes] = await Promise.all([
     getMarketplaceClients(),
-    getMarketplaceProjects()
+    getMarketplaceProjects(),
+    getProjectsBoard()
   ]);
   
   const initialClients = result.success ? result.data : [];
+  const generalProjects = generalProjectsRes.success ? generalProjectsRes.data : [];
 
   // Calculate total spent per client based on paid milestones and completed projects
   const clientsWithSpending = initialClients.map((client: any) => {
     let totalSpent = 0;
     
+    // Process Marketplace Projects
     projects.forEach((project: any) => {
       // Check if project belongs to this client
-      // The project might have client details (direct name matching) or clientId (reference)
       const matchesClient = 
         (project.clientId && project.clientId.toString() === client._id.toString()) ||
         (project.clientDetails?.clientName === client.name);
@@ -56,6 +59,13 @@ export default async function MarketplaceClientsPage() {
           : (project.status === 'Completed' ? budgetValue : 0);
           
         totalSpent += earned;
+      }
+    });
+
+    // Process General Projects (from Work -> Projects)
+    generalProjects.forEach((project: any) => {
+      if (project.clientName && project.clientName === client.name && project.status === 'Completed') {
+        totalSpent += project.budget || 0;
       }
     });
 
