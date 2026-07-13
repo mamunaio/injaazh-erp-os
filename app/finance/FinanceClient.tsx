@@ -101,9 +101,9 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
     return result.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [transactions, dateFilter, typeFilter, searchQuery]);
 
-  // ── KPIs ────────────────────────────────────────────────────────────────────
-  const totalIncome = filteredTransactions.filter(t => t.type === 'Income').reduce((acc, t) => acc + t.amount, 0);
-  const totalExpense = filteredTransactions.filter(t => t.type === 'Expense').reduce((acc, t) => acc + t.amount, 0);
+  // ── KPIs (All Time) ─────────────────────────────────────────────────────────
+  const totalIncome = transactions.filter(t => t.type === 'Income').reduce((acc, t) => acc + t.amount, 0);
+  const totalExpense = transactions.filter(t => t.type === 'Expense').reduce((acc, t) => acc + t.amount, 0);
   const netProfit = totalIncome - totalExpense;
 
   // ── Chart Data ──────────────────────────────────────────────────────────────
@@ -111,7 +111,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
     const map = new Map<string, { dateStr: string; Income: number; Expense: number }>();
     
     // Group by month
-    filteredTransactions.forEach(t => {
+    transactions.forEach(t => {
       const d = new Date(t.date);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
       if (!map.has(key)) map.set(key, { dateStr: format(d, 'MMM yyyy'), Income: 0, Expense: 0 });
@@ -124,7 +124,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
     return Array.from(map.entries())
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(entry => entry[1]);
-  }, [filteredTransactions]);
+  }, [transactions]);
 
   const profitChartData = chartData.map(d => ({
     name: d.dateStr,
