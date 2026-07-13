@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Mail, Send, Loader2, Sparkles, Code, Search, AlertCircle, CheckCircle, Info, FileText, ChevronDown, Calendar } from 'lucide-react';
+import { X, Mail, Send, Loader2, Sparkles, Code, Search, AlertCircle, CheckCircle, Info, FileText, ChevronDown, Calendar, Plus, Trash2, Edit2, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -9,6 +9,7 @@ import { fromZonedTime } from 'date-fns-tz';
 import { sendOutreachEmail, scheduleOutreachEmail } from '@/app/actions/leadActions';
 import { getEmailAccounts } from '@/app/actions/emailAccountActions';
 import { generateAIEmailDraft } from '@/app/actions/aiActions';
+import { getEmailTemplates, createEmailTemplate, updateEmailTemplate, deleteEmailTemplate } from '@/app/actions/emailTemplateActions';
 
 interface Template {
   id: string;
@@ -16,6 +17,7 @@ interface Template {
   icon: React.ReactNode;
   subject: string;
   body: string;
+  isDb?: boolean;
 }
 
 const TEMPLATES: Template[] = [
@@ -24,57 +26,65 @@ const TEMPLATES: Template[] = [
     name: 'High-End Web Dev',
     icon: <Code size={16} className="text-indigo-400" />,
     subject: 'Proposal for {companyName}: Modern Web Experience',
-    body: `Hi {contactName},
-
-I hope this email finds you well.
-
-I was recently reviewing {companyName} and was highly impressed by your business footprint. However, I noticed that your online experience could be significantly modernized to convert more visitors into high-paying customers.
-
-We specialize in building ultra-fast, high-end Next.js and React web applications that load in under 1 second and feel as fluid as a native mobile app. 
-
-Would you be open to a brief 10-minute call next week to see how a modern digital storefront can boost {companyName}'s conversion rates?
-
-Best regards,
-[Your Name]
-Injaazh Digital`
+    body: `Hi {contactName},\n\nI hope this email finds you well.\n\nI was recently reviewing {companyName} and was highly impressed by your business footprint. However, I noticed that your online experience could be significantly modernized to convert more visitors into high-paying customers.\n\nWe specialize in building ultra-fast, high-end Next.js and React web applications that load in under 1 second and feel as fluid as a native mobile app.\n\nWould you be open to a brief 10-minute call next week to see how a modern digital storefront can boost {companyName}'s conversion rates?\n\nBest regards,\n[Your Name]\nInjaazh Digital`
   },
   {
     id: 'seo',
     name: 'Technical SEO Audit',
     icon: <Search size={16} className="text-blue-400" />,
     subject: 'Technical SEO Audit for {companyName}',
-    body: `Hi {contactName},
-
-I was looking at {companyName}'s visibility on Google and noticed a few technical bottlenecks that are currently holding you back from ranking on the first page for key search terms.
-
-Specifically, your site has a few performance and crawlability issues that, when fixed, can dramatically increase your organic leads.
-
-I’ve prepared a quick, custom video walkthrough pointing out these exact issues. Would you like me to send it over? No strings attached.
-
-Best regards,
-[Your Name]
-Injaazh Digital`
+    body: `Hi {contactName},\n\nI was looking at {companyName}'s visibility on Google and noticed a few technical bottlenecks that are currently holding you back from ranking on the first page for key search terms.\n\nSpecifically, your site has a few performance and crawlability issues that, when fixed, can dramatically increase your organic leads.\n\nI’ve prepared a quick, custom video walkthrough pointing out these exact issues. Would you like me to send it over? No strings attached.\n\nBest regards,\n[Your Name]\nInjaazh Digital`
   },
   {
     id: 'aeo',
     name: 'Answer Engine/AEO',
     icon: <Sparkles size={16} className="text-purple-400" />,
     subject: 'Is {companyName} visible in ChatGPT & Perplexity?',
-    body: `Hi {contactName},
-
-Over 60% of modern tech-savvy clients are now using AI engines like ChatGPT, Perplexity, and Claude to find service providers, instead of traditional Google search.
-
-I did a quick check on whether AI search engines recommend {companyName} when users ask for top providers in your area, and the results were interesting.
-
-We specialize in Answer Engine Optimization (AEO) and Generative Engine Optimization (GEO) to ensure your brand is cited and recommended as the prime choice by LLMs.
-
-Would you be open to seeing a quick report on how {companyName} currently ranks in AI search results?
-
-Best regards,
-[Your Name]
-Injaazh Digital`
+    body: `Hi {contactName},\n\nOver 60% of modern tech-savvy clients are now using AI engines like ChatGPT, Perplexity, and Claude to find service providers, instead of traditional Google search.\n\nI did a quick check on whether AI search engines recommend {companyName} when users ask for top providers in your area, and the results were interesting.\n\nWe specialize in Answer Engine Optimization (AEO) and Generative Engine Optimization (GEO) to ensure your brand is cited and recommended as the prime choice by LLMs.\n\nWould you be open to seeing a quick report on how {companyName} currently ranks in AI search results?\n\nBest regards,\n[Your Name]\nInjaazh Digital`
   }
 ];
+
+// Helper to play sounds
+const playStatusSound = (type: 'success' | 'error' | 'loading') => {
+  try {
+    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    
+    if (type === 'success') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+      osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
+      osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2);
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.05);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+      osc.connect(gainNode); gainNode.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.4);
+    } else if (type === 'error') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(200, ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 0.3);
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 0.05);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      osc.connect(gainNode); gainNode.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.3);
+    } else if (type === 'loading') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, ctx.currentTime);
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.05, ctx.currentTime + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+      osc.connect(gainNode); gainNode.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.1);
+    }
+  } catch (e) {
+    console.error("Audio playback failed", e);
+  }
+};
 
 // Custom Select Component for Neumorphic Dropdowns
 const CustomSelect = ({ value, onChange, options, className = "", dropdownUp = false }: any) => {
@@ -87,16 +97,12 @@ const CustomSelect = ({ value, onChange, options, className = "", dropdownUp = f
     } else {
       document.body.style.overflow = '';
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
+    return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
+      if (selectRef.current && !selectRef.current.contains(event.target as Node)) setIsOpen(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -145,63 +151,6 @@ const CustomSelect = ({ value, onChange, options, className = "", dropdownUp = f
   );
 };
 
-// Helper to play sounds without external files
-const playStatusSound = (type: 'success' | 'error' | 'loading') => {
-  try {
-    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContext) return;
-    const ctx = new AudioContext();
-    const osc = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-    
-    if (type === 'success') {
-      // Happy chime (upward arpeggio)
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-      osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5
-      osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2); // G5
-      
-      gainNode.gain.setValueAtTime(0, ctx.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.05);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
-      
-      osc.connect(gainNode);
-      gainNode.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.4);
-    } else if (type === 'error') {
-      // Error buzz (low tone descending)
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(200, ctx.currentTime);
-      osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 0.3);
-      
-      gainNode.gain.setValueAtTime(0, ctx.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 0.05);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-      
-      osc.connect(gainNode);
-      gainNode.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.3);
-    } else if (type === 'loading') {
-      // Brief click for action initiation
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(800, ctx.currentTime);
-      
-      gainNode.gain.setValueAtTime(0, ctx.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.05, ctx.currentTime + 0.02);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-      
-      osc.connect(gainNode);
-      gainNode.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.1);
-    }
-  } catch (e) {
-    console.error("Audio playback failed", e);
-  }
-};
-
 export default function OutreachComposerModal({
   isOpen,
   onClose,
@@ -213,19 +162,30 @@ export default function OutreachComposerModal({
   lead: any;
   onEmailSent: (updatedLead: any) => void;
 }) {
+  const [dbTemplates, setDbTemplates] = useState<Template[]>([]);
+  const [isFetchingTemplates, setIsFetchingTemplates] = useState(false);
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
+  const [templateName, setTemplateName] = useState('');
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'composer' | 'templates'>('composer');
+
   const dynamicTemplates = React.useMemo(() => {
-    if (!lead || !lead.email_draft) return TEMPLATES;
-    return [
-      {
-        id: 'custom-draft',
-        name: 'Custom Saved Draft',
-        icon: <FileText size={16} className="text-orange-400" />,
-        subject: lead.email_subject_draft || 'Custom Subject',
-        body: lead.email_draft
-      },
-      ...TEMPLATES
-    ];
-  }, [lead]);
+    let result = [...dbTemplates, ...TEMPLATES];
+    if (lead && lead.email_draft) {
+      result = [
+        {
+          id: 'custom-draft',
+          name: 'Draft (Queued)',
+          icon: <FileText size={16} className="text-orange-400" />,
+          subject: lead.email_subject_draft || 'Custom Subject',
+          body: lead.email_draft
+        },
+        ...result
+      ];
+    }
+    return result;
+  }, [lead, dbTemplates]);
 
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
   
@@ -267,6 +227,29 @@ export default function OutreachComposerModal({
     };
   }, [isOpen]);
 
+  const fetchTemplates = async () => {
+    setIsFetchingTemplates(true);
+    const res = await getEmailTemplates();
+    if (res.success && res.templates) {
+      const mapped = res.templates.map((t: any) => ({
+        id: t._id.toString(),
+        name: t.name,
+        subject: t.subject,
+        body: t.body,
+        icon: <FileText size={16} className="text-indigo-400" />,
+        isDb: true
+      }));
+      setDbTemplates(mapped);
+    }
+    setIsFetchingTemplates(false);
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchTemplates();
+    }
+  }, [isOpen]);
+
   // Initialize and update fields when lead changes or modal opens
   useEffect(() => {
     if (lead && isOpen) {
@@ -279,7 +262,12 @@ export default function OutreachComposerModal({
       const draftTemplateId = lead.email_draft ? 'custom-draft' : TEMPLATES[0].id;
       setSelectedTemplateId(draftTemplateId);
       
-      // Immediately set subject and body based on the lead data
+      if (lead.outreach_scheduled_for && new Date(lead.outreach_scheduled_for) > new Date()) {
+        setScheduleTime(new Date(lead.outreach_scheduled_for));
+      } else {
+        setScheduleTime(null);
+      }
+      
       if (lead.email_draft) {
         setSubject(lead.email_subject_draft || 'Custom Subject');
         setBody(lead.email_draft);
@@ -295,7 +283,6 @@ export default function OutreachComposerModal({
         setBody(compile(activeTemplate.body));
       }
       
-      // Fetch active accounts for sender selection
       const fetchAccounts = async () => {
         const res = await getEmailAccounts();
         if (res.success && res.accounts) {
@@ -304,12 +291,11 @@ export default function OutreachComposerModal({
       };
       fetchAccounts();
     }
-  }, [lead, isOpen]); // Only run when lead or isOpen changes
+  }, [lead, isOpen]);
 
   // Anti-Spam Cooldown Timer
   useEffect(() => {
     if (!isOpen) return;
-    
     const checkCooldown = () => {
       const lastSent = localStorage.getItem('lastEmailSentTime');
       if (lastSent) {
@@ -321,11 +307,10 @@ export default function OutreachComposerModal({
         }
       }
     };
-    
     checkCooldown();
     const interval = setInterval(checkCooldown, 1000);
     return () => clearInterval(interval);
-  }, [isOpen, isSending]); // Re-run when modal opens or after sending finishes
+  }, [isOpen, isSending]);
 
   // Compile template whenever template selection changes
   useEffect(() => {
@@ -351,7 +336,47 @@ export default function OutreachComposerModal({
 
     setSubject(compile(activeTemplate.subject));
     setBody(compile(activeTemplate.body));
-  }, [selectedTemplateId, dynamicTemplates]); // Only depend on selectedTemplateId to avoid overwriting user edits
+  }, [selectedTemplateId, dynamicTemplates]);
+
+  const handleSaveTemplate = async () => {
+    if (!templateName.trim() || !subject.trim() || !body.trim()) {
+      setErrorMessage('Template name, subject, and body are required.');
+      return;
+    }
+    setIsSavingTemplate(true);
+    setErrorMessage(null);
+    try {
+      if (editingTemplateId) {
+        await updateEmailTemplate(editingTemplateId, { name: templateName, subject, body });
+      } else {
+        await createEmailTemplate({ name: templateName, subject, body });
+      }
+      await fetchTemplates();
+      setIsTemplateModalOpen(false);
+      setTemplateName('');
+      setEditingTemplateId(null);
+      playStatusSound('success');
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to save template');
+    } finally {
+      setIsSavingTemplate(false);
+    }
+  };
+
+  const handleDeleteTemplate = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('Are you sure you want to delete this template?')) return;
+    
+    try {
+      await deleteEmailTemplate(id);
+      await fetchTemplates();
+      if (selectedTemplateId === id) {
+        setSelectedTemplateId(TEMPLATES[0].id);
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to delete template');
+    }
+  };
 
   if (!isOpen || !lead) return null;
 
@@ -368,7 +393,6 @@ export default function OutreachComposerModal({
       if (result.success && result.data) {
         setBody(result.data.body || '');
         setSubject(result.data.subject || `Quick question about ${companyName || lead.company_name}`);
-        // Optionally reset template selection so it doesn't overwrite our AI text if fields change
         setSelectedTemplateId('ai-draft'); 
       } else {
         setErrorMessage(result.error || 'Failed to generate AI email');
@@ -386,32 +410,21 @@ export default function OutreachComposerModal({
       setErrorMessage(`Please wait ${cooldownRemaining} seconds to prevent spam.`);
       return;
     }
-    if (!subject.trim()) {
+    if (!subject.trim() || !body.trim()) {
       playStatusSound('error');
-      setErrorMessage('Subject cannot be empty');
+      setErrorMessage('Subject and body cannot be empty');
       return;
     }
-    if (!body.trim()) {
-      playStatusSound('error');
-      setErrorMessage('Email body cannot be empty');
-      return;
-    }
-
     playStatusSound('loading');
     setIsSending(true);
     setErrorMessage(null);
-
     try {
       const response = await sendOutreachEmail(lead._id, subject, body, selectedSenderId);
       if (response.success && response.data) {
         playStatusSound('success');
         setSuccessInfo({ isSimulated: !!response.isSimulated, sentVia: response.sentVia });
-        
-        // Record the time to enforce a 30s cooldown for the next email
         localStorage.setItem('lastEmailSentTime', Date.now().toString());
         setCooldownRemaining(30);
-
-        // Let the state settle, then invoke callback and close
         setTimeout(() => {
           onEmailSent(response.data);
           onClose();
@@ -421,7 +434,6 @@ export default function OutreachComposerModal({
         setErrorMessage(response.error || 'Outreach email failed to dispatch.');
       }
     } catch (err: any) {
-      console.error('Outreach modal dispatch error:', err);
       playStatusSound('error');
       setErrorMessage(err.message || 'An unexpected error occurred.');
     } finally {
@@ -434,13 +446,10 @@ export default function OutreachComposerModal({
       setErrorMessage('Subject, Body and Schedule Time are required.');
       return;
     }
-
     playStatusSound('loading');
     setIsScheduling(true);
     setErrorMessage(null);
-
     try {
-      // Treat the selected time as if it was in 'America/New_York' (EST/EDT)
       const y = scheduleTime.getFullYear();
       const m = String(scheduleTime.getMonth() + 1).padStart(2, '0');
       const d = String(scheduleTime.getDate()).padStart(2, '0');
@@ -455,7 +464,6 @@ export default function OutreachComposerModal({
       if (response.success && response.data) {
         playStatusSound('success');
         setSuccessInfo({ isSimulated: false, sentVia: 'Queued for later' });
-        
         setTimeout(() => {
           onEmailSent(response.data);
           onClose();
@@ -465,7 +473,6 @@ export default function OutreachComposerModal({
         setErrorMessage(response.error || 'Outreach email failed to schedule.');
       }
     } catch (err: any) {
-      console.error('Outreach modal schedule error:', err);
       playStatusSound('error');
       setErrorMessage(err.message || 'An unexpected error occurred.');
     } finally {
@@ -485,265 +492,315 @@ export default function OutreachComposerModal({
           onClick={(e) => { e.stopPropagation(); if (!isSending) onClose(); }}
         />
 
-        {/* Modal Container */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-5xl h-[85vh] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-2xl flex flex-col overflow-hidden shadow-2xl"
+          className="relative w-full max-w-5xl bg-white dark:bg-[#11131A] rounded-2xl shadow-2xl border border-slate-200 dark:border-[#232734] overflow-hidden flex flex-col md:flex-row h-[85vh] max-h-[800px]"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header */}
-          <div className="flex justify-between items-center p-6 border-b border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A]">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-[#2563EB]/10 text-[#2563EB] rounded-xl">
-                <Mail size={22} className="animate-pulse" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">CRM Cold Email Outreach</h2>
-                <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">
-                  Send outreach to <span className="font-semibold text-slate-900 dark:text-white">{lead.company_name}</span> &bull; {lead.email}
-                </p>
-              </div>
+          {/* SIDEBAR: Templates List (Hidden on mobile by default) */}
+          <div className={`w-full md:w-72 flex flex-col bg-slate-50 dark:bg-[#09090B] border-r border-slate-200 dark:border-[#232734] ${activeTab === 'templates' ? 'block' : 'hidden md:flex'}`}>
+            <div className="p-4 border-b border-slate-200 dark:border-[#232734] flex items-center justify-between">
+              <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <FileText size={16} className="text-indigo-500" />
+                Templates
+              </h3>
+              <button 
+                onClick={() => {
+                  setTemplateName('');
+                  setEditingTemplateId(null);
+                  setIsTemplateModalOpen(true);
+                }}
+                className="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500 hover:text-white transition-colors"
+                title="Create Template"
+              >
+                <Plus size={16} />
+              </button>
             </div>
-            <button
-              onClick={(e) => { e.stopPropagation(); onClose(); }}
-              disabled={isSending}
-              className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] border border-transparent hover:border-slate-200 dark:border-[#232734] rounded-xl transition-all disabled:opacity-50"
-            >
-              <X size={20} />
-            </button>
-          </div>
-
-          <div className="flex flex-1 overflow-hidden">
             
-            {/* Left side: Configuration Panel */}
-            <div className="w-full md:w-1/3 border-r border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A] p-6 flex flex-col gap-6 overflow-y-auto custom-scrollbar">
-              
-              <div>
-                <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3 block">
-                  Select Template
-                </label>
-                <div className="space-y-2">
-                  {dynamicTemplates.map((tmpl) => {
-                    const isSelected = selectedTemplateId === tmpl.id;
-                    return (
-                      <button
-                        key={tmpl.id}
-                        onClick={() => setSelectedTemplateId(tmpl.id)}
-                        className={`w-full text-left p-3.5 rounded-xl border transition-all duration-200 flex items-start gap-3 ${
-                          isSelected 
-                            ? 'bg-[#2563EB]/10 border-[#2563EB]/30' 
-                            : 'bg-slate-50 dark:bg-[#09090B] border-slate-200 dark:border-[#232734] hover:border-[#2563EB]/20'
+            <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
+              {isFetchingTemplates ? (
+                <div className="flex items-center justify-center py-10">
+                  <Loader2 className="animate-spin text-slate-400" size={20} />
+                </div>
+              ) : (
+                <>
+                  <div className="text-xs font-bold text-slate-500 dark:text-slate-400 px-2 py-1 uppercase tracking-wider">Your Templates</div>
+                  {dbTemplates.length === 0 ? (
+                    <div className="px-2 py-4 text-xs text-slate-500 dark:text-slate-500 italic">No custom templates yet.</div>
+                  ) : (
+                    dbTemplates.map(t => (
+                      <div 
+                        key={t.id}
+                        onClick={() => { setSelectedTemplateId(t.id); setActiveTab('composer'); }}
+                        className={`group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all border ${
+                          selectedTemplateId === t.id 
+                            ? 'bg-indigo-500/10 border-indigo-500/30' 
+                            : 'bg-white dark:bg-[#11131A] border-slate-200 dark:border-[#232734] hover:border-slate-300 dark:hover:border-slate-700'
                         }`}
                       >
-                        <div className={`p-2 rounded-lg ${isSelected ? 'bg-[#2563EB]/20 text-[#2563EB]' : 'bg-white dark:bg-[#11131A] text-slate-500 dark:text-slate-400'}`}>
-                          {tmpl.icon}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className={`font-bold text-sm ${isSelected ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-300'}`}>
-                            {tmpl.name}
+                        <div className="flex items-center gap-3 overflow-hidden">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                            selectedTemplateId === t.id ? 'bg-indigo-500/20 text-indigo-500' : 'bg-slate-100 dark:bg-white/5 text-slate-500'
+                          }`}>
+                            {t.icon}
                           </div>
-                          <div className="text-[11px] text-slate-500 truncate mt-0.5">
-                            {tmpl.id === 'custom-draft' ? tmpl.subject : tmpl.subject.replace('{companyName}', companyName || lead.company_name)}
+                          <div className="min-w-0">
+                            <h4 className={`text-[13px] font-bold truncate ${
+                              selectedTemplateId === t.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-800 dark:text-slate-200'
+                            }`}>{t.name}</h4>
+                            <p className="text-[10px] text-slate-500 truncate mt-0.5">{t.subject}</p>
                           </div>
                         </div>
-                      </button>
-                    );
-                  })}
+                        <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setTemplateName(t.name);
+                              setSubject(t.subject);
+                              setBody(t.body);
+                              setEditingTemplateId(t.id);
+                              setIsTemplateModalOpen(true);
+                            }}
+                            className="p-1 text-slate-400 hover:text-indigo-500 transition-colors"
+                          >
+                            <Edit2 size={12} />
+                          </button>
+                          <button 
+                            onClick={(e) => handleDeleteTemplate(t.id, e)}
+                            className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                  
+                  <div className="text-xs font-bold text-slate-500 dark:text-slate-400 px-2 py-1 mt-6 uppercase tracking-wider">Default Templates</div>
+                  {dynamicTemplates.filter(t => !t.isDb).map(t => (
+                    <div 
+                      key={t.id}
+                      onClick={() => { setSelectedTemplateId(t.id); setActiveTab('composer'); }}
+                      className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${
+                        selectedTemplateId === t.id 
+                          ? 'bg-slate-100 dark:bg-white/10 border-slate-300 dark:border-white/20' 
+                          : 'bg-transparent border-transparent hover:bg-white dark:hover:bg-[#11131A] hover:border-slate-200 dark:hover:border-[#232734]'
+                      }`}
+                    >
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-slate-100 dark:bg-white/5 text-slate-500">
+                        {t.icon}
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className={`text-[13px] font-bold truncate ${
+                          selectedTemplateId === t.id ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-300'
+                        }`}>{t.name}</h4>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+            
+            {/* Mobile Tab Switcher */}
+            <div className="md:hidden p-4 border-t border-slate-200 dark:border-[#232734]">
+              <button 
+                onClick={() => setActiveTab('composer')}
+                className="w-full py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black font-bold text-xs rounded-xl"
+              >
+                Back to Composer
+              </button>
+            </div>
+          </div>
+
+          {/* MAIN COMPOSER */}
+          <div className={`flex-1 flex flex-col ${activeTab === 'composer' ? 'block' : 'hidden md:flex'}`}>
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A] shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500">
+                  <Mail size={18} />
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white">Compose Outreach</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-2">
+                    To: <span className="font-semibold text-slate-700 dark:text-slate-300">{lead.email}</span>
+                  </p>
                 </div>
               </div>
-
-              <div>
-                <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3 block">
-                  Placeholders
-                </label>
-                
-                <div className="bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-2xl p-4 space-y-4">
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                        Contact Person ({'{contactName}'})
-                      </label>
-                      <input
-                        type="text"
-                        value={contactName}
-                        onChange={(e) => setContactName(e.target.value)}
-                        placeholder="e.g. John Doe"
-                        className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/50 transition-all placeholder:text-slate-600"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                        Company Name ({'{companyName}'})
-                      </label>
-                      <input
-                        type="text"
-                        value={companyName}
-                        onChange={(e) => setCompanyName(e.target.value)}
-                        placeholder="e.g. Southpaw Flooring"
-                        className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/50 transition-all placeholder:text-slate-600"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                        Website Url ({'{websiteUrl}'})
-                      </label>
-                      <input
-                        type="text"
-                        value={websiteUrl}
-                        onChange={(e) => setWebsiteUrl(e.target.value)}
-                        placeholder="e.g. southpawflooring.com"
-                        className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/50 transition-all placeholder:text-slate-600"
-                      />
-                    </div>
-                  </div>
-                </div>
+              <div className="flex items-center gap-2">
+                {/* Mobile tab toggle */}
+                <button 
+                  onClick={() => setActiveTab('templates')}
+                  className="md:hidden w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                >
+                  <FileText size={18} />
+                </button>
+                <button 
+                  onClick={onClose}
+                  className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                >
+                  <X size={18} />
+                </button>
               </div>
-
             </div>
 
-            {/* Right side: Email Editor Panel */}
-            <div className="w-full md:w-2/3 flex flex-col relative h-full bg-slate-50 dark:bg-[#09090B]">
-              
-              <div className="p-8 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-6">
+            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-slate-50/50 dark:bg-[#09090B]/50">
+              <div className="max-w-3xl mx-auto space-y-6">
                 
-                {/* Email Configuration */}
-                <div className="flex flex-col gap-5 flex-shrink-0">
-                  <div className="flex items-center gap-4 text-sm bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] p-3 rounded-xl">
-                    <div className="flex items-center gap-3 w-1/2">
-                      <span className="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[10px]">Recipient:</span>
-                      <span className="font-bold text-slate-900 dark:text-white truncate">{lead.email}</span>
+                {/* Variables & Sender Section */}
+                <div className="neu-flat p-4 rounded-2xl border border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A] shadow-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Contact Name <span className="text-indigo-400 font-normal">{"{contactName}"}</span></label>
+                      <input 
+                        type="text" 
+                        value={contactName} 
+                        onChange={(e) => setContactName(e.target.value)}
+                        className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all font-medium"
+                      />
                     </div>
-                    <div className="flex items-center gap-3 w-1/2 border-l border-slate-200 dark:border-[#232734] pl-4">
-                      <span className="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[10px] whitespace-nowrap flex-shrink-0">From:</span>
-                      <CustomSelect
-                        value={selectedSenderId}
-                        onChange={(val: string) => setSelectedSenderId(val)}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Company Name <span className="text-indigo-400 font-normal">{"{companyName}"}</span></label>
+                      <input 
+                        type="text" 
+                        value={companyName} 
+                        onChange={(e) => setCompanyName(e.target.value)}
+                        className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all font-medium"
+                      />
+                    </div>
+                    <div className="space-y-1.5 md:col-span-2">
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Send From Account</label>
+                      <CustomSelect 
+                        value={selectedSenderId} 
+                        onChange={setSelectedSenderId} 
                         options={[
-                          { value: 'auto', label: 'Auto-Rotate Pool' },
-                          ...activeAccounts.map(acc => ({
-                            value: acc._id,
-                            label: `${acc.email}`
-                          }))
+                          { value: 'auto', label: '🚀 Auto-select best sender' },
+                          ...activeAccounts.map(a => ({ value: a._id.toString(), label: `${a.email} (${a.sentToday}/${a.dailyLimit} sent)` }))
                         ]}
-                        className="text-[#2563EB] font-bold text-sm"
+                        className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white font-medium"
                       />
                     </div>
                   </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Subject Line</label>
-                    <input
-                      type="text"
-                      value={subject}
-                      onChange={(e) => setSubject(e.target.value)}
-                      className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-3.5 text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/50 transition-all placeholder:text-slate-600"
-                      placeholder="Enter subject..."
-                    />
-                  </div>
                 </div>
 
-                {/* Email Body */}
-                <div className="flex-1 flex flex-col bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-2xl overflow-hidden focus-within:border-[#2563EB]/50 transition-all">
-                  <div className="flex justify-between items-center px-4 py-3 border-b border-slate-200 dark:border-[#232734]">
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Message Body</span>
-                    <button 
-                      onClick={handleAIGenerate}
-                      disabled={isGeneratingAI}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-[#A855F7] bg-[#A855F7]/10 hover:bg-[#A855F7]/20 border border-[#A855F7]/20 transition-all disabled:opacity-50"
-                    >
-                      {isGeneratingAI ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                      AI Magic Draft
-                    </button>
+                {/* AI Generate Bar */}
+                <div className="flex items-center justify-between p-3 neu-flat rounded-xl border border-slate-200 dark:border-[#232734] bg-indigo-50 dark:bg-indigo-500/5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
+                      <Sparkles size={16} />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-white">Auto-generate with AI</h4>
+                      <p className="text-[10px] text-slate-500">Drafts a highly personalized email for {companyName || lead.company_name}</p>
+                    </div>
                   </div>
-                  
-                  <textarea
-                    value={body}
-                    onChange={(e) => setBody(e.target.value)}
-                    className="flex-1 w-full bg-transparent p-5 text-sm text-slate-900 dark:text-white focus:outline-none resize-none placeholder-slate-600 leading-relaxed font-mono custom-scrollbar"
-                    placeholder="Type your email message here..."
-                  />
+                  <button
+                    onClick={handleAIGenerate}
+                    disabled={isGeneratingAI}
+                    className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
+                  >
+                    {isGeneratingAI ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                    Generate
+                  </button>
+                </div>
 
-                  {/* Error Banner */}
+                {/* Composer Form */}
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Subject Line</label>
+                    <input 
+                      type="text" 
+                      value={subject} 
+                      onChange={(e) => setSubject(e.target.value)}
+                      placeholder="e.g. Quick question about..."
+                      className="w-full neu-flat bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-3 text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:font-normal placeholder:text-slate-400"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5 flex flex-col h-full">
+                    <div className="flex items-center justify-between ml-1">
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email Body</label>
+                      <button
+                        onClick={() => {
+                          setTemplateName('');
+                          setEditingTemplateId(null);
+                          setIsTemplateModalOpen(true);
+                        }}
+                        className="text-[10px] font-bold text-indigo-500 hover:text-indigo-600 flex items-center gap-1 transition-colors"
+                      >
+                        <Save size={12} /> Save as template
+                      </button>
+                    </div>
+                    <textarea 
+                      value={body} 
+                      onChange={(e) => setBody(e.target.value)}
+                      placeholder="Write your email here..."
+                      className="w-full flex-1 min-h-[250px] neu-flat bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-4 text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all resize-y leading-relaxed font-medium"
+                    />
+                  </div>
+
                   {errorMessage && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex items-start gap-2 p-3.5 bg-rose-500/10 border-t border-rose-500/20 text-rose-400 text-xs"
-                    >
-                      <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
-                      <span className="leading-relaxed">{errorMessage}</span>
+                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-3 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 flex items-start gap-3">
+                      <AlertCircle size={16} className="text-red-500 mt-0.5 shrink-0" />
+                      <p className="text-xs font-medium text-red-600 dark:text-red-400">{errorMessage}</p>
                     </motion.div>
                   )}
 
-                  {/* Success Banner */}
                   {successInfo && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex items-start gap-2.5 p-3.5 bg-[#10B981]/10 border border-[#10B981]/20 text-[#10B981] text-xs rounded-xl mx-4 mb-4 mt-2"
-                    >
-                      <CheckCircle size={16} className="flex-shrink-0 mt-0.5" />
+                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-3 rounded-xl bg-green-50 dark:bg-emerald-500/10 border border-green-200 dark:border-emerald-500/20 flex items-start gap-3">
+                      <CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" />
                       <div>
-                        <div className="font-bold">Email Dispatched Successfully!</div>
-                        <div className="text-[11px] opacity-90 mt-0.5 leading-relaxed">
-                          {successInfo.isSimulated 
-                            ? 'Status updated to Email Sent.'
-                            : `Delivered via ${successInfo.sentVia || 'Email Account'}.`}
-                        </div>
+                        <p className="text-xs font-bold text-green-700 dark:text-emerald-400">Successfully sent!</p>
+                        <p className="text-[11px] text-green-600/80 dark:text-emerald-400/80 font-medium">Via: {successInfo.sentVia}{successInfo.isSimulated && ' (Simulated Sandbox Mode)'}</p>
                       </div>
                     </motion.div>
                   )}
                 </div>
-
               </div>
+            </div>
 
-              {/* Control Action Buttons / Footer */}
-              <div className="flex items-center justify-between px-8 py-5 border-t border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A] flex-shrink-0">
-                
-                <div className="flex items-center gap-3">
-                  <div className="relative z-[100] flex flex-col">
-                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1 ml-1 uppercase tracking-wider">Timezone: EST/EDT (US)</span>
-                    <DatePicker
-                      selected={scheduleTime}
-                      onChange={(date: Date | null) => setScheduleTime(date)}
-                      showTimeSelect
-                      timeFormat="h:mm aa"
-                      timeIntervals={15}
-                      timeCaption="Time"
-                      dateFormat="MM/dd/yyyy h:mm aa"
-                      placeholderText="Select Date & Time"
-                      portalId="root-portal"
-                      className="px-3 py-2 text-xs bg-slate-50 dark:bg-[#232734] border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white outline-none focus:border-[#2563EB] w-[200px]"
-                    />
-                  </div>
+            {/* Footer */}
+            <div className="flex items-center justify-between p-4 border-t border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A] shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                  <DatePicker
+                    selected={scheduleTime}
+                    onChange={(date: Date | null) => setScheduleTime(date)}
+                    showTimeSelect
+                    timeFormat="HH:mm"
+                    timeIntervals={30}
+                    dateFormat="MMM d, yyyy h:mm aa"
+                    placeholderText="Select date & time"
+                    minDate={new Date()}
+                    className="w-[180px] text-xs font-bold bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl px-3 py-2.5 text-slate-700 dark:text-slate-300 focus:border-indigo-500/50 outline-none"
+                    wrapperClassName="date-picker-wrapper"
+                  />
                   <button
                     onClick={handleSchedule}
-                    disabled={!scheduleTime || isScheduling || isSending || !!successInfo}
-                    className="px-4 py-2.5 mt-4 bg-slate-100 dark:bg-[#232734] hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 font-bold rounded-xl text-xs flex items-center justify-center gap-2 disabled:opacity-50 transition-colors h-[34px]"
+                    disabled={isScheduling || isSending || !scheduleTime}
+                    className="px-4 py-2.5 bg-slate-100 dark:bg-[#232734] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
                   >
                     {isScheduling ? <Loader2 size={14} className="animate-spin" /> : <Calendar size={14} />}
                     {lead?.outreach_status === 'Queued' ? 'Update Schedule' : 'Schedule'}
                   </button>
                 </div>
+              </div>
 
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={onClose}
-                    disabled={isSending || isScheduling}
-                    className="px-6 py-2.5 text-xs font-bold text-slate-500 dark:text-slate-400 bg-transparent hover:bg-slate-200 dark:bg-[#232734] border border-slate-200 dark:border-[#232734] transition-colors rounded-xl disabled:opacity-50 flex items-center justify-center"
-                  >
-                    Cancel
-                  </button>
-                  
-                  <button
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={onClose}
+                  disabled={isSending || isScheduling}
+                  className="hidden sm:flex px-6 py-2.5 text-xs font-bold text-slate-500 dark:text-slate-400 bg-transparent hover:bg-slate-200 dark:bg-[#232734] border border-slate-200 dark:border-[#232734] transition-colors rounded-xl disabled:opacity-50 items-center justify-center"
+                >
+                  Cancel
+                </button>
+                
+                <button
                   onClick={handleSend}
                   disabled={isSending || isScheduling || !!successInfo || cooldownRemaining > 0}
-                  className="px-6 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_0_20px_rgba(37,99,235,0.25)] min-w-[150px]"
+                  className="px-6 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_0_20px_rgba(37,99,235,0.25)] min-w-[130px]"
                 >
                   {isSending ? (
                     <>
@@ -763,18 +820,69 @@ export default function OutreachComposerModal({
                   ) : (
                     <>
                       <Send size={14} />
-                      <span>Send Outreach</span>
+                      <span>Send</span>
                     </>
                   )}
                 </button>
-                </div>
               </div>
-
             </div>
-
           </div>
         </motion.div>
       </div>
+
+      {/* Mini Modal for Saving Template */}
+      <AnimatePresence>
+        {isTemplateModalOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => !isSavingTemplate && setIsTemplateModalOpen(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative w-full max-w-sm bg-white dark:bg-[#11131A] rounded-2xl shadow-2xl border border-slate-200 dark:border-[#232734] p-5"
+            >
+              <h3 className="font-bold text-slate-900 dark:text-white text-base mb-4 flex items-center gap-2">
+                <Save size={18} className="text-indigo-500" />
+                {editingTemplateId ? 'Update Template' : 'Save as Template'}
+              </h3>
+              
+              <div className="space-y-4 mb-6">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Template Name</label>
+                  <input 
+                    type="text" 
+                    value={templateName}
+                    onChange={(e) => setTemplateName(e.target.value)}
+                    placeholder="e.g., SEO Follow Up"
+                    autoFocus
+                    className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 font-medium"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setIsTemplateModalOpen(false)}
+                  disabled={isSavingTemplate}
+                  className="flex-1 py-2.5 font-bold text-xs text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveTemplate}
+                  disabled={isSavingTemplate || !templateName.trim()}
+                  className="flex-1 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                >
+                  {isSavingTemplate ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                  {editingTemplateId ? 'Update' : 'Save'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </AnimatePresence>
   );
 }

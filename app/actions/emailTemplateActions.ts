@@ -1,71 +1,55 @@
 'use server';
 
-import connectToDatabase from '@/lib/mongodb';
+import connectDB from '@/lib/mongodb';
 import { EmailTemplate } from '@/models/EmailTemplate';
-import { getAuthUser } from '@/lib/auth';
-
-// Helper to check authentication
-async function requireAuth() {
-  const authUser = await getAuthUser();
-  if (!authUser) {
-    throw new Error('Not authenticated.');
-  }
-  return authUser;
-}
 
 export async function getEmailTemplates() {
   try {
-    await requireAuth();
-    await connectToDatabase();
-    
-    const templates = await EmailTemplate.find({}).sort({ createdAt: -1 }).lean();
-    
-    return { 
-      success: true, 
-      templates: templates.map(t => ({
-        ...t,
-        _id: t._id.toString()
-      }))
-    };
+    await connectDB();
+    const templates = await EmailTemplate.find().sort({ createdAt: -1 }).lean();
+    return { success: true, templates: JSON.parse(JSON.stringify(templates)) };
   } catch (error: any) {
-    return { success: false, error: error.message || 'Failed to fetch templates' };
+    console.error('Error fetching email templates:', error);
+    return { success: false, error: error.message, templates: [] };
   }
 }
 
-export async function createEmailTemplate(data: {
-  name: string;
-  subject: string;
-  body: string;
-  icon?: string;
-  color?: string;
-}) {
+export async function createEmailTemplate(data: { name: string, subject: string, body: string, icon?: string, color?: string }) {
   try {
-    await requireAuth();
-    await connectToDatabase();
-    
-    const newTemplate = await EmailTemplate.create(data);
-    
-    return { 
-      success: true, 
-      template: {
-        ...newTemplate.toObject(),
-        _id: newTemplate._id.toString()
-      }
-    };
+    await connectDB();
+    const newTemplate = new EmailTemplate(data);
+    await newTemplate.save();
+    return { success: true, template: JSON.parse(JSON.stringify(newTemplate)) };
   } catch (error: any) {
-    return { success: false, error: error.message || 'Failed to create template' };
+    console.error('Error creating email template:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function updateEmailTemplate(id: string, data: Partial<{ name: string, subject: string, body: string, icon: string, color: string }>) {
+  try {
+    await connectDB();
+    const updatedTemplate = await EmailTemplate.findByIdAndUpdate(id, data, { new: true }).lean();
+    if (!updatedTemplate) {
+      return { success: false, error: 'Template not found' };
+    }
+    return { success: true, template: JSON.parse(JSON.stringify(updatedTemplate)) };
+  } catch (error: any) {
+    console.error('Error updating email template:', error);
+    return { success: false, error: error.message };
   }
 }
 
 export async function deleteEmailTemplate(id: string) {
   try {
-    await requireAuth();
-    await connectToDatabase();
-    
-    await EmailTemplate.findByIdAndDelete(id);
-    
+    await connectDB();
+    const result = await EmailTemplate.findByIdAndDelete(id);
+    if (!result) {
+      return { success: false, error: 'Template not found' };
+    }
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: error.message || 'Failed to delete template' };
+    console.error('Error deleting email template:', error);
+    return { success: false, error: error.message };
   }
 }
