@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import connectToDatabase from '@/lib/mongodb';
 import { Transaction } from '@/models/Transaction';
 import { getAuthUser } from '@/lib/auth';
+import { createNotification } from './notificationActions';
 
 export async function getTransactions() {
   try {
@@ -61,6 +62,8 @@ export async function createTransaction(data: any) {
     
     await transaction.save();
     
+    await createNotification('system', `A new transaction of $${transaction.amount} was recorded.`);
+    
     revalidatePath('/finance');
     return { success: true, data: JSON.parse(JSON.stringify(transaction)) };
   } catch (error: any) {
@@ -87,6 +90,8 @@ export async function updateTransaction(transactionId: string, data: any) {
       { new: true }
     ).lean();
     
+    await createNotification('system', `Transaction for $${updated?.amount} was updated.`);
+    
     revalidatePath('/finance');
     return { success: true, data: JSON.parse(JSON.stringify(updated)) };
   } catch (error: any) {
@@ -98,6 +103,10 @@ export async function updateTransaction(transactionId: string, data: any) {
 export async function deleteTransaction(transactionId: string) {
   try {
     await connectToDatabase();
+    const transaction = await Transaction.findById(transactionId);
+    if (transaction) {
+      await createNotification('system', `Transaction for $${transaction.amount} was deleted.`);
+    }
     await Transaction.findByIdAndDelete(transactionId);
     
     revalidatePath('/finance');

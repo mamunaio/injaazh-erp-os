@@ -5,6 +5,7 @@ import connectToDatabase from '@/lib/mongodb';
 import { Lead } from '@/models/Lead';
 import { getAuthUser } from '@/lib/auth';
 import { decrypt } from '@/lib/encryption';
+import { createNotification } from './notificationActions';
 
 export async function createLead(data: any) {
   try {
@@ -72,6 +73,9 @@ export async function createLead(data: any) {
     }
     const newLead = new Lead(data);
     await newLead.save();
+    
+    await createNotification('system', `A new lead "${newLead.company_name}" was created.`);
+    
     revalidatePath('/prospects');
     
     return { 
@@ -257,6 +261,8 @@ export async function updateLeadStatus(id: string, newStatus: string) {
       }
     }
     
+    await createNotification('system', `Lead "${updatedLead?.company_name}" status was updated to ${newStatus}.`);
+    
     revalidatePath('/prospects');
     return { success: true, data: JSON.parse(JSON.stringify(updatedLead)) };
   } catch (error: any) {
@@ -369,6 +375,8 @@ export async function updateLead(id: string, updateData: any) {
       }
     }
     
+    await createNotification('system', `Lead "${updatedLead?.company_name}" was updated.`);
+    
     revalidatePath('/prospects');
     return { success: true, data: JSON.parse(JSON.stringify(updatedLead)) };
   } catch (error: any) {
@@ -380,6 +388,10 @@ export async function updateLead(id: string, updateData: any) {
 export async function deleteLead(id: string) {
   try {
     await connectToDatabase();
+    const lead = await Lead.findById(id);
+    if (lead) {
+      await createNotification('system', `Lead "${lead.company_name}" was deleted.`);
+    }
     await Lead.findByIdAndDelete(id);
     revalidatePath('/prospects');
     return { success: true };

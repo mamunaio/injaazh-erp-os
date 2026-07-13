@@ -89,6 +89,8 @@ async function handleProjectCompletionSync(project: any) {
 
 }
 
+import { createNotification } from './notificationActions';
+
 export async function createProject(data: any) {
   try {
     await connectToDatabase();
@@ -101,11 +103,15 @@ export async function createProject(data: any) {
         data.platformFee = data.budget * 0.10;
       } else if (data.platform === 'Fiverr') {
         data.platformFee = data.budget * 0.20;
+      } else {
+        data.platformFee = 0;
       }
     }
     
     const newProject = new Project(data);
     await newProject.save();
+    
+    await createNotification('system', `Project "${newProject.title}" was created.`);
     
     // Automatically log platform fee as a Finance Transaction if > 0
     if (newProject.platformFee && newProject.platformFee > 0) {
@@ -215,6 +221,8 @@ export async function updateProject(projectId: string, updateData: any) {
       await handleProjectCompletionSync(updatedProject);
     }
     
+    await createNotification('system', `Project "${updatedProject?.title}" was updated.`);
+    
     revalidatePath('/projects');
     return { success: true, data: JSON.parse(JSON.stringify(updatedProject)) };
   } catch (error: any) {
@@ -226,6 +234,10 @@ export async function updateProject(projectId: string, updateData: any) {
 export async function deleteProject(projectId: string) {
   try {
     await connectToDatabase();
+    const project = await Project.findById(projectId);
+    if (project) {
+      await createNotification('system', `Project "${project.title}" was deleted.`);
+    }
     await Project.findByIdAndDelete(projectId);
     revalidatePath('/projects');
     return { success: true };
