@@ -793,6 +793,28 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
                           placeholder="https://example.com"
                         />
                       </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-2">LinkedIn URL</label>
+                        <input 
+                          type="url" 
+                          value={formData.linkedin_url}
+                          onChange={e => setFormData({...formData, linkedin_url: e.target.value})}
+                          className="w-full px-4 py-3 bg-white dark:bg-black/40 border-2 border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                          placeholder="https://linkedin.com/in/..."
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-2">Facebook URL</label>
+                        <input 
+                          type="url" 
+                          value={formData.facebook_url}
+                          onChange={e => setFormData({...formData, facebook_url: e.target.value})}
+                          className="w-full px-4 py-3 bg-white dark:bg-black/40 border-2 border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                          placeholder="https://facebook.com/..."
+                        />
+                      </div>
                     </div>
                   </div>
 
