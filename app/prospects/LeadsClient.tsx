@@ -21,6 +21,7 @@ import LeadsFilters from '@/components/leads/ui/LeadsFilters';
 import QuickFilterChips from '@/components/leads/ui/QuickFilterChips';
 import LeadsTable from '@/components/leads/ui/LeadsTable';
 import LeadSlidePanel from '@/components/leads/ui/LeadSlidePanel';
+import LeadDetailsModal from '@/components/leads/LeadDetailsModal';
 
 const STATUS_OPTIONS = ['New', 'Email Sent', 'Replied', 'Meeting Booked', 'Closed', 'Not Interested'];
 
@@ -37,6 +38,8 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
 
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [leadToEdit, setLeadToEdit] = useState<any>(null);
   const [showFollowUps, setShowFollowUps] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPosition, setMenuPosition] = useState<{ top: number; right: number } | null>(null);
@@ -175,7 +178,25 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
     }
   };
 
+  
+  const handleUpdateLead = async (id: string, data: any) => {
+    try {
+      const result = await updateLead(id, data);
+      if (result.success && result.data) {
+        setLeads(leads.map((l: any) => l._id === id ? result.data : l));
+        if (selectedLead?._id === id) setSelectedLead(result.data);
+        toast.success('Lead updated successfully');
+      } else {
+        toast.error(result.error || 'Failed to update lead');
+      }
+    } catch (error) {
+      console.error('Error updating lead:', error);
+      toast.error('An error occurred');
+    }
+  };
+
   const handleDeleteClick = (lead: any, e: React.MouseEvent) => {
+
     e.preventDefault();
     e.stopPropagation();
     setLeadToDelete(lead);
@@ -506,6 +527,10 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
           setIsDetailsModalOpen(false);
           setComposerLead(lead);
           setIsComposerOpen(true);
+        }}
+        onEdit={(lead: any) => {
+          setLeadToEdit(lead);
+          setIsEditModalOpen(true);
         }}
         onStatusChange={async (leadId, newStatus) => {
           try {

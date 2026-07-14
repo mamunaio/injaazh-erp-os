@@ -16,6 +16,7 @@ interface LeadSlidePanelProps {
   formatDate: (date?: string) => string;
   onOpenEmailComposer?: (lead: any) => void;
   onStatusChange?: (leadId: string, newStatus: string) => void;
+  onEdit?: (lead: any) => void;
 }
 
 type TabKey = 'overview' | 'notes' | 'activity';
@@ -95,6 +96,7 @@ export default function LeadSlidePanel({
   formatDate,
   onOpenEmailComposer,
   onStatusChange,
+  onEdit,
 }: LeadSlidePanelProps) {
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
 
@@ -158,7 +160,10 @@ export default function LeadSlidePanel({
               <div className="flex items-center justify-between mb-5">
                 <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">Lead Details</span>
                 <div className="flex items-center gap-2">
-                  <button className="p-2 rounded-[10px] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] border border-transparent hover:border-slate-200 dark:border-[#232734] transition-all" aria-label="Edit">
+                  <button 
+                    onClick={() => onEdit && onEdit(lead)}
+                    className="p-2 rounded-[10px] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] border border-transparent hover:border-slate-200 dark:border-[#232734] transition-all" aria-label="Edit"
+                  >
                     <Edit size={15} />
                   </button>
                   <button
