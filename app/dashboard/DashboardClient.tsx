@@ -313,19 +313,21 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                   </div>
                   <div className="flex-1 flex flex-col justify-center gap-5 mt-2">
                     {pipelineData.slice(0, 4).map((stage, index) => (
-                      <div key={index} className="flex items-center gap-4">
+                      <div key={index} className="flex items-center gap-3">
                         <div className="w-24 text-right flex-shrink-0">
                           <p className="text-xs font-bold text-slate-500 dark:text-slate-400">{stage.name}</p>
                         </div>
-                        <div className="flex-1 h-8 bg-slate-50 dark:bg-[#09090B] rounded-r-lg border border-slate-200 dark:border-[#232734] border-l-0 overflow-hidden flex items-center relative">
+                        <div className="flex-1 h-6 bg-slate-100 dark:bg-[#09090B] rounded-full border border-slate-200 dark:border-[#232734] overflow-hidden relative">
                            <motion.div 
                              initial={{ width: 0 }}
                              animate={{ width: stage.width }}
                              transition={{ duration: 1, ease: "easeOut", delay: index * 0.1 }}
-                             className="h-full absolute left-0 top-0 bottom-0"
+                             className="h-full absolute left-0 top-0 bottom-0 rounded-full"
                              style={{ background: stage.gradient }}
                            />
-                           <span className="ml-3 text-xs font-bold text-slate-900 dark:text-white font-mono relative z-10 mix-blend-difference">{stage.value}</span>
+                        </div>
+                        <div className="w-10 flex-shrink-0 text-right">
+                           <span className="text-xs font-bold text-slate-700 dark:text-slate-300 font-mono">{stage.value}</span>
                         </div>
                       </div>
                     ))}
