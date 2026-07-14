@@ -716,324 +716,116 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
                 </button>
               </div>
 
-              {/* Progress Indicator */}
-              <div className="flex items-center justify-between mb-8 relative">
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 neu-pressed rounded-full z-0">
-                  <div 
-                    className="h-full neu-button rounded-full transition-all duration-500 ease-out"
-                    style={{ width: `${((formStep - 1) / 3) * 100}%` }}
-                  />
-                </div>
-                
-                {[
-                  { step: 1, label: 'Basic Info', icon: Building2 },
-                  { step: 2, label: 'Contact', icon: Mail },
-                  { step: 3, label: 'Automation', icon: Sparkles },
-                  { step: 4, label: 'Draft', icon: FileText }
-                ].map((item) => {
-                  const isActive = formStep >= item.step;
-                  const isCurrent = formStep === item.step;
-                  return (
-                    <div key={item.step} className="relative z-10 flex flex-col items-center gap-2">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${isActive ? 'neu-button text-indigo-500' : 'neu-flat text-slate-500'}`}>
-                        {isActive ? <CheckCircle size={18} /> : <span>{item.step}</span>}
-                      </div>
-                      <span className={`text-[10px] font-bold uppercase tracking-wider absolute -bottom-6 w-max ${isCurrent ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400 dark:text-slate-500'}`}>
-                        {item.label}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-              
-              <form className="space-y-6 overflow-y-auto pr-2 flex-1 pb-8">
-                
-                {/* STEP 1: Basic Information */}
-                {formStep === 1 && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-                    <div className="space-y-4">
-                      <h3 className="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-slate-800/50">
-                        <Building2 size={16} strokeWidth={2.5} />
-                        Basic Information
-                      </h3>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="col-span-2">
-                          <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-2">
-                            Company Name <span className="text-red-500">*</span>
-                          </label>
-                          <input 
-                            required 
-                            type="text" 
-                            value={formData.company_name}
-                            onChange={e => setFormData({...formData, company_name: e.target.value})}
-                            className="w-full px-4 py-3 neu-pressed rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all font-medium"
-                            placeholder="e.g. Acme Corp"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-2">Contact Person</label>
-                          <input 
-                            type="text" 
-                            value={formData.contact_person}
-                            onChange={e => setFormData({...formData, contact_person: e.target.value})}
-                            className="w-full px-4 py-3 neu-pressed rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all font-medium"
-                            placeholder="John Doe"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-2">Source</label>
-                          <input 
-                            type="text" 
-                            value={formData.source}
-                            onChange={e => setFormData({...formData, source: e.target.value})}
-                            className="w-full px-4 py-3 bg-white dark:bg-black/40 border-2 border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 transition-all"
-                            placeholder="e.g. LinkedIn"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h3 className="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-slate-800/50">
-                        <Tag size={16} strokeWidth={2.5} />
-                        Target Service
-                      </h3>
-                      <select 
-                        value={formData.targetService}
-                        onChange={e => setFormData({...formData, targetService: e.target.value})}
-                        className="w-full px-4 py-3 neu-pressed rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent cursor-pointer font-medium"
-                      >
-                        {['High-end Web Development', 'Next.js / Laravel App', 'WordPress Development', 'Custom ERP / SaaS', 'Technical SEO', 'Answer Engine Optimization (AEO)', 'Generative Engine Optimization (GEO)', 'UI/UX Design'].map(srv => (
-                          <option key={srv} value={srv}>{srv}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* STEP 2: Contact & Social */}
-                {formStep === 2 && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-                    <div className="space-y-4">
-                      <h3 className="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-slate-800/50">
-                        <Mail size={16} strokeWidth={2.5} />
-                        Contact Details
-                      </h3>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-2">Email</label>
-                          <input 
-                            type="email" 
-                            value={formData.email}
-                            onChange={e => setFormData({...formData, email: e.target.value})}
-                            className="w-full px-4 py-3 neu-pressed rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all font-medium"
-                            placeholder="john@example.com"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-2">Phone</label>
-                          <input 
-                            type="tel" 
-                            value={formData.phone}
-                            onChange={e => setFormData({...formData, phone: e.target.value})}
-                            className="w-full px-4 py-3 bg-white dark:bg-black/40 border-2 border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                            placeholder="+1234567890"
-                          />
-                        </div>
-                        <div className="col-span-2">
-                          <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-2">Website URL</label>
-                          <input 
-                            type="url" 
-                            value={formData.website_url}
-                            onChange={e => setFormData({...formData, website_url: e.target.value})}
-                            className="w-full px-4 py-3 bg-white dark:bg-black/40 border-2 border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                            placeholder="https://example.com"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h3 className="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-slate-800/50">
-                        <Globe size={16} strokeWidth={2.5} />
-                        Social Links
-                      </h3>
-                      <div className="grid grid-cols-2 gap-4">
-                        <input type="url" value={formData.facebook_url} onChange={e => setFormData({...formData, facebook_url: e.target.value})} className="w-full px-4 py-2.5 neu-pressed rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-sm" placeholder="Facebook URL" />
-                        <input type="url" value={formData.instagram_url} onChange={e => setFormData({...formData, instagram_url: e.target.value})} className="w-full px-4 py-2.5 neu-pressed rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-sm" placeholder="Instagram URL" />
-                        <input type="url" value={formData.linkedin_url} onChange={e => setFormData({...formData, linkedin_url: e.target.value})} className="w-full px-4 py-2.5 neu-pressed rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-sm" placeholder="LinkedIn URL" />
-                        <input type="url" value={formData.reportFileUrl} onChange={e => setFormData({...formData, reportFileUrl: e.target.value})} className="w-full px-4 py-2.5 neu-pressed rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-sm" placeholder="Report / Proposal Link" />
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* STEP 3: AI & Automation */}
-                {formStep === 3 && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-                    <div className="space-y-4">
-                      <h3 className="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-slate-800/50">
-                        <MessageCircle size={16} strokeWidth={2.5} />
-                        AI Outreach Context
-                      </h3>
-                      <div className="neu-pressed p-5 rounded-2xl">
-                        <label className="block text-sm font-bold text-indigo-700 dark:text-indigo-400 mb-3">
-                          Detailed Notes for Gemini AI
+              <form className="space-y-6 overflow-y-auto pr-2 flex-1 pb-8 mt-4">
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <h3 className="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-slate-800/50">
+                      <Building2 size={16} strokeWidth={2.5} />
+                      Basic Information
+                    </h3>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="col-span-2">
+                        <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-2">
+                          Company Name <span className="text-red-500">*</span>
                         </label>
-                        <textarea 
-                          value={formData.lead_context}
-                          onChange={e => setFormData({...formData, lead_context: e.target.value})}
-                          className="w-full px-4 py-3 neu-pressed rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent resize-none h-32"
-                          placeholder="What makes this lead unique? Write down their pain points so AI can generate a highly personalized email."
+                        <input 
+                          required 
+                          type="text" 
+                          value={formData.company_name}
+                          onChange={e => setFormData({...formData, company_name: e.target.value})}
+                          className="w-full px-4 py-3 neu-pressed rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all font-medium"
+                          placeholder="e.g. Acme Corp"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-2">Contact Person</label>
+                        <input 
+                          type="text" 
+                          value={formData.contact_person}
+                          onChange={e => setFormData({...formData, contact_person: e.target.value})}
+                          className="w-full px-4 py-3 neu-pressed rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all font-medium"
+                          placeholder="John Doe"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-2">Email</label>
+                        <input 
+                          type="email" 
+                          value={formData.email}
+                          onChange={e => setFormData({...formData, email: e.target.value})}
+                          className="w-full px-4 py-3 neu-pressed rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all font-medium"
+                          placeholder="john@example.com"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-2">Source</label>
+                        <input 
+                          type="text" 
+                          value={formData.source}
+                          onChange={e => setFormData({...formData, source: e.target.value})}
+                          className="w-full px-4 py-3 bg-white dark:bg-black/40 border-2 border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 transition-all"
+                          placeholder="e.g. LinkedIn"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-2">Phone</label>
+                        <input 
+                          type="tel" 
+                          value={formData.phone}
+                          onChange={e => setFormData({...formData, phone: e.target.value})}
+                          className="w-full px-4 py-3 bg-white dark:bg-black/40 border-2 border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                          placeholder="+1234567890"
+                        />
+                      </div>
+                      
+                      <div className="col-span-2">
+                        <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-2">Website URL</label>
+                        <input 
+                          type="url" 
+                          value={formData.website_url}
+                          onChange={e => setFormData({...formData, website_url: e.target.value})}
+                          className="w-full px-4 py-3 bg-white dark:bg-black/40 border-2 border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                          placeholder="https://example.com"
                         />
                       </div>
                     </div>
+                  </div>
 
-                    <div className="space-y-4">
-                      <h3 className="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-slate-800/50">
-                        <Clock size={16} strokeWidth={2.5} />
-                        Outreach Schedule
-                      </h3>
-                      <div className="grid grid-cols-2 gap-4 neu-flat p-5 rounded-2xl">
-                        <div>
-                          <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-2">Recipient Timezone</label>
-                          <select 
-                            value={formData.timezone}
-                            onChange={e => setFormData({...formData, timezone: e.target.value})}
-                            className="w-full px-4 py-2.5 neu-pressed rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-sm"
-                          >
-                            <option value="EST">EST (New York)</option>
-                            <option value="CST">CST (Chicago)</option>
-                            <option value="MST">MST (Denver)</option>
-                            <option value="PST">PST (Los Angeles)</option>
-                            <option value="GMT">GMT (London)</option>
-                            <option value="CET">CET (Paris)</option>
-                            <option value="AEST">AEST (Sydney)</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-2">Schedule Date</label>
-                          <DatePicker 
-                            selected={formData.outreach_scheduled_for ? new Date(formData.outreach_scheduled_for) : null}
-                            onChange={(date: Date | null) => setFormData({...formData, outreach_scheduled_for: date ? date.toISOString().split('T')[0] : ''})}
-                            minDate={new Date()}
-                            className="w-full px-4 py-2.5 neu-pressed rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-sm text-slate-800 dark:text-slate-200"
-                            placeholderText="Select Schedule Date"
-                            dateFormat="MMM d, yyyy"
-                            showPopperArrow={false}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
+                  <div className="space-y-4">
+                    <h3 className="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-slate-800/50">
+                      <Tag size={16} strokeWidth={2.5} />
+                      Target Service
+                    </h3>
+                    <select 
+                      value={formData.targetService}
+                      onChange={e => setFormData({...formData, targetService: e.target.value})}
+                      className="w-full px-4 py-3 neu-pressed rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent cursor-pointer font-medium"
+                    >
+                      {['High-end Web Development', 'Next.js / Laravel App', 'WordPress Development', 'Custom ERP / SaaS', 'Technical SEO', 'Answer Engine Optimization (AEO)', 'Generative Engine Optimization (GEO)', 'UI/UX Design'].map(srv => (
+                        <option key={srv} value={srv}>{srv}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
 
-                {/* STEP 4: Review & Draft */}
-                {formStep === 4 && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800/50">
-                        <h3 className="flex items-center gap-2 text-slate-800 dark:text-white font-bold">
-                          <FileText size={16} strokeWidth={2.5} />
-                          Review Email Draft
-                        </h3>
-                        <button
-                          type="button"
-                          onClick={handleGenerateDraft}
-                          disabled={isGeneratingDraft}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 hover:from-purple-500/20 hover:to-indigo-500/20 text-purple-600 dark:text-purple-400 text-xs font-bold rounded-lg transition-colors border border-purple-500/20 disabled:opacity-50"
-                        >
-                          {isGeneratingDraft ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-                          {isGeneratingDraft ? 'Generating...' : '✨ Auto-Generate Draft'}
-                        </button>
-                      </div>
-                      <div className="neu-pressed p-5 rounded-2xl space-y-4">
-                        <div>
-                          <label className="block text-sm font-bold text-slate-600 dark:text-slate-400 mb-2">
-                            Email Subject
-                          </label>
-                          <input 
-                            type="text"
-                            value={formData.email_subject_draft}
-                            onChange={e => setFormData({...formData, email_subject_draft: e.target.value})}
-                            className="w-full px-4 py-2.5 neu-pressed rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent font-semibold"
-                            placeholder="e.g. Quick question regarding Acme Corp"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-bold text-slate-600 dark:text-slate-400 mb-2">
-                            Email Body
-                          </label>
-                          <textarea 
-                            value={formData.email_draft}
-                            onChange={e => setFormData({...formData, email_draft: e.target.value})}
-                            className="w-full px-4 py-3 neu-pressed rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent resize-none h-48"
-                            placeholder="Write your email here, or click 'Auto-Generate Draft' to have AI write it for you..."
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-bold text-slate-600 dark:text-slate-400 mb-2">
-                            Facebook Message Draft
-                          </label>
-                          <textarea 
-                            value={formData.facebook_draft}
-                            onChange={e => setFormData({...formData, facebook_draft: e.target.value})}
-                            className="w-full px-4 py-3 neu-pressed rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent resize-none h-32"
-                            placeholder="Write your Facebook outreach message here..."
-                          />
-                        </div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                          This exact draft will be sent automatically on {formData.outreach_scheduled_for ? new Date(formData.outreach_scheduled_for).toLocaleDateString() : 'the scheduled date'}.
-                        </p>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Form Navigation Buttons */}
                 <div className="pt-6 border-t border-slate-200 dark:border-slate-800/50 sticky bottom-0 bg-transparent pb-2 mt-auto flex gap-4">
-                  {formStep > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => setFormStep(prev => prev - 1)}
-                      className="px-6 py-4 neu-button text-slate-500 font-bold rounded-xl transition-all w-1/3"
-                    >
-                      Back
-                    </button>
-                  )}
-                  
-                  {formStep < 4 ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        // Quick validation before moving next
-                        if (formStep === 1 && !formData.company_name) {
-                          alert("Company Name is required!");
-                          return;
-                        }
-                        setFormStep(prev => prev + 1);
-                      }}
-                      className={`${formStep === 1 ? 'w-full' : 'w-2/3'} px-6 py-4 neu-button text-indigo-500 font-black rounded-xl transition-all flex items-center justify-center gap-2`}
-                    >
-                      Next Step <ArrowRight size={18} strokeWidth={3} />
-                    </button>
-                  ) : (
-                    <button 
-                      type="button" 
-                      onClick={handleCreateLead}
-                      disabled={isCreating}
-                      className="w-2/3 px-6 py-4 neu-button text-purple-500 font-black text-base rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 uppercase tracking-wide"
-                    >
-                      {isCreating ? (
-                        <><Loader2 size={22} className="animate-spin" strokeWidth={2.5} /> Creating...</>
-                      ) : (
-                        <><Sparkles size={22} strokeWidth={2.5} /> Create Lead</>
-                      )}
-                    </button>
-                  )}
+                  <button 
+                    type="button" 
+                    onClick={handleCreateLead}
+                    disabled={isCreating}
+                    className="w-full px-6 py-4 neu-button text-purple-500 font-black text-base rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 uppercase tracking-wide"
+                  >
+                    {isCreating ? (
+                      <><Loader2 size={22} className="animate-spin" strokeWidth={2.5} /> Creating...</>
+                    ) : (
+                      <><Sparkles size={22} strokeWidth={2.5} /> Create Lead</>
+                    )}
+                  </button>
                 </div>
               </form>
             </motion.div>
