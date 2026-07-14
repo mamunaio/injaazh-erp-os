@@ -529,6 +529,7 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
           setIsComposerOpen(true);
         }}
         onEdit={(lead: any) => {
+          setIsDetailsModalOpen(false);
           setLeadToEdit(lead);
           setIsEditModalOpen(true);
         }}
@@ -945,6 +946,12 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
         onSuccess={() => {
           router.refresh();
         }}
+      />
+      <LeadDetailsModal 
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        lead={leadToEdit}
+        onUpdateLead={handleUpdateLead}
       />
     </div>
   );
