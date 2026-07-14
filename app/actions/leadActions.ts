@@ -419,6 +419,10 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
 
     const { EmailAccount } = await import('@/models/EmailAccount');
     const { EmailCampaignLog } = await import('@/models/EmailCampaignLog');
+    const { parseSpintax } = await import('@/lib/spintax');
+
+    const parsedSubject = parseSpintax(subject);
+    const parsedBody = parseSpintax(body);
 
     let selectedAccount = null;
 
@@ -481,9 +485,9 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
         const mailOptions: any = {
           from: `"${senderName}" <${selectedAccount.email}>`,
           to: emailTo || lead.email,
-          subject: subject,
-          text: body,
-          html: body.replace(/\n/g, '<br />'),
+          subject: parsedSubject,
+          text: parsedBody,
+          html: parsedBody.replace(/\n/g, '<br />'),
         };
 
         const info = await transporter.sendMail(mailOptions);
@@ -530,9 +534,9 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
           const { sendEmail } = await import('@/lib/email');
           const emailRes = await sendEmail({
             to: emailTo,
-            subject: subject,
-            text: body,
-            html: body.replace(/\n/g, '<br />'),
+            subject: parsedSubject,
+            text: parsedBody,
+            html: parsedBody.replace(/\n/g, '<br />'),
           });
           
           if (emailRes.success) {
@@ -569,7 +573,7 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
     const newLog = {
       date: new Date(),
       method: 'Email' as const,
-      notes: `Subject: ${subject}\nSent Via: ${usedAccountEmail}\n\n${body}${isSimulated ? '\n\n[SANDBOX SIMULATION: Email sent successfully]' : ''}`,
+      notes: `Subject: ${parsedSubject}\nSent Via: ${usedAccountEmail}\n\n${parsedBody}${isSimulated ? '\n\n[SANDBOX SIMULATION: Email sent successfully]' : ''}`,
       loggedBy: (currentUser ? currentUser.id : undefined) as any,
     };
     
