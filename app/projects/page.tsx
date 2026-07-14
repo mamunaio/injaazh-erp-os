@@ -4,6 +4,8 @@ import { getMarketplaceClients } from "@/actions/marketplaceClientActions";
 import { getAuthUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: "Project Delivery | Injaazh ERP",
   description: "Manage active projects and deliverables",

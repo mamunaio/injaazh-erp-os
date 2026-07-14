@@ -4,6 +4,8 @@ import FinanceClient from './FinanceClient';
 import { getAuthUser } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 export default async function FinancePage() {
   const authUser = await getAuthUser();
   if (!authUser || authUser.role === 'team_member') {
