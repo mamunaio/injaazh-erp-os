@@ -153,7 +153,7 @@ export default function Sidebar() {
             : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 border border-transparent'
         }`}
       >
-        <Icon size={isCollapsed ? 22 : 18} className={`${isActive ? 'text-white dark:text-primary-400' : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:hover:text-white transition-colors'}`} />
+        <Icon size={isCollapsed ? 22 : 18} className={`${isActive ? 'text-white dark:text-primary-400' : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors'}`} />
         {!isCollapsed && (
           <span className={`font-semibold text-[13px] ${isActive ? 'text-white dark:text-primary-400' : ''}`}>
             {item.name}
