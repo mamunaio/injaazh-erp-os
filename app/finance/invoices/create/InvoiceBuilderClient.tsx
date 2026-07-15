@@ -99,7 +99,7 @@ export default function InvoiceBuilderClient({ initialData }: { initialData?: an
       }
 
       if (res.success) {
-        toast.success(res.message);
+        toast.success(res.message || 'Invoice saved successfully');
         router.push('/finance/invoices');
       } else {
         toast.error(res && res.error ? String(res.error) : 'Failed to save invoice');
