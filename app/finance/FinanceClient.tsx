@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   TrendingUp, TrendingDown, DollarSign, Search, Filter, Plus, FileText, Download,
@@ -274,6 +275,9 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
             </div>
             
             <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+              <Link href="/finance/invoices" className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#8B5CF6]/10 hover:bg-[#8B5CF6]/20 border border-[#8B5CF6]/20 text-[#8B5CF6] transition-all">
+                <FileText size={16} /> Manage Invoices
+              </Link>
               <button onClick={handleExport} disabled={isExporting} className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-white dark:bg-[#11131A] hover:bg-slate-200 dark:bg-[#232734] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white transition-all disabled:opacity-50">
                 {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} 
                 {isExporting ? 'Exporting...' : 'Export'}
