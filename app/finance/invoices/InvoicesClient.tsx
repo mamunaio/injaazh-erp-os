@@ -16,7 +16,7 @@ export default function InvoicesClient({ initialInvoices }: { initialInvoices: a
 
   const filteredInvoices = useMemo(() => {
     return invoices.filter(inv => {
-      const matchSearch = inv.clientName.toLowerCase().includes(searchQuery.toLowerCase()) || inv.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchSearch = (inv.clientName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) || (inv.invoiceNumber?.toLowerCase() || '').includes(searchQuery.toLowerCase());
       const matchStatus = statusFilter === 'All' || inv.status === statusFilter;
       return matchSearch && matchStatus;
     });
@@ -135,12 +135,12 @@ export default function InvoicesClient({ initialInvoices }: { initialInvoices: a
                         {inv.clientEmail && <span className="text-[11px] text-slate-500">{inv.clientEmail}</span>}
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 block">{format(new Date(inv.issueDate), 'MMM d, yyyy')}</span>
-                        <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider block mt-0.5">Due: {format(new Date(inv.dueDate), 'MMM d, yyyy')}</span>
+                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 block">{format(new Date(inv.issueDate || Date.now()), 'MMM d, yyyy')}</span>
+                        <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider block mt-0.5">Due: {format(new Date(inv.dueDate || Date.now()), 'MMM d, yyyy')}</span>
                       </td>
                       <td className="px-6 py-4 text-right">
                         <span className="text-sm font-bold text-slate-900 dark:text-white block">
-                          ${inv.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          ${(inv.total || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">

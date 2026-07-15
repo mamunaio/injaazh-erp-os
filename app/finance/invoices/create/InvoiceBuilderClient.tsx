@@ -9,8 +9,8 @@ import {
   ArrowLeft, Plus, Trash2, Download, Save, 
   FileText, Calendar, User, Mail, MapPin, Loader2, Check 
 } from 'lucide-react';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas-pro';
 import { format } from 'date-fns';
 
 const BRANDING = {
@@ -30,6 +30,12 @@ export default function InvoiceBuilderClient({ initialData }: { initialData?: an
 
   const [formData, setFormData] = useState({
     invoiceNumber: initialData?.invoiceNumber || '',
+    companyName: initialData?.companyName || BRANDING.name,
+    companyTagline: initialData?.companyTagline || BRANDING.tagline,
+    companyEmail: initialData?.companyEmail || BRANDING.email,
+    companyWebsite: initialData?.companyWebsite || BRANDING.website,
+    companyAddress: initialData?.companyAddress || BRANDING.address,
+    companySignature: initialData?.companyName ? initialData.companyName + ' Team' : BRANDING.signature,
     clientName: initialData?.clientName || '',
     clientEmail: initialData?.clientEmail || '',
     clientAddress: initialData?.clientAddress || '',
@@ -128,9 +134,9 @@ export default function InvoiceBuilderClient({ initialData }: { initialData?: an
       pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
       pdf.save(`Invoice_${formData.invoiceNumber || 'New'}.pdf`);
       toast.success('Invoice downloaded successfully');
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to generate PDF');
+    } catch (err: any) {
+      console.error('PDF Generation Error:', err);
+      toast.error(err.message || 'Failed to generate PDF');
     } finally {
       setIsGeneratingPDF(false);
     }
@@ -216,6 +222,36 @@ export default function InvoiceBuilderClient({ initialData }: { initialData?: an
 
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                  <User size={16} className="text-[#8B5CF6]" /> Your Company Details
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2 md:col-span-1">
+                    <label className={labelClass}>Company Name</label>
+                    <input type="text" className={inputClass} value={formData.companyName} onChange={e => setFormData({...formData, companyName: e.target.value})} />
+                  </div>
+                  <div className="col-span-2 md:col-span-1">
+                    <label className={labelClass}>Tagline</label>
+                    <input type="text" className={inputClass} value={formData.companyTagline} onChange={e => setFormData({...formData, companyTagline: e.target.value})} />
+                  </div>
+                  <div className="col-span-2 md:col-span-1">
+                    <label className={labelClass}>Email Address</label>
+                    <input type="email" className={inputClass} value={formData.companyEmail} onChange={e => setFormData({...formData, companyEmail: e.target.value})} />
+                  </div>
+                  <div className="col-span-2 md:col-span-1">
+                    <label className={labelClass}>Website</label>
+                    <input type="text" className={inputClass} value={formData.companyWebsite} onChange={e => setFormData({...formData, companyWebsite: e.target.value})} />
+                  </div>
+                  <div className="col-span-2">
+                    <label className={labelClass}>Address</label>
+                    <textarea className={`${inputClass} resize-none h-12`} value={formData.companyAddress} onChange={e => setFormData({...formData, companyAddress: e.target.value})} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="w-full h-px bg-slate-200 dark:bg-[#232734]"></div>
+
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <User size={16} className="text-[#8B5CF6]" /> Client Details
                 </h3>
                 <div className="space-y-4">
@@ -231,6 +267,42 @@ export default function InvoiceBuilderClient({ initialData }: { initialData?: an
                     <label className={labelClass}>Billing Address</label>
                     <textarea className={`${inputClass} resize-none h-20`} placeholder="123 Client St, City, Country" value={formData.clientAddress} onChange={e => setFormData({...formData, clientAddress: e.target.value})} />
                   </div>
+                </div>
+              </div>
+
+              <div className="w-full h-px bg-slate-200 dark:bg-[#232734]"></div>
+
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                  <Plus size={16} className="text-[#8B5CF6]" /> Line Items
+                </h3>
+                <div className="space-y-4">
+                  {items.map((item, idx) => (
+                    <div key={item.id} className="relative bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-[#232734]">
+                      <button onClick={() => removeItem(idx)} disabled={items.length === 1} className="absolute -top-2 -right-2 w-6 h-6 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-full flex items-center justify-center text-rose-500 hover:text-rose-600 hover:border-rose-500 transition-colors shadow-sm disabled:opacity-0 disabled:pointer-events-none">
+                        <Trash2 size={12} />
+                      </button>
+                      <div className="space-y-3">
+                        <div>
+                          <label className={labelClass}>Description</label>
+                          <input type="text" className={inputClass} placeholder="Service description" value={item.description} onChange={e => updateItem(idx, 'description', e.target.value)} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className={labelClass}>Quantity</label>
+                            <input type="number" min="1" className={inputClass} value={item.quantity} onChange={e => updateItem(idx, 'quantity', e.target.value)} />
+                          </div>
+                          <div>
+                            <label className={labelClass}>Rate ($)</label>
+                            <input type="number" min="0" className={inputClass} value={item.rate} onChange={e => updateItem(idx, 'rate', e.target.value)} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <button onClick={addItem} className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-dashed border-slate-200 dark:border-[#232734] text-slate-500 hover:text-[#8B5CF6] hover:border-[#8B5CF6] transition-colors text-sm font-bold">
+                    <Plus size={16} /> Add Another Item
+                  </button>
                 </div>
               </div>
 
@@ -264,100 +336,91 @@ export default function InvoiceBuilderClient({ initialData }: { initialData?: an
             <div className="min-w-[800px] bg-white border border-slate-200 rounded-sm shadow-xl p-12" ref={invoiceRef}>
               
               {/* Invoice Header */}
-              <div className="flex justify-between items-start border-b-2 border-slate-900 pb-8 mb-8">
+              <div className="flex justify-between items-start border-b-2 border-[#0f172a] pb-8 mb-8">
                 <div>
                   {/* Brand Logo / Name */}
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 bg-slate-900 rounded-lg flex items-center justify-center text-white">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                    <div className="w-10 h-10 bg-[#0f172a] rounded-lg flex items-center justify-center text-white">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
                     </div>
                     <div>
-                      <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">{BRANDING.name}</h2>
-                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{BRANDING.tagline}</p>
+                      <h2 className="text-2xl font-black text-[#0f172a] uppercase tracking-tighter">{formData.companyName}</h2>
+                      <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-widest">{formData.companyTagline}</p>
                     </div>
                   </div>
-                  <div className="text-xs text-slate-600 space-y-1 mt-4 font-medium">
-                    <p>{BRANDING.address}</p>
-                    <p>{BRANDING.email} • {BRANDING.website}</p>
+                  <div className="text-xs text-[#475569] space-y-1 mt-4 font-medium">
+                    <p>{formData.companyAddress}</p>
+                    <p>{formData.companyEmail} • {formData.companyWebsite}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <h1 className="text-4xl font-black text-slate-900 uppercase tracking-widest mb-2">INVOICE</h1>
-                  <p className="text-sm font-bold text-slate-500 mb-1">{formData.invoiceNumber || 'INV-XXXX-XXX'}</p>
-                  <p className="text-xs text-slate-600 font-medium"><span className="font-bold text-slate-900">Issue Date:</span> {format(new Date(formData.issueDate), 'MMM dd, yyyy')}</p>
-                  <p className="text-xs text-slate-600 font-medium"><span className="font-bold text-slate-900">Due Date:</span> {format(new Date(formData.dueDate), 'MMM dd, yyyy')}</p>
+                  <h1 className="text-4xl font-black text-[#0f172a] uppercase tracking-widest mb-2">INVOICE</h1>
+                  <p className="text-sm font-bold text-[#64748b] mb-1">{formData.invoiceNumber || 'INV-XXXX-XXX'}</p>
+                  <p className="text-xs text-[#475569] font-medium"><span className="font-bold text-[#0f172a]">Issue Date:</span> {format(new Date(formData.issueDate), 'MMM dd, yyyy')}</p>
+                  <p className="text-xs text-[#475569] font-medium"><span className="font-bold text-[#0f172a]">Due Date:</span> {format(new Date(formData.dueDate), 'MMM dd, yyyy')}</p>
                 </div>
               </div>
 
               {/* Bill To */}
               <div className="mb-10">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Billed To:</p>
-                <h3 className="text-lg font-bold text-slate-900">{formData.clientName || 'Client Name'}</h3>
-                {formData.clientEmail && <p className="text-sm text-slate-600 mt-1">{formData.clientEmail}</p>}
-                {formData.clientAddress && <p className="text-sm text-slate-600 mt-1 whitespace-pre-wrap">{formData.clientAddress}</p>}
+                <p className="text-[10px] font-bold text-[#94a3b8] uppercase tracking-widest mb-2">Billed To:</p>
+                <h3 className="text-lg font-bold text-[#0f172a]">{formData.clientName || 'Client Name'}</h3>
+                {formData.clientEmail && <p className="text-sm text-[#475569] mt-1">{formData.clientEmail}</p>}
+                {formData.clientAddress && <p className="text-sm text-[#475569] mt-1 whitespace-pre-wrap">{formData.clientAddress}</p>}
               </div>
 
               {/* Items Table */}
               <div className="mb-8">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b-2 border-slate-900">
-                      <th className="py-3 px-2 text-xs font-bold text-slate-900 uppercase tracking-widest w-[50%]">Description</th>
-                      <th className="py-3 px-2 text-xs font-bold text-slate-900 uppercase tracking-widest text-center w-[15%]">Qty</th>
-                      <th className="py-3 px-2 text-xs font-bold text-slate-900 uppercase tracking-widest text-right w-[15%]">Rate</th>
-                      <th className="py-3 px-2 text-xs font-bold text-slate-900 uppercase tracking-widest text-right w-[20%]">Amount</th>
-                      <th className="w-10"></th>
+                    <tr className="border-b-2 border-[#0f172a]">
+                      <th className="py-3 px-2 text-xs font-bold text-[#0f172a] uppercase tracking-widest w-[50%]">Description</th>
+                      <th className="py-3 px-2 text-xs font-bold text-[#0f172a] uppercase tracking-widest text-center w-[15%]">Qty</th>
+                      <th className="py-3 px-2 text-xs font-bold text-[#0f172a] uppercase tracking-widest text-right w-[15%]">Rate</th>
+                      <th className="py-3 px-2 text-xs font-bold text-[#0f172a] uppercase tracking-widest text-right w-[20%]">Amount</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {items.map((item, idx) => (
-                      <tr key={item.id} className="group">
-                        <td className="py-3 px-2">
-                          <input type="text" className="w-full bg-transparent border-b border-transparent focus:border-slate-300 outline-none text-sm font-medium text-slate-800 placeholder:text-slate-300" placeholder="Service description" value={item.description} onChange={e => updateItem(idx, 'description', e.target.value)} />
+                  <tbody className="divide-y divide-[#f1f5f9]">
+                    {items.map((item) => (
+                      <tr key={item.id}>
+                        <td className="py-4 px-2">
+                          <div className="text-sm font-medium text-[#1e293b] whitespace-pre-wrap">{item.description || 'Service description'}</div>
                         </td>
-                        <td className="py-3 px-2 text-center">
-                          <input type="number" min="1" className="w-full bg-transparent border-b border-transparent focus:border-slate-300 outline-none text-sm font-medium text-slate-800 text-center" value={item.quantity} onChange={e => updateItem(idx, 'quantity', e.target.value)} />
+                        <td className="py-4 px-2 text-center">
+                          <div className="text-sm font-medium text-[#1e293b]">{item.quantity}</div>
                         </td>
-                        <td className="py-3 px-2 text-right">
-                          <input type="number" min="0" className="w-full bg-transparent border-b border-transparent focus:border-slate-300 outline-none text-sm font-medium text-slate-800 text-right" value={item.rate} onChange={e => updateItem(idx, 'rate', e.target.value)} />
+                        <td className="py-4 px-2 text-right">
+                          <div className="text-sm font-medium text-[#1e293b]">{item.rate}</div>
                         </td>
-                        <td className="py-3 px-2 text-right text-sm font-bold text-slate-900">
+                        <td className="py-4 px-2 text-right text-sm font-bold text-[#0f172a]">
                           ${(item.total || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                        </td>
-                        <td className="w-10 text-center">
-                          <button onClick={() => removeItem(idx)} className="opacity-0 group-hover:opacity-100 text-rose-500 hover:text-rose-600 transition-opacity p-1 rounded-md" title="Remove Item" disabled={items.length === 1}>
-                            <Trash2 size={14} />
-                          </button>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-                <button onClick={addItem} className="mt-4 flex items-center gap-2 text-xs font-bold text-indigo-600 hover:text-indigo-700 uppercase tracking-wider">
-                  <Plus size={14} strokeWidth={3} /> Add Line Item
-                </button>
               </div>
 
               {/* Totals */}
               <div className="flex justify-end mb-16">
                 <div className="w-72 space-y-3">
-                  <div className="flex justify-between text-sm text-slate-600 font-medium">
+                  <div className="flex justify-between text-sm text-[#475569] font-medium">
                     <span>Subtotal:</span>
                     <span>${financials.subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                   </div>
                   {formData.taxRate > 0 && (
-                    <div className="flex justify-between text-sm text-slate-600 font-medium">
+                    <div className="flex justify-between text-sm text-[#475569] font-medium">
                       <span>Tax ({formData.taxRate}%):</span>
                       <span>${financials.taxAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                     </div>
                   )}
                   {formData.discountAmount > 0 && (
-                    <div className="flex justify-between text-sm text-emerald-600 font-medium">
+                    <div className="flex justify-between text-sm text-[#059669] font-medium">
                       <span>Discount:</span>
                       <span>-${formData.discountAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-lg font-black text-slate-900 pt-3 border-t-2 border-slate-900">
+                  <div className="flex justify-between text-lg font-black text-[#0f172a] pt-3 border-t-2 border-[#0f172a]">
                     <span>Total Due:</span>
                     <span>${financials.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                   </div>
@@ -365,18 +428,18 @@ export default function InvoiceBuilderClient({ initialData }: { initialData?: an
               </div>
 
               {/* Footer */}
-              <div className="grid grid-cols-2 gap-8 items-end text-sm text-slate-600 mt-auto pt-8 border-t border-slate-200">
+              <div className="grid grid-cols-2 gap-8 items-end text-sm text-[#475569] mt-auto pt-8 border-t border-[#e2e8f0]">
                 <div>
-                  <h4 className="font-bold text-slate-900 mb-2">Notes</h4>
+                  <h4 className="font-bold text-[#0f172a] mb-2">Notes</h4>
                   <p className="whitespace-pre-wrap font-medium">{formData.notes}</p>
                 </div>
                 <div className="text-right">
                   <div className="mb-2">
-                    <span className="font-serif italic text-2xl text-slate-800 border-b border-slate-300 pb-1 inline-block min-w-[200px]">
-                      {BRANDING.signature}
+                    <span className="font-serif italic text-2xl text-[#1e293b] border-b border-[#cbd5e1] pb-1 inline-block min-w-[200px]">
+                      {formData.companySignature}
                     </span>
                   </div>
-                  <p className="font-bold uppercase tracking-widest text-[10px] text-slate-400 mt-2">Authorized Signature</p>
+                  <p className="font-bold uppercase tracking-widest text-[10px] text-[#94a3b8] mt-2">Authorized Signature</p>
                 </div>
               </div>
 

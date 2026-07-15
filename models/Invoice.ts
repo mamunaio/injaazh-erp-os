@@ -9,6 +9,11 @@ export interface IInvoiceItem {
 
 export interface IInvoice extends Document {
   invoiceNumber: string;
+  companyName: string;
+  companyTagline: string;
+  companyEmail: string;
+  companyWebsite: string;
+  companyAddress: string;
   clientName: string;
   clientEmail: string;
   clientAddress: string;
@@ -35,6 +40,11 @@ const InvoiceItemSchema: Schema = new Schema({
 
 const InvoiceSchema: Schema = new Schema({
   invoiceNumber: { type: String, required: true, unique: true },
+  companyName: { type: String, default: 'Injaazh Global' },
+  companyTagline: { type: String, default: 'Empowering Digital Transformation' },
+  companyEmail: { type: String, default: 'hello@injaazh.com' },
+  companyWebsite: { type: String, default: 'www.injaazh.com' },
+  companyAddress: { type: String, default: '123 Tech Valley, San Francisco, CA 94105' },
   clientName: { type: String, required: true },
   clientEmail: { type: String, default: '' },
   clientAddress: { type: String, default: '' },
