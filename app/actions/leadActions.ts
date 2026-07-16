@@ -6,6 +6,7 @@ import { Lead } from '@/models/Lead';
 import { getAuthUser } from '@/lib/auth';
 import { decrypt } from '@/lib/encryption';
 import { createNotification } from './notificationActions';
+import mongoose from 'mongoose';
 
 export async function createLead(data: any) {
   try {
@@ -434,19 +435,26 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
       { $set: { sentToday: 0, lastResetDate: new Date() } }
     );
 
+    if (senderAccountId === 'auto') {
+      // Check if this lead already has an email history
+      const previousLog = await EmailCampaignLog.findOne({ leadId: lead._id, status: 'Sent' }).sort({ createdAt: 1 }).lean();
+      if (previousLog && previousLog.accountId) {
+        senderAccountId = previousLog.accountId.toString();
+      }
+    }
+
     if (senderAccountId && senderAccountId !== 'auto') {
       // Find the explicit account requested
       selectedAccount = await EmailAccount.findOneAndUpdate(
         {
           _id: senderAccountId,
-          isActive: true,
-          $expr: { $lt: ['$sentToday', '$dailyLimit'] },
+          isActive: true
         },
         { $inc: { sentToday: 1 } },
         { new: true }
       );
       if (!selectedAccount) {
-        return { success: false, error: 'Selected email account is inactive or has reached its daily limit.' };
+        return { success: false, error: 'The email account previously used for this lead is inactive or deleted.' };
       }
     } else {
       // Auto-select an available email account
@@ -481,19 +489,62 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
           },
         });
 
+        // Generate a unique ID for the log first
+        const logId = new mongoose.Types.ObjectId();
+
+        // Link Rewriting for Click Tracking
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+        let trackableHtmlBody = parsedBody.replace(/\n/g, '<br>').replace(/href="([^"]+)"/g, (match, url) => {
+          if (url.startsWith('mailto:') || url.startsWith('tel:')) return match;
+          const encodedUrl = encodeURIComponent(url);
+          return `href="${baseUrl}/api/track?type=click&logId=${logId.toString()}&url=${encodedUrl}"`;
+        });
+
+        // Tracking Pixel for Open Tracking
+        const trackingPixel = `<img src="${baseUrl}/api/track?type=open&logId=${logId.toString()}" width="1" height="1" alt="" style="display:none;" />`;
+        trackableHtmlBody += trackingPixel;
+
         const senderName = selectedAccount.senderName || 'Injaazh Global';
         const mailOptions: any = {
           from: `"${senderName}" <${selectedAccount.email}>`,
           to: emailTo || lead.email,
           subject: parsedSubject,
           text: parsedBody,
-          html: parsedBody.replace(/\n/g, '<br />'),
+          html: `<div style="font-family: sans-serif; font-size: 14px; color: #333;">${trackableHtmlBody}</div>`,
+          headers: {
+            'List-Unsubscribe': `<mailto:${selectedAccount.email}?subject=Unsubscribe>`,
+            'Precedence': 'bulk'
+          }
         };
 
-        const info = await transporter.sendMail(mailOptions);
+        let info;
+        try {
+          info = await transporter.sendMail(mailOptions);
+        } catch (sendError: any) {
+          const errorMsg = sendError.message || '';
+          if (errorMsg.includes('Invalid login') || errorMsg.includes('BadCredentials') || errorMsg.includes('535')) {
+            await EmailAccount.findByIdAndUpdate(selectedAccount._id, { $set: { isActive: false } });
+          } else {
+            await EmailAccount.findByIdAndUpdate(selectedAccount._id, { $inc: { sentToday: -1 } });
+          }
+          
+          await EmailCampaignLog.create({
+            _id: logId,
+            leadId: lead._id,
+            accountId: selectedAccount._id,
+            messageId: `failed-${Date.now()}`,
+            type: 'Initial',
+            status: 'Failed',
+            errorMessage: errorMsg,
+            sentBy: currentUser ? currentUser.id : undefined,
+          });
+
+          return { success: false, error: errorMsg };
+        }
 
         // Log the campaign using the rotating account
         await EmailCampaignLog.create({
+          _id: logId,
           leadId: lead._id,
           accountId: selectedAccount._id,
           messageId: info.messageId,
@@ -579,6 +630,7 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
     
     // Apply updates directly
     lead.outreach_status = newStatus;
+    lead.is_replied = false; // We replied back, so clear the 'unread reply' status
     lead.outreach_logs = [newLog, ...lead.outreach_logs];
     
     // Automatically schedule a follow-up between 3 and 5 days in the future
@@ -660,6 +712,35 @@ export async function scheduleOutreachEmail(leadId: string, subject: string, bod
   } catch (error: any) {
     console.error('❌ Outreach email scheduling failed:', error);
     return { success: false, error: error.message || 'Outreach failed to schedule' };
+  }
+}
+
+export async function cancelOutreachSchedule(leadId: string) {
+  try {
+    const currentUser = await getAuthUser();
+    await connectToDatabase();
+    const { Lead } = await import('@/models/Lead');
+    const lead = await Lead.findById(leadId);
+    
+    if (!lead) return { success: false, error: 'Lead not found.' };
+
+    if (lead.outreach_status === 'Queued') {
+      lead.outreach_status = 'New';
+    }
+    lead.outreach_scheduled_for = undefined;
+    
+    await lead.save();
+    
+    const { revalidatePath } = await import('next/cache');
+    try {
+      revalidatePath('/prospects');
+      revalidatePath('/dashboard');
+    } catch(e) {}
+    
+    return { success: true, data: JSON.parse(JSON.stringify(lead)) };
+  } catch (error: any) {
+    console.error('❌ Cancel schedule server action failed:', error);
+    return { success: false, error: error.message || 'Failed to cancel schedule' };
   }
 }
 

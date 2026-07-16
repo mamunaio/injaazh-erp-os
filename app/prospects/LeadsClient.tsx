@@ -128,13 +128,8 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
   const handleCreateLead = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Prevent premature saving if user hits Enter on steps 1, 2, or 3
-    if (formStep < 4) {
-      if (formStep === 1 && !formData.company_name) {
-        alert("Company Name is required!");
-        return;
-      }
-      setFormStep(prev => prev + 1);
+    if (!formData.company_name) {
+      toast.error("Company Name is required!");
       return;
     }
 

@@ -114,9 +114,9 @@ function CampaignSlidePanel({
   ];
 
   // Mock performance data
-  const deliveryRate = campaign.deliveryRate ?? 94;
-  const openRate     = campaign.openRate     ?? 38;
-  const clickRate    = campaign.clickRate    ?? 12;
+  const deliveryRate = campaign.deliveryRate ?? 0;
+  const openRate     = campaign.openRate     ?? 0;
+  const clickRate    = campaign.clickRate    ?? 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -270,9 +270,9 @@ function CampaignSlidePanel({
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { label: 'Total Audience', value: campaign.leadCount || 0, color: '#2563EB' },
-                    { label: 'Email Sent',       value: Math.floor((campaign.leadCount || 0) * 0.7), color: '#F59E0B' },
-                    { label: 'Replied',         value: Math.floor((campaign.leadCount || 0) * 0.3), color: '#7C3AED' },
-                    { label: 'Converted',       value: Math.floor((campaign.leadCount || 0) * 0.05), color: '#10B981' },
+                    { label: 'Email Sent',       value: campaign.emailsSent || 0, color: '#F59E0B' },
+                    { label: 'Replied',         value: campaign.replied || 0, color: '#7C3AED' },
+                    { label: 'Converted',       value: campaign.converted || 0, color: '#10B981' },
                   ].map(({ label, value, color }) => (
                     <div key={label} className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[14px] p-4">
                       <p className="text-xs font-bold text-[#94A3B8] mb-1">{label}</p>
@@ -437,7 +437,7 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
     { label: 'Paused',     value: campaigns.filter(c => c.status === 'Paused').length,    color: '#F59E0B', trend: '0',  up: true },
     { label: 'Draft',      value: campaigns.filter(c => c.status === 'Draft').length,     color: '#94A3B8', trend: '+3', up: true },
     { label: 'Completed',  value: campaigns.filter(c => c.status === 'Completed').length, color: '#7C3AED', trend: '+1', up: true },
-    { label: 'Avg Open',   value: '38%',                                                  color: '#0EA5E9', trend: '+4%', up: true },
+    { label: 'Avg Open',   value: '0%',                                                   color: '#0EA5E9', trend: '0%', up: true },
   ];
 
   const allSel = sorted.length > 0 && selectedIds.length === sorted.length;
@@ -616,9 +616,9 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
                       {sorted.map((campaign, i) => {
                         const isSel = selectedIds.includes(campaign._id);
                         const ss = getStatus(campaign.status);
-                        const delivery  = campaign.deliveryRate ?? 94;
-                        const openR     = campaign.openRate     ?? 38;
-                        const clickR    = campaign.clickRate    ?? 12;
+                        const delivery  = campaign.deliveryRate ?? 0;
+                        const openR     = campaign.openRate     ?? 0;
+                        const clickR    = campaign.clickRate    ?? 0;
 
                         const getMetricColor = (val: number) => { if (val >= 50) return 'text-emerald-500'; if (val >= 20) return 'text-amber-500'; return 'text-red-500'; };
                         return (

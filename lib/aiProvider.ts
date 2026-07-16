@@ -45,8 +45,8 @@ export async function generateAIContent(options: GenerateOptions, excludeKeys: s
     const aiKey = await getAvailableAiKey(excludeKeys);
     
     if (!aiKey) {
-      // Fallback to environment variable if database is exhausted or empty
-      if (process.env.GEMINI_API_KEY && excludeKeys.length === 0) {
+      // Fallback to environment variable if database is exhausted
+      if (process.env.GEMINI_API_KEY) {
         return callGemini(process.env.GEMINI_API_KEY, options);
       }
       return { success: false, error: 'No active AI Keys with remaining quota available.' };
@@ -63,11 +63,17 @@ export async function generateAIContent(options: GenerateOptions, excludeKeys: s
         return { success: false, error: `Unsupported provider: ${aiKey.provider}` };
       }
     } catch (apiError: any) {
-      // Revert quota if API call fails
-      await AiKey.findByIdAndUpdate(aiKey._id, { $inc: { sentToday: -1 } });
+      const errorMsg = apiError.message || '';
+      if (errorMsg.includes('Insufficient Balance') || errorMsg.includes('requires more credits') || errorMsg.includes('402')) {
+        // Auto-deactivate out-of-balance keys
+        await AiKey.findByIdAndUpdate(aiKey._id, { $set: { isActive: false } });
+      } else {
+        // Revert quota if API call fails for other reasons
+        await AiKey.findByIdAndUpdate(aiKey._id, { $inc: { sentToday: -1 } });
+      }
       
       // Auto-Rotate: Try the next available key!
-      console.warn(`[AI ROTATION] Key ${aiKey.provider} failed. Retrying with another key... Error: ${apiError.message}`);
+      console.warn(`[AI ROTATION] Key ${aiKey.provider} failed. Retrying with another key... Error: ${errorMsg}`);
       return generateAIContent(options, [...excludeKeys, aiKey._id.toString()]);
     }
 

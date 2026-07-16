@@ -10,7 +10,8 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { createProposal } from '@/app/actions/proposalActions';
-import { updateLead } from '@/app/actions/leadActions';
+import { updateLead, sendOutreachEmail } from '@/app/actions/leadActions';
+import { syncInboxesAction } from '@/app/actions/outreachAutomationActions';
 import toast from 'react-hot-toast';
 
 interface OutreachClientProps {
@@ -79,9 +80,16 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
   const router = useRouter();
   const [leads, setLeads] = useState(initialLeads);
 
+  React.useEffect(() => {
+    setLeads(initialLeads);
+  }, [initialLeads]);
+
   // ── Preserved business logic state ──────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<'inbox' | 'pipeline'>('inbox');
+  const [visibleCount, setVisibleCount] = useState(20);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [readLeads, setReadLeads] = useState<string[]>([]);
   const [isCreatingProposalFor, setIsCreatingProposalFor] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
@@ -94,13 +102,26 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
   const [whatsappBody, setWhatsappBody] = useState('');
   const [isSavingDraft, setIsSavingDraft] = useState(false);
 
+  React.useEffect(() => {
+    setVisibleCount(20);
+  }, [activeTab, searchQuery, statusFilter]);
+
   // ── Preserved handlers (100% unchanged logic) ────────────────────────────────
   const handleSyncInboxes = async () => {
     setIsSyncing(true);
-    setTimeout(() => {
+    try {
+      const result = await syncInboxesAction();
+      if (result.success) {
+        toast.success('Inboxes synced successfully!');
+        router.refresh();
+      } else {
+        toast.error(result.error || 'Failed to sync inboxes');
+      }
+    } catch (e) {
+      toast.error('An error occurred while syncing inboxes');
+    } finally {
       setIsSyncing(false);
-      toast.success('Inboxes synced successfully!');
-    }, 1500);
+    }
   };
 
   const handleCreateProposal = async (lead: any) => {
@@ -163,6 +184,11 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
       setEmailSubject(selectedLead.email_subject_draft || '');
       setEmailBody(selectedLead.email_draft || '');
       setWhatsappBody(selectedLead.facebook_draft || '');
+      
+      // Mark as read locally so the blue dot disappears
+      if (!readLeads.includes(selectedLead._id)) {
+        setReadLeads(prev => [...prev, selectedLead._id]);
+      }
     }
   }, [selectedLeadId]);
 
@@ -179,6 +205,62 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
       } else { toast.error('Failed to save drafts'); }
     } catch (e) { toast.error('Error saving drafts'); }
     finally { setIsSavingDraft(false); }
+  };
+
+  const handleSendEmail = async () => {
+    if (!selectedLead || !emailBody.trim()) return;
+    setIsSending(true);
+    try {
+      // First save the draft
+      await updateLead(selectedLead._id, { email_subject_draft: emailSubject, email_draft: emailBody });
+      
+      const res = await sendOutreachEmail(selectedLead._id, emailSubject, emailBody);
+      if (res.success) {
+        toast.custom((t) => (
+          <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-sm w-full bg-white dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] shadow-lg rounded-2xl pointer-events-auto flex`}>
+            <div className="flex-1 w-0 p-4">
+              <div className="flex items-start">
+                <div className="flex-shrink-0 pt-0.5">
+                  <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                    <CheckCircle size={18} />
+                  </div>
+                </div>
+                <div className="ml-3 flex-1">
+                  <p className="text-sm font-bold text-slate-800 dark:text-white">
+                    Reply Sent!
+                  </p>
+                  <p className="mt-1 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                    Your email was successfully delivered.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex border-l border-slate-200 dark:border-[#232734]">
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                className="w-full border border-transparent rounded-none rounded-r-2xl p-4 flex items-center justify-center text-sm font-bold text-slate-500 hover:text-slate-700 dark:hover:text-white transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        ), { duration: 4000 });
+        
+        setLeads(leads.map(l => {
+          if (l._id === selectedLead._id) {
+            const newStatus = (l.outreach_status === 'New' || l.outreach_status === 'Queued') ? 'Email Sent' : l.outreach_status;
+            return { ...l, outreach_status: newStatus, is_replied: false };
+          }
+          return l;
+        }));
+      } else {
+        toast.error(res.error || 'Failed to send email');
+      }
+    } catch (e: any) {
+      toast.error('Error sending email');
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleAddLog = async (method: 'Phone' | 'Note') => {
@@ -384,7 +466,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                 </div>
               ) : (
                 <AnimatePresence>
-                  {filteredLeads.map((lead, i) => {
+                  {filteredLeads.slice(0, visibleCount).map((lead, i) => {
                     const isSelected = selectedLeadId === lead._id;
                     const ss = getStatus(lead.outreach_status);
                     return (
@@ -394,8 +476,8 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.025, type: 'spring', stiffness: 320, damping: 28 }}
                         onClick={() => setSelectedLeadId(lead._id)}
-                        className={`w-full text-left p-3 rounded-[14px] border flex items-start gap-3 transition-all ${isSelected ? 'bg-[#2563EB]/8 border-[#2563EB]/40' : 'bg-transparent border-transparent hover:bg-slate-50 dark:bg-[#09090B] hover:border-slate-200 dark:border-[#232734]'}`}
-                        style={isSelected ? { borderLeftWidth: '2px', borderLeftColor: '#2563EB' } : {}}
+                        className={`w-full text-left p-3 rounded-[14px] border flex items-start gap-3 transition-all ${isSelected ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/30' : 'bg-transparent dark:bg-transparent border-transparent hover:bg-slate-50 dark:hover:bg-[#1A1D27] hover:border-slate-200 dark:hover:border-[#232734]'}`}
+                        style={isSelected ? { borderLeftWidth: '3px', borderLeftColor: '#3b82f6' } : {}}
                       >
                         <div
                           style={{ background: getAvatarGradient(lead.company_name || '?') }}
@@ -407,7 +489,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                           <div className="flex items-center justify-between gap-1 mb-1">
                             <div className="flex items-center gap-2 truncate">
                               <p className="text-[15px] font-bold text-slate-800 dark:text-slate-200 truncate">{lead.company_name}</p>
-                              {activeTab === 'inbox' && !isSelected && <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)] flex-shrink-0" />}
+                              {activeTab === 'inbox' && lead.is_replied && !readLeads.includes(lead._id) && <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)] flex-shrink-0" />}
                             </div>
                             <span className={`flex-shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold border ${ss.bg} ${ss.border} ${ss.text}`}>
                               <span className={`w-1 h-1 rounded-full ${ss.dot}`} />
@@ -431,6 +513,16 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                     );
                   })}
                 </AnimatePresence>
+              )}
+              {filteredLeads.length > visibleCount && (
+                <div className="pt-2 pb-4 px-2">
+                  <button
+                    onClick={() => setVisibleCount(prev => prev + 20)}
+                    className="w-full py-2.5 rounded-[10px] bg-slate-100 dark:bg-[#232734] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white text-xs font-bold transition-colors"
+                  >
+                    Load More ({filteredLeads.length - visibleCount} remaining)
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -619,10 +711,14 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                               placeholder={'Hi {{first_name}},\n\nI noticed…'}
                             />
                           </div>
-                          <div className="flex justify-end">
-                            <button onClick={handleSaveDrafts} disabled={isSavingDraft}
-                              className="flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white font-bold rounded-[10px] text-xs transition-all disabled:opacity-50">
+                          <div className="flex justify-end gap-3">
+                            <button onClick={handleSaveDrafts} disabled={isSavingDraft || isSending}
+                              className="flex items-center gap-2 px-5 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-[#1E2235] dark:hover:bg-[#2A2F45] text-slate-700 dark:text-slate-300 font-bold rounded-[10px] text-xs transition-all disabled:opacity-50">
                               <Save size={13} /> {isSavingDraft ? 'Saving…' : 'Save Draft'}
+                            </button>
+                            <button onClick={handleSendEmail} disabled={isSending || isSavingDraft}
+                              className="flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold rounded-[10px] text-xs transition-all disabled:opacity-50 shadow-[0_4px_12px_rgba(37,99,235,0.3)]">
+                              <Send size={13} /> {isSending ? 'Sending…' : 'Send Reply'}
                             </button>
                           </div>
                         </motion.div>

@@ -316,7 +316,7 @@ export default function LoginPage() {
                   
                   <div className="flex items-center justify-between pt-2">
                     <label className="flex items-center gap-2 cursor-pointer group">
-                      <input type="checkbox" name="rememberMe" className="w-4 h-4 rounded border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B] text-[#2563EB] focus:ring-[#2563EB] focus:ring-offset-0 focus:ring-offset-[#11131A] transition-colors" />
+                      <input type="checkbox" name="rememberMe" defaultChecked className="w-4 h-4 rounded border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B] text-[#2563EB] focus:ring-[#2563EB] focus:ring-offset-0 focus:ring-offset-[#11131A] transition-colors" />
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:hover:text-white transition-colors">Trust this device for 30 days</span>
                     </label>
                   </div>
@@ -387,7 +387,7 @@ export default function LoginPage() {
 
                   <div className="flex items-center justify-between pt-2">
                     <label className="flex items-center gap-2 cursor-pointer group">
-                      <input type="checkbox" name="rememberMe" className="w-4 h-4 rounded border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B] text-[#2563EB] focus:ring-[#2563EB] focus:ring-offset-0 focus:ring-offset-[#11131A] transition-colors" />
+                      <input type="checkbox" name="rememberMe" defaultChecked className="w-4 h-4 rounded border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B] text-[#2563EB] focus:ring-[#2563EB] focus:ring-offset-0 focus:ring-offset-[#11131A] transition-colors" />
                       <span className="text-xs font-medium text-slate-600 dark:text-[#94A3B8] group-hover:text-slate-900 dark:hover:text-white transition-colors">Remember me</span>
                     </label>
                     <Link href="/forgot-password" className="text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors">

@@ -10,6 +10,7 @@ import { EmailCampaignLog } from '@/models/EmailCampaignLog';
 import nodemailer from 'nodemailer';
 import { generateAIContent } from '@/lib/aiProvider';
 import { decrypt } from '@/lib/encryption';
+import { checkAllInboxes } from '@/app/services/imapListener';
 
 /**
  * Automatically select an available email account that hasn't reached its daily limit.
@@ -132,9 +133,15 @@ export async function executeAutomatedOutreach(leadId: string, isFollowUp = fals
     try {
       info = await transporter.sendMail(mailOptions);
     } catch (sendError: any) {
-      // Revert quota if sending fails
-      await EmailAccount.findByIdAndUpdate(account._id, { $inc: { sentToday: -1 } });
-      throw new Error(`Failed to send email: ${sendError.message}`);
+      const errorMsg = sendError.message || '';
+      if (errorMsg.includes('Invalid login') || errorMsg.includes('BadCredentials') || errorMsg.includes('535')) {
+        // Auth failure: Deactivate account to prevent blocking the rotation loop
+        await EmailAccount.findByIdAndUpdate(account._id, { $set: { isActive: false } });
+      } else {
+        // Revert quota if sending fails for other reasons
+        await EmailAccount.findByIdAndUpdate(account._id, { $inc: { sentToday: -1 } });
+      }
+      throw new Error(`Failed to send email: ${errorMsg}`);
     }
 
     // Log the email
@@ -279,6 +286,18 @@ export async function executeCampaignSequence(campaignLeadId: string) {
       const response = await generateAIContent({ prompt });
       if (!response.success) {
         await EmailAccount.findByIdAndUpdate(account._id, { $inc: { sentToday: -1 } });
+        
+        // Log AI Failure so it shows up on the dashboard
+        await EmailCampaignLog.create({
+          leadId: lead._id,
+          accountId: account._id,
+          campaignId: campaignLead.campaignId,
+          messageId: `failed-ai-${Date.now()}`,
+          type: campaignLead.currentStep === 1 ? 'Initial' : 'Follow-up',
+          status: 'Failed',
+          errorMessage: response.error || 'AI Generation failed'
+        });
+        
         throw new Error(response.error || 'AI Generation failed');
       }
       emailBody = response.text;
@@ -287,6 +306,10 @@ export async function executeCampaignSequence(campaignLeadId: string) {
       emailBody = replaceVars(emailBody);
       subject = replaceVars(subject);
     }
+
+    const { parseSpintax } = await import('@/lib/spintax');
+    emailBody = parseSpintax(emailBody);
+    subject = parseSpintax(subject);
 
     const transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -305,12 +328,28 @@ export async function executeCampaignSequence(campaignLeadId: string) {
     // Format as HTML to look better and improve inbox rate
     const htmlBody = finalEmailBody.replace(/\n/g, '<br>');
 
+    // We need an ID for tracking before we send the email
+    const logId = new mongoose.Types.ObjectId();
+
+    // Link Rewriting for Click Tracking
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    let trackableHtmlBody = htmlBody.replace(/href="([^"]+)"/g, (match, url) => {
+      // Don't rewrite mailto or tel links
+      if (url.startsWith('mailto:') || url.startsWith('tel:')) return match;
+      const encodedUrl = encodeURIComponent(url);
+      return `href="${baseUrl}/api/track?type=click&logId=${logId.toString()}&url=${encodedUrl}"`;
+    });
+
+    // Tracking Pixel for Open Tracking
+    const trackingPixel = `<img src="${baseUrl}/api/track?type=open&logId=${logId.toString()}" width="1" height="1" alt="" style="display:none;" />`;
+    trackableHtmlBody += trackingPixel;
+
     const mailOptions: any = {
       from: `"${senderName}" <${account.email}>`,
       to: lead.email,
       subject: subject,
       text: finalEmailBody,
-      html: `<div style="font-family: sans-serif; font-size: 14px; color: #333;">${htmlBody}</div>`,
+      html: `<div style="font-family: sans-serif; font-size: 14px; color: #333;">${trackableHtmlBody}</div>`,
       headers: {
         'List-Unsubscribe': `<mailto:${account.email}?subject=Unsubscribe>`,
         'Precedence': 'bulk'
@@ -321,13 +360,33 @@ export async function executeCampaignSequence(campaignLeadId: string) {
     try {
       info = await transporter.sendMail(mailOptions);
     } catch (sendError: any) {
-      await EmailAccount.findByIdAndUpdate(account._id, { $inc: { sentToday: -1 } });
-      throw new Error(`Failed to send email: ${sendError.message}`);
+      const errorMsg = sendError.message || '';
+      if (errorMsg.includes('Invalid login') || errorMsg.includes('BadCredentials') || errorMsg.includes('535')) {
+        await EmailAccount.findByIdAndUpdate(account._id, { $set: { isActive: false } });
+      } else {
+        await EmailAccount.findByIdAndUpdate(account._id, { $inc: { sentToday: -1 } });
+      }
+      
+      // Log failure
+      await EmailCampaignLog.create({
+        _id: logId,
+        leadId: lead._id,
+        accountId: account._id,
+        campaignId: campaignLead.campaignId,
+        messageId: `failed-${Date.now()}`,
+        type: campaignLead.currentStep === 1 ? 'Initial' : 'Follow-up',
+        status: 'Failed',
+        errorMessage: errorMsg
+      });
+      
+      throw new Error(`Failed to send email: ${errorMsg}`);
     }
 
     await EmailCampaignLog.create({
+      _id: logId,
       leadId: lead._id,
       accountId: account._id,
+      campaignId: campaignLead.campaignId,
       messageId: info.messageId,
       type: campaignLead.currentStep === 1 ? 'Initial' : 'Follow-up',
       status: 'Sent',
@@ -391,32 +450,47 @@ export async function forceRunCampaign(campaignId: string) {
       return { success: true, message: 'No eligible leads found to process right now.' };
     }
 
-    let processedCount = 0;
-    let lastError = null;
-    
-    for (const cl of activeCampaignLeads) {
-      console.log(`[FORCE RUN] Processing lead: ${cl.leadId}`);
-      const res = await executeCampaignSequence(cl._id.toString());
-      if (res.success) {
-        processedCount++;
-        console.log(`[FORCE RUN] Successfully sent email to lead: ${cl.leadId}`);
-      } else {
-        lastError = res.error;
-        console.error(`[FORCE RUN] Error for lead ${cl.leadId}:`, res.error);
+    const { after } = await import('next/server');
+    const fs = require('fs');
+    const logFile = 'scratch/campaign-log.txt';
+    fs.appendFileSync(logFile, `[${new Date().toISOString()}] Started campaign run for ${activeCampaignLeads.length} leads\n`);
+
+    after(async () => {
+      let processedCount = 0;
+      for (const cl of activeCampaignLeads) {
+        fs.appendFileSync(logFile, `[${new Date().toISOString()}] Processing lead: ${cl.leadId}\n`);
+        try {
+          const res = await executeCampaignSequence(cl._id.toString());
+          if (res.success) {
+            processedCount++;
+            fs.appendFileSync(logFile, `[${new Date().toISOString()}] Successfully sent email to lead: ${cl.leadId}\n`);
+          } else {
+            fs.appendFileSync(logFile, `[${new Date().toISOString()}] Error for lead ${cl.leadId}: ${res.error}\n`);
+          }
+        } catch (e: any) {
+          fs.appendFileSync(logFile, `[${new Date().toISOString()}] CRASH for lead ${cl.leadId}: ${e.message}\n${e.stack}\n`);
+        }
+        
+        const randomDelayMs = Math.floor(Math.random() * (240000 - 120000 + 1)) + 120000;
+        fs.appendFileSync(logFile, `[${new Date().toISOString()}] Waiting ${Math.round(randomDelayMs / 1000)} seconds...\n`);
+        await new Promise(r => setTimeout(r, randomDelayMs));
       }
-      // Wait to avoid rate limits
-      await new Promise(r => setTimeout(r, 2000));
-    }
+      fs.appendFileSync(logFile, `[${new Date().toISOString()}] Finished processing ${processedCount} leads\n`);
+    });
 
-    console.log(`[FORCE RUN] Finished processing ${processedCount} leads. Last error:`, lastError);
-
-    if (processedCount === 0 && lastError) {
-      return { success: false, error: lastError };
-    }
-
-    return { success: true, message: `Successfully processed ${processedCount} leads.` };
+    return { success: true, message: `Successfully started sending to ${activeCampaignLeads.length} leads in the background. Emails will be sent 2-4 mins apart.` };
   } catch (error: any) {
     console.error(`[FORCE RUN] Fatal error:`, error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function syncInboxesAction() {
+  try {
+    await checkAllInboxes();
+    return { success: true };
+  } catch (error: any) {
+    console.error('Error syncing inboxes:', error);
     return { success: false, error: error.message };
   }
 }

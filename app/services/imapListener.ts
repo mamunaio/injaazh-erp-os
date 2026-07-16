@@ -1,4 +1,5 @@
 import imaps from 'imap-simple';
+import { simpleParser } from 'mailparser';
 import { EmailAccount } from '@/models/EmailAccount';
 import { EmailCampaignLog } from '@/models/EmailCampaignLog';
 import { Lead } from '@/models/Lead';
@@ -30,18 +31,17 @@ export async function checkRepliesForAccount(account: any) {
     ];
     
     const fetchOptions = {
-      bodies: ['HEADER.FIELDS (FROM TO SUBJECT MESSAGE-ID IN-REPLY-TO REFERENCES DATE)'],
+      bodies: [''],
       struct: true
     };
 
     const messages = await connection.search(searchCriteria, fetchOptions);
     for (const msg of messages) {
-      const headerPart = msg.parts.find(part => part.which.includes('HEADER'));
-      if (!headerPart) continue;
+      const all = msg.parts.find(part => part.which === '' || part.which === 'TEXT') || msg.parts[0];
+      if (!all || !all.body) continue;
 
-      const headers = headerPart.body;
-      let inReplyTo = headers['in-reply-to'] ? headers['in-reply-to'][0] : null;
-
+      const parsed = await simpleParser(all.body);
+      let inReplyTo = parsed.inReplyTo;
       if (!inReplyTo) continue;
 
       // Clean the Message-ID format (e.g., <msg-id>)
@@ -54,17 +54,35 @@ export async function checkRepliesForAccount(account: any) {
       if (log) {
         // We found a reply to our campaign!
         const lead = await Lead.findById(log.leadId);
-        if (lead && !lead.is_replied) {
-          const subject = headers['subject'] ? headers['subject'][0] : 'No Subject';
+        
+        if (lead) {
+          const subject = parsed.subject || 'No Subject';
+          const textBody = parsed.text || 'No content';
+          const logNote = `[REPLY RECEIVED]\nSubject: ${subject}\n\n${textBody}`;
           
-          lead.is_replied = true;
-          lead.outreach_status = 'Replied';
-          lead.nextFollowUpDate = undefined; // Stop follow ups
-          lead.last_reply_subject = subject; // Save the subject
-          await lead.save();
+          // Check for duplicate to avoid multiple logging
+          const alreadyLogged = lead.outreach_logs && lead.outreach_logs.some((l: any) => 
+             l.notes && l.notes === logNote
+          );
 
-          // Optional: Send notification to admin using nodemailer (to be implemented)
-          console.log(`[IMAP] Detected reply from Lead: ${lead.email} | Subject: ${subject}`);
+          if (!alreadyLogged) {
+            lead.outreach_logs = lead.outreach_logs || [];
+            lead.outreach_logs.unshift({
+              method: 'Email',
+              date: parsed.date || new Date(),
+              notes: logNote
+            });
+            
+            if (!lead.is_replied) {
+              lead.is_replied = true;
+              lead.outreach_status = 'Replied';
+              lead.nextFollowUpDate = undefined;
+              lead.last_reply_subject = subject;
+            }
+            
+            await lead.save();
+            console.log(`[IMAP] Logged reply from Lead: ${lead.email} | Subject: ${subject}`);
+          }
         }
 
         // Mark message as read so we don't process it again

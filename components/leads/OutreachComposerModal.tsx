@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { fromZonedTime } from 'date-fns-tz';
-import { sendOutreachEmail, scheduleOutreachEmail } from '@/app/actions/leadActions';
+import { sendOutreachEmail, scheduleOutreachEmail, cancelOutreachSchedule } from '@/app/actions/leadActions';
 import { getEmailAccounts } from '@/app/actions/emailAccountActions';
 import { generateAIEmailDraft } from '@/app/actions/aiActions';
 import { getEmailTemplates, createEmailTemplate, updateEmailTemplate, deleteEmailTemplate } from '@/app/actions/emailTemplateActions';
@@ -480,6 +480,31 @@ export default function OutreachComposerModal({
     }
   };
 
+  const handleCancelSchedule = async () => {
+    playStatusSound('loading');
+    setIsScheduling(true);
+    try {
+      const response = await cancelOutreachSchedule(lead._id);
+      if (response.success && response.data) {
+        playStatusSound('success');
+        setScheduleTime(null);
+        setSuccessInfo({ isSimulated: false, sentVia: 'Schedule Removed' });
+        setTimeout(() => {
+          onEmailSent(response.data);
+          onClose();
+        }, 1500);
+      } else {
+        playStatusSound('error');
+        setErrorMessage(response.error || 'Failed to remove schedule.');
+      }
+    } catch (err: any) {
+      playStatusSound('error');
+      setErrorMessage(err.message || 'An unexpected error occurred.');
+    } finally {
+      setIsScheduling(false);
+    }
+  };
+
   return (
     <>
       <AnimatePresence>
@@ -787,6 +812,16 @@ export default function OutreachComposerModal({
                     {isScheduling ? <Loader2 size={14} className="animate-spin" /> : <Calendar size={14} />}
                     {lead?.outreach_status === 'Queued' ? 'Update Schedule' : 'Schedule'}
                   </button>
+                  {lead?.outreach_status === 'Queued' && (
+                    <button
+                      onClick={handleCancelSchedule}
+                      disabled={isScheduling || isSending}
+                      className="px-3 py-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 font-bold rounded-xl text-xs flex items-center justify-center transition-colors disabled:opacity-50"
+                      title="Remove Schedule"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
                 </div>
               </div>
 

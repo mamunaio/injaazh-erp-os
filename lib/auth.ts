@@ -77,7 +77,9 @@ export const setAuthCookie = async (token: string, rememberMe: boolean = false) 
   };
 
   if (rememberMe) {
-    cookieOptions.maxAge = 60 * 60 * 24 * 30; // 30 days
+    const thirtyDays = 60 * 60 * 24 * 30;
+    cookieOptions.maxAge = thirtyDays; // 30 days
+    cookieOptions.expires = new Date(Date.now() + thirtyDays * 1000);
   }
 
   cookieStore.set(cookieOptions);
