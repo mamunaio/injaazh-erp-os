@@ -10,17 +10,25 @@ export default function WorkTimeTracker() {
   const [totalSeconds, setTotalSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isIdlePaused, setIsIdlePaused] = useState(false);
   const pathname = usePathname();
   const startTimeRef = useRef<number | null>(null);
+  const lastActivityRef = useRef<number>(Date.now());
+  const IDLE_TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
 
   // Initialize from localStorage on mount
   useEffect(() => {
     try {
       const storedActive = localStorage.getItem('timeTracker_isActive');
+      const storedIdle = localStorage.getItem('timeTracker_isIdlePaused');
       const storedStartTime = localStorage.getItem('timeTracker_startTime');
       const storedTotalSeconds = localStorage.getItem('timeTracker_totalSeconds');
 
-      if (storedActive === 'true' && storedStartTime) {
+      if (storedIdle === 'true') {
+        setIsIdlePaused(true);
+        setIsActive(false);
+        if (storedTotalSeconds) setTotalSeconds(parseInt(storedTotalSeconds, 10));
+      } else if (storedActive === 'true' && storedStartTime) {
         setIsActive(true);
         const start = parseInt(storedStartTime, 10);
         startTimeRef.current = start;
@@ -38,6 +46,7 @@ export default function WorkTimeTracker() {
   useEffect(() => {
     try {
       localStorage.setItem('timeTracker_isActive', isActive.toString());
+      localStorage.setItem('timeTracker_isIdlePaused', isIdlePaused.toString());
       if (isActive && startTimeRef.current) {
         localStorage.setItem('timeTracker_startTime', startTimeRef.current.toString());
       } else {
@@ -49,20 +58,52 @@ export default function WorkTimeTracker() {
     }
   }, [isActive, totalSeconds]);
 
-  // Timer update
+  // Idle Detection & Timer Update
   useEffect(() => {
     if (pathname === '/login' || pathname === '/' || pathname === '/register') return;
 
     let interval: NodeJS.Timeout;
+    
+    // Activity listener
+    const handleActivity = () => {
+      lastActivityRef.current = Date.now();
+      if (isIdlePaused) {
+        setIsIdlePaused(false);
+        setIsActive(true);
+        // Reset start time so future elapsed calculations are correct
+        startTimeRef.current = Date.now();
+        toast.success('Welcome back! Time tracker resumed.');
+      }
+    };
+
+    window.addEventListener('mousemove', handleActivity);
+    window.addEventListener('keydown', handleActivity);
+    window.addEventListener('click', handleActivity);
+    window.addEventListener('scroll', handleActivity);
+
     if (isActive) {
       interval = setInterval(() => {
-        setTotalSeconds(prev => prev + 1);
+        const now = Date.now();
+        if (now - lastActivityRef.current > IDLE_TIMEOUT) {
+          // Went idle! Subtract the idle time that was counted and pause
+          setTotalSeconds(prev => Math.max(0, prev - (IDLE_TIMEOUT / 1000)));
+          setIsActive(false);
+          setIsIdlePaused(true);
+          toast('You went idle. Time tracker paused.', { icon: '⏸️' });
+        } else {
+          setTotalSeconds(prev => prev + 1);
+        }
       }, 1000);
     }
+    
     return () => {
       if (interval) clearInterval(interval);
+      window.removeEventListener('mousemove', handleActivity);
+      window.removeEventListener('keydown', handleActivity);
+      window.removeEventListener('click', handleActivity);
+      window.removeEventListener('scroll', handleActivity);
     };
-  }, [isActive, pathname]);
+  }, [isActive, isIdlePaused, pathname]);
 
   if (pathname === '/login' || pathname === '/' || pathname === '/register') return null;
 
@@ -74,9 +115,10 @@ export default function WorkTimeTracker() {
   };
 
   const handleToggle = async () => {
-    if (isActive) {
+    if (isActive || isIdlePaused) {
       // Stop and Save
       setIsActive(false);
+      setIsIdlePaused(false);
       if (totalSeconds < 60) {
         toast.error('Session too short to save (minimum 1 minute).');
         setTotalSeconds(0);
@@ -108,11 +150,20 @@ export default function WorkTimeTracker() {
         }
       } catch (error) {
         toast.error('An error occurred.');
+        setIsActive(false);
+        setIsIdlePaused(false);
+        setTotalSeconds(0);
+        startTimeRef.current = null;
+        localStorage.removeItem('timeTracker_isActive');
+        localStorage.removeItem('timeTracker_isIdlePaused');
+        localStorage.removeItem('timeTracker_startTime');
+        localStorage.removeItem('timeTracker_totalSeconds');
       } finally {
         setTotalSeconds(0);
         startTimeRef.current = null;
         setIsSaving(false);
         localStorage.removeItem('timeTracker_isActive');
+        localStorage.removeItem('timeTracker_isIdlePaused');
         localStorage.removeItem('timeTracker_startTime');
         localStorage.removeItem('timeTracker_totalSeconds');
       }
@@ -132,14 +183,14 @@ export default function WorkTimeTracker() {
           onClick={handleToggle}
           disabled={isSaving}
           className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all shadow-sm ${
-            isActive 
+            (isActive || isIdlePaused) 
               ? 'bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white' 
               : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white'
           }`}
         >
           {isSaving ? (
             <Loader2 size={14} className="animate-spin" />
-          ) : isActive ? (
+          ) : (isActive || isIdlePaused) ? (
             <Square size={14} className="fill-current" />
           ) : (
             <Play size={14} className="fill-current ml-0.5" />
@@ -148,12 +199,12 @@ export default function WorkTimeTracker() {
 
         <div className="flex flex-col min-w-[70px]">
           <div className="flex items-center gap-1.5 mb-0.5">
-            <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
+            <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]' : isIdlePaused ? 'bg-amber-500 animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.6)]' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
             <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">
-              {isSaving ? "Saving" : isActive ? "Tracking" : "Ready"}
+              {isSaving ? "Saving" : isActive ? "Tracking" : isIdlePaused ? "Paused (Idle)" : "Ready"}
             </span>
           </div>
-          <span className={`text-sm font-mono font-black leading-none ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-200'}`}>
+          <span className={`text-sm font-mono font-black leading-none ${isActive ? 'text-emerald-600 dark:text-emerald-400' : isIdlePaused ? 'text-amber-500' : 'text-slate-800 dark:text-slate-200'}`}>
             {formatTime(totalSeconds)}
           </span>
         </div>

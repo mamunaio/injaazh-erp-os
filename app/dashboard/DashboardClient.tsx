@@ -242,7 +242,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                    </div>
                    <div className="relative z-10 mt-2">
                      <p className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 uppercase tracking-widest">Pending Tasks</p>
-                     <p className="text-3xl font-bold text-slate-900 dark:text-white font-mono tracking-tight">0</p>
+                     <p className="text-3xl font-bold text-slate-900 dark:text-white font-mono tracking-tight">{stats?.pendingTasks || 0}</p>
                    </div>
                 </div>
 
@@ -259,7 +259,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                    </div>
                    <div className="relative z-10 mt-2">
                      <p className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 uppercase tracking-widest">Monthly Growth</p>
-                     <p className="text-3xl font-bold text-slate-900 dark:text-white font-mono tracking-tight">0%</p>
+                     <p className="text-3xl font-bold text-slate-900 dark:text-white font-mono tracking-tight">{stats?.monthlyGrowth || 0}%</p>
                    </div>
                 </div>
 
@@ -415,9 +415,23 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                   <Link href="/roadmap" className="text-xs font-bold text-[#2563EB] hover:text-[#2563EB]/80 hover:underline transition-colors">View All</Link>
                 </div>
                 <div className="space-y-3">
+                  {dashboardData.todayTasks?.length > 0 ? (
+                    dashboardData.todayTasks.map((task: any) => (
+                      <div key={task.id} className="flex gap-3 items-center p-3 rounded-xl bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] hover:border-[#2563EB]/50 transition-colors">
+                        <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 flex items-center justify-center flex-shrink-0 text-[#2563EB]">
+                          <CheckSquare size={14} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-900 dark:text-white mb-0.5">{task.title}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Status: {task.status}</p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
                     <div className="text-center py-6">
                       <p className="text-sm text-slate-500 dark:text-slate-400">No tasks due today.</p>
                     </div>
+                  )}
                 </div>
               </Card>
             </motion.div>
@@ -432,9 +446,25 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                   <button onClick={() => handleAction('Meeting Modal')} className="w-6 h-6 rounded-md bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center hover:text-slate-900 dark:hover:text-white hover:border-[#2563EB]/50 text-slate-500 dark:text-slate-400 transition-colors"><Plus size={14} /></button>
                 </div>
                 <div className="space-y-4">
-                  <div className="text-center py-6">
-                    <p className="text-sm text-slate-500 dark:text-slate-400">No upcoming meetings.</p>
-                  </div>
+                  {dashboardData.upcomingMeetings?.length > 0 ? (
+                    dashboardData.upcomingMeetings.map((meeting: any) => (
+                      <div key={meeting.id} className="flex gap-3 items-center p-3 rounded-xl bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] hover:border-[#10B981]/50 transition-colors">
+                        <div className="w-8 h-8 rounded-lg bg-[#10B981]/10 flex items-center justify-center flex-shrink-0 text-[#10B981]">
+                          <Calendar size={14} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-900 dark:text-white mb-0.5">{meeting.title}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                            {new Date(meeting.date).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-6">
+                      <p className="text-sm text-slate-500 dark:text-slate-400">No upcoming meetings.</p>
+                    </div>
+                  )}
                 </div>
               </Card>
             </motion.div>
@@ -448,9 +478,29 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                   </h3>
                 </div>
                 <div className="space-y-5">
+                  {dashboardData.recentActivity?.length > 0 ? (
+                    dashboardData.recentActivity.map((activity: any, idx: number) => (
+                      <div key={`${activity.id}-${idx}`} className="flex gap-4 relative">
+                        <div className="w-2 h-2 rounded-full bg-[#2563EB] mt-2 relative z-10 flex-shrink-0 shadow-[0_0_8px_rgba(37,99,235,0.6)]"></div>
+                        {idx !== dashboardData.recentActivity.length - 1 && (
+                          <div className="absolute top-4 left-1 w-px h-full bg-slate-200 dark:bg-[#232734] -ml-px"></div>
+                        )}
+                        <div>
+                          <p className="text-sm font-bold text-slate-900 dark:text-white">{activity.title}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1 leading-relaxed">
+                            {activity.description}
+                          </p>
+                          <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2 font-bold uppercase tracking-widest">
+                            {new Date(activity.timestamp).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
                     <div className="text-center py-6">
                       <p className="text-sm text-slate-500 dark:text-slate-400">No recent activity.</p>
                     </div>
+                  )}
                 </div>
               </Card>
             </motion.div>

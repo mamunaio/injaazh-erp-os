@@ -797,18 +797,29 @@ export async function importCSVLeads(leadsData: any[]) {
 
       const newLead = new Lead({
         company_name: data.company_name,
+        full_name: data.full_name || '',
+        title: data.title || '',
+        contact_person: data.contact_person || '',
         address: data.address || '',
-        phone: data.phone || undefined,
+        company_address: data.company_address || '',
+        city: data.city || '',
+        state: data.state || '',
+        country: data.country || '',
+        phone: data.phone || '',
         website_url: data.website_url || '',
-        email: data.email || undefined,
+        email: data.email || '',
         facebook_url: data.facebook_url || '',
         linkedin_url: data.linkedin_url || '',
+        twitter_url: data.twitter_url || '',
         traffic_count: data.traffic_count || '',
         business_profile_link: data.business_profile_link || '',
-        rating: data.rating || '',
         outreach_status: safeStatus,
         nextFollowUpDate: parsedDate,
+        rating: data.rating || '',
+        source: 'CSV Import',
         createdBy: user.id,
+        is_replied: false,
+        follow_up_count: 0
       });
 
       try {

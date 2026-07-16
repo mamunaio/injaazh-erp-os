@@ -72,7 +72,7 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
         
         // Basic validation count
         const validRows = data.filter(row => 
-          row['Business Name'] || row['Name'] || row['company_name']
+          row['Company Name'] || row['Business Name'] || row['Name'] || row['company_name']
         );
         
         setStats({
@@ -107,15 +107,23 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
     
     setIsUploading(true);
     
-    // Map CSV headers to database fields
     const mappedData = parsedData.map(row => ({
-      company_name: row['Business Name'] || row['Name'] || row['company_name'] || '',
-      address: row['Address'] || row['address'] || '',
-      phone: row['Phone'] || row['phone'] || '',
-      website_url: row['Website'] || row['website'] || row['website_url'] || '',
+      full_name: row['Full Name'] || row['full_name'] || '',
+      title: row['Title'] || row['title'] || '',
+      company_name: row['Company Name'] || row['Business Name'] || row['Name'] || row['company_name'] || '',
       email: row['Email'] || row['email'] || '',
-      facebook_url: row['Facebook'] || row['facebook'] || row['facebook_url'] || '',
-      linkedin_url: row['LinkedIn'] || row['linkedin'] || row['linkedin_url'] || '',
+      phone: row['Phone'] || row['phone'] || '',
+      linkedin_url: row['Person Linkedin Url'] || row['LinkedIn'] || row['linkedin'] || row['linkedin_url'] || '',
+      website_url: row['Website'] || row['website'] || row['website_url'] || '',
+      facebook_url: row['Facebook Url'] || row['Facebook'] || row['facebook'] || row['facebook_url'] || '',
+      twitter_url: row['Twitter Url'] || row['Twitter'] || row['twitter_url'] || '',
+      city: row['City'] || row['city'] || '',
+      state: row['State'] || row['state'] || '',
+      country: row['Country'] || row['country'] || '',
+      company_address: row['Company Address'] || row['Address'] || row['company_address'] || '',
+      address: row['Company Address'] || row['Address'] || row['address'] || '', // Backwards compatibility
+      
+      // Keep old mappings just in case
       traffic_count: row['Traffic'] || row['traffic'] || row['traffic_count'] || '',
       business_profile_link: row['Business Profile Link'] || row['business_profile_link'] || '',
       outreach_status: row['Outreach Status'] || row['Outreach'] || row['outreach_status'] || 'New',

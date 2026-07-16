@@ -100,8 +100,25 @@ export async function getDashboardData() {
       })
       .reduce((sum: number, t: any) => sum + t.amount, 0);
 
+    const lastMonthIncome = transactions
+      .filter((t: any) => {
+        const date = new Date(t.date);
+        const now = new Date();
+        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        return t.type === 'Income' && 
+               date.getMonth() === lastMonth.getMonth() && 
+               date.getFullYear() === lastMonth.getFullYear();
+      })
+      .reduce((sum: number, t: any) => sum + t.amount, 0);
+
+    const monthlyGrowth = lastMonthIncome === 0 
+      ? (thisMonthIncome > 0 ? 100 : 0) 
+      : Math.round(((thisMonthIncome - lastMonthIncome) / lastMonthIncome) * 100);
+
     // Pending marketplace milestone value
+    // Pending marketplace milestone value & pending tasks
     let pendingMilestoneValue = 0;
+    let pendingTasksCount = 0;
     marketplaceProjects.forEach((mp: any) => {
       if (mp.milestones && Array.isArray(mp.milestones)) {
         mp.milestones.forEach((m: any) => {
@@ -110,7 +127,18 @@ export async function getDashboardData() {
           }
         });
       }
+      if (mp.tasks && Array.isArray(mp.tasks)) {
+        pendingTasksCount += mp.tasks.filter((t: any) => !t.completed).length;
+      }
     });
+
+    const pendingFollowUpsCount = leads.filter((l: any) => {
+      if (!l.nextFollowUpDate) return false;
+      const date = new Date(l.nextFollowUpDate);
+      return date.getTime() > Date.now() && l.outreach_status !== 'Closed' && l.outreach_status !== 'Not Interested';
+    }).length;
+
+    const totalPendingTasks = pendingTasksCount + pendingFollowUpsCount;
 
     // Get upcoming deadlines (projects with deadline in next 7 days)
     const now = new Date();
@@ -275,6 +303,60 @@ export async function getDashboardData() {
       }
     }));
 
+    // Today's Tasks
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const todayTasks = leads
+      .filter((l: any) => {
+        if (!l.nextFollowUpDate) return false;
+        const date = new Date(l.nextFollowUpDate);
+        return date >= today && date < tomorrow;
+      })
+      .map((l: any) => ({
+        id: l._id?.toString(),
+        title: `Follow up with ${l.company_name}`,
+        due_date: l.nextFollowUpDate,
+        status: l.outreach_status
+      }));
+
+    // Upcoming Meetings
+    const upcomingMeetings = leads
+      .filter((l: any) => l.outreach_status === 'Meeting Booked')
+      .map((l: any) => ({
+        id: l._id?.toString(),
+        title: `Meeting with ${l.company_name}`,
+        date: l.updatedAt || l.createdAt,
+        attendees: [l.contact_person || l.company_name]
+      })).slice(0, 5);
+
+    // Recent Activity Synthesized
+    const allActivity = [
+      ...recentLeads.map((l: any) => ({
+        id: `lead_${l._id}`,
+        title: 'New Lead Added',
+        description: `${l.company_name} was added to leads`,
+        timestamp: l.createdAt,
+        type: 'lead'
+      })),
+      ...recentProposals.map((p: any) => ({
+        id: `prop_${p._id}`,
+        title: 'Proposal Updated',
+        description: `Proposal for ${p.clientName} is now ${p.status}`,
+        timestamp: p.updatedAt,
+        type: 'proposal'
+      })),
+      ...recentTransactions.slice(0, 3).map((t: any) => ({
+        id: `txn_${t._id}`,
+        title: t.type === 'Income' ? 'Payment Received' : 'Expense Recorded',
+        description: `${t.category} - $${t.amount}`,
+        timestamp: t.date,
+        type: 'transaction'
+      }))
+    ].sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 10);
+
     return {
       success: true,
       data: {
@@ -297,6 +379,8 @@ export async function getDashboardData() {
           newLeadsToday,
           outreachAddedToday,
           activeClients: clients ? clients.length : 0,
+          pendingTasks: totalPendingTasks,
+          monthlyGrowth,
         },
         upcomingDeadlines,
         recentTransactions,
@@ -306,6 +390,9 @@ export async function getDashboardData() {
         platformIncome,
         incomeTrend,
         seoProjects: serializedSeo,
+        todayTasks,
+        upcomingMeetings,
+        recentActivity: allActivity,
       },
     };
   } catch (error: any) {

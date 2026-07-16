@@ -35,7 +35,7 @@ export default function CampaignLeadsManager({ campaignId }: { campaignId: strin
       skipEmptyLines: true,
       complete: async (results) => {
         const data = results.data as any[];
-        const validRows = data.filter(row => row['Business Name'] || row['Name'] || row['company_name']);
+        const validRows = data.filter(row => row['Company Name'] || row['Business Name'] || row['Name'] || row['company_name']);
         
         if (validRows.length === 0) {
           toast.error("No valid leads found in CSV");
@@ -44,11 +44,21 @@ export default function CampaignLeadsManager({ campaignId }: { campaignId: strin
 
         setIsUploading(true);
         const mappedData = validRows.map(row => ({
-          company_name: row['Business Name'] || row['Name'] || row['company_name'] || '',
-          contact_person: row['Contact Person'] || row['contact_person'] || '',
+          full_name: row['Full Name'] || row['full_name'] || '',
+          title: row['Title'] || row['title'] || '',
+          company_name: row['Company Name'] || row['Business Name'] || row['Name'] || row['company_name'] || '',
           email: row['Email'] || row['email'] || '',
           phone: row['Phone'] || row['phone'] || '',
-          website_url: row['Website'] || row['website_url'] || '',
+          linkedin_url: row['Person Linkedin Url'] || row['LinkedIn'] || row['linkedin'] || row['linkedin_url'] || '',
+          website_url: row['Website'] || row['website'] || row['website_url'] || '',
+          facebook_url: row['Facebook Url'] || row['Facebook'] || row['facebook'] || row['facebook_url'] || '',
+          twitter_url: row['Twitter Url'] || row['Twitter'] || row['twitter_url'] || '',
+          city: row['City'] || row['city'] || '',
+          state: row['State'] || row['state'] || '',
+          country: row['Country'] || row['country'] || '',
+          company_address: row['Company Address'] || row['Address'] || row['company_address'] || '',
+          address: row['Company Address'] || row['Address'] || row['address'] || '',
+          contact_person: row['Full Name'] || row['Contact Person'] || row['contact_person'] || '', // Backwards compatibility
           lead_context: row['Context'] || row['lead_context'] || ''
         }));
 

@@ -23,9 +23,9 @@ export default function WorkspaceLoader() {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative flex items-center justify-center w-16 h-16 rounded-[20px] bg-gradient-to-br from-[#11131A] to-[#09090B] border border-slate-200 dark:border-[#232734] shadow-2xl"
+          className="relative flex items-center justify-center w-16 h-16 rounded-[20px] bg-gradient-to-br from-slate-100 to-white dark:from-[#11131A] dark:to-[#09090B] border border-slate-200 dark:border-[#232734] shadow-xl dark:shadow-2xl"
         >
-          <Command className="w-8 h-8 text-[#FFFFFF]" strokeWidth={1.5} />
+          <Command className="w-8 h-8 text-slate-900 dark:text-[#FFFFFF]" strokeWidth={1.5} />
         </motion.div>
 
         {/* Text Block */}
@@ -34,7 +34,7 @@ export default function WorkspaceLoader() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-            className="text-2xl md:text-3xl font-bold tracking-tight text-[#FFFFFF] font-jakarta"
+            className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-[#FFFFFF] font-jakarta"
           >
             INJAAZH ERP OS
           </motion.h1>
@@ -42,7 +42,7 @@ export default function WorkspaceLoader() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-            className="text-[13px] md:text-sm font-medium tracking-wide text-[#94A3B8]"
+            className="text-[13px] md:text-sm font-medium tracking-wide text-slate-500 dark:text-[#94A3B8]"
           >
             Intelligent Business Operating System
           </motion.p>
@@ -56,7 +56,7 @@ export default function WorkspaceLoader() {
           className="mt-8 flex flex-col items-center gap-4 w-full max-w-[200px]"
         >
           {/* Progress Bar */}
-          <div className="w-full h-1 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-full overflow-hidden relative">
+          <div className="w-full h-1 bg-slate-100 dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-full overflow-hidden relative">
             <motion.div
               className="absolute top-0 bottom-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-[#2563EB] to-transparent rounded-full"
               animate={{ x: ["-100%", "300%"] }}

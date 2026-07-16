@@ -9,7 +9,9 @@ export interface IOutreachLog {
 
 export interface ILead extends Document {
   company_name: string;
-  contact_person?: string;
+  full_name?: string;
+  title?: string;
+  contact_person?: string; // Kept for backward compatibility
   source: string; // e.g., Google, Facebook, Upwork
   outreach_status: 'New' | 'Queued' | 'Email Sent' | 'Replied' | 'Meeting Booked' | 'Closed' | 'Not Interested';
   website_url?: string;
@@ -18,10 +20,15 @@ export interface ILead extends Document {
   facebook_url?: string;
   instagram_url?: string;
   linkedin_url?: string;
+  twitter_url?: string;
   targetService?: 'High-end Web Development' | 'Next.js / Laravel App' | 'WordPress Development' | 'Custom ERP / SaaS' | 'Technical SEO' | 'Answer Engine Optimization (AEO)' | 'Generative Engine Optimization (GEO)' | 'UI/UX Design';
   reportFileUrl?: string;
   lead_context?: string;
-  address?: string;
+  address?: string; // Kept for backward compatibility
+  company_address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
   traffic_count?: string;
   business_profile_link?: string;
   rating?: string;
@@ -50,6 +57,8 @@ const OutreachLogSchema = new Schema<IOutreachLog>({
 
 const LeadSchema = new Schema<ILead>({
   company_name: { type: String, required: true, trim: true },
+  full_name: { type: String, trim: true },
+  title: { type: String, trim: true },
   contact_person: { type: String, trim: true },
   source: { type: String, default: 'Manual' },
   outreach_status: { 
@@ -63,7 +72,12 @@ const LeadSchema = new Schema<ILead>({
   facebook_url: { type: String, trim: true },
   instagram_url: { type: String, trim: true },
   linkedin_url: { type: String, trim: true },
+  twitter_url: { type: String, trim: true },
   address: { type: String, trim: true },
+  company_address: { type: String, trim: true },
+  city: { type: String, trim: true },
+  state: { type: String, trim: true },
+  country: { type: String, trim: true },
   traffic_count: { type: String, trim: true },
   business_profile_link: { type: String, trim: true },
   rating: { type: String, trim: true },
