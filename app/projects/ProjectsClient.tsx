@@ -77,14 +77,15 @@ function fmtShortDate(d?: string) {
 }
 function getInitials(name: string) { return name ? name.substring(0, 2).toUpperCase() : '??'; }
 
-const checkOverdue = (deadline?: string) => {
+const checkOverdue = (deadline?: string, status?: string) => {
   if (!deadline) return false;
+  if (status === 'Completed' || status === 'Cancelled') return false;
   return new Date(deadline).getTime() < new Date().setHours(0,0,0,0);
 };
 
 const getProjectHealth = (p: Project) => {
   if (p.status === 'Completed' || (p.progress || 0) === 100) return { label: 'Completed', bg: 'bg-[#10B981]/10', text: 'text-[#10B981]', border: 'border-[#10B981]/20' };
-  if (checkOverdue(p.deadline)) return { label: 'Overdue', bg: 'bg-[#EF4444]/10', text: 'text-[#EF4444]', border: 'border-[#EF4444]/20' };
+  if (checkOverdue(p.deadline, p.status)) return { label: 'Overdue', bg: 'bg-[#EF4444]/10', text: 'text-[#EF4444]', border: 'border-[#EF4444]/20' };
   if (p.deadline) {
     const daysLeft = (new Date(p.deadline).getTime() - new Date().getTime()) / (1000 * 3600 * 24);
     if (daysLeft < 3 && (p.progress || 0) < 80) return { label: 'At Risk', bg: 'bg-[#F59E0B]/10', text: 'text-[#F59E0B]', border: 'border-[#F59E0B]/20' };
@@ -216,7 +217,7 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
         statusFilter === 'Active' ? p.status !== 'Completed' && p.status !== 'Cancelled' :
         statusFilter === 'Completed' ? p.status === 'Completed' :
         statusFilter === 'Cancelled' ? p.status === 'Cancelled' :
-        statusFilter === 'Overdue' ? checkOverdue(p.deadline) && p.status !== 'Completed' && p.status !== 'Cancelled' :
+        statusFilter === 'Overdue' ? checkOverdue(p.deadline, p.status) :
         p.status === statusFilter;
       return matchSearch && matchStatus;
     });
@@ -333,7 +334,7 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
   const activeCount = projects.filter(p => p.status !== 'Completed' && p.status !== 'Cancelled').length;
   const compCount = projects.filter(p => p.status === 'Completed').length;
   const cancCount = projects.filter(p => p.status === 'Cancelled').length;
-  const overdueCount = projects.filter(p => checkOverdue(p.deadline) && p.status !== 'Completed' && p.status !== 'Cancelled').length;
+  const overdueCount = projects.filter(p => checkOverdue(p.deadline, p.status)).length;
   const totalCount = projects.length;
 
   const kpis = [
@@ -553,8 +554,8 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
                             </td>
                             <td className="pr-4 py-4">
                               <div className="flex items-center gap-1.5">
-                                {checkOverdue(p.deadline) ? <AlertTriangle size={13} className="text-[#EF4444]" /> : <Calendar size={13} className="text-[#94A3B8]" />}
-                                <span className={`text-xs font-bold ${checkOverdue(p.deadline) ? 'text-[#EF4444]' : 'text-slate-900 dark:text-white'}`}>{fmtShortDate(p.deadline)}</span>
+                                {checkOverdue(p.deadline, p.status) ? <AlertTriangle size={13} className="text-[#EF4444]" /> : <Calendar size={13} className="text-[#94A3B8]" />}
+                                <span className={`text-xs font-bold ${checkOverdue(p.deadline, p.status) ? 'text-[#EF4444]' : 'text-slate-900 dark:text-white'}`}>{fmtShortDate(p.deadline)}</span>
                               </div>
                             </td>
                             <td className="pr-5 py-4 flex justify-end">
@@ -597,7 +598,7 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
                 className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] p-6">
                 <div className="space-y-6">
                   {filteredProjects.sort((a,b) => new Date(a.deadline || '2099').getTime() - new Date(b.deadline || '2099').getTime()).map((p, i) => {
-                    const overdue = checkOverdue(p.deadline);
+                    const overdue = checkOverdue(p.deadline, p.status);
                     const ss = getStatusConfig(p.status);
                     return (
                       <div key={p._id} onClick={() => openPanel(p)} className="flex items-start gap-4 group cursor-pointer">
