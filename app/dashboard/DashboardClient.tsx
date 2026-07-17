@@ -26,7 +26,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       <div className="bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] p-3 rounded-xl shadow-2xl">
         <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{label || payload[0].name}</p>
         <p className="text-sm font-bold text-slate-900 dark:text-white">
-          {payload[0].name === 'income' || payload[0].dataKey === 'value'
+          {payload[0].name?.toLowerCase() === 'income' || payload[0].dataKey === 'value' || payload[0].dataKey === 'Income'
             ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(payload[0].value) 
             : payload[0].value}
         </p>
@@ -56,6 +56,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
   const { user, loading } = useUser();
   const [isActionLoading, setIsActionLoading] = useState<string | null>(null);
   const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [revenueFilter, setRevenueFilter] = useState<'30days' | '6months' | 'year'>('30days');
   const router = useRouter();
 
   useEffect(() => {
@@ -95,7 +96,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
     );
   }
 
-  const { stats, incomeTrend } = dashboardData;
+  const { stats, revenueTrend30Days, revenueTrend6Months, revenueTrendYear, leadFunnel, salesPipeline, aiInsights } = dashboardData;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -110,10 +111,11 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
     return 'Good Evening';
   };
 
+  const maxLeads = Math.max(leadFunnel?.New || 0, leadFunnel?.Active || 0, leadFunnel?.Closed || 0) || 1;
   const pipelineData = [
-    { name: 'New Leads', value: stats?.totalLeads || 0, color: '#2563EB', gradient: 'linear-gradient(90deg, #1E3A8A 0%, #2563EB 100%)', width: '100%' },
-    { name: 'Active', value: stats?.activeLeads || 0, color: '#3B82F6', gradient: 'linear-gradient(90deg, #1E40AF 0%, #3B82F6 100%)', width: '50%' },
-    { name: 'Closed', value: stats?.closedLeads || 0, color: '#10B981', gradient: 'linear-gradient(90deg, #047857 0%, #10B981 100%)', width: '25%' },
+    { name: 'New Leads', value: leadFunnel?.New || 0, color: '#2563EB', gradient: 'linear-gradient(90deg, #1E3A8A 0%, #2563EB 100%)', width: `${((leadFunnel?.New || 0) / maxLeads) * 100}%` },
+    { name: 'Active', value: leadFunnel?.Active || 0, color: '#3B82F6', gradient: 'linear-gradient(90deg, #1E40AF 0%, #3B82F6 100%)', width: `${((leadFunnel?.Active || 0) / maxLeads) * 100}%` },
+    { name: 'Closed', value: leadFunnel?.Closed || 0, color: '#10B981', gradient: 'linear-gradient(90deg, #047857 0%, #10B981 100%)', width: `${((leadFunnel?.Closed || 0) / maxLeads) * 100}%` },
   ];
 
   return (
@@ -288,15 +290,24 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                 <div className="flex justify-between items-start mb-6">
                   <div>
                     <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1 tracking-tight">Revenue Trend</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Income generated over the last 30 days.</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Income generated over the selected period.</p>
                   </div>
-                  <div className="px-3 py-1.5 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-lg text-xs font-bold text-slate-500 dark:text-slate-400 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-1.5">
-                    Last 30 Days <ChevronRight size={12} className="rotate-90" />
-                  </div>
+                  <select 
+                    value={revenueFilter}
+                    onChange={(e) => setRevenueFilter(e.target.value as any)}
+                    className="px-3 py-1.5 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer outline-none focus:border-[#2563EB]"
+                  >
+                    <option value="30days">Last 30 Days</option>
+                    <option value="6months">Last 6 Months</option>
+                    <option value="year">This Year</option>
+                  </select>
                 </div>
                 <div className="flex-1 w-full -ml-4 mt-2">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={incomeTrend?.length ? incomeTrend : []} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <AreaChart 
+                      data={revenueFilter === '30days' ? revenueTrend30Days : revenueFilter === '6months' ? revenueTrend6Months : revenueTrendYear} 
+                      margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                    >
                       <defs>
                         <linearGradient id="colorRevPremium" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#2563EB" stopOpacity={0.5}/>
@@ -304,10 +315,10 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#232734" vertical={false} />
-                      <XAxis dataKey="month" stroke="#CBD5E1" fontSize={12} fontWeight={600} axisLine={false} tickLine={false} tickMargin={12} />
+                      <XAxis dataKey="dateStr" stroke="#CBD5E1" fontSize={12} fontWeight={600} axisLine={false} tickLine={false} tickMargin={12} />
                       <YAxis stroke="#CBD5E1" fontSize={12} fontWeight={600} axisLine={false} tickLine={false} tickFormatter={(val) => `$${val}`} tickMargin={12} />
                       <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#2563EB', strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.5 }} />
-                      <Area type="monotone" dataKey="income" stroke="#2563EB" strokeWidth={3} fill="url(#colorRevPremium)" activeDot={{ r: 6, fill: '#2563EB', stroke: '#11131A', strokeWidth: 3 }} />
+                      <Area type="monotone" dataKey="Income" stroke="#2563EB" strokeWidth={3} fill="url(#colorRevPremium)" activeDot={{ r: 6, fill: '#2563EB', stroke: '#11131A', strokeWidth: 3 }} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -349,7 +360,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                      <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">Sales Pipeline</h3>
                      <Layers size={16} className="text-slate-500 dark:text-slate-400" />
                    </div>
-                   <div className="flex flex-col gap-4">
+                     <div className="flex flex-col gap-4">
                      <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734]">
                        <div className="flex items-center gap-3">
                          <div className="w-2.5 h-2.5 rounded-full bg-[#2563EB] ml-1"></div>
@@ -358,7 +369,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                            <p className="text-xs text-slate-500 dark:text-slate-400">{stats?.pendingProposals || 0} deals</p>
                          </div>
                        </div>
-                       <p className="text-sm font-bold font-mono text-slate-900 dark:text-white">{formatCurrency(stats?.outstandingPipelineValue || 0)}</p>
+                       <p className="text-sm font-bold font-mono text-slate-900 dark:text-white">{formatCurrency(salesPipeline?.Pending || 0)}</p>
                      </div>
                      <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734]">
                        <div className="flex items-center gap-3">
@@ -368,7 +379,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                            <p className="text-xs text-slate-500 dark:text-slate-400">Won</p>
                          </div>
                        </div>
-                       <p className="text-sm font-bold font-mono text-slate-900 dark:text-white">{formatCurrency(stats?.acceptedProposalsValue || 0)}</p>
+                       <p className="text-sm font-bold font-mono text-slate-900 dark:text-white">{formatCurrency(salesPipeline?.Accepted || 0)}</p>
                      </div>
                    </div>
                 </Card>
@@ -390,7 +401,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                    <span className="text-[10px] uppercase tracking-wider bg-[#7C3AED]/20 text-[#7C3AED] px-2 py-0.5 rounded-md font-bold">Beta</span>
                  </div>
                  <div className="relative z-10">
-                   <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-5 font-medium">Based on your activity, here is what you should focus on today.</p>
+                   <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-5 font-medium italic">"{aiInsights || "Based on your activity, here is what you should focus on today."}"</p>
                    
                    <div className="space-y-4">
                      {dashboardData.upcomingDeadlines?.length > 0 ? (
@@ -405,7 +416,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                        </div>
                      ) : (
                        <div className="text-center py-4">
-                         <p className="text-sm text-slate-500 dark:text-slate-400">No new insights right now.</p>
+                         <p className="text-sm text-slate-500 dark:text-slate-400">No urgent deadlines right now.</p>
                        </div>
                      )}
 

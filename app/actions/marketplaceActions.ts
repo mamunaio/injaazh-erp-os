@@ -152,6 +152,14 @@ export async function createMarketplaceProject(data: any) {
     
     const newProject = await MarketplaceProject.create(data);
     
+    if (newProject.status === 'Completed') {
+      try {
+        await createAutoTransaction(newProject as any);
+      } catch (error) {
+        console.error(`❌ Failed to auto-create transaction for newly created project ${newProject._id}:`, error);
+      }
+    }
+    
     safeRevalidatePath('/marketplace');
     safeRevalidatePath(`/marketplace/${data.platform?.toLowerCase()}`);
     

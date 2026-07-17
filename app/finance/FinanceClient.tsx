@@ -191,6 +191,9 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
     e.preventDefault();
     setIsSubmitting(true);
     const data = { ...formData, amount: parseFloat(formData.amount) || 0 };
+    if (!data.description.trim()) {
+      data.description = data.category + ' Transaction';
+    }
     const res = await createTransaction(data);
     if (res.success) {
       if (data.type === 'Income') notify.income('Income recorded');
@@ -368,23 +371,32 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
                   <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.4}/>
                         <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
                       </linearGradient>
                       <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#EF4444" stopOpacity={0.3}/>
+                        <stop offset="5%" stopColor="#EF4444" stopOpacity={0.4}/>
                         <stop offset="95%" stopColor="#EF4444" stopOpacity={0}/>
                       </linearGradient>
+                      <filter id="glowIncome" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="4" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                      </filter>
+                      <filter id="glowExpense" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="4" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                      </filter>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#232734" vertical={false} />
-                    <XAxis dataKey="dateStr" stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `$${v/1000}k`} />
+                    <CartesianGrid strokeDasharray="4 4" stroke="#232734" vertical={false} opacity={0.5} />
+                    <XAxis dataKey="dateStr" stroke="#64748B" fontSize={11} tickLine={false} axisLine={false} tickMargin={10} />
+                    <YAxis stroke="#64748B" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `$${v/1000}k`} tickMargin={10} />
                     <Tooltip 
-                      contentStyle={{ backgroundColor: '#09090B', border: '1px solid #232734', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}
+                      contentStyle={{ backgroundColor: 'rgba(9, 9, 11, 0.85)', backdropFilter: 'blur(8px)', border: '1px solid #232734', borderRadius: '16px', fontSize: '12px', fontWeight: 'bold', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}
                       itemStyle={{ color: '#fff' }}
+                      cursor={{ stroke: '#2563EB', strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.5 }}
                     />
-                    <Area type="monotone" dataKey="Income" stroke="#10B981" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" />
-                    <Area type="monotone" dataKey="Expense" stroke="#EF4444" strokeWidth={3} fillOpacity={1} fill="url(#colorExpense)" />
+                    <Area type="monotone" dataKey="Income" stroke="#10B981" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" activeDot={{ r: 6, fill: '#10B981', stroke: '#11131A', strokeWidth: 3 }} filter="url(#glowIncome)" />
+                    <Area type="monotone" dataKey="Expense" stroke="#EF4444" strokeWidth={3} fillOpacity={1} fill="url(#colorExpense)" activeDot={{ r: 6, fill: '#EF4444', stroke: '#11131A', strokeWidth: 3 }} filter="url(#glowExpense)" />
                   </AreaChart>
                 </ResponsiveContainer>
               )}
@@ -405,16 +417,26 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={profitChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#232734" vertical={false} />
-                    <XAxis dataKey="name" stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `$${v/1000}k`} />
+                    <defs>
+                      <linearGradient id="colorProfitPos" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#10B981" stopOpacity={0.9}/>
+                        <stop offset="100%" stopColor="#10B981" stopOpacity={0.3}/>
+                      </linearGradient>
+                      <linearGradient id="colorProfitNeg" x1="0" y1="1" x2="0" y2="0">
+                        <stop offset="0%" stopColor="#EF4444" stopOpacity={0.9}/>
+                        <stop offset="100%" stopColor="#EF4444" stopOpacity={0.3}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="4 4" stroke="#232734" vertical={false} opacity={0.5} />
+                    <XAxis dataKey="name" stroke="#64748B" fontSize={11} tickLine={false} axisLine={false} tickMargin={10} />
+                    <YAxis stroke="#64748B" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `$${v/1000}k`} tickMargin={10} />
                     <Tooltip 
-                      contentStyle={{ backgroundColor: '#09090B', border: '1px solid #232734', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', color: '#fff' }}
-                      cursor={{ fill: '#232734', opacity: 0.4 }}
+                      contentStyle={{ backgroundColor: 'rgba(9, 9, 11, 0.85)', backdropFilter: 'blur(8px)', border: '1px solid #232734', borderRadius: '16px', fontSize: '12px', fontWeight: 'bold', color: '#fff', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}
+                      cursor={{ fill: '#232734', opacity: 0.2 }}
                     />
-                    <Bar dataKey="Profit" radius={[4, 4, 0, 0]}>
+                    <Bar dataKey="Profit" radius={[6, 6, 6, 6]}>
                       {profitChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.Profit >= 0 ? '#10B981' : '#EF4444'} />
+                        <Cell key={`cell-${index}`} fill={entry.Profit >= 0 ? 'url(#colorProfitPos)' : 'url(#colorProfitNeg)'} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -469,26 +491,26 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
               </thead>
               <tbody>
                 {/* ── Inline Quick Add Row ── */}
-                <tr className="border-y border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 shadow-sm relative z-10">
+                <tr className="border-b-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0f111a] shadow-sm relative z-10">
                   <td className="pl-6 pr-4 py-3">
                     <form id="inline-form" onSubmit={handleInlineSubmit} className="hidden" />
-                    <input form="inline-form" required type="text" placeholder="Add new transaction..." value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
-                      className="w-full bg-slate-50 border border-slate-200 dark:bg-slate-950 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/50 text-slate-900 dark:text-slate-100 text-sm font-bold rounded-md px-3 py-2 focus:outline-none transition-colors placeholder:text-slate-400" />
+                    <input form="inline-form" type="text" placeholder="Add new transaction..." value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
+                      className="w-full bg-white border border-slate-200 dark:bg-[#09090b] dark:border-slate-700/50 focus:ring-2 focus:ring-[#2563EB]/50 text-slate-900 dark:text-slate-100 text-sm font-bold rounded-xl px-4 py-2.5 focus:outline-none transition-colors placeholder:text-slate-400" />
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <select form="inline-form" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}
-                        className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/50 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-md px-1 py-2 focus:outline-none transition-colors w-12 cursor-pointer appearance-none text-center">
+                        className="bg-white dark:bg-[#09090b] border border-slate-200 dark:border-slate-700/50 focus:ring-2 focus:ring-[#2563EB]/50 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl px-1 py-2.5 focus:outline-none transition-colors w-12 cursor-pointer appearance-none text-center">
                         <option value="Income">+</option>
                         <option value="Expense">-</option>
                       </select>
                       <input form="inline-form" required type="number" step="0.01" min="0" placeholder="0.00" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})}
-                        className="w-24 bg-slate-50 border border-slate-200 dark:bg-slate-950 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/50 text-slate-900 dark:text-slate-100 text-sm font-mono font-bold rounded-md px-3 py-2 focus:outline-none transition-colors" />
+                        className="w-24 bg-white border border-slate-200 dark:bg-[#09090b] dark:border-slate-700/50 focus:ring-2 focus:ring-[#2563EB]/50 text-slate-900 dark:text-slate-100 text-sm font-mono font-bold rounded-xl px-3 py-2.5 focus:outline-none transition-colors" />
                     </div>
                   </td>
                   <td className="px-4 py-3">
                     <select form="inline-form" required value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}
-                      className="w-24 bg-slate-50 border border-slate-200 dark:bg-slate-950 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/50 text-slate-900 dark:text-slate-100 text-[10px] font-bold uppercase tracking-widest rounded-md px-2 py-2 focus:outline-none transition-colors cursor-pointer">
+                      className="w-28 bg-white border border-slate-200 dark:bg-[#09090b] dark:border-slate-700/50 focus:ring-2 focus:ring-[#2563EB]/50 text-slate-900 dark:text-slate-100 text-[11px] font-bold uppercase tracking-widest rounded-xl px-3 py-2.5 focus:outline-none transition-colors cursor-pointer">
                       <option value="Sales">Sales</option>
                       <option value="Services">Services</option>
                       <option value="Software">Software</option>
@@ -500,11 +522,11 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
                   </td>
                   <td className="px-4 py-3">
                     <input form="inline-form" required type="date" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})}
-                      className="w-32 bg-slate-50 border border-slate-200 dark:bg-slate-950 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/50 text-slate-900 dark:text-slate-100 text-xs font-bold rounded-md px-3 py-2 focus:outline-none transition-colors [color-scheme:light] dark:[color-scheme:dark]" />
+                      className="w-[140px] bg-white border border-slate-200 dark:bg-[#09090b] dark:border-slate-700/50 focus:ring-2 focus:ring-[#2563EB]/50 text-slate-900 dark:text-slate-100 text-xs font-bold rounded-xl px-3 py-2.5 focus:outline-none transition-colors [color-scheme:light] dark:[color-scheme:dark]" />
                   </td>
                   <td className="px-4 py-3">
                     <select form="inline-form" required value={formData.platform} onChange={e => setFormData({...formData, platform: e.target.value})}
-                      className="w-24 bg-slate-50 border border-slate-200 dark:bg-slate-950 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/50 text-slate-900 dark:text-slate-100 text-xs font-bold rounded-md px-2 py-2 focus:outline-none transition-colors cursor-pointer">
+                      className="w-28 bg-white border border-slate-200 dark:bg-[#09090b] dark:border-slate-700/50 focus:ring-2 focus:ring-[#2563EB]/50 text-slate-900 dark:text-slate-100 text-xs font-bold rounded-xl px-3 py-2.5 focus:outline-none transition-colors cursor-pointer">
                       <option value="Direct">Direct</option>
                       <option value="Upwork">Upwork</option>
                       <option value="Fiverr">Fiverr</option>
@@ -512,8 +534,8 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
                     </select>
                   </td>
                   <td className="pr-6 pl-4 py-3 text-right">
-                    <button form="inline-form" type="submit" disabled={isSubmitting || !formData.amount || !formData.description}
-                      className="px-4 py-2 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white rounded-md transition-colors font-bold text-xs disabled:opacity-50 shadow-sm">
+                    <button form="inline-form" type="submit" disabled={isSubmitting || !formData.amount}
+                      className="px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white rounded-xl transition-colors font-bold text-xs disabled:opacity-50 shadow-sm w-full">
                       {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : 'Save'}
                     </button>
                   </td>
@@ -532,7 +554,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
                 ) : (
                   filteredTransactions.map((t, i) => (
                     <motion.tr key={t._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.01 }}
-                      className="border-b border-[#232734]/50 hover:bg-slate-50 dark:bg-[#09090B] transition-colors group cursor-pointer"
+                      className="border-b border-[#232734]/50 hover:bg-slate-50 dark:bg-[#09090B] dark:hover:bg-[#131620] transition-colors group cursor-pointer"
                       onClick={() => openEditPanel(t)}>
                       <td className="pl-6 pr-4 py-4">
                         <div className="flex items-center gap-3">

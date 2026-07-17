@@ -125,6 +125,10 @@ export async function createProject(data: any) {
       });
     }
 
+    if (newProject.status === 'Completed') {
+      await handleProjectCompletionSync(newProject);
+    }
+
     revalidatePath('/projects');
     return { success: true, data: JSON.parse(JSON.stringify(newProject)) };
   } catch (error: any) {
@@ -187,13 +191,20 @@ export async function updateProject(projectId: string, updateData: any) {
     
     // Log or update platform fee as a Finance Transaction
     if (updateData.platformFee !== undefined) {
-      const feeDesc = `Platform Fee for Project: ${updateData.title || (oldProject ? oldProject.title : '')}`;
+      const newTitle = updateData.title || (oldProject ? oldProject.title : '');
+      const oldTitle = oldProject ? oldProject.title : '';
+      
+      const feeDesc = `Platform Fee for Project: ${newTitle}`;
+      const oldFeeDesc = `Platform Fee for Project: ${oldTitle}`;
+      
       if (updateData.platformFee > 0) {
-        // Find existing transaction (manual or auto-calculated could have similar names previously)
+        // Find existing transaction using old title first, fallback to new title
         const existingTx = await Transaction.findOne({ 
           $or: [
+            { description: oldFeeDesc, type: 'Expense' },
             { description: feeDesc, type: 'Expense' },
-            { description: `Auto-calculated Platform Fee for Project: ${updateData.title || (oldProject ? oldProject.title : '')}`, type: 'Expense' }
+            { description: `Auto-calculated Platform Fee for Project: ${oldTitle}`, type: 'Expense' },
+            { description: `Auto-calculated Platform Fee for Project: ${newTitle}`, type: 'Expense' }
           ]
         });
         if (existingTx) {
@@ -213,7 +224,12 @@ export async function updateProject(projectId: string, updateData: any) {
         }
       } else if (updateData.platformFee === 0) {
         // If fee changed to 0, remove the existing transaction
-        await Transaction.deleteOne({ description: feeDesc, type: 'Expense' });
+        await Transaction.deleteMany({ 
+          $or: [
+            { description: oldFeeDesc, type: 'Expense' },
+            { description: feeDesc, type: 'Expense' }
+          ]
+        });
       }
     }
     

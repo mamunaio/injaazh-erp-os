@@ -22,6 +22,7 @@ import QuickFilterChips from '@/components/leads/ui/QuickFilterChips';
 import LeadsTable from '@/components/leads/ui/LeadsTable';
 import LeadSlidePanel from '@/components/leads/ui/LeadSlidePanel';
 import LeadDetailsModal from '@/components/leads/LeadDetailsModal';
+import AIInsightModal from '@/components/leads/ui/AIInsightModal';
 
 const STATUS_OPTIONS = ['New', 'Email Sent', 'Replied', 'Meeting Booked', 'Closed', 'Not Interested'];
 
@@ -41,6 +42,7 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [leadToEdit, setLeadToEdit] = useState<any>(null);
   const [showFollowUps, setShowFollowUps] = useState(false);
+  const [isInsightModalOpen, setIsInsightModalOpen] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPosition, setMenuPosition] = useState<{ top: number; right: number } | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -402,7 +404,49 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
         
         <LeadsKPIs leads={leads} />
 
-        <AIInsightBar />
+        {(() => {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const tomorrow = new Date(today);
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(today.getDate() - 30);
+
+          const leadsToFollowUp = leads.filter((l: any) => {
+            if (!l.nextFollowUpDate) return false;
+            const date = new Date(l.nextFollowUpDate);
+            return date >= today && date < tomorrow;
+          });
+
+          const repliesWaiting = leads.filter((l: any) => l.outreach_status === 'Replied');
+
+          const inactiveLeads = leads.filter((l: any) => {
+            const updatedAt = new Date(l.updatedAt || l.createdAt);
+            return updatedAt < thirtyDaysAgo && l.outreach_status !== 'Closed' && l.outreach_status !== 'Meeting Booked' && l.outreach_status !== 'Not Interested';
+          }).sort((a: any, b: any) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime());
+
+          return (
+            <>
+              <AIInsightBar 
+                leadsToFollowUpCount={leadsToFollowUp.length}
+                repliesWaitingCount={repliesWaiting.length}
+                inactiveLeadsCount={inactiveLeads.length}
+                onViewInsights={() => setIsInsightModalOpen(true)}
+              />
+              <AIInsightModal
+                isOpen={isInsightModalOpen}
+                onClose={() => setIsInsightModalOpen(false)}
+                leadsToFollowUp={leadsToFollowUp}
+                repliesWaiting={repliesWaiting}
+                inactiveLeads={inactiveLeads}
+                onActionClick={(lead) => {
+                  setSelectedLead(lead);
+                  setIsDetailsModalOpen(true);
+                }}
+              />
+            </>
+          );
+        })()}
 
         <LeadsFilters 
           searchQuery={searchQuery}

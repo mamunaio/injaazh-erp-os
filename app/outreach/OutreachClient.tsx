@@ -327,7 +327,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
               { label: 'Queued',         value: analytics.queuedCount,      color: '#F59E0B', trend: '0',    up: true },
               { label: 'Follow-ups Due', value: followUpsDue,               color: '#EF4444', trend: String(followUpsDue), up: false },
               { label: 'Reply Rate',     value: `${replyRate}%`,            color: '#7C3AED', trend: '+2%',  up: true },
-              { label: 'Quota Today',    value: `${analytics.totalSentToday}/${analytics.totalDailyQuota}`, color: '#0EA5E9', trend: `${quotaPct}%`, up: true },
+              { label: 'Quota Remaining',value: Math.max(0, analytics.totalDailyQuota - analytics.totalSentToday), color: '#0EA5E9', trend: `${quotaPct}%`, up: true },
             ].map((k, i) => (
               <motion.div key={k.label}
                 initial={{ opacity: 0, y: 16 }}
@@ -340,7 +340,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                 <div className="absolute -right-2 -bottom-4 opacity-[0.04] pointer-events-none group-hover:opacity-[0.08] transition-opacity">
                   {k.label === 'Hot Replies' && <Sparkles size={90} style={{ color: k.color }} />}
                   {k.label === 'Emails Sent' && <Send size={90} style={{ color: k.color }} />}
-                  {k.label === 'Quota Today' && <Target size={90} style={{ color: k.color }} />}
+                  {k.label === 'Quota Remaining' && <Target size={90} style={{ color: k.color }} />}
                   {k.label === 'Follow-ups Due' && <AlertCircle size={90} style={{ color: k.color }} />}
                   {k.label === 'Queued' && <Clock size={90} style={{ color: k.color }} />}
                   {k.label === 'Reply Rate' && <Activity size={90} style={{ color: k.color }} />}
@@ -353,9 +353,9 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                   </span>
                 </div>
                 <p className="relative z-10 text-3xl font-bold font-mono tracking-tight" style={{ color: k.color }}>{k.value}</p>
-                {k.label === 'Quota Today' && (
+                {k.label === 'Quota Remaining' && (
                   <div className="relative z-10 mt-3 h-1.5 bg-slate-50 dark:bg-[#09090B] rounded-full overflow-hidden border border-slate-200 dark:border-[#232734]">
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${quotaPct}%` }} transition={{ duration: 0.8, ease: 'easeOut' }}
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${Math.max(0, 100 - quotaPct)}%` }} transition={{ duration: 0.8, ease: 'easeOut' }}
                       className="h-full rounded-full bg-gradient-to-r from-[#7C3AED] to-[#2563EB]" />
                   </div>
                 )}

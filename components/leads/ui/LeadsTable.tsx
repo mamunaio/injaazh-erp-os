@@ -44,6 +44,35 @@ function getInitials(name: string) {
   return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 }
 
+function calculateLeadScore(lead: any): number {
+  if (lead.leadScore && lead.leadScore !== 50) return lead.leadScore;
+
+  let score = 25; // Base score
+
+  // Completeness
+  if (lead.email) score += 15;
+  if (lead.phone) score += 10;
+  if (lead.contact_person) score += 10;
+  if (lead.website_url) score += 10;
+
+  // Status weighting
+  switch (lead.outreach_status) {
+    case 'Closed': return 100;
+    case 'Meeting Booked': score += 30; break;
+    case 'Replied': score += 20; break;
+    case 'Email Sent': score += 10; break;
+    case 'Not Interested': return 10;
+    default: break;
+  }
+
+  // Active follow-ups
+  if (lead.nextFollowUpDate) {
+    score += 10;
+  }
+
+  return Math.min(99, score); // Max 99 unless Closed
+}
+
 function SortIcon({ col, sortKey, sortDir }: { col: SortKey; sortKey: SortKey; sortDir: SortDir }) {
   if (col !== sortKey) return <ArrowUpDown size={12} className="text-[#232734] group-hover:text-slate-400 transition-colors" />;
   return sortDir === 'asc'
@@ -189,7 +218,7 @@ export default function LeadsTable({
                 const statusStyle = STATUS_STYLES[status] ?? { text: 'text-slate-500 dark:text-slate-400', dot: 'bg-slate-400' };
                 const statusBg    = STATUS_BG[status] ?? 'bg-slate-400/10 border-slate-400/20';
                 const initials    = getInitials(lead.company_name || lead.contact_person);
-                const score       = lead.leadScore ?? 50;
+                const score       = calculateLeadScore(lead);
 
                 return (
                   <motion.tr
@@ -334,7 +363,7 @@ export default function LeadsTable({
             const statusStyle = STATUS_STYLES[status] ?? { text: 'text-slate-500 dark:text-slate-400', dot: 'bg-slate-400' };
             const statusBg    = STATUS_BG[status] ?? 'bg-slate-400/10 border-slate-400/20';
             const initials    = getInitials(lead.company_name || lead.contact_person);
-            const score       = lead.leadScore ?? 50;
+            const score       = calculateLeadScore(lead);
 
             return (
               <motion.div

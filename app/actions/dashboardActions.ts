@@ -263,8 +263,28 @@ export async function getDashboardData() {
       }
     });
 
+    // Income trend (30 Days)
+    const revenueTrend30Days = [];
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dayKey = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      
+      const dayIncome = transactions
+        .filter((t: any) => {
+          const tDate = new Date(t.date);
+          return t.type === 'Income' && 
+                 tDate.getDate() === date.getDate() &&
+                 tDate.getMonth() === date.getMonth() && 
+                 tDate.getFullYear() === date.getFullYear();
+        })
+        .reduce((sum: number, t: any) => sum + t.amount, 0);
+      
+      revenueTrend30Days.push({ dateStr: dayKey, Income: dayIncome });
+    }
+
     // Income trend (last 6 months)
-    const incomeTrend = [];
+    const revenueTrend6Months = [];
     for (let i = 5; i >= 0; i--) {
       const date = new Date();
       date.setMonth(date.getMonth() - i);
@@ -279,10 +299,25 @@ export async function getDashboardData() {
         })
         .reduce((sum: number, t: any) => sum + t.amount, 0);
       
-      incomeTrend.push({
-        month: monthKey,
-        income: monthIncome,
-      });
+      revenueTrend6Months.push({ dateStr: monthKey, Income: monthIncome });
+    }
+
+    // Income trend (This Year)
+    const revenueTrendYear = [];
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(new Date().getFullYear(), i, 1);
+      const monthKey = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      
+      const monthIncome = transactions
+        .filter((t: any) => {
+          const tDate = new Date(t.date);
+          return t.type === 'Income' && 
+                 tDate.getMonth() === date.getMonth() && 
+                 tDate.getFullYear() === date.getFullYear();
+        })
+        .reduce((sum: number, t: any) => sum + t.amount, 0);
+      
+      revenueTrendYear.push({ dateStr: monthKey, Income: monthIncome });
     }
 
     // Serialize SEO projects
@@ -309,26 +344,68 @@ export async function getDashboardData() {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const todayTasks = leads
+    const todayLeadTasks = leads
       .filter((l: any) => {
         if (!l.nextFollowUpDate) return false;
         const date = new Date(l.nextFollowUpDate);
         return date >= today && date < tomorrow;
       })
       .map((l: any) => ({
-        id: l._id?.toString(),
+        id: `lead_${l._id}`,
         title: `Follow up with ${l.company_name}`,
         due_date: l.nextFollowUpDate,
-        status: l.outreach_status
+        status: l.outreach_status,
+        type: 'Lead'
       }));
+
+    const todayProjectTasks: any[] = [];
+    projects.forEach((p: any) => {
+      if (p.deadline) {
+        const dDate = new Date(p.deadline);
+        if (dDate >= today && dDate < tomorrow && p.status !== 'Completed') {
+          todayProjectTasks.push({
+            id: `proj_${p._id}`,
+            title: `Deadline: ${p.title}`,
+            due_date: p.deadline,
+            status: p.status,
+            type: 'Project'
+          });
+        }
+      }
+    });
+
+    marketplaceProjects.forEach((mp: any) => {
+      if (mp.tasks && Array.isArray(mp.tasks)) {
+        mp.tasks.forEach((t: any) => {
+          if (!t.completed && t.dueDate) {
+             const tDate = new Date(t.dueDate);
+             if (tDate >= today && tDate < tomorrow) {
+                todayProjectTasks.push({
+                  id: `mptask_${t._id}`,
+                  title: t.title,
+                  due_date: t.dueDate,
+                  status: 'Pending',
+                  type: 'Task'
+                });
+             }
+          }
+        });
+      }
+    });
+
+    const todayTasks = [...todayLeadTasks, ...todayProjectTasks];
 
     // Upcoming Meetings
     const upcomingMeetings = leads
-      .filter((l: any) => l.outreach_status === 'Meeting Booked')
+      .filter((l: any) => {
+        if (l.outreach_status !== 'Meeting Booked' || !l.nextFollowUpDate) return false;
+        const date = new Date(l.nextFollowUpDate);
+        return date >= today;
+      })
       .map((l: any) => ({
         id: l._id?.toString(),
         title: `Meeting with ${l.company_name}`,
-        date: l.updatedAt || l.createdAt,
+        date: l.nextFollowUpDate,
         attendees: [l.contact_person || l.company_name]
       })).slice(0, 5);
 
@@ -355,7 +432,32 @@ export async function getDashboardData() {
         timestamp: t.date,
         type: 'transaction'
       }))
-    ].sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 10);
+    ].sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5);
+
+    // Accurate Lead Funnel
+    const leadFunnel = {
+      New: leads.filter((l: any) => l.outreach_status === 'New').length,
+      Active: leads.filter((l: any) => ['Queued', 'Email Sent', 'Replied', 'Meeting Booked'].includes(l.outreach_status)).length,
+      Closed: leads.filter((l: any) => l.outreach_status === 'Closed').length
+    };
+
+    // Sales Pipeline Accurate
+    const salesPipeline = {
+      Pending: proposals.filter((p: any) => ['Draft', 'Sent', 'Viewed'].includes(p.status)).reduce((sum: number, p: any) => sum + (p.value || 0), 0),
+      Accepted: proposals.filter((p: any) => p.status === 'Accepted').reduce((sum: number, p: any) => sum + (p.value || 0), 0)
+    };
+
+    // AI Insights Generator
+    let aiInsights = "Based on your activity, here is what you should focus on today. ";
+    if (todayTasks.length > 0) aiInsights += `You have ${todayTasks.length} task${todayTasks.length > 1 ? 's' : ''} due today. `;
+    else aiInsights += "You have no tasks due today. ";
+    
+    if (upcomingMeetings.length > 0) aiInsights += `Prepare for your ${upcomingMeetings.length} upcoming meeting${upcomingMeetings.length > 1 ? 's' : ''}. `;
+    
+    if (pendingProposals > 0) aiInsights += `You have ${pendingProposals} pending proposal${pendingProposals > 1 ? 's' : ''} worth $${salesPipeline.Pending.toLocaleString()}; try to follow up and close them! `;
+    
+    if (thisMonthIncome > 0) aiInsights += `Great job generating $${thisMonthIncome.toLocaleString()} in revenue this month! Keep up the momentum.`;
+    else aiInsights += `Revenue is slow this month. Focus on converting active leads and following up on pending proposals.`;
 
     return {
       success: true,
@@ -371,8 +473,8 @@ export async function getDashboardData() {
           thisMonthIncome,
           totalExpenses,
           netProfit,
-          outstandingPipelineValue,
-          acceptedProposalsValue,
+          outstandingPipelineValue: salesPipeline.Pending,
+          acceptedProposalsValue: salesPipeline.Accepted,
           leadConversionRate,
           pendingMilestoneValue,
           leadsUpdatedToday,
@@ -388,7 +490,12 @@ export async function getDashboardData() {
         recentProposals,
         projectStatusDistribution,
         platformIncome,
-        incomeTrend,
+        revenueTrend30Days,
+        revenueTrend6Months,
+        revenueTrendYear,
+        leadFunnel,
+        salesPipeline,
+        aiInsights,
         seoProjects: serializedSeo,
         todayTasks,
         upcomingMeetings,
