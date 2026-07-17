@@ -1,8 +1,25 @@
+let sharedAudioCtx: AudioContext | null = null;
+
+const getAudioContext = () => {
+  if (typeof window === 'undefined') return null;
+  if (!sharedAudioCtx) {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (AudioContextClass) {
+      sharedAudioCtx = new AudioContextClass();
+    }
+  }
+  // If the browser suspended it due to auto-play policies, try to resume
+  if (sharedAudioCtx && sharedAudioCtx.state === 'suspended') {
+    sharedAudioCtx.resume().catch(() => {});
+  }
+  return sharedAudioCtx;
+};
+
 const playTone = (freq: number, type: OscillatorType, duration: number, vol: number, sweep?: number) => {
   try {
-    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContext) return;
-    const ctx = new AudioContext();
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     
@@ -28,9 +45,9 @@ const playTone = (freq: number, type: OscillatorType, duration: number, vol: num
 
 const playChord = (frequencies: number[], type: OscillatorType, duration: number, vol: number) => {
   try {
-    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContext) return;
-    const ctx = new AudioContext();
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    
     const masterGain = ctx.createGain();
     masterGain.connect(ctx.destination);
     

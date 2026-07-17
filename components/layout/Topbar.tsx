@@ -7,36 +7,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { getRecentNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '@/app/actions/notificationActions';
 import { logoutUser } from '@/app/actions/authActions';
-import toast from 'react-hot-toast';
+import { notify } from '@/lib/notify';
 import { useSidebar } from './SidebarContext';
 import { useUser } from './UserContext';
-
-// Helper to play a soft, realistic notification 'ding' using Web Audio API
-const playNotificationSound = () => {
-  try {
-    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContext) return;
-    const ctx = new AudioContext();
-    const osc = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-    
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, ctx.currentTime); // A5
-    osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.1); // Slide to A6
-    
-    gainNode.gain.setValueAtTime(0, ctx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.05);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
-    
-    osc.connect(gainNode);
-    gainNode.connect(ctx.destination);
-    
-    osc.start();
-    osc.stop(ctx.currentTime + 0.4);
-  } catch (e) {
-    console.error("Audio playback failed", e);
-  }
-};
 
 // Helper to format relative time (e.g., "2m ago")
 const getRelativeTime = (dateString: string) => {
@@ -75,41 +48,11 @@ export default function Topbar() {
       const currentUnread = data.filter((n: any) => !n.isRead).length;
       // Play sound and show toast if there are new unread notifications compared to last check
       if (currentUnread > prevUnreadCountRef.current && prevUnreadCountRef.current !== 0) {
-        playNotificationSound();
-        
-        // Show Toast Popup
+        // Show Toast Popup using global system
         const newNotifs = data.filter((n: any) => !n.isRead);
         if (newNotifs.length > 0) {
           const newest = newNotifs[0];
-          toast.custom((t) => (
-             <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-sm w-full neu-flat rounded-2xl pointer-events-auto flex`}>
-               <div className="flex-1 w-0 p-4">
-                 <div className="flex items-start">
-                   <div className="flex-shrink-0 pt-0.5">
-                     <div className="h-10 w-10 rounded-full neu-pressed flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-                       <Bell size={18} />
-                     </div>
-                   </div>
-                   <div className="ml-3 flex-1">
-                     <p className="text-sm font-bold text-slate-800 dark:text-white">
-                       New Notification
-                     </p>
-                     <p className="mt-1 text-sm font-medium text-slate-600 dark:text-slate-400">
-                       {newest.message}
-                     </p>
-                   </div>
-                 </div>
-               </div>
-               <div className="flex border-l border-slate-300 dark:border-slate-800/50">
-                 <button
-                   onClick={() => toast.dismiss(t.id)}
-                   className="w-full border border-transparent rounded-none rounded-r-2xl p-4 flex items-center justify-center text-sm font-bold text-slate-500 hover:text-slate-700 dark:hover:text-white transition-colors"
-                 >
-                   Close
-                 </button>
-               </div>
-             </div>
-          ), { duration: 5000 });
+          notify.success(`New Notification: ${newest.message}`);
         }
       }
       prevUnreadCountRef.current = currentUnread;
@@ -156,10 +99,10 @@ export default function Topbar() {
     setShowProfile(false);
     const result = await logoutUser();
     if (result.success) {
-      toast.success('Signed out successfully');
+      notify.success('Signed out successfully');
       router.push('/login');
     } else {
-      toast.error('Failed to sign out');
+      notify.error('Failed to sign out');
     }
   };
 
