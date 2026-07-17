@@ -13,7 +13,7 @@ import {
   BarChart, Bar, Cell 
 } from 'recharts';
 import { format } from 'date-fns';
-import toast from 'react-hot-toast';
+import { notify } from '@/lib/notify';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -167,20 +167,21 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
     if (editingTransaction) {
       const res = await updateTransaction(editingTransaction._id, data);
       if (res.success) {
-        toast.success('Transaction updated');
+        notify.edit('Transaction updated');
         setIsSlidePanelOpen(false);
         window.location.reload();
       } else {
-        toast.error('Failed to update');
+        notify.error('Failed to update');
       }
     } else {
       const res = await createTransaction(data);
       if (res.success) {
-        toast.success('Transaction created');
+        if (data.type === 'Income') notify.income('Income recorded');
+        else notify.expense('Expense recorded');
         setIsSlidePanelOpen(false);
         window.location.reload();
       } else {
-        toast.error('Failed to create');
+        notify.error('Failed to create');
       }
     }
     setIsSubmitting(false);
@@ -192,11 +193,12 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
     const data = { ...formData, amount: parseFloat(formData.amount) || 0 };
     const res = await createTransaction(data);
     if (res.success) {
-      toast.success('Transaction added');
+      if (data.type === 'Income') notify.income('Income recorded');
+      else notify.expense('Expense recorded');
       setFormData({ type: 'Income', amount: '', date: new Date().toISOString().split('T')[0], category: 'Sales', description: '', platform: 'Direct' });
       window.location.reload();
     } else {
-      toast.error('Failed to create');
+      notify.error('Failed to create');
     }
     setIsSubmitting(false);
   };
@@ -207,10 +209,10 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
     
     const res = await deleteTransaction(id);
     if (res.success) {
-      toast.success('Deleted');
+      notify.delete('Deleted');
       window.location.reload();
     } else {
-      toast.error('Failed to delete');
+      notify.error('Failed to delete');
     }
   };
 
@@ -244,9 +246,9 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
         
-        toast.success('Exported successfully!');
+        notify.success('Exported successfully!');
       } catch (error) {
-        toast.error('Failed to export CSV');
+        notify.error('Failed to export CSV');
       } finally {
         setIsExporting(false);
       }

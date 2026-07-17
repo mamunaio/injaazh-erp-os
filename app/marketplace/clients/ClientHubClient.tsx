@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { createMarketplaceClient, deleteMarketplaceClient, updateMarketplaceClient } from '@/actions/marketplaceClientActions';
 import { countryToTimezoneMap } from '@/lib/countryToTimezone';
-import toast from 'react-hot-toast';
+import { notify } from '@/lib/notify';
 import { useUser } from '@/components/layout/UserContext';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 
@@ -57,6 +57,18 @@ const getAvatarColor = (name: string) => {
   const charCode = name.charCodeAt(0);
   return colors[charCode % colors.length];
 };
+
+// ── Input Field Component ──────────────────────────────────────────────────
+const InputField = ({ label, icon: Icon, type = "text", value, onChange, placeholder = "", required = false }: any) => (
+  <div className="group relative w-full">
+    <label className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">
+      {Icon && <Icon size={12} className="text-[#94A3B8] group-focus-within:text-[#2563EB] transition-colors" />}
+      {label} {required && <span className="text-[#EF4444]">*</span>}
+    </label>
+    <input required={required} type={type} value={value} onChange={onChange} placeholder={placeholder}
+      className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-3 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all placeholder-[#94A3B8]/60" />
+  </div>
+);
 
 const getLocalTime = (timezone: string) => {
   if (!timezone) return null;
@@ -118,14 +130,14 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
       if (result.success) {
         setClients(clients.map(c => c._id === editingClient._id ? result.data : c));
         if (selectedClient?._id === editingClient._id) setSelectedClient(result.data);
-        toast.success('Client updated successfully'); closeModal();
-      } else { toast.error(result.error || 'Failed to update client'); }
+        notify.edit('Client updated successfully'); closeModal();
+      } else { notify.error(result.error || 'Failed to update client'); }
     } else {
       const result = await createMarketplaceClient(formData);
       if (result.success) {
         setClients([result.data, ...clients]);
-        toast.success('Client added successfully'); closeModal();
-      } else { toast.error(result.error || 'Failed to add client'); }
+        notify.success('Client added successfully'); closeModal();
+      } else { notify.error(result.error || 'Failed to add client'); }
     }
     setIsSubmitting(false);
   };
@@ -161,8 +173,8 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
     if (result.success) {
       setClients(clients.filter(c => c._id !== id));
       if (selectedClient?._id === id) setSelectedClient(null);
-      toast.success('Client deleted');
-    } else { toast.error(result.error || 'Failed to delete client'); }
+      notify.delete('Client deleted');
+    } else { notify.error(result.error || 'Failed to delete client'); }
   };
 
   const handleSaveNotes = async () => {
@@ -172,9 +184,9 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
       const res = await updateMarketplaceClient(selectedClient._id, { notes: notesDraft });
       if (res.success) {
         setClients(clients.map(c => c._id === selectedClient._id ? res.data : c));
-        setSelectedClient(res.data); toast.success('Notes saved');
-      } else { toast.error('Failed to save notes'); }
-    } catch (err) { toast.error('An error occurred'); } 
+        setSelectedClient(res.data); notify.edit('Notes saved');
+      } else { notify.error('Failed to save notes'); }
+    } catch (err) { notify.error('An error occurred'); } 
     finally { setIsSavingNotes(false); }
   };
 
@@ -204,18 +216,6 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
     { label: 'New This Month',value: newThisMonth,   color: '#7C3AED', trend: String(newThisMonth), up: true },
     { label: 'Lifetime Value',value: fmtCompact(totalValue), color: '#0EA5E9', trend: '+8%', up: true },
   ];
-
-  // ── Input Field Component ──────────────────────────────────────────────────
-  const InputField = ({ label, icon: Icon, type = "text", value, onChange, placeholder = "", required = false }: any) => (
-    <div className="group relative w-full">
-      <label className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">
-        {Icon && <Icon size={12} className="text-[#94A3B8] group-focus-within:text-[#2563EB] transition-colors" />}
-        {label} {required && <span className="text-[#EF4444]">*</span>}
-      </label>
-      <input required={required} type={type} value={value} onChange={onChange} placeholder={placeholder}
-        className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-3 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all placeholder-[#94A3B8]/60" />
-    </div>
-  );
 
   const containerVariants = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
   const itemVariants = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 26 } } };

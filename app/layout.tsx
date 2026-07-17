@@ -70,7 +70,26 @@ export default async function RootLayout({
             )}
           </AppLayoutWrapper>
           <Toaster 
-            position="top-right" />
+            position="top-right"
+            toastOptions={{
+              style: {
+                background: '#11131A',
+                color: '#fff',
+                border: '1px solid #232734',
+                borderRadius: '16px',
+                padding: '12px 20px',
+                fontSize: '14px',
+                fontWeight: 600,
+                boxShadow: '0 20px 40px -10px rgba(0,0,0,0.5)',
+              },
+              success: {
+                iconTheme: { primary: '#10B981', secondary: '#09090B' },
+              },
+              error: {
+                iconTheme: { primary: '#EF4444', secondary: '#09090B' },
+              },
+            }}
+          />
         </ThemeProvider>
       </body>
     </html>

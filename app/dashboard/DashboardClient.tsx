@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Users, Briefcase, FileText, DollarSign, TrendingUp, Clock, Plus, ArrowRight, Calendar, AlertCircle, Sparkles, PieChart as PieChartIcon, BarChart as BarChartIcon, Globe, ArrowUpRight, TrendingDown, Percent, Layers, ChevronRight, Lightbulb, CheckCircle2, BookOpen, Zap, Mail, MessageSquare, Video, Rocket, LayoutGrid, CheckSquare, Search, Bell, Monitor, Settings, Search as SearchIcon, Activity, X
 } from 'lucide-react';
@@ -11,6 +11,7 @@ import {
   AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
 import { motion } from 'framer-motion';
+import { notify } from '@/lib/notify';
 import { useUser } from '@/components/layout/UserContext';
 import WorkspaceLoader from '@/components/ui/WorkspaceLoader';
 
@@ -56,6 +57,14 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
   const [isActionLoading, setIsActionLoading] = useState<string | null>(null);
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    // Play login sound only once per session when dashboard is first loaded
+    if (!sessionStorage.getItem('hasPlayedLoginSound')) {
+      notify.login('Welcome back!');
+      sessionStorage.setItem('hasPlayedLoginSound', 'true');
+    }
+  }, []);
 
   const handleAction = (actionName: string, routeTo?: string) => {
     setIsActionLoading(actionName);

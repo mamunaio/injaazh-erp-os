@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 import { createProposal } from '@/app/actions/proposalActions';
 import { updateLead, sendOutreachEmail } from '@/app/actions/leadActions';
 import { syncInboxesAction } from '@/app/actions/outreachAutomationActions';
-import toast from 'react-hot-toast';
+import { notify } from '@/lib/notify';
 
 interface OutreachClientProps {
   initialLeads: any[];
@@ -112,13 +112,13 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
     try {
       const result = await syncInboxesAction();
       if (result.success) {
-        toast.success('Inboxes synced successfully!');
+        notify.success('Inboxes synced successfully!');
         router.refresh();
       } else {
-        toast.error(result.error || 'Failed to sync inboxes');
+        notify.error(result.error || 'Failed to sync inboxes');
       }
     } catch (e) {
-      toast.error('An error occurred while syncing inboxes');
+      notify.error('An error occurred while syncing inboxes');
     } finally {
       setIsSyncing(false);
     }
@@ -132,10 +132,10 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
         title: `Proposal for ${lead.targetService || 'Custom Service'}`,
       });
       if (result.success && result.data) { router.push(`/proposals/${result.data._id}`); }
-      else { toast.error('Failed to create proposal.'); }
+      else { notify.error('Failed to create proposal.'); }
     } catch (error) {
       console.error(error);
-      toast.error('Error creating proposal.');
+      notify.error('Error creating proposal.');
     } finally { setIsCreatingProposalFor(null); }
   };
 
@@ -201,9 +201,9 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
       });
       if (res.success) {
         setLeads(leads.map(l => l._id === selectedLead._id ? { ...l, email_subject_draft: emailSubject, email_draft: emailBody, facebook_draft: whatsappBody } : l));
-        toast.success('Drafts saved');
-      } else { toast.error('Failed to save drafts'); }
-    } catch (e) { toast.error('Error saving drafts'); }
+        notify.success('Drafts saved');
+      } else { notify.error('Failed to save drafts'); }
+    } catch (e) { notify.error('Error saving drafts'); }
     finally { setIsSavingDraft(false); }
   };
 
@@ -216,35 +216,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
       
       const res = await sendOutreachEmail(selectedLead._id, emailSubject, emailBody);
       if (res.success) {
-        toast.custom((t) => (
-          <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-sm w-full bg-white dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] shadow-lg rounded-2xl pointer-events-auto flex`}>
-            <div className="flex-1 w-0 p-4">
-              <div className="flex items-start">
-                <div className="flex-shrink-0 pt-0.5">
-                  <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                    <CheckCircle size={18} />
-                  </div>
-                </div>
-                <div className="ml-3 flex-1">
-                  <p className="text-sm font-bold text-slate-800 dark:text-white">
-                    Reply Sent!
-                  </p>
-                  <p className="mt-1 text-[13px] font-medium text-slate-500 dark:text-slate-400">
-                    Your email was successfully delivered.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="flex border-l border-slate-200 dark:border-[#232734]">
-              <button
-                onClick={() => toast.dismiss(t.id)}
-                className="w-full border border-transparent rounded-none rounded-r-2xl p-4 flex items-center justify-center text-sm font-bold text-slate-500 hover:text-slate-700 dark:hover:text-white transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        ), { duration: 4000 });
+        notify.mailSend('Reply Sent! Your email was successfully delivered.');
         
         setLeads(leads.map(l => {
           if (l._id === selectedLead._id) {
@@ -254,10 +226,10 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
           return l;
         }));
       } else {
-        toast.error(res.error || 'Failed to send email');
+        notify.error(res.error || 'Failed to send email');
       }
     } catch (e: any) {
-      toast.error('Error sending email');
+      notify.error('Error sending email');
     } finally {
       setIsSending(false);
     }
@@ -272,9 +244,9 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
       if (res.success && res.data) {
         setLeads(leads.map(l => l._id === selectedLead._id ? res.data : l));
         setLogNote('');
-        toast.success('Log added');
-      } else { toast.error('Failed to add log'); }
-    } catch (e) { toast.error('Error adding log'); }
+        notify.success('Log added');
+      } else { notify.error('Failed to add log'); }
+    } catch (e) { notify.error('Error adding log'); }
     finally { setIsLogging(false); }
   };
 
@@ -284,9 +256,9 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
       const res = await updateLead(selectedLead._id, { outreach_status: newStatus });
       if (res.success && res.data) {
         setLeads(leads.map(l => l._id === selectedLead._id ? res.data : l));
-        toast.success(`Status updated to ${newStatus}`);
+        notify.success(`Status updated to ${newStatus}`);
       }
-    } catch (e) { toast.error('Error updating status'); }
+    } catch (e) { notify.error('Error updating status'); }
   };
 
   // ── Derived KPI data ──────────────────────────────────────────────────────
