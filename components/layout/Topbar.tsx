@@ -10,6 +10,7 @@ import { logoutUser } from '@/app/actions/authActions';
 import { notify } from '@/lib/notify';
 import { useSidebar } from './SidebarContext';
 import { useUser } from './UserContext';
+import { useAppearance } from './AppearanceContext';
 
 // Helper to format relative time (e.g., "2m ago")
 const getRelativeTime = (dateString: string) => {
@@ -34,6 +35,7 @@ export default function Topbar() {
   const [showProfile, setShowProfile] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const { toggleSidebar } = useSidebar();
+  const { sidebarLayout } = useAppearance();
   
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -109,7 +111,7 @@ export default function Topbar() {
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
-    <header className="h-20 fixed top-0 right-0 left-0 lg:left-[260px] z-40 bg-white/80 dark:bg-[#0A0A0B]/80 backdrop-blur-md border-b border-slate-200 dark:border-white/5 px-6 flex items-center justify-between transition-all duration-300">
+    <header className={`h-20 fixed top-0 right-0 left-0 ${sidebarLayout === 'collapsed' ? 'lg:left-[88px]' : 'lg:left-[260px]'} z-40 bg-white/80 dark:bg-[#0A0A0B]/80 backdrop-blur-md border-b border-slate-200 dark:border-white/5 px-6 flex items-center justify-between transition-all duration-300`}>
       {/* Left Area */}
       <div className="flex-1 flex items-center justify-start">
         <button 

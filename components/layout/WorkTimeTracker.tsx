@@ -12,6 +12,7 @@ export default function WorkTimeTracker() {
   const [isSaving, setIsSaving] = useState(false);
   const [isIdlePaused, setIsIdlePaused] = useState(false);
   const pathname = usePathname();
+  const [isLoaded, setIsLoaded] = useState(false);
   const startTimeRef = useRef<number | null>(null);
   const lastActivityRef = useRef<number>(Date.now());
   const IDLE_TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
@@ -39,11 +40,14 @@ export default function WorkTimeTracker() {
       }
     } catch (e) {
       console.error('Error loading time tracker state', e);
+    } finally {
+      setIsLoaded(true);
     }
   }, []);
 
   // Save to localStorage when state changes
   useEffect(() => {
+    if (!isLoaded) return;
     try {
       localStorage.setItem('timeTracker_isActive', isActive.toString());
       localStorage.setItem('timeTracker_isIdlePaused', isIdlePaused.toString());
@@ -56,7 +60,7 @@ export default function WorkTimeTracker() {
     } catch (e) {
       console.error('Error saving time tracker state', e);
     }
-  }, [isActive, totalSeconds]);
+  }, [isActive, isIdlePaused, totalSeconds, isLoaded]);
 
   // Idle Detection & Timer Update
   useEffect(() => {

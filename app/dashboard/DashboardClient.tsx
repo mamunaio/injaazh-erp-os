@@ -160,10 +160,10 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+        <div className="flex flex-col xl:flex-row gap-8 w-full">
           
           {/* LEFT COLUMN (MAIN CONTENT) */}
-          <div className="xl:col-span-8 space-y-8">
+          <div className="flex-1 space-y-8 min-w-0">
             
             {/* Command Center (KPI Cards) */}
             <motion.div variants={itemVariants}>
@@ -385,151 +385,8 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                 </Card>
               </div>
             </motion.div>
-          </div>
-
-          {/* RIGHT COLUMN (SIDEBAR) */}
-          <div className="xl:col-span-4 space-y-6">
-            
-            {/* AI Insights Card */}
-            <motion.div variants={itemVariants}>
-              <Card className="bg-gradient-to-br from-indigo-50 to-white dark:from-[#11131A] dark:to-[#09090B] relative overflow-hidden border-slate-200 dark:border-[#232734] p-6 lg:p-8">
-                 <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#7C3AED]/20 blur-[50px] rounded-full pointer-events-none"></div>
-                 <div className="flex justify-between items-center mb-5 relative z-10">
-                   <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2 tracking-tight">
-                      <Sparkles size={16} className="text-[#7C3AED]" /> AI Insights 
-                   </h3>
-                   <span className="text-[10px] uppercase tracking-wider bg-[#7C3AED]/20 text-[#7C3AED] px-2 py-0.5 rounded-md font-bold">Beta</span>
-                 </div>
-                 <div className="relative z-10">
-                   <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-5 font-medium italic">"{aiInsights || "Based on your activity, here is what you should focus on today."}"</p>
-                   
-                   <div className="space-y-4">
-                     {dashboardData.upcomingDeadlines?.length > 0 ? (
-                       <div className="flex gap-3 items-start p-3 rounded-xl bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734]">
-                         <div className="w-8 h-8 rounded-lg bg-[#F59E0B]/10 flex items-center justify-center flex-shrink-0 border border-[#F59E0B]/20 text-[#F59E0B]">
-                           <AlertCircle size={14} />
-                         </div>
-                         <div>
-                           <p className="text-sm font-bold text-slate-900 dark:text-white mb-0.5">Upcoming Deadlines</p>
-                           <p className="text-xs text-slate-500 dark:text-slate-400 leading-snug">You have {dashboardData.upcomingDeadlines.length} project deadline(s) approaching.</p>
-                         </div>
-                       </div>
-                     ) : (
-                       <div className="text-center py-4">
-                         <p className="text-sm text-slate-500 dark:text-slate-400">No urgent deadlines right now.</p>
-                       </div>
-                     )}
-
-                   </div>
-                 </div>
-              </Card>
-            </motion.div>
-
-            {/* Today's Tasks */}
-            <motion.div variants={itemVariants}>
-              <Card className="p-6 lg:p-8">
-                <div className="flex justify-between items-center mb-5">
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                    <CheckSquare size={16} className="text-slate-500 dark:text-slate-400" /> Today's Tasks
-                  </h3>
-                  <Link href="/roadmap" className="text-xs font-bold text-[#2563EB] hover:text-[#2563EB]/80 hover:underline transition-colors">View All</Link>
-                </div>
-                <div className="space-y-3">
-                  {dashboardData.todayTasks?.length > 0 ? (
-                    dashboardData.todayTasks.map((task: any) => (
-                      <div key={task.id} className="flex gap-3 items-center p-3 rounded-xl bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] hover:border-[#2563EB]/50 transition-colors">
-                        <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 flex items-center justify-center flex-shrink-0 text-[#2563EB]">
-                          <CheckSquare size={14} />
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-slate-900 dark:text-white mb-0.5">{task.title}</p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Status: {task.status}</p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-6">
-                      <p className="text-sm text-slate-500 dark:text-slate-400">No tasks due today.</p>
-                    </div>
-                  )}
-                </div>
-              </Card>
-            </motion.div>
-
-            {/* Upcoming Meetings */}
-            <motion.div variants={itemVariants}>
-              <Card className="p-6 lg:p-8">
-                <div className="flex justify-between items-center mb-5">
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                    <Calendar size={16} className="text-slate-500 dark:text-slate-400" /> Upcoming Meetings
-                  </h3>
-                  <button onClick={() => handleAction('Meeting Modal')} className="w-6 h-6 rounded-md bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center hover:text-slate-900 dark:hover:text-white hover:border-[#2563EB]/50 text-slate-500 dark:text-slate-400 transition-colors"><Plus size={14} /></button>
-                </div>
-                <div className="space-y-4">
-                  {dashboardData.upcomingMeetings?.length > 0 ? (
-                    dashboardData.upcomingMeetings.map((meeting: any) => (
-                      <div key={meeting.id} className="flex gap-3 items-center p-3 rounded-xl bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] hover:border-[#10B981]/50 transition-colors">
-                        <div className="w-8 h-8 rounded-lg bg-[#10B981]/10 flex items-center justify-center flex-shrink-0 text-[#10B981]">
-                          <Calendar size={14} />
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-slate-900 dark:text-white mb-0.5">{meeting.title}</p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                            {new Date(meeting.date).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-6">
-                      <p className="text-sm text-slate-500 dark:text-slate-400">No upcoming meetings.</p>
-                    </div>
-                  )}
-                </div>
-              </Card>
-            </motion.div>
-
-            {/* Notifications / Activity */}
-            <motion.div variants={itemVariants}>
-              <Card className="p-6 lg:p-8">
-                <div className="flex justify-between items-center mb-5">
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                    <Bell size={16} className="text-slate-500 dark:text-slate-400" /> Recent Activity
-                  </h3>
-                </div>
-                <div className="space-y-5">
-                  {dashboardData.recentActivity?.length > 0 ? (
-                    dashboardData.recentActivity.map((activity: any, idx: number) => (
-                      <div key={`${activity.id}-${idx}`} className="flex gap-4 relative">
-                        <div className="w-2 h-2 rounded-full bg-[#2563EB] mt-2 relative z-10 flex-shrink-0 shadow-[0_0_8px_rgba(37,99,235,0.6)]"></div>
-                        {idx !== dashboardData.recentActivity.length - 1 && (
-                          <div className="absolute top-4 left-1 w-px h-full bg-slate-200 dark:bg-[#232734] -ml-px"></div>
-                        )}
-                        <div>
-                          <p className="text-sm font-bold text-slate-900 dark:text-white">{activity.title}</p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1 leading-relaxed">
-                            {activity.description}
-                          </p>
-                          <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2 font-bold uppercase tracking-widest">
-                            {new Date(activity.timestamp).toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-6">
-                      <p className="text-sm text-slate-500 dark:text-slate-400">No recent activity.</p>
-                    </div>
-                  )}
-                </div>
-              </Card>
-            </motion.div>
-
-          </div>
-        </div>
-
         {/* BOTTOM SECTION (TABLES) */}
-        <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4 w-full min-w-0">
            {/* Recent Leads Table */}
            <Card className="p-0 overflow-hidden h-full">
              <div className="p-6 border-b border-slate-200 dark:border-[#232734] flex justify-between items-center bg-white dark:bg-[#11131A]">
@@ -598,6 +455,149 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
              </div>
            </Card>
         </motion.div>
+          </div>
+
+          {/* RIGHT COLUMN (SIDEBAR) */}
+          <div className="w-full xl:w-[380px] flex-shrink-0 space-y-6 xl:pt-[44px]">
+            
+            {/* AI Insights Card */}
+            <motion.div variants={itemVariants}>
+              <Card className="bg-gradient-to-br from-indigo-50 to-white dark:from-[#11131A] dark:to-[#09090B] relative overflow-hidden border-slate-200 dark:border-[#232734] p-6 lg:p-8">
+                 <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#7C3AED]/20 blur-[50px] rounded-full pointer-events-none"></div>
+                 <div className="flex justify-between items-center mb-5 relative z-10">
+                   <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2 tracking-tight">
+                      <Sparkles size={16} className="text-[#7C3AED]" /> AI Insights 
+                   </h3>
+                   <span className="text-[10px] uppercase tracking-wider bg-[#7C3AED]/20 text-[#7C3AED] px-2 py-0.5 rounded-md font-bold">Beta</span>
+                 </div>
+                 <div className="relative z-10">
+                   <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-5 font-medium italic">"{aiInsights || "Based on your activity, here is what you should focus on today."}"</p>
+                   
+                   <div className="space-y-4">
+                     {dashboardData.upcomingDeadlines?.length > 0 ? (
+                       <div className="flex gap-3 items-start p-3 rounded-xl bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734]">
+                         <div className="w-8 h-8 rounded-lg bg-[#F59E0B]/10 flex items-center justify-center flex-shrink-0 border border-[#F59E0B]/20 text-[#F59E0B]">
+                           <AlertCircle size={14} />
+                         </div>
+                         <div>
+                           <p className="text-sm font-bold text-slate-900 dark:text-white mb-0.5">Upcoming Deadlines</p>
+                           <p className="text-xs text-slate-500 dark:text-slate-400 leading-snug">You have {dashboardData.upcomingDeadlines.length} project deadline(s) approaching.</p>
+                         </div>
+                       </div>
+                     ) : (
+                       <div className="text-center py-4">
+                         <p className="text-sm text-slate-500 dark:text-slate-400">No urgent deadlines right now.</p>
+                       </div>
+                     )}
+
+                   </div>
+                 </div>
+              </Card>
+            </motion.div>
+
+            {/* Today's Tasks */}
+            <motion.div variants={itemVariants}>
+              <Card className="p-6 lg:p-8">
+                <div className="flex justify-between items-center mb-5">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <CheckSquare size={16} className="text-slate-500 dark:text-slate-400" /> Today's Tasks
+                  </h3>
+                  <Link href="/roadmap" className="text-xs font-bold text-[#2563EB] hover:text-[#2563EB]/80 hover:underline transition-colors">View All</Link>
+                </div>
+                <div className="space-y-3 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
+                  {dashboardData.todayTasks?.length > 0 ? (
+                    dashboardData.todayTasks.slice(0, 6).map((task: any) => (
+                      <div key={task.id} className="flex gap-3 items-center p-3 rounded-xl bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] hover:border-[#2563EB]/50 transition-colors">
+                        <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 flex items-center justify-center flex-shrink-0 text-[#2563EB]">
+                          <CheckSquare size={14} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-900 dark:text-white mb-0.5">{task.title}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Status: {task.status}</p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-6">
+                      <p className="text-sm text-slate-500 dark:text-slate-400">No tasks due today.</p>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            </motion.div>
+
+            {/* Upcoming Meetings */}
+            <motion.div variants={itemVariants}>
+              <Card className="p-6 lg:p-8">
+                <div className="flex justify-between items-center mb-5">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <Calendar size={16} className="text-slate-500 dark:text-slate-400" /> Upcoming Meetings
+                  </h3>
+                  <button onClick={() => handleAction('Meeting Modal')} className="w-6 h-6 rounded-md bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center hover:text-slate-900 dark:hover:text-white hover:border-[#2563EB]/50 text-slate-500 dark:text-slate-400 transition-colors"><Plus size={14} /></button>
+                </div>
+                <div className="space-y-4 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
+                  {dashboardData.upcomingMeetings?.length > 0 ? (
+                    dashboardData.upcomingMeetings.map((meeting: any) => (
+                      <div key={meeting.id} className="flex gap-3 items-center p-3 rounded-xl bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] hover:border-[#10B981]/50 transition-colors">
+                        <div className="w-8 h-8 rounded-lg bg-[#10B981]/10 flex items-center justify-center flex-shrink-0 text-[#10B981]">
+                          <Calendar size={14} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-900 dark:text-white mb-0.5">{meeting.title}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                            {new Date(meeting.date).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-6">
+                      <p className="text-sm text-slate-500 dark:text-slate-400">No upcoming meetings.</p>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            </motion.div>
+
+            {/* Notifications / Activity */}
+            <motion.div variants={itemVariants}>
+              <Card className="p-6 lg:p-8">
+                <div className="flex justify-between items-center mb-5">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <Bell size={16} className="text-slate-500 dark:text-slate-400" /> Recent Activity
+                  </h3>
+                </div>
+                <div className="space-y-5 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+                  {dashboardData.recentActivity?.length > 0 ? (
+                    dashboardData.recentActivity.map((activity: any, idx: number) => (
+                      <div key={`${activity.id}-${idx}`} className="flex gap-4 relative">
+                        <div className="w-2 h-2 rounded-full bg-[#2563EB] mt-2 relative z-10 flex-shrink-0 shadow-[0_0_8px_rgba(37,99,235,0.6)]"></div>
+                        {idx !== dashboardData.recentActivity.length - 1 && (
+                          <div className="absolute top-4 left-1 w-px h-full bg-slate-200 dark:bg-[#232734] -ml-px"></div>
+                        )}
+                        <div>
+                          <p className="text-sm font-bold text-slate-900 dark:text-white">{activity.title}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1 leading-relaxed">
+                            {activity.description}
+                          </p>
+                          <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2 font-bold uppercase tracking-widest">
+                            {new Date(activity.timestamp).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-6">
+                      <p className="text-sm text-slate-500 dark:text-slate-400">No recent activity.</p>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            </motion.div>
+
+          </div>
+        </div>
+
         
         {/* Modals */}
         {activeModal && (
