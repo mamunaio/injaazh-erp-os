@@ -484,7 +484,7 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
                 <Download size={15} /> <span className="hidden sm:inline">Export</span>
               </button>
               <button onClick={() => { setEditingCampaign(null); setIsBuilderOpen(true); }}
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
                 <Plus size={16} strokeWidth={2.5} /> New Campaign
               </button>
             </div>
@@ -593,7 +593,7 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
                     <tr className="border-b border-slate-200 dark:border-[#232734]">
                       <th className="pl-5 pr-3 py-3 w-10">
                         <button onClick={toggleAll}
-                          className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all ${allSel ? 'bg-[#2563EB] border-[#2563EB] text-slate-900 dark:text-white' : 'border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B] hover:border-[#94A3B8]'}`}
+                          className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all ${allSel ? 'bg-[#2563EB] border-[#2563EB] text-white' : 'border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B] hover:border-[#94A3B8]'}`}
                           aria-label="Select all">
                           {allSel && <CheckCircle2 size={10} strokeWidth={3} />}
                         </button>
@@ -625,11 +625,11 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
                           <motion.tr key={campaign._id}
                             custom={i} variants={rowVariants} initial="hidden" animate="show" exit="exit"
                             onClick={() => setPanelCampaign(campaign)}
-                            className={`border-b border-slate-200 dark:border-[#232734]/60 cursor-pointer transition-all group ${isSel ? 'bg-[#2563EB]/5 text-slate-900 dark:text-white' : 'hover:bg-slate-50 dark:hover:bg-[#1E293B]/40 hover:text-slate-900 dark:hover:text-white'}`}
+                            className={`border-b border-slate-200 dark:border-[#232734]/60 cursor-pointer transition-all group ${isSel ? 'bg-[#2563EB]/5 text-white' : 'hover:bg-slate-50 dark:hover:bg-[#1E293B]/40 hover:text-slate-900 dark:hover:text-white'}`}
                           >
                             {/* Checkbox */}
                             <td className="pl-5 pr-3 py-4" onClick={e => toggleOne(campaign._id, e)}>
-                              <div className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all ${isSel ? 'bg-[#2563EB] border-[#2563EB] text-slate-900 dark:text-white' : 'border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B] group-hover:border-[#94A3B8]'}`}>
+                              <div className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all ${isSel ? 'bg-[#2563EB] border-[#2563EB] text-white' : 'border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B] group-hover:border-[#94A3B8]'}`}>
                                 {isSel && <CheckCircle2 size={10} strokeWidth={3} />}
                               </div>
                             </td>
@@ -776,7 +776,7 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
               className="fixed bottom-8 left-1/2 z-40 flex items-center gap-4 bg-white dark:bg-[#09090B]/90 border border-slate-200 dark:border-slate-700 backdrop-blur-xl rounded-full px-5 py-3 shadow-xl"
             >
               <div className="flex items-center gap-2 border-r border-slate-200 dark:border-[#232734] pr-4">
-                <span className="w-6 h-6 rounded-full bg-[#2563EB] text-slate-900 dark:text-white text-xs font-bold flex items-center justify-center">{selectedIds.length}</span>
+                <span className="w-6 h-6 rounded-full bg-[#2563EB] text-white text-xs font-bold flex items-center justify-center">{selectedIds.length}</span>
                 <span className="text-sm font-bold text-[#94A3B8]">Selected</span>
               </div>
               <button className="px-4 py-1.5 text-xs font-bold bg-white text-black rounded-full hover:bg-slate-200 transition-colors">Bulk Action</button>

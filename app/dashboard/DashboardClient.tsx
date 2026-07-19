@@ -154,7 +154,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
             <button onClick={() => handleAction('Project Setup', '/projects')} disabled={!!isActionLoading} className="flex-1 sm:flex-none items-center justify-center gap-2 px-5 py-2.5 bg-slate-50 dark:bg-[#09090B] hover:bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] hover:border-[#2563EB]/50 text-slate-900 dark:text-white font-semibold text-sm rounded-xl transition-all shadow-sm flex disabled:opacity-50">
               {isActionLoading === 'Project Setup' ? <Activity size={16} className="text-slate-500 dark:text-slate-400 animate-spin" /> : <Briefcase size={16} className="text-slate-500 dark:text-slate-400" />} New Project
             </button>
-            <button onClick={() => handleAction('Lead Form', '/prospects')} disabled={!!isActionLoading} className="flex-1 sm:flex-none items-center justify-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white font-bold text-sm rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.2)] hover:shadow-[0_0_25px_rgba(37,99,235,0.4)] flex disabled:opacity-50">
+            <button onClick={() => handleAction('Lead Form', '/prospects')} disabled={!!isActionLoading} className="flex-1 sm:flex-none items-center justify-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold text-sm rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.2)] hover:shadow-[0_0_25px_rgba(37,99,235,0.4)] flex disabled:opacity-50">
               {isActionLoading === 'Lead Form' ? <Activity size={16} className="animate-spin" /> : <Plus size={16} />} Add Lead
             </button>
           </div>
@@ -397,21 +397,21 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                <table className="w-full text-left border-collapse">
                  <thead>
                    <tr className="bg-slate-50 dark:bg-[#09090B]">
-                     <th className="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-[#232734]">Name</th>
-                     <th className="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-[#232734]">Company</th>
-                     <th className="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-[#232734]">Status</th>
+                     <th className="px-4 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-[#232734]">Company</th>
+                     <th className="px-4 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-[#232734]">Service</th>
+                     <th className="px-4 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-[#232734]">Status</th>
                    </tr>
                  </thead>
                  <tbody className="divide-y divide-[#232734]">
                    {dashboardData.recentLeads?.length > 0 ? dashboardData.recentLeads.map((lead: any) => (
                      <tr key={lead._id} onClick={() => router.push('/prospects')} className="hover:bg-slate-100 dark:hover:bg-[#09090B] even:bg-slate-50/50 dark:even:bg-[#09090B]/50 transition-colors group cursor-pointer">
-                       <td className="px-6 py-5 text-sm font-bold text-slate-900 dark:text-white">{lead.company_name}</td>
-                       <td className="px-6 py-5 text-sm text-slate-500 dark:text-slate-400">{lead.targetService || 'N/A'}</td>
-                       <td className="px-6 py-5"><span className="inline-block whitespace-nowrap px-2 py-1 rounded-md bg-[#2563EB]/10 text-[#2563EB] text-xs font-bold border border-[#2563EB]/20">{lead.outreach_status}</span></td>
+                       <td className="px-4 py-4 text-sm font-bold text-slate-900 dark:text-white">{lead.company_name}</td>
+                       <td className="px-4 py-4 text-sm text-slate-500 dark:text-slate-400">{lead.targetService || 'N/A'}</td>
+                       <td className="px-4 py-4"><span className="inline-block whitespace-nowrap px-2 py-1 rounded-md bg-[#2563EB]/10 text-[#2563EB] text-xs font-bold border border-[#2563EB]/20">{lead.outreach_status}</span></td>
                      </tr>
                    )) : (
                      <tr>
-                       <td colSpan={3} className="px-6 py-8 text-center text-sm text-slate-500 dark:text-slate-400">No recent leads found.</td>
+                       <td colSpan={3} className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">No recent leads found.</td>
                      </tr>
                    )}
                  </tbody>
@@ -429,25 +429,25 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                <table className="w-full text-left border-collapse">
                  <thead>
                    <tr className="bg-slate-50 dark:bg-[#09090B]">
-                     <th className="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-[#232734]">Client</th>
-                     <th className="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-[#232734]">Amount</th>
-                     <th className="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-[#232734]">Date</th>
+                     <th className="px-4 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-[#232734]">Client</th>
+                     <th className="px-4 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-[#232734]">Amount</th>
+                     <th className="px-4 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-[#232734]">Date</th>
                    </tr>
                  </thead>
                  <tbody className="divide-y divide-[#232734]">
                    {dashboardData.recentTransactions?.length > 0 ? dashboardData.recentTransactions.slice(0, 5).map((t: any) => (
                      <tr key={t._id} onClick={() => router.push('/finance')} className="hover:bg-slate-100 dark:hover:bg-[#09090B] even:bg-slate-50/50 dark:even:bg-[#09090B]/50 transition-colors group cursor-pointer">
-                       <td className="px-6 py-5 text-sm font-bold text-slate-900 dark:text-white">{t.platform || 'Direct'}</td>
-                       <td className={`px-6 py-5 text-sm font-mono font-bold ${t.type === 'Income' ? 'text-[#10B981]' : 'text-rose-500'}`}>
+                       <td className="px-4 py-4 text-sm font-bold text-slate-900 dark:text-white">{t.platform || 'Direct'}</td>
+                       <td className={`px-4 py-4 text-sm font-mono font-bold ${t.type === 'Income' ? 'text-[#10B981]' : 'text-rose-500'}`}>
                          {t.type === 'Income' ? '+' : '-'}{formatCurrency(t.amount)}
                        </td>
-                       <td className="px-6 py-5 text-sm text-slate-500 dark:text-slate-400">
+                       <td className="px-4 py-4 text-sm text-slate-500 dark:text-slate-400">
                          {new Date(t.date).toLocaleDateString()}
                        </td>
                      </tr>
                    )) : (
                      <tr>
-                       <td colSpan={3} className="px-6 py-8 text-center text-sm text-slate-500 dark:text-slate-400">No recent transactions found.</td>
+                       <td colSpan={3} className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">No recent transactions found.</td>
                      </tr>
                    )}
                  </tbody>
@@ -661,7 +661,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                 <button onClick={closeModal} className="px-5 py-2.5 rounded-xl bg-slate-200 dark:bg-[#232734] hover:bg-slate-300 dark:hover:bg-[#323746] text-slate-900 dark:text-white text-sm font-bold transition-colors">
                   Cancel
                 </button>
-                <button onClick={() => { toast.success(`${activeModal.split(' ')[0]} created successfully!`); closeModal(); }} className="px-5 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white text-sm font-bold transition-all shadow-[0_0_20px_rgba(37,99,235,0.2)]">
+                <button onClick={() => { toast.success(`${activeModal.split(' ')[0]} created successfully!`); closeModal(); }} className="px-5 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#2563EB]/90 text-white text-sm font-bold transition-all shadow-[0_0_20px_rgba(37,99,235,0.2)]">
                   Save Details
                 </button>
               </div>

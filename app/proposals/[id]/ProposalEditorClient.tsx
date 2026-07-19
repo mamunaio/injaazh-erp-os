@@ -400,7 +400,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
               <button
                 onClick={() => handleSave(false)}
                 disabled={isSaving}
-                className="flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white font-bold rounded-xl transition-all text-xs disabled:opacity-50 shadow-[0_0_20px_rgba(37,99,235,0.25)] border border-[#2563EB]/80"
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold rounded-xl transition-all text-xs disabled:opacity-50 shadow-[0_0_20px_rgba(37,99,235,0.25)] border border-[#2563EB]/80"
               >
                 {isSaving ? (
                   <>
@@ -461,7 +461,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
               </label>
               <button
                 onClick={addPhase}
-                className="flex items-center gap-2 px-3 py-1.5 bg-slate-200 dark:bg-[#232734] hover:bg-[#2563EB] text-slate-900 dark:text-white text-[11px] font-bold uppercase tracking-widest rounded-lg transition-colors border border-slate-200 dark:border-[#232734] hover:border-[#2563EB]"
+                className="flex items-center gap-2 px-3 py-1.5 bg-slate-200 dark:bg-[#232734] hover:bg-[#2563EB] text-white text-[11px] font-bold uppercase tracking-widest rounded-lg transition-colors border border-slate-200 dark:border-[#232734] hover:border-[#2563EB]"
               >
                 <Plus size={14} /> Add Phase
               </button>
@@ -557,7 +557,7 @@ export default function ProposalEditorClient({ proposal: initialProposal }: Prop
               </label>
               <button
                 onClick={addInvestmentItem}
-                className="flex items-center gap-2 px-3 py-1.5 bg-slate-200 dark:bg-[#232734] hover:bg-[#2563EB] text-slate-900 dark:text-white text-[11px] font-bold uppercase tracking-widest rounded-lg transition-colors border border-slate-200 dark:border-[#232734] hover:border-[#2563EB]"
+                className="flex items-center gap-2 px-3 py-1.5 bg-slate-200 dark:bg-[#232734] hover:bg-[#2563EB] text-white text-[11px] font-bold uppercase tracking-widest rounded-lg transition-colors border border-slate-200 dark:border-[#232734] hover:border-[#2563EB]"
               >
                 <Plus size={14} /> Add Item
               </button>

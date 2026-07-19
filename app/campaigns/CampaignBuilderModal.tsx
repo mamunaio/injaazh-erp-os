@@ -136,7 +136,7 @@ export default function CampaignBuilderModal({ isOpen, onClose, onSave, initialD
           </div>
         )}
 
-        <div className="p-8 overflow-y-auto flex-1 custom-scrollbar">
+        <div className="p-8 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
           {activeTab === 'sequences' ? (
             <>
               {/* Campaign Details */}
@@ -263,7 +263,7 @@ export default function CampaignBuilderModal({ isOpen, onClose, onSave, initialD
             <button 
               onClick={handleSave}
               disabled={isSaving}
-              className="px-6 py-3 bg-[#2563EB] hover:bg-[#2563EB]/90 disabled:opacity-50 text-slate-900 dark:text-white font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-[#2563EB]/20"
+              className="px-6 py-3 bg-[#2563EB] hover:bg-[#2563EB]/90 disabled:opacity-50 text-white font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-[#2563EB]/20"
             >
               {isSaving ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} strokeWidth={2.5} />}
               Save Campaign

@@ -188,7 +188,7 @@ export default function LeadsTable({
                   onClick={toggleAll}
                   className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all ${
                     allSelected
-                      ? 'bg-[#2563EB] border-[#2563EB] text-slate-900 dark:text-white'
+                      ? 'bg-[#2563EB] border-[#2563EB] text-white'
                       : someSelected
                         ? 'bg-[#2563EB]/30 border-[#2563EB]/50 text-[#2563EB]'
                         : 'border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A] hover:border-slate-400'
@@ -239,7 +239,7 @@ export default function LeadsTable({
                     <td className="pl-6 pr-3 py-4" onClick={e => toggleOne(lead._id, e)}>
                       <div className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all ${
                         isSelected
-                          ? 'bg-[#2563EB] border-[#2563EB] text-slate-900 dark:text-white'
+                          ? 'bg-[#2563EB] border-[#2563EB] text-white'
                           : 'border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B] group-hover:border-slate-400'
                       }`}>
                         {isSelected && <CheckCircle size={10} strokeWidth={3} />}
@@ -380,7 +380,7 @@ export default function LeadsTable({
                   {/* Checkbox */}
                   <div onClick={e => toggleOne(lead._id, e)} className="mt-1 flex-shrink-0">
                     <div className={`w-5 h-5 rounded-[6px] border flex items-center justify-center ${
-                      isSelected ? 'bg-[#2563EB] border-[#2563EB] text-slate-900 dark:text-white' : 'border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B]'
+                      isSelected ? 'bg-[#2563EB] border-[#2563EB] text-white' : 'border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B]'
                     }`}>
                       {isSelected && <CheckCircle size={12} strokeWidth={3} />}
                     </div>

@@ -152,7 +152,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis }: { u
             <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tracking-tight font-jakarta mb-1.5">Timesheets</h1>
             <p className="text-sm font-medium text-[#94A3B8]">Track, review, and manage your logged hours.</p>
           </div>
-          <button onClick={openModalForNew} className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
+          <button onClick={openModalForNew} className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
             <Plus size={16} strokeWidth={2.5} /> Log Time Manually
           </button>
         </div>
@@ -302,7 +302,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis }: { u
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-[24px] shadow-2xl overflow-hidden"
+              className="relative w-full max-w-md bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-[24px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
             >
               <div className="p-6 border-b border-slate-200 dark:border-[#232734] flex items-center justify-between">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">{editingLogId ? 'Edit Time Log' : 'Log Time Manually'}</h3>
@@ -310,7 +310,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis }: { u
                   <X size={16} />
                 </button>
               </div>
-              <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <form onSubmit={handleSubmit} className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-6 space-y-4">
                 
                 <div>
                   <label className="block text-xs font-bold text-[#94A3B8] mb-1.5 uppercase tracking-widest">Project/Client</label>
@@ -385,7 +385,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis }: { u
 
                 <div className="pt-4 mt-6 border-t border-slate-200 dark:border-[#232734] flex justify-end gap-3">
                   <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-50 dark:bg-[#09090B] text-slate-900 dark:text-white border border-slate-200 dark:border-[#232734] hover:bg-slate-200 dark:bg-[#232734] transition-all">Cancel</button>
-                  <button type="submit" disabled={isSubmitting} className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white border border-[#2563EB]/80 shadow-[0_0_20px_rgba(37,99,235,0.2)] disabled:opacity-50 transition-all">
+                  <button type="submit" disabled={isSubmitting} className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white border border-[#2563EB]/80 shadow-[0_0_20px_rgba(37,99,235,0.2)] disabled:opacity-50 transition-all">
                     {isSubmitting && <Loader2 size={16} className="animate-spin" />}
                     {editingLogId ? 'Save Changes' : 'Save Log'}
                   </button>

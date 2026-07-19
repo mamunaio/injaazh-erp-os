@@ -497,7 +497,7 @@ export default function DealsClient({ initialDeals }: { initialDeals: Deal[] }) 
                 {isExporting ? <Loader2 size={15} className="animate-spin text-[#2563EB]" /> : <Download size={15} />}
                 <span className="hidden sm:inline">{isExporting ? 'Exporting...' : 'Export'}</span>
               </button>
-              <button onClick={() => router.push('/prospects')} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
+              <button onClick={() => router.push('/prospects')} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
                 <Plus size={16} strokeWidth={2.5} /> New Deal
               </button>
             </div>

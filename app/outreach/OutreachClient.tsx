@@ -313,7 +313,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                 <RefreshCw size={15} className={isSyncing ? 'animate-spin' : ''} />
                 {isSyncing ? 'Syncing…' : 'Sync Inboxes'}
               </button>
-              <button onClick={() => router.push('/prospects')} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
+              <button onClick={() => router.push('/prospects')} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
                 <Plus size={16} strokeWidth={2.5} /> New Outreach
               </button>
             </div>
@@ -374,7 +374,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
             <div className="flex border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900">
               <button
                 onClick={() => { setActiveTab('inbox'); setSelectedLeadId(null); }}
-                className={`relative flex-1 py-4 flex items-center justify-center gap-2 text-[13px] font-bold uppercase tracking-widest transition-all ${activeTab === 'inbox' ? 'bg-white dark:bg-[#2563EB]/5 text-slate-900 dark:text-white shadow-sm dark:shadow-none' : 'text-slate-500 dark:text-[#94A3B8] hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-[#232734]/30'}`}
+                className={`relative flex-1 py-4 flex items-center justify-center gap-2 text-[13px] font-bold uppercase tracking-widest transition-all ${activeTab === 'inbox' ? 'bg-white dark:bg-[#2563EB]/5 text-white shadow-sm dark:shadow-none' : 'text-slate-500 dark:text-[#94A3B8] hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-[#232734]/30'}`}
               >
                 <Inbox size={15} />
                 Hot Inbox
@@ -387,7 +387,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
               </button>
               <button
                 onClick={() => { setActiveTab('pipeline'); setSelectedLeadId(null); }}
-                className={`relative flex-1 py-4 flex items-center justify-center gap-2 text-[13px] font-bold uppercase tracking-widest transition-all ${activeTab === 'pipeline' ? 'bg-white dark:bg-[#2563EB]/5 text-slate-900 dark:text-white shadow-sm dark:shadow-none' : 'text-slate-500 dark:text-[#94A3B8] hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-[#232734]/30'}`}
+                className={`relative flex-1 py-4 flex items-center justify-center gap-2 text-[13px] font-bold uppercase tracking-widest transition-all ${activeTab === 'pipeline' ? 'bg-white dark:bg-[#2563EB]/5 text-white shadow-sm dark:shadow-none' : 'text-slate-500 dark:text-[#94A3B8] hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-[#232734]/30'}`}
               >
                 <Target size={15} />
                 Pipeline
@@ -571,7 +571,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                         <button
                           onClick={() => handleCreateProposal(selectedLead)}
                           disabled={isCreatingProposalFor === selectedLead._id}
-                          className="flex items-center gap-2 px-4 py-2 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white font-bold rounded-[10px] text-xs transition-all shadow-[0_0_15px_rgba(37,99,235,0.25)] hover:shadow-[0_0_20px_rgba(37,99,235,0.4)] disabled:opacity-50"
+                          className="flex items-center gap-2 px-4 py-2 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold rounded-[10px] text-xs transition-all shadow-[0_0_15px_rgba(37,99,235,0.25)] hover:shadow-[0_0_20px_rgba(37,99,235,0.4)] disabled:opacity-50"
                         >
                           {isCreatingProposalFor === selectedLead._id
                             ? 'Creating…'

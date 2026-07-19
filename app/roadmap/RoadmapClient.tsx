@@ -285,7 +285,7 @@ export default function RoadmapClient({ initialProjects }: RoadmapClientProps) {
             </div>
             <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
               <button onClick={() => { setFormData({ title: '', category: 'Product', status: 'Planning' }); setIsAddOpen(true); }}
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
                 <Plus size={16} strokeWidth={2.5} /> New Milestone
               </button>
             </div>
@@ -346,7 +346,7 @@ export default function RoadmapClient({ initialProjects }: RoadmapClientProps) {
             <div className="w-16 h-16 rounded-[20px] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center mb-4"><Compass size={24} className="text-[#232734]" /></div>
             <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">No items found</p>
             <p className="text-xs text-[#94A3B8] mb-6">Create a new milestone to start planning.</p>
-            <button onClick={() => { setFormData({ title: '', category: 'Product', status: 'Planning' }); setIsAddOpen(true); }} className="flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white text-xs font-bold rounded-xl transition-all">
+            <button onClick={() => { setFormData({ title: '', category: 'Product', status: 'Planning' }); setIsAddOpen(true); }} className="flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white text-xs font-bold rounded-xl transition-all">
               <Plus size={14} /> New Milestone
             </button>
           </motion.div>
@@ -544,7 +544,7 @@ export default function RoadmapClient({ initialProjects }: RoadmapClientProps) {
 
                 {/* Body for Add */}
                 {isAddOpen && (
-                  <form onSubmit={handleCreate} className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-5">
+                  <form onSubmit={handleCreate} className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-6 space-y-5">
                     <div>
                       <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Title</label>
                       <input required type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})}
@@ -564,7 +564,7 @@ export default function RoadmapClient({ initialProjects }: RoadmapClientProps) {
                     </div>
                     <div className="pt-6 mt-6 border-t border-slate-200 dark:border-[#232734]">
                       <button type="submit" disabled={isSubmitting || !formData.title || !formData.category}
-                        className="w-full py-3.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white font-bold text-sm rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.25)]">
+                        className="w-full py-3.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold text-sm rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.25)]">
                         {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : 'Create Milestone'}
                       </button>
                     </div>
@@ -585,7 +585,7 @@ export default function RoadmapClient({ initialProjects }: RoadmapClientProps) {
                       ))}
                     </div>
 
-                    <div className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-slate-50 dark:bg-[#09090B]">
+                    <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-6 bg-slate-50 dark:bg-[#09090B]">
                       {panelTab === 'tasks' && (
                         <div className="space-y-6">
                           {/* Add Task Input */}
@@ -593,7 +593,7 @@ export default function RoadmapClient({ initialProjects }: RoadmapClientProps) {
                             <input type="text" placeholder="Add a new task..." value={newTaskText} onChange={e => setNewTaskText(e.target.value)}
                               className="flex-1 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-2.5 text-sm focus:border-[#2563EB]/60 focus:outline-none" />
                             <button type="submit" disabled={!newTaskText.trim() || isSubmitting}
-                              className="px-4 bg-slate-200 dark:bg-[#232734] hover:bg-[#2563EB] text-slate-900 dark:text-white rounded-xl transition-all disabled:opacity-50">
+                              className="px-4 bg-slate-200 dark:bg-[#232734] hover:bg-[#2563EB] text-white rounded-xl transition-all disabled:opacity-50">
                               <Plus size={16} />
                             </button>
                           </form>

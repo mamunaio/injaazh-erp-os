@@ -59,7 +59,7 @@ function AppContent({ children, initialUser }: { children: React.ReactNode, init
     <>
       <Sidebar />
       <Topbar />
-      <main className={`pt-[100px] pr-4 pb-4 min-h-screen transition-all duration-300 relative z-0 ${sidebarLayout === 'collapsed' ? 'pl-4 lg:pl-[88px]' : 'pl-4 lg:pl-[288px]'}`}>
+      <main className={`pt-[100px] pr-4 pb-4 min-h-screen transition-all duration-300 relative ${sidebarLayout === 'collapsed' ? 'pl-4 lg:pl-[88px]' : 'pl-4 lg:pl-[288px]'}`}>
         {children}
       </main>
     </>

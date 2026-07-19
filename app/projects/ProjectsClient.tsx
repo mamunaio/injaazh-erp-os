@@ -370,7 +370,7 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
                 <UserPlus size={15} /> <span className="hidden sm:inline">Invite Member</span>
               </button>
               <button onClick={openAdd}
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
                 <Plus size={16} strokeWidth={2.5} /> New Project
               </button>
             </div>
@@ -432,7 +432,7 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
             <div className="w-16 h-16 rounded-[20px] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center mb-4"><Briefcase size={24} className="text-[#232734]" /></div>
             <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">No projects found</p>
             <p className="text-xs text-[#94A3B8] mb-6">Adjust your filters or create a new project.</p>
-            <button onClick={openAdd} className="flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white text-xs font-bold rounded-xl transition-all">
+            <button onClick={openAdd} className="flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white text-xs font-bold rounded-xl transition-all">
               <Plus size={14} /> Create Project
             </button>
           </motion.div>
@@ -667,8 +667,8 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
                     </div>
                   </div>
 
-                  {/* Content / Form */}
-                  <form onSubmit={handleSaveProject} className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+                  {/* Body Form */}
+                  <form onSubmit={handleSaveProject} className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-6 space-y-6">
                     
                     <div className="space-y-4">
                       <div>
@@ -761,7 +761,7 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
                     {/* Save Button is sticky at bottom */}
                     <div className="pt-6 mt-6 border-t border-slate-200 dark:border-[#232734]">
                       <button type="submit" disabled={isSubmitting || !formData.title}
-                        className="w-full py-3.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white font-bold text-sm rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.25)]">
+                        className="w-full py-3.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold text-sm rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.25)]">
                         {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : <>{isAddOpen ? 'Create Project' : 'Save Changes'}</>}
                       </button>
                     </div>

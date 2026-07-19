@@ -837,7 +837,7 @@ export default function OutreachComposerModal({
                 <button
                   onClick={handleSend}
                   disabled={isSending || isScheduling || !!successInfo || cooldownRemaining > 0}
-                  className="px-6 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_0_20px_rgba(37,99,235,0.25)] min-w-[130px]"
+                  className="px-6 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_0_20px_rgba(37,99,235,0.25)] min-w-[130px]"
                 >
                   {isSending ? (
                     <>

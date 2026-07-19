@@ -168,7 +168,7 @@ export default function LeadsFilters({
           <SlidersHorizontal size={13} />
           <span className="hidden sm:inline">Filters</span>
           {activeFilterCount > 0 && (
-            <span className="w-4 h-4 rounded-full bg-[#2563EB] text-slate-900 dark:text-white text-[10px] flex items-center justify-center font-bold">
+            <span className="w-4 h-4 rounded-full bg-[#2563EB] text-white text-[10px] flex items-center justify-center font-bold">
               {activeFilterCount}
             </span>
           )}

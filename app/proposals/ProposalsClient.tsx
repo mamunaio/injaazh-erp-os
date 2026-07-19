@@ -178,7 +178,7 @@ function ProposalSlidePanel({
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <button onClick={onEdit} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white font-bold text-xs rounded-[10px] transition-all">
+                  <button onClick={onEdit} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold text-xs rounded-[10px] transition-all">
                     <Edit size={13} /> Edit Proposal
                   </button>
                   <button onClick={onDelete} className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#EF4444]/10 hover:bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/20 font-bold text-xs rounded-[10px] transition-all">
@@ -356,7 +356,7 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
               <button
                 onClick={handleCreateProposal}
                 disabled={isCreating}
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80 disabled:opacity-60"
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80 disabled:opacity-60"
               >
                 {isCreating ? <><Loader2 size={15} className="animate-spin" /> Creating…</> : <><Plus size={16} strokeWidth={2.5} /> New Proposal</>}
               </button>
@@ -475,7 +475,7 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
             <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">No proposals found</p>
             <p className="text-xs text-[#94A3B8] mb-6">Adjust your filters or create a new proposal.</p>
             <button onClick={handleCreateProposal} disabled={isCreating}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white text-xs font-bold rounded-xl transition-all disabled:opacity-60">
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white text-xs font-bold rounded-xl transition-all disabled:opacity-60">
               {isCreating ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} strokeWidth={2.5} />}
               Create Proposal
             </button>

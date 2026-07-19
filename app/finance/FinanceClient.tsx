@@ -287,7 +287,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
                 {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} 
                 {isExporting ? 'Exporting...' : 'Export'}
               </button>
-              <button onClick={openAddPanel} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
+              <button onClick={openAddPanel} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
                 <Plus size={16} strokeWidth={2.5} /> Add Transaction
               </button>
             </div>
@@ -621,7 +621,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
                 </div>
 
                 {/* Body Form */}
-                <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+                <form onSubmit={handleSubmit} className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-6 space-y-6">
                   
                   {/* Type Selector */}
                   <div className="flex bg-white dark:bg-[#11131A] p-1 rounded-xl border border-slate-200 dark:border-[#232734]">
@@ -688,7 +688,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
 
                   <div className="pt-6 mt-6 border-t border-slate-200 dark:border-[#232734]">
                     <button type="submit" disabled={isSubmitting || !formData.amount || !formData.description}
-                      className="w-full py-3.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white font-bold text-sm rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.25)]">
+                      className="w-full py-3.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold text-sm rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.25)]">
                       {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : 'Save Transaction'}
                     </button>
                   </div>

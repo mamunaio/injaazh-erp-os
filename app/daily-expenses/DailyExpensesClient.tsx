@@ -291,7 +291,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
                 {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} 
                 {isExporting ? 'Exporting...' : 'Export'}
               </button>
-              <button onClick={openAddPanel} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
+              <button onClick={openAddPanel} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
                 <Plus size={16} strokeWidth={2.5} /> Add Expense
               </button>
             </div>
@@ -495,7 +495,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
                                 <FileText size={14} />
                               </div>
                               {e.amount > 100 && (
-                                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#2563EB] text-slate-900 dark:text-white flex items-center justify-center border border-[#09090B]">
+                                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#2563EB] text-white flex items-center justify-center border border-[#09090B]">
                                   <Paperclip size={8} />
                                 </div>
                               )}
@@ -613,7 +613,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
 
                   <div className="pt-6 mt-6 border-t border-slate-200 dark:border-[#232734]">
                     <button type="submit" disabled={isSubmitting || !formData.amount || !formData.description}
-                      className="w-full py-3.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white font-bold text-sm rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.25)]">
+                      className="w-full py-3.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold text-sm rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.25)]">
                       {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : 'Save Expense'}
                     </button>
                   </div>
@@ -669,7 +669,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
                   <button type="button" onClick={() => {
                     toast.success("Receipt uploaded successfully!");
                     setIsUploadModalOpen(false);
-                  }} className="flex-1 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-slate-900 dark:text-white font-bold text-sm rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.25)] flex items-center justify-center gap-2">
+                  }} className="flex-1 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold text-sm rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.25)] flex items-center justify-center gap-2">
                     <CheckCircle2 size={16} /> Extract Data
                   </button>
                 </div>
