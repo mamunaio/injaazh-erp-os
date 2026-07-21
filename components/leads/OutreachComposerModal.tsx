@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Mail, Send, Loader2, Sparkles, Code, Search, AlertCircle, CheckCircle, Info, FileText, ChevronDown, Calendar, Plus, Trash2, Edit2, Save } from 'lucide-react';
+import { X, Mail, Send, Loader2, Sparkles, Code, Search, AlertCircle, CheckCircle, Info, FileText, ChevronDown, Calendar, Plus, Trash2, Edit2, Save, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -772,12 +772,25 @@ export default function OutreachComposerModal({
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Website URL <span className="text-indigo-400 font-normal">{"{websiteUrl}"}</span></label>
-                      <input 
-                        type="text" 
-                        value={websiteUrl} 
-                        onChange={(e) => setWebsiteUrl(e.target.value)}
-                        className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all font-medium"
-                      />
+                      <div className="relative">
+                        <input 
+                          type="text" 
+                          value={websiteUrl} 
+                          onChange={(e) => setWebsiteUrl(e.target.value)}
+                          className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl pl-4 pr-10 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all font-medium"
+                        />
+                        {websiteUrl && (
+                          <a 
+                            href={websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-500 transition-colors"
+                            title="Visit Website"
+                          >
+                            <ExternalLink size={14} />
+                          </a>
+                        )}
+                      </div>
                     </div>
                     <div className="space-y-1.5 md:col-span-3">
                       <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Send From Account</label>
