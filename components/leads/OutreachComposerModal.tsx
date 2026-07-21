@@ -751,7 +751,7 @@ export default function OutreachComposerModal({
                 
                 {/* Variables & Sender Section */}
                 <div className="neu-flat p-4 rounded-2xl border border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A] shadow-sm">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Contact Name <span className="text-indigo-400 font-normal">{"{contactName}"}</span></label>
                       <input 
@@ -770,7 +770,16 @@ export default function OutreachComposerModal({
                         className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all font-medium"
                       />
                     </div>
-                    <div className="space-y-1.5 md:col-span-2">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Website URL <span className="text-indigo-400 font-normal">{"{websiteUrl}"}</span></label>
+                      <input 
+                        type="text" 
+                        value={websiteUrl} 
+                        onChange={(e) => setWebsiteUrl(e.target.value)}
+                        className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all font-medium"
+                      />
+                    </div>
+                    <div className="space-y-1.5 md:col-span-3">
                       <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Send From Account</label>
                       <CustomSelect 
                         value={selectedSenderId} 
