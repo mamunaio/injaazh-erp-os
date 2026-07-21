@@ -210,7 +210,8 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
       if (result.success) {
         setShowDeleteModal(false);
         setLeadToDelete(null);
-        window.location.reload();
+        router.refresh();
+        setDeletingId(null);
       } else {
         toast.error('Failed to delete lead. Please try again.');
         setDeletingId(null);
