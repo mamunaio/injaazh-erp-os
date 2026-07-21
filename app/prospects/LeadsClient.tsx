@@ -277,8 +277,8 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
   };
 
   const handleCardClick = (lead: any) => {
-    setSelectedLead(lead);
-    setIsDetailsModalOpen(true);
+    setComposerLead(lead);
+    setIsComposerOpen(true);
   };
 
   const toggleMenu = (leadId: string, e: React.MouseEvent) => {
