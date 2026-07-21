@@ -782,56 +782,11 @@ export default function OutreachComposerModal({
                         className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white font-medium"
                       />
                     </div>
-                    {detectedVariables.length > 0 && (
-                      <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 p-4 bg-indigo-50/50 dark:bg-indigo-500/5 rounded-2xl border border-indigo-100 dark:border-indigo-500/20">
-                        <div className="md:col-span-2 flex items-center justify-between">
-                          <p className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
-                            <Sparkles size={12} /> Dynamic Template Variables
-                          </p>
-                          <span className="text-[9px] font-bold text-indigo-400 bg-indigo-100 dark:bg-indigo-500/20 px-2 py-0.5 rounded-md">Auto-Detected</span>
-                        </div>
-                        {detectedVariables.map(v => (
-                          <div key={v} className="space-y-1.5 relative">
-                            <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">
-                              {v.replace(/([A-Z])/g, ' $1').trim()} <span className="text-indigo-500 font-medium">{"{" + v + "}"}</span>
-                              {aiReviewNeeded.includes(v) && <span className="ml-2 text-[9px] text-orange-500 font-black animate-pulse">Needs Review</span>}
-                            </label>
-                            <input 
-                              type="text" 
-                              value={customVars[v] || ''} 
-                              onChange={(e) => {
-                                setCustomVars(prev => ({...prev, [v]: e.target.value}));
-                                setAiReviewNeeded(prev => prev.filter(k => k !== v));
-                              }}
-                              className={`w-full bg-white dark:bg-[#11131A] border rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:ring-2 transition-all font-bold shadow-sm ${aiReviewNeeded.includes(v) ? 'border-orange-400 dark:border-orange-500 bg-orange-50/50 dark:bg-orange-500/10 focus:border-orange-500 focus:ring-orange-500/20' : 'border-indigo-200 dark:border-indigo-500/30 focus:border-indigo-500 focus:ring-indigo-500/20'}`}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    )}
+
                   </div>
                 </div>
 
-                {/* AI Generate Bar */}
-                <div className="flex items-center justify-between p-3 neu-flat rounded-xl border border-slate-200 dark:border-[#232734] bg-indigo-50 dark:bg-indigo-500/5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
-                      <Sparkles size={16} />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-900 dark:text-white">Auto-generate with AI</h4>
-                      <p className="text-[10px] text-slate-500">Drafts a highly personalized email for {companyName || lead.company_name}</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleAIGenerate}
-                    disabled={isGeneratingAI}
-                    className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
-                  >
-                    {isGeneratingAI ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-                    Generate
-                  </button>
-                </div>
+
 
                 {/* Composer Form */}
                 <div className="space-y-4 pb-4">
