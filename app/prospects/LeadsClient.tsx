@@ -301,13 +301,16 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
   const [activeFilter, setActiveFilter] = useState('All');
 
   const filteredLeads = leads.filter(lead => {
-    // Top follow ups filter
     if (showFollowUps) {
       if (!lead.nextFollowUpDate) return false;
       const followUpDate = new Date(lead.nextFollowUpDate);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      if (followUpDate > today) return false;
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      // Strictly today (no past due or future)
+      if (followUpDate < today || followUpDate >= tomorrow) return false;
     }
     // Quick chips filter
     if (activeFilter !== 'All' && activeFilter !== 'All Leads') {

@@ -8,7 +8,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { fromZonedTime } from 'date-fns-tz';
 import { sendOutreachEmail, scheduleOutreachEmail, cancelOutreachSchedule } from '@/app/actions/leadActions';
 import { getEmailAccounts } from '@/app/actions/emailAccountActions';
-import { generateAIEmailDraft } from '@/app/actions/aiActions';
+import { generateAIEmailDraft, generateAITemplateVariables } from '@/app/actions/aiActions';
 import { getEmailTemplates, createEmailTemplate, updateEmailTemplate, deleteEmailTemplate } from '@/app/actions/emailTemplateActions';
 
 interface Template {
@@ -22,25 +22,39 @@ interface Template {
 
 const TEMPLATES: Template[] = [
   {
-    id: 'webdev',
-    name: 'High-End Web Dev',
-    icon: <Code size={16} className="text-indigo-400" />,
-    subject: 'Proposal for {companyName}: Modern Web Experience',
-    body: `Hi {contactName},\n\nI hope this email finds you well.\n\nI was recently reviewing {companyName} and was highly impressed by your business footprint. However, I noticed that your online experience could be significantly modernized to convert more visitors into high-paying customers.\n\nWe specialize in building ultra-fast, high-end Next.js and React web applications that load in under 1 second and feel as fluid as a native mobile app.\n\nWould you be open to a brief 10-minute call next week to see how a modern digital storefront can boost {companyName}'s conversion rates?\n\nBest regards,\n[Your Name]\nInjaazh Digital`
+    id: 'hardwood',
+    name: 'Hardwood Floor (Local SEO)',
+    icon: <Search size={16} className="text-emerald-400" />,
+    subject: 'hardwood floor search in {city} — who\'s showing up instead of you',
+    body: `Hi {contactName},\n\nI just searched "{niche} {city}" on Google — and {competitor} is showing up on page 1.\n\n{companyName} wasn't there.\n\nThat's a real problem, because homeowners searching right now are calling whoever shows up first — not necessarily the best company.\n\nI work with flooring businesses to fix exactly this. Usually it comes down to a few specific things on the website and Google Business Profile that Google needs to see before it ranks a local business.\n\nWould a quick 10-minute call this week make sense? I can show you exactly where the gap is — no pitch, just the data.\n\n— Mamun\nInjaazh Global`
   },
   {
-    id: 'seo',
-    name: 'Technical SEO Audit',
-    icon: <Search size={16} className="text-blue-400" />,
-    subject: 'Technical SEO Audit for {companyName}',
-    body: `Hi {contactName},\n\nI was looking at {companyName}'s visibility on Google and noticed a few technical bottlenecks that are currently holding you back from ranking on the first page for key search terms.\n\nSpecifically, your site has a few performance and crawlability issues that, when fixed, can dramatically increase your organic leads.\n\nI’ve prepared a quick, custom video walkthrough pointing out these exact issues. Would you like me to send it over? No strings attached.\n\nBest regards,\n[Your Name]\nInjaazh Digital`
+    id: 'epoxy',
+    name: 'Epoxy Floor (Competitor)',
+    icon: <Search size={16} className="text-emerald-400" />,
+    subject: 'epoxy floor search in {city} — your competitors are getting your leads',
+    body: `Hi {contactName},\n\nI searched "epoxy floor coating {city}" today — {competitor} came up first. {companyName} didn't appear until page 2 or later.\n\nBusiness owners searching for epoxy contractors rarely scroll past page 1. So right now, those leads are going to your competitors.\n\nThe fix is usually straightforward — the right content on your site, a few technical SEO adjustments, and your Google Business Profile optimized for your service area.\n\nI've helped flooring and coating contractors in similar markets rank on page 1 within 60–90 days.\n\nWorth a quick chat to see if it makes sense for you?\n\n— Mamun\nInjaazh Global`
   },
   {
-    id: 'aeo',
-    name: 'Answer Engine/AEO',
-    icon: <Sparkles size={16} className="text-purple-400" />,
-    subject: 'Is {companyName} visible in ChatGPT & Perplexity?',
-    body: `Hi {contactName},\n\nOver 60% of modern tech-savvy clients are now using AI engines like ChatGPT, Perplexity, and Claude to find service providers, instead of traditional Google search.\n\nI did a quick check on whether AI search engines recommend {companyName} when users ask for top providers in your area, and the results were interesting.\n\nWe specialize in Answer Engine Optimization (AEO) and Generative Engine Optimization (GEO) to ensure your brand is cited and recommended as the prime choice by LLMs.\n\nWould you be open to seeing a quick report on how {companyName} currently ranks in AI search results?\n\nBest regards,\n[Your Name]\nInjaazh Digital`
+    id: 'luxury-flooring',
+    name: 'Luxury Flooring (High-End)',
+    icon: <Sparkles size={16} className="text-yellow-400" />,
+    subject: 'luxury flooring search in {city} — are you easy to find online?',
+    body: `Hi {contactName},\n\nHomeowners looking for luxury vinyl plank or custom flooring in {city} are searching Google before they call anyone.\n\nI looked up "{niche} {city}" — and {competitor} is the first name they're seeing. Not {companyName}.\n\nHigh-end flooring buyers do their research online first. If your website isn't showing up when they search, you're losing the consultation before it ever happens.\n\nI help premium flooring companies show up where their buyers are looking — with SEO and a website that builds trust before the first call.\n\nOpen to a quick conversation this week?\n\n— Mamun\nInjaazh Global`
+  },
+  {
+    id: 'commercial-flooring',
+    name: 'Commercial Flooring Leads',
+    icon: <Search size={16} className="text-blue-500" />,
+    subject: 'commercial flooring leads in {city} — are they finding you?',
+    body: `Hi {contactName},\n\nProperty managers and business owners in {city} searching for commercial flooring contractors go straight to Google.\n\nI searched "{niche} {city}" — and right now, {competitor} is the first result. {companyName} isn't on page 1.\n\nCommercial flooring projects are high-value. One missed lead from a restaurant chain or property management company is a significant loss.\n\nI help commercial flooring contractors rank on page 1 for the searches their buyers are already doing — through targeted SEO and a website built to convert.\n\nWould it make sense to talk for 10 minutes this week?\n\n— Mamun\nInjaazh Global`
+  },
+  {
+    id: 'local-flooring',
+    name: 'General Flooring (Local)',
+    icon: <Search size={16} className="text-orange-400" />,
+    subject: 'flooring search near {city} — a quick observation',
+    body: `Hi {contactName},\n\nMost people searching for a flooring company in {city} type "flooring company near me" or "best flooring store in {city}" — and they call whoever shows up first.\n\nRight now, {competitor} is that first result. {companyName} isn't showing up at the top.\n\nThis is almost always fixable — and the businesses that fix it first tend to pull significantly more local calls.\n\nI specialize in local SEO for flooring companies. Happy to take a look at your current online presence and tell you exactly what's holding the ranking back — no cost for the initial look.\n\nWould that be useful?\n\n— Mamun\nInjaazh Global`
   }
 ];
 
@@ -189,10 +203,15 @@ export default function OutreachComposerModal({
 
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
   
-  // Editable fields for dynamic replacement
+    // Editable fields for dynamic replacement
   const [contactName, setContactName] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [websiteUrl, setWebsiteUrl] = useState('');
+  
+  // Custom dynamic template variables
+    const [customVars, setCustomVars] = useState<Record<string, string>>({});
+  const [hasManuallyEdited, setHasManuallyEdited] = useState(false);
+  const [aiReviewNeeded, setAiReviewNeeded] = useState<string[]>([]);
   
   // Composer state
   const [subject, setSubject] = useState('');
@@ -260,7 +279,7 @@ export default function OutreachComposerModal({
       setErrorMessage(null);
       
       const draftTemplateId = lead.email_draft ? 'custom-draft' : TEMPLATES[0].id;
-      setSelectedTemplateId(draftTemplateId);
+      setSelectedTemplateId(draftTemplateId); setHasManuallyEdited(false);
       
       if (lead.outreach_scheduled_for && new Date(lead.outreach_scheduled_for) > new Date()) {
         setScheduleTime(new Date(lead.outreach_scheduled_for));
@@ -312,13 +331,27 @@ export default function OutreachComposerModal({
     return () => clearInterval(interval);
   }, [isOpen, isSending]);
 
+    const detectedVariables = React.useMemo(() => {
+    if (!selectedTemplateId || selectedTemplateId === 'ai-draft' || selectedTemplateId === 'custom-draft') return [];
+    const activeTemplate = dynamicTemplates.find(t => t.id === selectedTemplateId);
+    if (!activeTemplate) return [];
+    const fullText = activeTemplate.subject + ' ' + activeTemplate.body;
+    const matches = fullText.match(/\{([^}]+)\}/g);
+    if (!matches) return [];
+    
+    // Remove brackets, filter out defaults, and deduplicate
+    const vars = matches.map(m => m.slice(1, -1));
+    const defaults = ['contactName', 'companyName', 'websiteUrl'];
+    return Array.from(new Set(vars.filter(v => !defaults.includes(v))));
+  }, [selectedTemplateId, dynamicTemplates]);
+
   // Compile template whenever template selection changes
   useEffect(() => {
     if (!lead || !selectedTemplateId || selectedTemplateId === 'ai-draft' || !isOpen) return;
     
     if (selectedTemplateId === 'custom-draft') {
       const activeTemplate = dynamicTemplates.find(t => t.id === 'custom-draft');
-      if (activeTemplate) {
+      if (activeTemplate && !hasManuallyEdited) {
         setSubject(activeTemplate.subject);
         setBody(activeTemplate.body);
       }
@@ -328,15 +361,24 @@ export default function OutreachComposerModal({
     const activeTemplate = dynamicTemplates.find(t => t.id === selectedTemplateId) || dynamicTemplates[0];
     
     const compile = (text: string) => {
-      return text
-        .replace(/{companyName}/g, companyName || lead.company_name || 'your company')
-        .replace(/{contactName}/g, contactName || lead.contact_person || 'there')
-        .replace(/{websiteUrl}/g, websiteUrl || lead.website_url || 'your website');
+      let compiled = text
+        .replace(/\{companyName\}/g, companyName || lead.company_name || 'your company')
+        .replace(/\{contactName\}/g, contactName || lead.contact_person || 'there')
+        .replace(/\{websiteUrl\}/g, websiteUrl || lead.website_url || 'your website');
+        
+      detectedVariables.forEach(v => {
+        const regex = new RegExp(`\\{${v}\\}`, 'g');
+        compiled = compiled.replace(regex, customVars[v] || `[${v}]`);
+      });
+      
+      return compiled;
     };
 
-    setSubject(compile(activeTemplate.subject));
-    setBody(compile(activeTemplate.body));
-  }, [selectedTemplateId, dynamicTemplates]);
+    if (!hasManuallyEdited) {
+      setSubject(compile(activeTemplate.subject));
+      setBody(compile(activeTemplate.body));
+    }
+  }, [selectedTemplateId, dynamicTemplates, companyName, contactName, websiteUrl, customVars, hasManuallyEdited, detectedVariables]);
 
   const handleSaveTemplate = async () => {
     if (!templateName.trim() || !subject.trim() || !body.trim()) {
@@ -380,22 +422,53 @@ export default function OutreachComposerModal({
 
 
 
-  const handleAIGenerate = async () => {
+    const handleAIGenerate = async () => {
     setIsGeneratingAI(true);
     setErrorMessage(null);
+    setAiReviewNeeded([]);
     try {
-      const result = await generateAIEmailDraft({
-        company_name: lead.company_name,
-        contact_person: lead.contact_person,
-        targetService: lead.targetService,
-        website_url: lead.website_url,
-      });
-      if (result.success && result.data) {
-        setBody(result.data.body || '');
-        setSubject(result.data.subject || `Quick question about ${companyName || lead.company_name}`);
-        setSelectedTemplateId('ai-draft'); 
+      if (detectedVariables.length > 0) {
+        // AI Dynamic Variables Mode
+        const activeTemplate = dynamicTemplates.find(t => t.id === selectedTemplateId) || dynamicTemplates[0];
+        const templateContext = activeTemplate.subject + "\n\n" + activeTemplate.body;
+        
+        const result = await generateAITemplateVariables(lead, detectedVariables, templateContext);
+        if (result.success && result.data) {
+          const generatedVars = result.data;
+          const newVars = { ...customVars };
+          const needsReview: string[] = [];
+          
+          Object.keys(generatedVars).forEach(key => {
+            if (generatedVars[key] === '[NEEDS REVIEW]' || generatedVars[key].includes('REVIEW')) {
+              newVars[key] = ''; // Leave it blank or generic so user sees it
+              needsReview.push(key);
+            } else {
+              newVars[key] = generatedVars[key];
+              needsReview.push(key); // Mark everything generated by AI as needs review for safety
+            }
+          });
+          
+          setCustomVars(newVars);
+          setAiReviewNeeded(needsReview);
+          playStatusSound('success');
+        } else {
+          setErrorMessage(result.error || 'Failed to generate AI variables');
+        }
       } else {
-        setErrorMessage(result.error || 'Failed to generate AI email');
+        // Legacy Generic Email Mode
+        const result = await generateAIEmailDraft({
+          company_name: lead.company_name,
+          contact_person: lead.contact_person,
+          targetService: lead.targetService,
+          website_url: lead.website_url,
+        });
+        if (result.success && result.data) {
+          setBody(result.data.body || '');
+          setSubject(result.data.subject || `Quick question about ${companyName || lead.company_name}`);
+          setSelectedTemplateId('ai-draft'); 
+        } else {
+          setErrorMessage(result.error || 'Failed to generate AI email');
+        }
       }
     } catch (err: any) {
       setErrorMessage(err.message || 'Error running AI');
@@ -709,6 +782,33 @@ export default function OutreachComposerModal({
                         className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white font-medium"
                       />
                     </div>
+                    {detectedVariables.length > 0 && (
+                      <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 p-4 bg-indigo-50/50 dark:bg-indigo-500/5 rounded-2xl border border-indigo-100 dark:border-indigo-500/20">
+                        <div className="md:col-span-2 flex items-center justify-between">
+                          <p className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <Sparkles size={12} /> Dynamic Template Variables
+                          </p>
+                          <span className="text-[9px] font-bold text-indigo-400 bg-indigo-100 dark:bg-indigo-500/20 px-2 py-0.5 rounded-md">Auto-Detected</span>
+                        </div>
+                        {detectedVariables.map(v => (
+                          <div key={v} className="space-y-1.5 relative">
+                            <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">
+                              {v.replace(/([A-Z])/g, ' $1').trim()} <span className="text-indigo-500 font-medium">{"{" + v + "}"}</span>
+                              {aiReviewNeeded.includes(v) && <span className="ml-2 text-[9px] text-orange-500 font-black animate-pulse">Needs Review</span>}
+                            </label>
+                            <input 
+                              type="text" 
+                              value={customVars[v] || ''} 
+                              onChange={(e) => {
+                                setCustomVars(prev => ({...prev, [v]: e.target.value}));
+                                setAiReviewNeeded(prev => prev.filter(k => k !== v));
+                              }}
+                              className={`w-full bg-white dark:bg-[#11131A] border rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:ring-2 transition-all font-bold shadow-sm ${aiReviewNeeded.includes(v) ? 'border-orange-400 dark:border-orange-500 bg-orange-50/50 dark:bg-orange-500/10 focus:border-orange-500 focus:ring-orange-500/20' : 'border-indigo-200 dark:border-indigo-500/30 focus:border-indigo-500 focus:ring-indigo-500/20'}`}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -757,7 +857,7 @@ export default function OutreachComposerModal({
                     <input 
                       type="text" 
                       value={subject} 
-                      onChange={(e) => setSubject(e.target.value)}
+                      onChange={(e) => { setSubject(e.target.value); setHasManuallyEdited(true); }}
                       placeholder="e.g. Quick question about..."
                       className="w-full neu-flat bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-3 text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:font-normal placeholder:text-slate-400"
                     />
@@ -779,7 +879,7 @@ export default function OutreachComposerModal({
                     </div>
                     <textarea 
                       value={body} 
-                      onChange={(e) => setBody(e.target.value)}
+                      onChange={(e) => { setBody(e.target.value); setHasManuallyEdited(true); }}
                       placeholder="Write your email here..."
                       className="w-full flex-1 min-h-[250px] neu-flat bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-4 text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all resize-y leading-relaxed font-medium"
                     />

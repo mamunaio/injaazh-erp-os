@@ -115,3 +115,61 @@ export async function generateQuickAction(actionType: string, leadData: any) {
     return { success: false, error: error.message };
   }
 }
+
+export async function generateAITemplateVariables(leadData: any, variables: string[], templateContext: string) {
+  try {
+    const { company_name, website_url, lead_context } = leadData;
+    
+    // We construct a specific prompt focusing on filling out variables safely
+    const prompt = `
+You are an expert Data Enrichment and B2B Context AI.
+I have an outreach email template. The user needs to fill in dynamic variables: ${JSON.stringify(variables)}.
+
+Target Company: ${company_name}
+Their Website: ${website_url || 'Unknown'}
+Additional Context: ${lead_context || 'None provided'}
+
+The template looks like this (for context only, DO NOT rewrite it):
+---
+${templateContext}
+---
+
+STRICT RULES:
+1. You have access to Google Search. You MUST search the web for the company's location (city) if unknown, and actively search Google for the top competitor in their exact city and niche.
+2. Provide a factual, accurate value for each requested variable based on your search results.
+3. Do not overthink. For 'competitor', just find ANY decent sized competitor in that specific city and niche.
+4. Keep the values short. E.g., for 'city', just the city name. For 'competitor', just the company name.
+5. Return ONLY a valid JSON object where the keys are exactly the requested variables. Example format:
+{
+  "city": "New York",
+  "niche": "Hardwood Floor",
+  "competitor": "Empire Today"
+}
+`;
+
+    const response = await generateAIContent({
+      prompt,
+      jsonMode: true,
+      useSearch: true
+    });
+
+    if (!response.success || !response.text) {
+      throw new Error(response.error || 'AI returned empty response');
+    }
+    
+    const cleanText = response.text.replace(/```json/gi, '').replace(/```/g, '').trim();
+    const data = JSON.parse(cleanText);
+
+    return {
+      success: true,
+      data: data
+    };
+
+  } catch (error: any) {
+    console.error('Error generating AI variables:', error);
+    return {
+      success: false,
+      error: error.message || 'Failed to generate AI variables'
+    };
+  }
+}

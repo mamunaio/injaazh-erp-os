@@ -6,6 +6,7 @@ interface GenerateOptions {
   prompt: string;
   systemInstruction?: string;
   jsonMode?: boolean;
+  useSearch?: boolean;
 }
 
 async function getAvailableAiKey(excludeKeys: string[] = []) {
