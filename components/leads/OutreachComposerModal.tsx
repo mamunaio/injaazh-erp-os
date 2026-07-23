@@ -228,7 +228,6 @@ export default function OutreachComposerModal({
   const [selectedSenderId, setSelectedSenderId] = useState<string>('auto');
   
   // Anti-Spam Cooldown & Scheduling State
-  const [cooldownRemaining, setCooldownRemaining] = useState(0);
   const [scheduleTime, setScheduleTime] = useState<Date | null>(null);
   const [isScheduling, setIsScheduling] = useState(false);
 
@@ -312,24 +311,6 @@ export default function OutreachComposerModal({
     }
   }, [lead, isOpen]);
 
-  // Anti-Spam Cooldown Timer
-  useEffect(() => {
-    if (!isOpen) return;
-    const checkCooldown = () => {
-      const lastSent = localStorage.getItem('lastEmailSentTime');
-      if (lastSent) {
-        const elapsed = Date.now() - parseInt(lastSent, 10);
-        if (elapsed < 30000) {
-          setCooldownRemaining(Math.ceil((30000 - elapsed) / 1000));
-        } else {
-          setCooldownRemaining(0);
-        }
-      }
-    };
-    checkCooldown();
-    const interval = setInterval(checkCooldown, 1000);
-    return () => clearInterval(interval);
-  }, [isOpen, isSending]);
 
     const detectedVariables = React.useMemo(() => {
     if (!selectedTemplateId || selectedTemplateId === 'ai-draft' || selectedTemplateId === 'custom-draft') return [];
@@ -478,11 +459,6 @@ export default function OutreachComposerModal({
   };
 
   const handleSend = async () => {
-    if (cooldownRemaining > 0) {
-      playStatusSound('error');
-      setErrorMessage(`Please wait ${cooldownRemaining} seconds to prevent spam.`);
-      return;
-    }
     if (!subject.trim() || !body.trim()) {
       playStatusSound('error');
       setErrorMessage('Subject and body cannot be empty');
@@ -496,8 +472,6 @@ export default function OutreachComposerModal({
       if (response.success && response.data) {
         playStatusSound('success');
         setSuccessInfo({ isSimulated: !!response.isSimulated, sentVia: response.sentVia });
-        localStorage.setItem('lastEmailSentTime', Date.now().toString());
-        setCooldownRemaining(30);
         setTimeout(() => {
           onEmailSent(response.data);
           onClose();
@@ -913,7 +887,7 @@ export default function OutreachComposerModal({
                 
                 <button
                   onClick={handleSend}
-                  disabled={isSending || isScheduling || !!successInfo || cooldownRemaining > 0}
+                  disabled={isSending || isScheduling || !!successInfo}
                   className="px-6 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_0_20px_rgba(37,99,235,0.25)] min-w-[130px]"
                 >
                   {isSending ? (
@@ -925,11 +899,6 @@ export default function OutreachComposerModal({
                     <>
                       <CheckCircle size={14} className="animate-bounce" />
                       <span>Sent!</span>
-                    </>
-                  ) : cooldownRemaining > 0 ? (
-                    <>
-                      <Loader2 size={14} className="animate-spin text-orange-400" />
-                      <span className="text-orange-400">Wait {cooldownRemaining}s</span>
                     </>
                   ) : (
                     <>
