@@ -31,7 +31,6 @@ const EmailCampaignLogSchema = new Schema<IEmailCampaignLog>({
 });
 
 // Indexes for fast lookups by Message-ID when checking replies
-EmailCampaignLogSchema.index({ messageId: 1 });
 EmailCampaignLogSchema.index({ leadId: 1 });
 
 export const EmailCampaignLog: Model<IEmailCampaignLog> = mongoose.models.EmailCampaignLog || mongoose.model<IEmailCampaignLog>('EmailCampaignLog', EmailCampaignLogSchema);

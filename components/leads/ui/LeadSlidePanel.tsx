@@ -99,6 +99,7 @@ export default function LeadSlidePanel({
   onEdit,
 }: LeadSlidePanelProps) {
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
+  const [isStatusMenuOpen, setIsStatusMenuOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -197,42 +198,45 @@ export default function LeadSlidePanel({
 
                 {/* Status dropdown */}
                 <div className="relative group/status ml-auto">
-                  <select
-                    value={status}
-                    onChange={(e) => {
-                      if (onStatusChange) {
-                        onStatusChange(lead._id, e.target.value);
-                      }
-                    }}
-                    className={`appearance-none cursor-pointer flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold border ${statusStyle.bg} ${statusStyle.border} ${statusStyle.text} focus:outline-none transition-all hover:brightness-110`}
+                  <button
+                    onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
+                    className={`flex-shrink-0 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold border ${statusStyle.bg} ${statusStyle.border} ${statusStyle.text} focus:outline-none transition-all hover:brightness-110`}
                   >
-                    <option value="New">New</option>
-                    <option value="Queued">Queued</option>
-                    <option value="Email Sent">Email Sent</option>
-                    <option value="Replied">Replied</option>
-                    <option value="Meeting Booked">Meeting Booked</option>
-                    <option value="Closed">Closed</option>
-                    <option value="Not Interested">Not Interested</option>
-                  </select>
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                  </div>
+                    {status}
+                    <svg className={`w-3 h-3 transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  </button>
+
+                  <AnimatePresence>
+                    {isStatusMenuOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="absolute right-0 top-full mt-2 w-40 bg-[#11131A] border border-[#232734] rounded-xl shadow-2xl overflow-hidden z-50 flex flex-col py-1"
+                      >
+                        {['New', 'Queued', 'Email Sent', 'Replied', 'Meeting Booked', 'Closed', 'Not Interested'].map((opt) => {
+                          const sStyle = STATUS_STYLES[opt] || STATUS_STYLES['New'];
+                          return (
+                            <button
+                              key={opt}
+                              onClick={() => {
+                                if (onStatusChange) onStatusChange(lead._id, opt);
+                                setIsStatusMenuOpen(false);
+                              }}
+                              className={`w-full text-left px-4 py-2 text-xs font-bold hover:bg-slate-800 transition-colors flex items-center gap-2 ${sStyle.text}`}
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${sStyle.dot}`} />
+                              {opt}
+                            </button>
+                          );
+                        })}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
 
-              {/* Lead Score */}
-              <div className="mt-4 flex items-center gap-3">
-                <div className="flex-1 h-1.5 bg-slate-50 dark:bg-[#09090B] rounded-full overflow-hidden border border-slate-200 dark:border-[#232734]">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${score}%` }}
-                    transition={{ duration: 0.8, ease: 'easeOut' }}
-                    className="h-full rounded-full"
-                    style={{ backgroundColor: color }}
-                  />
-                </div>
-                <span className="text-xs font-bold font-mono" style={{ color }}>Score: {score}</span>
-              </div>
+              
 
               {/* Quick Actions */}
               <div className="grid grid-cols-4 gap-2 mt-5">

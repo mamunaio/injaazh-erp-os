@@ -271,8 +271,8 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
   const handleEditClick = (lead: any, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setSelectedLead(lead);
-    setIsDetailsModalOpen(true);
+    setLeadToEdit(lead);
+    setIsEditModalOpen(true);
     setOpenMenuId(null);
   };
 

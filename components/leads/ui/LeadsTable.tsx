@@ -202,7 +202,7 @@ export default function LeadsTable({
               <Th className="min-w-[160px]">Contact</Th>
               <Th className="min-w-[200px]">Email</Th>
               <Th className="min-w-[140px]">Phone</Th>
-              <Th col="leadScore" className="min-w-[120px]">Score</Th>
+              
               <Th col="status" className="min-w-[140px]">Status</Th>
               <Th col="createdAt" className="min-w-[130px]">Added</Th>
               <Th className="min-w-[140px]">Next Follow-up</Th>
@@ -297,21 +297,7 @@ export default function LeadsTable({
                       )}
                     </td>
 
-                    {/* Lead Score */}
-                    <td className="pr-4 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-16 h-1.5 bg-slate-50 dark:bg-[#09090B] rounded-full overflow-hidden border border-slate-200 dark:border-[#232734]">
-                          <div
-                            className="h-full rounded-full"
-                            style={{
-                              width: `${score}%`,
-                              backgroundColor: score >= 70 ? '#10B981' : score >= 40 ? '#F59E0B' : '#EF4444'
-                            }}
-                          />
-                        </div>
-                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 font-mono">{score}</span>
-                      </div>
-                    </td>
+                    
 
                     {/* Status */}
                     <td className="pr-4 py-4">
@@ -407,18 +393,7 @@ export default function LeadsTable({
                           <Mail size={12} /> <span className="truncate max-w-[120px]">{lead.email}</span>
                         </div>
                       )}
-                      <div className="flex items-center gap-2">
-                        <div className="w-12 h-1.5 bg-slate-50 dark:bg-[#09090B] rounded-full overflow-hidden">
-                          <div
-                            className="h-full rounded-full"
-                            style={{
-                              width: `${score}%`,
-                              backgroundColor: score >= 70 ? '#10B981' : score >= 40 ? '#F59E0B' : '#EF4444'
-                            }}
-                          />
-                        </div>
-                        <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 font-mono">{score}</span>
-                      </div>
+                      
                     </div>
                   </div>
 

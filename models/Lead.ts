@@ -20,6 +20,7 @@ export interface ILead extends Document {
   facebook_url?: string;
   instagram_url?: string;
   linkedin_url?: string;
+  person_linkedin_url?: string;
   twitter_url?: string;
   targetService?: 'High-end Web Development' | 'Next.js / Laravel App' | 'WordPress Development' | 'Custom ERP / SaaS' | 'Technical SEO' | 'Answer Engine Optimization (AEO)' | 'Generative Engine Optimization (GEO)' | 'UI/UX Design';
   reportFileUrl?: string;
@@ -72,6 +73,7 @@ const LeadSchema = new Schema<ILead>({
   facebook_url: { type: String, trim: true },
   instagram_url: { type: String, trim: true },
   linkedin_url: { type: String, trim: true },
+  person_linkedin_url: { type: String, trim: true },
   twitter_url: { type: String, trim: true },
   address: { type: String, trim: true },
   company_address: { type: String, trim: true },
