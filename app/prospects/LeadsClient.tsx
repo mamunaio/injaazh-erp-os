@@ -396,7 +396,7 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#09090B] text-slate-800 dark:text-slate-200 p-4 md:p-8 font-inter selection:bg-blue-500/30">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#040509] text-slate-800 dark:text-slate-200 p-4 md:p-8 font-inter selection:bg-indigo-500/30">
       <div className="max-w-[1600px] mx-auto">
         
         <LeadsHeader 
@@ -622,7 +622,7 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -10 }}
               transition={{ duration: 0.15 }}
-              className="fixed z-[101] w-48 bg-white dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl shadow-xl py-2 flex flex-col"
+              className="fixed z-[101] w-48 bg-white dark:bg-[#0F1117] border border-slate-200 dark:border-[#232734] rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] py-2 flex flex-col"
               style={{ top: menuPosition.top, right: menuPosition.right }}
             >
               <button 
@@ -684,13 +684,23 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
 
       <AnimatePresence>
         {showDeleteModal && leadToDelete && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/60 dark:bg-black/60 backdrop-blur-md">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/60 dark:bg-[#040509]/80 backdrop-blur-sm"
+              onClick={() => {
+                setShowDeleteModal(false);
+                setLeadToDelete(null);
+              }}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2, type: "spring", damping: 25 }}
-              className="relative w-full max-w-md neu-flat rounded-3xl p-8"
+              className="relative w-full max-w-md bg-white dark:bg-[#0F1117] border border-slate-200 dark:border-[#232734] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] rounded-[24px] p-8"
             >
               <div className="flex flex-col items-center text-center">
                 <div className="w-20 h-20 rounded-2xl neu-pressed flex items-center justify-center mb-6 relative border border-red-500/20">
@@ -754,12 +764,12 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
       {/* Create Lead Form Modal */}
       <AnimatePresence>
         {isFormOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }} 
-              className="absolute inset-0 bg-slate-900/60 dark:bg-black/70 backdrop-blur-md" 
+              className="absolute inset-0 bg-slate-900/60 dark:bg-[#040509]/80 backdrop-blur-sm" 
               onClick={() => setIsFormOpen(false)} 
             />
             <motion.div 
@@ -767,7 +777,7 @@ export default function LeadsClient({ initialLeads, initialCampaigns = [] }: { i
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-2xl neu-flat rounded-[28px] p-8 flex flex-col max-h-[90vh]"
+              className="relative w-full max-w-2xl bg-white dark:bg-[#0F1117] border border-slate-200 dark:border-[#232734] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] rounded-[24px] p-8 flex flex-col max-h-[90vh]"
             >
               {/* Header */}
               <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-200 dark:border-slate-800/50">

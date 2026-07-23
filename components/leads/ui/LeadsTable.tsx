@@ -175,12 +175,12 @@ export default function LeadsTable({
   }
 
   return (
-    <div className="w-full rounded-[24px] border border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A] relative shadow-sm overflow-hidden">
+    <div className="w-full neu-flat rounded-[24px] relative overflow-hidden">
 
       {/* ─── Desktop Table ──────────────────────────────────────────────────── */}
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full border-collapse text-sm">
-          <thead className="sticky top-0 z-20 bg-slate-100/90 dark:bg-[#09090B]/90 backdrop-blur-md shadow-sm">
+          <thead className="sticky top-0 z-20 bg-slate-100/90 dark:bg-[#040509]/90 backdrop-blur-md shadow-sm">
             <tr>
               {/* Checkbox */}
               <th className="pl-6 pr-3 py-4 w-12 border-b border-slate-200 dark:border-[#232734]">
@@ -231,8 +231,8 @@ export default function LeadsTable({
                     onClick={() => handleCardClick(lead)}
                     className={`cursor-pointer transition-all duration-200 group ${
                       isSelected
-                        ? 'bg-[#2563EB]/10'
-                        : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                        ? 'bg-indigo-500/10'
+                        : 'hover:bg-white/5 dark:hover:bg-[#151821]'
                     }`}
                   >
                     {/* Checkbox */}
@@ -324,8 +324,8 @@ export default function LeadsTable({
                     <td className="pr-6 py-4 text-right">
                       <button
                         onClick={e => toggleMenu(lead._id, e)}
-                        className={`w-8 h-8 rounded-lg inline-flex items-center justify-center text-slate-400 dark:text-slate-500 transition-all hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 ${
-                          openMenuId === lead._id ? 'opacity-100 bg-slate-100 dark:bg-slate-700' : 'opacity-0 group-hover:opacity-100'
+                        className={`w-8 h-8 rounded-lg inline-flex items-center justify-center text-slate-400 dark:text-slate-500 transition-all hover:text-slate-900 dark:hover:text-white neu-button ${
+                          openMenuId === lead._id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                         }`}
                         aria-label="More actions"
                       >
@@ -360,7 +360,7 @@ export default function LeadsTable({
                 animate="show"
                 exit="exit"
                 onClick={() => handleCardClick(lead)}
-                className={`p-5 cursor-pointer transition-colors ${isSelected ? 'bg-[#2563EB]/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+                className={`p-5 cursor-pointer transition-colors ${isSelected ? 'bg-indigo-500/10' : 'hover:bg-white/5 dark:hover:bg-[#151821]'}`}
               >
                 <div className="flex items-start gap-4">
                   {/* Checkbox */}
@@ -400,7 +400,7 @@ export default function LeadsTable({
                   {/* Actions */}
                   <button
                     onClick={e => toggleMenu(lead._id, e)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] transition-all flex-shrink-0"
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white neu-button transition-all flex-shrink-0"
                   >
                     <MoreHorizontal size={16} />
                   </button>

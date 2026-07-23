@@ -31,10 +31,10 @@ function FilterDropdown({ label, options, value, onChange }: FilterDropdownProps
     <div className="relative">
       <button
         onClick={() => setOpen(prev => !prev)}
-        className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all ${
+        className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
           isActive
-            ? 'bg-[#2563EB]/10 text-[#2563EB] border-[#2563EB]/30'
-            : 'bg-white dark:bg-[#11131A] text-[#94A3B8] border-slate-200 dark:border-[#232734] hover:text-slate-900 dark:hover:text-white hover:border-slate-200 dark:border-[#232734]'
+            ? 'bg-indigo-500/10 text-indigo-500 border border-indigo-500/30'
+            : 'neu-button text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
         }`}
       >
         {isActive ? value : label}
@@ -50,7 +50,7 @@ function FilterDropdown({ label, options, value, onChange }: FilterDropdownProps
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -6, scale: 0.97 }}
               transition={{ duration: 0.15 }}
-              className="absolute top-full left-0 mt-2 z-40 min-w-[160px] bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[16px] shadow-[0_20px_40px_rgba(0,0,0,0.5)] overflow-hidden"
+              className="absolute top-full left-0 mt-2 z-40 min-w-[160px] bg-white dark:bg-[#0F1117] border border-slate-200 dark:border-[#232734] rounded-[16px] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] overflow-hidden"
             >
               {options.map(opt => (
                 <button
@@ -112,7 +112,7 @@ export default function LeadsFilters({
             placeholder="Search prospects, emails, domains…"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white placeholder-[#94A3B8]/60 text-sm font-medium rounded-xl pl-11 pr-10 py-2.5 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all"
+            className="w-full neu-pressed text-slate-900 dark:text-white placeholder-slate-500 text-sm font-bold rounded-xl pl-11 pr-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all"
           />
           {searchQuery && (
             <button
@@ -134,7 +134,7 @@ export default function LeadsFilters({
         </div>
 
         {/* View Mode */}
-        <div className="flex items-center bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl p-1">
+        <div className="flex items-center neu-pressed rounded-xl p-1">
           <button
             onClick={() => setViewMode('list')}
             className={`relative p-2 rounded-lg transition-colors z-10 ${

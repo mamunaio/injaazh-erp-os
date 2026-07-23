@@ -23,7 +23,7 @@ export default function QuickFilterChips({ activeFilter, setActiveFilter, leads 
 
   return (
     <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-2 hide-scrollbar">
-      <div className="flex items-center p-1 bg-slate-50 dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-2xl shadow-sm w-max">
+      <div className="flex items-center p-1.5 neu-pressed rounded-2xl w-max">
         {chips.map(chip => {
           const isActive = activeFilter === chip.value;
           return (
@@ -39,7 +39,7 @@ export default function QuickFilterChips({ activeFilter, setActiveFilter, leads 
               {isActive && (
                 <motion.div
                   layoutId="activeFilterBg"
-                  className="absolute inset-0 bg-white dark:bg-[#232734] rounded-xl -z-10 border border-slate-200 dark:border-white/10 shadow-sm"
+                  className="absolute inset-0 neu-button rounded-xl -z-10"
                   transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 />
               )}
@@ -47,8 +47,8 @@ export default function QuickFilterChips({ activeFilter, setActiveFilter, leads 
               {chip.label}
               <span className={`ml-1 px-1.5 py-0.5 rounded-md text-[10px] font-mono ${
                 isActive
-                  ? 'bg-black/5 dark:bg-white/10 text-slate-900 dark:text-white'
-                  : 'bg-slate-100 dark:bg-[#09090B] text-slate-500'
+                  ? 'bg-black/10 dark:bg-black/40 text-slate-900 dark:text-white'
+                  : 'bg-slate-200/50 dark:bg-[#040509] text-slate-500'
               }`}>
                 {chip.count}
               </span>

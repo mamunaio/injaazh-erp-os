@@ -92,8 +92,7 @@ export default function LeadsKPIs({ leads }: LeadsKPIsProps) {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: idx * 0.05, type: 'spring', stiffness: 280, damping: 26 }}
-          whileHover={{ y: -2, transition: { duration: 0.15 } }}
-          className="relative overflow-hidden bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-5 lg:p-6 cursor-pointer group transition-all"
+          className="relative overflow-hidden neu-flat rounded-[24px] p-5 lg:p-6 cursor-pointer group transition-all hover:scale-[1.02] hover:-translate-y-1"
           style={{
             '--accent': stat.accent,
           } as React.CSSProperties}

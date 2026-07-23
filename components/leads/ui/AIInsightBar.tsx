@@ -19,7 +19,7 @@ export default function AIInsightBar({
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-blue-50 dark:bg-slate-900 border border-blue-100 dark:border-slate-800 rounded-2xl p-4 mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden text-slate-800 dark:text-slate-200"
+      className="neu-flat rounded-2xl p-4 mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden text-slate-800 dark:text-slate-200"
     >
       <div className="absolute left-0 top-0 bottom-0 w-64 bg-blue-500/10 blur-3xl pointer-events-none" />
       
@@ -43,7 +43,7 @@ export default function AIInsightBar({
 
       <button 
         onClick={onViewInsights}
-        className="relative z-10 flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-900 dark:text-white text-xs font-semibold rounded-lg transition-colors border border-blue-200 dark:border-white/5 whitespace-nowrap"
+        className="relative z-10 flex items-center gap-1.5 px-4 py-2 neu-button text-slate-900 dark:text-white text-xs font-bold rounded-xl transition-all whitespace-nowrap"
       >
         View All Insights <ChevronRight size={14} />
       </button>

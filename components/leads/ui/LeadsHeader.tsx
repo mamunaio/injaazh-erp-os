@@ -66,27 +66,27 @@ export default function LeadsHeader({
         {/* Follow-ups toggle */}
         <button
           onClick={() => setShowFollowUps(!showFollowUps)}
-          className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all border ${
+          className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${
             showFollowUps
-              ? 'bg-[#EF4444]/10 text-[#EF4444] border-[#EF4444]/30 shadow-[0_0_15px_rgba(239,68,68,0.1)]'
-              : 'bg-white dark:bg-[#11131A] text-[#94A3B8] border-slate-200 dark:border-[#232734] hover:text-slate-900 dark:hover:text-white hover:border-slate-200 dark:border-[#232734]'
+              ? 'bg-[#EF4444]/10 text-[#EF4444] border border-[#EF4444]/30 shadow-[0_0_15px_rgba(239,68,68,0.1)]'
+              : 'neu-button text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
           }`}
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${showFollowUps ? 'bg-[#EF4444] animate-pulse' : 'bg-[#94A3B8]'}`}></span>
+          <span className={`w-1.5 h-1.5 rounded-full ${showFollowUps ? 'bg-[#EF4444] animate-pulse' : 'bg-slate-400'}`}></span>
           <span className="hidden sm:inline">Follow-ups Today</span>
           <span className="sm:hidden">Follow-ups</span>
         </button>
 
         {/* Export */}
-        <button onClick={handleExport} disabled={isExporting} className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-white dark:bg-[#11131A] text-[#94A3B8] border border-slate-200 dark:border-[#232734] hover:text-slate-900 dark:hover:text-white hover:border-slate-200 dark:border-[#232734] transition-all disabled:opacity-50">
-          {isExporting ? <Loader2 size={15} className="animate-spin text-[#2563EB]" /> : <Download size={15} />}
+        <button onClick={handleExport} disabled={isExporting} className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm neu-button text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-all disabled:opacity-50">
+          {isExporting ? <Loader2 size={15} className="animate-spin text-indigo-500" /> : <Download size={15} />}
           <span className="hidden sm:inline">{isExporting ? 'Exporting...' : 'Export'}</span>
         </button>
 
         {/* Import CSV */}
         <button
           onClick={() => setIsCSVModalOpen(true)}
-          className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-white dark:bg-[#11131A] text-[#94A3B8] border border-slate-200 dark:border-[#232734] hover:text-slate-900 dark:hover:text-white hover:border-slate-200 dark:border-[#232734] transition-all"
+          className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm neu-button text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-all"
         >
           <FileText size={15} />
           <span className="hidden sm:inline">Import CSV</span>
@@ -96,7 +96,7 @@ export default function LeadsHeader({
         {/* Add Lead — Primary */}
         <button
           onClick={() => setIsFormOpen(true)}
-          className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80"
+          className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_20px_rgba(79,70,229,0.25)] hover:shadow-[0_0_28px_rgba(79,70,229,0.45)] transition-all border border-indigo-500/80"
         >
           <Plus size={16} strokeWidth={2.5} />
           Add Lead
