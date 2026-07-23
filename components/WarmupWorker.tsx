@@ -22,8 +22,8 @@ export default function WarmupWorker() {
       }
     };
 
-    // Run immediately on mount
-    runWarmup();
+    // Run immediately on mount (Disabled for local dev spam)
+    // runWarmup();
 
     // Then run every 10 minutes (600000 ms)
     const interval = setInterval(runWarmup, 600000);
