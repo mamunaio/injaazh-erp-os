@@ -1,24 +1,8 @@
 {
   "crons": [
     {
-      "path": "/api/cron/process-outreach",
+      "path": "/api/cron/master",
       "schedule": "*/10 * * * *"
-    },
-    {
-      "path": "/api/cron/send-warmup",
-      "schedule": "*/15 * * * *"
-    },
-    {
-      "path": "/api/cron/receive-warmup",
-      "schedule": "*/20 * * * *"
-    },
-    {
-      "path": "/api/cron/check-replies",
-      "schedule": "*/10 * * * *"
-    },
-    {
-      "path": "/api/cron/reset-limits",
-      "schedule": "0 0 * * *"
     }
   ]
 }
