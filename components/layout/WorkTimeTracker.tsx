@@ -28,15 +28,17 @@ export default function WorkTimeTracker() {
       if (storedIdle === 'true') {
         setIsIdlePaused(true);
         setIsActive(false);
-        if (storedTotalSeconds) setTotalSeconds(parseInt(storedTotalSeconds, 10));
-      } else if (storedActive === 'true' && storedStartTime) {
+        if (storedTotalSeconds) setTotalSeconds(parseInt(storedTotalSeconds, 10) || 0);
+      } else if (storedActive === 'true') {
         setIsActive(true);
-        const start = parseInt(storedStartTime, 10);
-        startTimeRef.current = start;
-        const elapsed = Math.floor((Date.now() - start) / 1000);
-        setTotalSeconds(elapsed);
+        if (storedStartTime) {
+          startTimeRef.current = parseInt(storedStartTime, 10) || Date.now();
+        }
+        if (storedTotalSeconds) {
+          setTotalSeconds(parseInt(storedTotalSeconds, 10) || 0);
+        }
       } else if (storedTotalSeconds) {
-        setTotalSeconds(parseInt(storedTotalSeconds, 10));
+        setTotalSeconds(parseInt(storedTotalSeconds, 10) || 0);
       }
     } catch (e) {
       console.error('Error loading time tracker state', e);
@@ -138,9 +140,10 @@ export default function WorkTimeTracker() {
         const startTimeStr = start.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
         const endTimeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 
+        const pageName = pathname === '/' ? 'Dashboard' : pathname.split('/').filter(Boolean).map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' / ');
         const res = await createTimeLog({
           project: 'General',
-          task: 'Tracked Session',
+          task: `Tracked on ${pageName}`,
           date: now.toISOString(),
           startTime: startTimeStr,
           endTime: endTimeStr,
