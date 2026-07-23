@@ -505,7 +505,7 @@ export default function OutreachComposerModal({
       const sec = String(scheduleTime.getSeconds()).padStart(2, '0');
       
       const timeString = `${y}-${m}-${d} ${h}:${min}:${sec}`;
-      const utcDate = fromZonedTime(timeString, 'America/New_York');
+      const utcDate = fromZonedTime(timeString, 'Asia/Dhaka');
 
       const response = await scheduleOutreachEmail(lead._id, subject, body, utcDate.toISOString());
       if (response.success && response.data) {
@@ -848,7 +848,7 @@ export default function OutreachComposerModal({
                     onChange={(date: Date | null) => setScheduleTime(date)}
                     showTimeSelect
                     timeFormat="HH:mm"
-                    timeIntervals={30}
+                    timeIntervals={15}
                     dateFormat="MMM d, yyyy h:mm aa"
                     placeholderText="Select date & time"
                     minDate={new Date()}
