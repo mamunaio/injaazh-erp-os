@@ -356,7 +356,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
               { label: 'Queued',         value: analytics.queuedCount,      color: '#F59E0B', trend: '0',    up: true },
               { label: 'Follow-ups Due', value: followUpsDue,               color: '#EF4444', trend: String(followUpsDue), up: false },
               { label: 'Reply Rate',     value: `${replyRate}%`,            color: '#7C3AED', trend: '+2%',  up: true },
-              { label: 'Quota Remaining',value: Math.max(0, analytics.totalDailyQuota - analytics.totalSentToday), color: '#0EA5E9', trend: `${quotaPct}%`, up: true },
+              { label: 'Quota Remaining',value: <>{Math.max(0, analytics.totalDailyQuota - analytics.totalSentToday)}<span className="text-[20px] opacity-40 font-medium tracking-normal ml-1">/ {analytics.totalDailyQuota}</span></>, color: '#0EA5E9', trend: `${quotaPct}%`, up: true },
             ].map((k, i) => (
               <motion.div key={k.label}
                 initial={{ opacity: 0, y: 16 }}
@@ -408,7 +408,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
             <div className="flex bg-slate-100/50 dark:bg-slate-900/50 backdrop-blur-md">
               <button
                 onClick={() => { setActiveTab('inbox'); setSelectedLeadId(null); }}
-                className={`relative flex-1 py-4 flex items-center justify-center gap-2 text-[13px] font-bold uppercase tracking-widest transition-all ${activeTab === 'inbox' ? 'bg-white dark:bg-[#2563EB]/5 text-white shadow-sm dark:shadow-none' : 'text-slate-500 dark:text-[#94A3B8] hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-[#232734]/30'}`}
+                className={`relative flex-1 py-4 flex items-center justify-center gap-2 text-[13px] font-bold uppercase tracking-widest transition-all ${activeTab === 'inbox' ? 'bg-white dark:bg-[#2563EB]/5 text-slate-900 dark:text-white shadow-sm dark:shadow-none' : 'text-slate-500 dark:text-[#94A3B8] hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-[#232734]/30'}`}
               >
                 <Inbox size={15} />
                 Hot Inbox
@@ -421,7 +421,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
               </button>
               <button
                 onClick={() => { setActiveTab('pipeline'); setSelectedLeadId(null); }}
-                className={`relative flex-1 py-4 flex items-center justify-center gap-2 text-[13px] font-bold uppercase tracking-widest transition-all ${activeTab === 'pipeline' ? 'bg-white dark:bg-[#2563EB]/5 text-white shadow-sm dark:shadow-none' : 'text-slate-500 dark:text-[#94A3B8] hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-[#232734]/30'}`}
+                className={`relative flex-1 py-4 flex items-center justify-center gap-2 text-[13px] font-bold uppercase tracking-widest transition-all ${activeTab === 'pipeline' ? 'bg-white dark:bg-[#2563EB]/5 text-slate-900 dark:text-white shadow-sm dark:shadow-none' : 'text-slate-500 dark:text-[#94A3B8] hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-[#232734]/30'}`}
               >
                 <Target size={15} />
                 Pipeline
