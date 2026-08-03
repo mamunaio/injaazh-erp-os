@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import {
   Mail, Send, Activity, MessageSquare, CheckCircle, Clock, AlertCircle,
   Sparkles, User, Building2, Globe, Phone, ExternalLink, Plus, RefreshCw,
-  Search, Filter, X, ChevronRight, Save, Calendar, ArrowUpRight,
+  Search, Filter, X, ChevronRight, ChevronDown, Save, Calendar, ArrowUpRight,
   ArrowDownRight, Inbox, LayoutList, StickyNote, Zap, Target
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -104,6 +104,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [emailAccounts, setEmailAccounts] = useState<any[]>([]);
   const [senderAccountId, setSenderAccountId] = useState<string>('auto');
+  const [isSenderDropdownOpen, setIsSenderDropdownOpen] = useState(false);
 
   React.useEffect(() => {
     getEmailAccounts().then(res => {
@@ -699,18 +700,54 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                             <h3 className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">Email Sequence Draft</h3>
                             
                             {/* Sender Account Selection */}
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 relative">
                               <label className="text-[10px] font-bold text-[#94A3B8] uppercase">From:</label>
-                              <select 
-                                value={senderAccountId}
-                                onChange={(e) => setSenderAccountId(e.target.value)}
-                                className="bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-lg px-2 py-1 text-[11px] font-bold text-slate-700 dark:text-slate-300 outline-none focus:border-[#2563EB]/50"
-                              >
-                                <option value="auto">Auto-select (Previous/Rotate)</option>
-                                {emailAccounts.map(acc => (
-                                  <option key={acc._id} value={acc._id}>{acc.email}</option>
-                                ))}
-                              </select>
+                              <div className="relative">
+                                <button
+                                  onClick={() => setIsSenderDropdownOpen(!isSenderDropdownOpen)}
+                                  className="flex items-center justify-between gap-3 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-lg px-3 py-1.5 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:border-[#2563EB]/50 transition-colors"
+                                >
+                                  <span>
+                                    {senderAccountId === 'auto' 
+                                      ? 'Auto-select (Previous/Rotate)' 
+                                      : emailAccounts.find(a => a._id === senderAccountId)?.email || 'Unknown'}
+                                  </span>
+                                  <ChevronDown size={14} className="text-[#94A3B8]" />
+                                </button>
+                                
+                                <AnimatePresence>
+                                  {isSenderDropdownOpen && (
+                                    <>
+                                      <div className="fixed inset-0 z-40" onClick={() => setIsSenderDropdownOpen(false)} />
+                                      <motion.div
+                                        initial={{ opacity: 0, y: 5 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: 5 }}
+                                        transition={{ duration: 0.15 }}
+                                        className="absolute right-0 top-full mt-1 w-64 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl shadow-xl z-50 overflow-hidden"
+                                      >
+                                        <div className="max-h-60 overflow-y-auto py-1 scrollbar-none">
+                                          <button
+                                            onClick={() => { setSenderAccountId('auto'); setIsSenderDropdownOpen(false); }}
+                                            className={`w-full text-left px-4 py-2.5 text-xs font-medium transition-colors ${senderAccountId === 'auto' ? 'bg-[#2563EB]/10 text-[#2563EB] font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#232734]/50'}`}
+                                          >
+                                            Auto-select (Previous/Rotate)
+                                          </button>
+                                          {emailAccounts.map(acc => (
+                                            <button
+                                              key={acc._id}
+                                              onClick={() => { setSenderAccountId(acc._id); setIsSenderDropdownOpen(false); }}
+                                              className={`w-full text-left px-4 py-2.5 text-xs font-medium transition-colors ${senderAccountId === acc._id ? 'bg-[#2563EB]/10 text-[#2563EB] font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#232734]/50'}`}
+                                            >
+                                              {acc.email}
+                                            </button>
+                                          ))}
+                                        </div>
+                                      </motion.div>
+                                    </>
+                                  )}
+                                </AnimatePresence>
+                              </div>
                             </div>
                           </div>
                           <div>
