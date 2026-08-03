@@ -10,12 +10,18 @@ export const maxDuration = 60; // 60 seconds (Vercel max)
 
 export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
     const authHeader = request.headers.get('authorization');
+    
     if (!process.env.CRON_SECRET) {
       return NextResponse.json({ error: 'CRON_SECRET is not configured' }, { status: 500 });
     }
     
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    const token = searchParams.get('token');
+    const hasValidHeader = authHeader === `Bearer ${process.env.CRON_SECRET}`;
+    const hasValidQuery = token === process.env.CRON_SECRET;
+
+    if (!hasValidHeader && !hasValidQuery) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
