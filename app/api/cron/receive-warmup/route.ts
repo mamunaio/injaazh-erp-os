@@ -59,7 +59,8 @@ export async function GET(request: Request) {
       connection = await imaps.connect(config);
     } catch (connErr: any) {
       console.error(`IMAP connection failed for ${account.email}:`, connErr);
-      return NextResponse.json({ success: false, error: 'IMAP connection failed' }, { status: 500 });
+      // Return 200 so cron-job.org doesn't disable the job, but indicate success: false
+      return NextResponse.json({ success: false, error: 'IMAP connection failed', email: account.email }, { status: 200 });
     }
 
     let unspammedCount = 0;
