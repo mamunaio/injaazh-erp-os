@@ -334,8 +334,13 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05, type: 'spring', stiffness: 280, damping: 26 }}
                 whileHover={{ y: -2, transition: { duration: 0.15 } }}
-                className="relative bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] p-5 cursor-pointer group transition-all overflow-hidden shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none"
+                className="relative neu-flat rounded-[24px] p-5 cursor-pointer group transition-all overflow-hidden shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none"
               >
+                {/* Top Edge Glow */}
+                <div
+                  className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-[2px] opacity-70 group-hover:opacity-100 transition-opacity duration-300 rounded-b-full pointer-events-none"
+                  style={{ backgroundColor: k.color, boxShadow: `0 4px 15px ${k.color}` }}
+                />
                 {/* Background Icon */}
                 <div className="absolute -right-2 -bottom-4 opacity-[0.04] pointer-events-none group-hover:opacity-[0.08] transition-opacity">
                   {k.label === 'Hot Replies' && <Sparkles size={90} style={{ color: k.color }} />}
@@ -365,13 +370,13 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
         </motion.div>
 
         {/* ── Master-Detail Split ───────────────────────────────────────────── */}
-        <div className="flex flex-col lg:flex-row gap-5 min-h-[680px]">
+        <div className="flex flex-col lg:flex-row gap-5 h-[calc(100vh-280px)] min-h-[500px]">
 
           {/* ── LEFT PANE: Contact List ──────────────────────────────────────── */}
-          <div className={`flex flex-col bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] overflow-hidden shadow-sm dark:shadow-none ${selectedLeadId ? 'hidden lg:flex lg:w-[320px] xl:w-[360px] flex-shrink-0' : 'w-full lg:w-[360px] flex-shrink-0'}`}>
+          <div className={`flex flex-col neu-flat rounded-[24px] overflow-hidden shadow-sm dark:shadow-none ${selectedLeadId ? 'hidden lg:flex lg:w-[320px] xl:w-[360px] flex-shrink-0' : 'w-full lg:w-[360px] flex-shrink-0'}`}>
 
             {/* Tabs */}
-            <div className="flex border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900">
+            <div className="flex bg-slate-100/50 dark:bg-slate-900/50 backdrop-blur-md">
               <button
                 onClick={() => { setActiveTab('inbox'); setSelectedLeadId(null); }}
                 className={`relative flex-1 py-4 flex items-center justify-center gap-2 text-[13px] font-bold uppercase tracking-widest transition-all ${activeTab === 'inbox' ? 'bg-white dark:bg-[#2563EB]/5 text-white shadow-sm dark:shadow-none' : 'text-slate-500 dark:text-[#94A3B8] hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-[#232734]/30'}`}
@@ -398,7 +403,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
             </div>
 
             {/* Search */}
-            <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+            <div className="p-3 bg-white dark:bg-[#0a0a0b]">
               <div className="relative group">
                 <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8] group-focus-within:text-[#2563EB] transition-colors pointer-events-none" />
                 <input
@@ -406,7 +411,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                   placeholder="Search contacts…"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white placeholder-[#94A3B8]/60 text-xs font-medium rounded-xl pl-9 pr-8 py-2.5 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all"
+                  className="w-full bg-slate-50 dark:bg-[#111111] border-none text-slate-900 dark:text-white placeholder-[#94A3B8]/60 text-xs font-medium rounded-xl pl-9 pr-8 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)]"
                 />
                 {searchQuery && (
                   <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-slate-900 dark:hover:text-white transition-colors">
@@ -417,10 +422,10 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
             </div>
 
             {/* Status filter pills */}
-            <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex gap-2 overflow-x-auto scrollbar-none">
+            <div className="px-4 py-3 bg-white dark:bg-[#0a0a0b] flex gap-2 overflow-x-auto scrollbar-none">
               {['All', 'New', 'Email Sent', 'Replied', 'Meeting Booked'].map(s => (
                 <button key={s} onClick={() => setStatusFilter(s)}
-                  className={`flex-shrink-0 px-3.5 py-1.5 rounded-lg text-xs font-bold border transition-all ${statusFilter === s ? 'bg-[#2563EB]/10 text-[#2563EB] border-[#2563EB]/30' : 'bg-slate-50 dark:bg-[#09090B] text-[#94A3B8] border-slate-200 dark:border-[#232734] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734]'}`}>
+                  className={`flex-shrink-0 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${statusFilter === s ? 'bg-[#2563EB]/10 text-[#2563EB]' : 'bg-slate-50 dark:bg-[#111111] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-[#1a1a1a]'}`}>
                   {s}
                 </button>
               ))}
@@ -448,8 +453,8 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.025, type: 'spring', stiffness: 320, damping: 28 }}
                         onClick={() => setSelectedLeadId(lead._id)}
-                        className={`w-full text-left p-3 rounded-[14px] border flex items-start gap-3 transition-all ${isSelected ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/30' : 'bg-transparent dark:bg-transparent border-transparent hover:bg-slate-50 dark:hover:bg-[#1A1D27] hover:border-slate-200 dark:hover:border-[#232734]'}`}
-                        style={isSelected ? { borderLeftWidth: '3px', borderLeftColor: '#3b82f6' } : {}}
+                        className={`w-full text-left p-3 rounded-[14px] flex items-start gap-3 transition-all ${isSelected ? 'bg-blue-50 dark:bg-blue-500/10' : 'bg-transparent dark:bg-transparent hover:bg-slate-50 dark:hover:bg-[#111111]'}`}
+                        style={isSelected ? { borderLeftWidth: '3px', borderLeftStyle: 'solid', borderLeftColor: '#3b82f6' } : { borderLeftWidth: '3px', borderLeftStyle: 'solid', borderLeftColor: 'transparent' }}
                       >
                         <div
                           style={{ background: getAvatarGradient(lead.company_name || '?') }}
@@ -509,10 +514,10 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ type: 'spring', stiffness: 280, damping: 28 }}
-                  className="flex flex-col bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] overflow-hidden h-full"
+                  className="flex flex-col neu-flat rounded-[24px] overflow-hidden h-full"
                 >
                   {/* Detail Header */}
-                  <div className="flex-shrink-0 p-5 border-b border-slate-200 dark:border-[#232734] bg-white dark:bg-[#0D0F16]">
+                  <div className="flex-shrink-0 p-5 bg-white dark:bg-[#0a0a0b]">
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div className="flex items-center gap-4">
                         {/* Mobile back button */}
@@ -554,7 +559,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                           <select
                             value={selectedLead.outreach_status}
                             onChange={e => handleStatusChange(e.target.value)}
-                            className="bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-[10px] py-2 pl-3 pr-8 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/50 appearance-none cursor-pointer transition-all hover:border-[#232734]/80"
+                            className="bg-slate-50 dark:bg-[#111111] border-none rounded-[10px] py-2 pl-3 pr-8 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 appearance-none cursor-pointer transition-all shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)]"
                             aria-label="Change status"
                           >
                             <option value="New">New</option>
@@ -583,7 +588,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                   </div>
 
                   {/* Detail Tabs */}
-                  <div className="flex-shrink-0 flex items-center border-b border-slate-200 dark:border-[#232734] px-5 bg-slate-100 dark:bg-[#0D0F16]">
+                  <div className="flex-shrink-0 flex items-center px-5 bg-slate-100/50 dark:bg-slate-900/50 backdrop-blur-md">
                     {detailTabs.map(tab => (
                       <button
                         key={tab.id}
@@ -759,7 +764,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="hidden lg:flex flex-1 h-full flex-col items-center justify-center bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] text-center p-8 relative overflow-hidden shadow-sm dark:shadow-none"
+                  className="hidden lg:flex flex-1 h-full flex-col items-center justify-center neu-flat rounded-[24px] text-center p-8 relative overflow-hidden shadow-sm dark:shadow-none"
                 >
                   {/* Subtle Grid Background */}
                   <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#94a3b8 1px, transparent 1px), linear-gradient(90deg, #94a3b8 1px, transparent 1px)', backgroundSize: '32px 32px' }} />

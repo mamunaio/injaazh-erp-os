@@ -15,7 +15,6 @@ const navItems = [
   { name: 'Prospects', href: '/prospects', icon: Users },
   { name: 'Campaigns', href: '/campaigns', icon: Mail },
   { name: 'Outreach', href: '/outreach', icon: Activity },
-  { name: 'Deals', href: '/deals', icon: Hexagon }, // As per image
   { name: 'Proposals', href: '/proposals', icon: FileText },
   { name: 'Projects', href: '/projects', icon: Briefcase },
   { name: 'Roadmap', href: '/roadmap', icon: Map },
@@ -23,7 +22,7 @@ const navItems = [
   { name: 'Clients', href: '/marketplace/clients', icon: Users },
   { name: 'Finance', href: '/finance', icon: DollarSign },
   { name: 'Expenses', href: '/daily-expenses', icon: Wallet },
-  { name: 'Insights', href: '/settings/insights', icon: BookOpen },
+
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
@@ -39,7 +38,7 @@ export default function Sidebar() {
     if (user.role === 'owner') return true;
     
     if (user.role === 'admin') {
-      if (item.href === '/daily-expenses' || item.href === '/settings/insights') return false;
+      if (item.href === '/daily-expenses') return false;
       return true;
     }
     
@@ -66,7 +65,7 @@ export default function Sidebar() {
         />
       )}
       
-      <aside className={`${isCollapsed ? 'w-[88px]' : 'w-[260px]'} fixed top-0 bottom-0 left-0 z-50 bg-slate-50/30 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800/50 flex flex-col transition-all duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-[120%] lg:translate-x-0'}`}>
+      <aside className={`${isCollapsed ? 'w-[88px]' : 'w-[260px]'} fixed top-0 bottom-0 left-0 z-50 bg-slate-50/80 dark:bg-black flex flex-col transition-all duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-[120%] lg:translate-x-0'}`}>
         {/* Logo */}
         <div className={`h-[72px] flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-6'}`}>
           <Link href="/" className="flex items-center gap-3 group" onClick={() => setIsMobileSidebarOpen(false)}>
@@ -118,13 +117,13 @@ export default function Sidebar() {
               {filteredNavItems.filter(i => ['/finance', '/daily-expenses'].includes(i.href)).map(renderNavItem)}
 
               {!isCollapsed && <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3 transition-opacity">System</div>}
-              {filteredNavItems.filter(i => ['/settings/insights', '/settings'].includes(i.href)).map(renderNavItem)}
+              {filteredNavItems.filter(i => ['/settings'].includes(i.href)).map(renderNavItem)}
             </>
           )}
         </nav>
 
         {/* Theme Switcher at Bottom */}
-        <div className="w-full flex justify-center py-4 border-t border-slate-200 dark:border-slate-800/50 mt-auto px-4">
+        <div className="w-full flex justify-center py-4 mt-auto px-4">
           <ThemeToggle />
         </div>
       </aside>
@@ -137,7 +136,7 @@ export default function Sidebar() {
       : item.href === '/marketplace'
         ? pathname === '/marketplace' || (pathname.startsWith('/marketplace/') && !pathname.startsWith('/marketplace/clients'))
         : item.href === '/settings'
-          ? pathname === '/settings' || (pathname.startsWith('/settings/') && !pathname.startsWith('/settings/insights'))
+          ? pathname === '/settings' || pathname.startsWith('/settings/')
           : pathname.startsWith(item.href);
     
     const Icon = item.icon;
@@ -149,13 +148,13 @@ export default function Sidebar() {
         onClick={() => setIsMobileSidebarOpen(false)}
         className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-3'} py-2 rounded-xl transition-all duration-200 group relative ${
           isActive 
-            ? 'bg-primary-600 text-white dark:bg-primary-500/15 dark:text-primary-400 dark:border-primary-500/30 dark:border shadow-md dark:shadow-[0_0_15px_rgba(var(--color-primary-500),0.1)]' 
-            : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 border border-transparent'
+            ? 'bg-primary-500/10 text-primary-600 dark:bg-primary-500/20 dark:text-primary-400 shadow-[0_0_20px_rgba(var(--color-primary-500),0.15)] dark:shadow-[0_0_20px_rgba(var(--color-primary-500),0.3)]' 
+            : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
         }`}
       >
-        <Icon size={isCollapsed ? 22 : 18} className={`${isActive ? 'text-white dark:text-primary-400' : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors'}`} />
+        <Icon size={isCollapsed ? 22 : 18} className={`${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors'}`} />
         {!isCollapsed && (
-          <span className={`font-semibold text-[13px] ${isActive ? 'text-white dark:text-primary-400' : ''}`}>
+          <span className={`font-semibold text-[13px] ${isActive ? 'text-primary-600 dark:text-primary-400' : ''}`}>
             {item.name}
           </span>
         )}

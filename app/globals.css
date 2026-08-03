@@ -49,42 +49,44 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
-  /* SSR Safe Defaults (Violet) */
+  /* SSR Safe Defaults (Electric Violet / Neon Purple) */
   :root {
-    --accent-50: #f5f3ff;
-    --accent-100: #ede9fe;
-    --accent-400: #a78bfa;
-    --accent-500: #8b5cf6;
-    --accent-600: #7c3aed;
-    --accent-700: #6d28d9;
+    --accent-50: #faf5ff;
+    --accent-100: #f3e8ff;
+    --accent-400: #c084fc;
+    --accent-500: #a855f7;
+    --accent-600: #9333ea;
+    --accent-700: #7e22ce;
   }
   
-  /* Overrides based on data-attribute */
+  /* Neon Blue / Cyan */
   [data-accent="blue"] {
-    --accent-50: #eff6ff;
-    --accent-100: #dbeafe;
-    --accent-400: #60a5fa;
-    --accent-500: #3b82f6;
-    --accent-600: #2563eb;
-    --accent-700: #1d4ed8;
+    --accent-50: #ecfeff;
+    --accent-100: #cffafe;
+    --accent-400: #22d3ee;
+    --accent-500: #06b6d4;
+    --accent-600: #0891b2;
+    --accent-700: #0e7490;
   }
 
+  /* Vibrant Emerald / Neon Green */
   [data-accent="emerald"] {
     --accent-50: #ecfdf5;
     --accent-100: #d1fae5;
-    --accent-400: #34d399;
-    --accent-500: #10b981;
+    --accent-400: #10b981;
+    --accent-500: #00fa9a; /* Spring Green */
     --accent-600: #059669;
     --accent-700: #047857;
   }
 
+  /* Neon Rose / Pink */
   [data-accent="rose"] {
-    --accent-50: #fff1f2;
-    --accent-100: #ffe4e6;
-    --accent-400: #fb7185;
-    --accent-500: #f43f5e;
-    --accent-600: #e11d48;
-    --accent-700: #be123c;
+    --accent-50: #fdf2f8;
+    --accent-100: #fce7f3;
+    --accent-400: #f472b6;
+    --accent-500: #ec4899;
+    --accent-600: #db2777;
+    --accent-700: #be185d;
   }
 
   [data-accent="amber"] {
@@ -97,7 +99,7 @@
   }
 
   body {
-    @apply bg-slate-100 text-slate-900 dark:bg-[#0A0A0B] dark:text-slate-200 antialiased transition-colors duration-300;
+    @apply bg-slate-50 text-slate-900 dark:bg-[#000000] dark:text-slate-200 antialiased transition-colors duration-300;
   }
   
   h1 {
@@ -155,54 +157,59 @@
   
   .neu-flat {
     background-color: #ffffff;
-    border: 1px solid #e2e8f0;
+    border: none;
     border-radius: 1.5rem; /* 24px */
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
   }
 
   .dark .neu-flat {
-    background-color: #121214;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background-color: #050505;
+    border: none;
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.4);
   }
 
   .neu-pressed {
     background-color: #f1f5f9;
-    border: 1px solid #cbd5e1;
+    border: none;
     border-radius: 1rem;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
   }
   .dark .neu-pressed {
-    background-color: #0E0E10;
-    border: 1px solid rgba(255, 255, 255, 0.03);
+    background-color: #000000;
+    border: none;
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.8);
   }
   
   .neu-button {
     background-color: #ffffff;
-    border: 1px solid #cbd5e1;
+    border: none;
+    box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.05);
     border-radius: 0.75rem;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     color: #0f172a;
   }
   .neu-button:hover {
-    background-color: #f1f5f9;
-    border: 1px solid #94a3b8;
+    background-color: #f8fafc;
+    box-shadow: 0 6px 15px -3px rgba(0, 0, 0, 0.1);
   }
   .dark .neu-button {
-    background-color: #18181B;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: #0a0a0a;
+    border: none;
+    box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.4);
     color: white;
   }
   .dark .neu-button:hover {
-    background-color: #27272A;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background-color: #111111;
+    box-shadow: 0 6px 15px -3px rgba(0, 0, 0, 0.6);
   }
   
   .neu-button:active, .neu-button-active {
     background-color: #e2e8f0;
-    border: 1px solid #94a3b8;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
   }
   .dark .neu-button:active, .dark .neu-button-active {
-    background-color: #27272A;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background-color: #000000;
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.8);
   }
 
   /* React Datepicker Custom Styles for Dark Minimal Look */
@@ -211,21 +218,23 @@
   }
   .react-datepicker {
     font-family: inherit !important;
-    border: 1px solid #e2e8f0 !important;
+    border: none !important;
     background-color: #ffffff !important;
     border-radius: 1rem !important;
     padding: 0.5rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
   }
   .dark .react-datepicker {
-    background-color: #121214 !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background-color: #050505 !important;
+    border: none !important;
+    box-shadow: 0 10px 40px -5px rgba(0, 0, 0, 0.5);
   }
   .react-datepicker__header {
     background-color: transparent !important;
-    border-bottom: 1px solid #e2e8f0 !important;
+    border-bottom: none !important;
   }
   .dark .react-datepicker__header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-bottom: none !important;
   }
   .react-datepicker__current-month, .react-datepicker-time__header, .react-datepicker-year-header {
     color: #0f172a !important;

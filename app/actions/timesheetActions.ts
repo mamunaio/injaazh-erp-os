@@ -118,17 +118,20 @@ export async function getTimesheetKPIs() {
     
     const now = new Date();
     
-    // Today
-    const startOfToday = new Date(now);
-    startOfToday.setHours(0, 0, 0, 0);
+    // Today (local date as string)
+    const todayStr = now.toISOString().slice(0, 10); // YYYY-MM-DD
     
-    // This week (start = last monday or similar, let's just do last 7 days for simplicity)
+    // This week: Monday as start
     const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday as start
+    const dayOfWeek = now.getDay(); // 0=Sun,1=Mon,...
+    const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // go back to Monday
+    startOfWeek.setDate(now.getDate() + diff);
     startOfWeek.setHours(0, 0, 0, 0);
+    const weekStartStr = startOfWeek.toISOString().slice(0, 10);
     
     // This month
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthStartStr = startOfMonth.toISOString().slice(0, 10);
     
     const logs = await TimeLog.find({ userId }).lean();
     
@@ -143,9 +146,9 @@ export async function getTimesheetKPIs() {
     for (let i = 6; i >= 0; i--) {
       const d = new Date(now);
       d.setDate(d.getDate() - i);
-      d.setHours(0, 0, 0, 0);
+      const dateStr = d.toISOString().slice(0, 10);
       chartData.push({
-        date: d.toISOString(),
+        dateStr,
         day: dayNames[d.getDay()],
         hours: 0,
         max: 10
@@ -153,15 +156,17 @@ export async function getTimesheetKPIs() {
     }
 
     logs.forEach((log: any) => {
+      // Get log date as YYYY-MM-DD string (timezone-safe)
       const logDate = new Date(log.date);
+      const logDateStr = logDate.toISOString().slice(0, 10);
       const s = log.durationSeconds || 0;
       
-      if (logDate >= startOfToday) secondsToday += s;
-      if (logDate >= startOfWeek) secondsWeek += s;
-      if (logDate >= startOfMonth) secondsMonth += s;
+      if (logDateStr === todayStr) secondsToday += s;
+      if (logDateStr >= weekStartStr) secondsWeek += s;
+      if (logDateStr >= monthStartStr) secondsMonth += s;
       
-      // Add to chart
-      const chartItem = chartData.find(c => new Date(c.date).getTime() === logDate.getTime());
+      // Add to chart by matching date string
+      const chartItem = chartData.find(c => c.dateStr === logDateStr);
       if (chartItem) {
         chartItem.hours += (s / 3600);
       }
@@ -170,14 +175,13 @@ export async function getTimesheetKPIs() {
     // Format chart values to 1 decimal
     chartData.forEach(c => {
       c.hours = Math.round(c.hours * 10) / 10;
-      if (c.hours > c.max) c.max = Math.ceil(c.hours);
     });
 
-    // Ensure all max are at least the global max
-    const globalMax = Math.max(10, ...chartData.map(c => c.hours));
+    // Ensure all bars share the same max for proportional height
+    const globalMax = Math.max(1, ...chartData.map(c => c.hours));
     chartData.forEach(c => c.max = globalMax);
 
-    const billableRate = 25; // Dummy rate
+    const billableRate = 25; // $25/hr
     const billableValue = (secondsMonth / 3600) * billableRate;
 
     return { 
@@ -194,3 +198,4 @@ export async function getTimesheetKPIs() {
     return { success: false, error: error.message };
   }
 }
+

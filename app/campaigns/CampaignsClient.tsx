@@ -55,7 +55,7 @@ function FilterDropdown({ label, options, value, onChange }: { label: string; op
     <div className="relative">
       <button
         onClick={() => setOpen(p => !p)}
-        className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all ${active ? 'bg-[#2563EB]/10 text-[#2563EB] border-[#2563EB]/30' : 'bg-white dark:bg-[#11131A] text-[#94A3B8] border-slate-200 dark:border-[#232734] hover:text-slate-900 dark:hover:text-white'}`}
+        className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${active ? 'bg-[#2563EB]/10 text-[#2563EB]' : 'bg-slate-50 dark:bg-[#111111] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white'}`}
       >
         {active ? value : label}
         <ChevronDown size={11} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
@@ -499,8 +499,13 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
                   initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05, type: 'spring', stiffness: 280, damping: 26 }}
                   whileHover={{ y: -2, transition: { duration: 0.15 } }}
-                  className="relative overflow-hidden bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-5 cursor-pointer group hover:border-slate-300 dark:hover:border-[#232734]/80 shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none transition-all"
+                  className="relative overflow-hidden neu-flat rounded-[24px] p-5 cursor-pointer group shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none transition-all"
                 >
+                  {/* Top Edge Glow */}
+                  <div
+                    className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-[2px] opacity-70 group-hover:opacity-100 transition-opacity duration-300 rounded-b-full pointer-events-none"
+                    style={{ backgroundColor: k.color, boxShadow: `0 4px 15px ${k.color}` }}
+                  />
                   <div className="absolute inset-0 opacity-10">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={dummyData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
@@ -532,7 +537,7 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
                 placeholder="Search campaigns, niches…"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white placeholder-[#94A3B8]/60 text-sm font-medium rounded-xl pl-11 pr-10 py-2.5 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all"
+                className="w-full bg-slate-50 dark:bg-[#111111] border-none text-slate-900 dark:text-white placeholder-[#94A3B8]/60 text-sm font-medium rounded-xl pl-11 pr-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all"
               />
               {searchQuery && (
                 <button onClick={() => setSearchQuery('')}
@@ -544,7 +549,7 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
 
             {/* Filter Chips & Dropdowns Grouped Separately */}
             <div className="flex items-center gap-4 flex-wrap">
-              <div className="flex items-center gap-1 bg-slate-50 dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] p-1 rounded-[14px]">
+              <div className="flex items-center gap-1 bg-slate-50 dark:bg-[#111111] p-1 rounded-[14px]">
                 {['All', 'Active', 'Paused', 'Completed'].map(f => (
                   <button key={f} onClick={() => setActiveFilter(f)}
                     className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${activeFilter === f ? 'bg-white dark:bg-[#232734] text-slate-900 dark:text-white shadow-sm' : 'text-[#94A3B8] hover:text-slate-900 dark:hover:text-white'}`}>
@@ -570,7 +575,7 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
         {/* ── Table ────────────────────────────────────────────────────────── */}
         {sorted.length === 0 ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            className="py-32 flex flex-col items-center justify-center bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] shadow-sm">
+            className="py-32 flex flex-col items-center justify-center neu-flat rounded-[24px] shadow-sm">
             <div className="w-16 h-16 rounded-[20px] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center mb-4">
               <Target size={24} className="text-[#232734]" />
             </div>
@@ -586,11 +591,11 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
         ) : (
           <>
             {/* Desktop Table */}
-            <div className="hidden md:block overflow-hidden rounded-[20px] border border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A]">
+            <div className="hidden md:block overflow-hidden rounded-[24px] neu-flat">
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-sm">
-                  <thead className="sticky top-0 z-10 bg-slate-100 dark:bg-slate-900/50">
-                    <tr className="border-b border-slate-200 dark:border-[#232734]">
+                  <thead className="sticky top-0 z-10 bg-slate-100/90 dark:bg-[#040509]/90 backdrop-blur-md">
+                    <tr>
                       <th className="pl-5 pr-3 py-3 w-10">
                         <button onClick={toggleAll}
                           className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all ${allSel ? 'bg-[#2563EB] border-[#2563EB] text-white' : 'border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B] hover:border-[#94A3B8]'}`}
@@ -625,7 +630,7 @@ export default function CampaignsClient({ initialCampaigns }: { initialCampaigns
                           <motion.tr key={campaign._id}
                             custom={i} variants={rowVariants} initial="hidden" animate="show" exit="exit"
                             onClick={() => setPanelCampaign(campaign)}
-                            className={`border-b border-slate-200 dark:border-[#232734]/60 cursor-pointer transition-all group ${isSel ? 'bg-[#2563EB]/5 text-white' : 'hover:bg-slate-50 dark:hover:bg-[#1E293B]/40 hover:text-slate-900 dark:hover:text-white'}`}
+                            className={`cursor-pointer transition-all group rounded-xl ${isSel ? 'bg-[#2563EB]/10 text-white' : 'hover:bg-slate-100/50 dark:hover:bg-[#111111] hover:text-slate-900 dark:hover:text-white'}`}
                           >
                             {/* Checkbox */}
                             <td className="pl-5 pr-3 py-4" onClick={e => toggleOne(campaign._id, e)}>

@@ -66,8 +66,8 @@ export default function Topbar() {
     const handleInstantFetch = () => fetchNotifs();
     window.addEventListener('fetch-notifications', handleInstantFetch);
     
-    // Polling every 10 seconds as backup
-    const interval = setInterval(fetchNotifs, 10000);
+    // Polling every 1 minute to prevent dev server sluggishness
+    const interval = setInterval(fetchNotifs, 60000);
     return () => {
       clearInterval(interval);
       window.removeEventListener('fetch-notifications', handleInstantFetch);
@@ -111,7 +111,7 @@ export default function Topbar() {
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
-    <header className={`h-20 fixed top-0 right-0 left-0 ${sidebarLayout === 'collapsed' ? 'lg:left-[88px]' : 'lg:left-[260px]'} z-40 bg-white/80 dark:bg-[#0A0A0B]/80 backdrop-blur-md border-b border-slate-200 dark:border-white/5 px-6 flex items-center justify-between transition-all duration-300`}>
+    <header className={`h-20 fixed top-0 right-0 left-0 ${sidebarLayout === 'collapsed' ? 'lg:left-[88px]' : 'lg:left-[260px]'} z-40 bg-transparent border-none px-6 flex items-center justify-between transition-all duration-300`}>
       {/* Left Area */}
       <div className="flex-1 flex items-center justify-start">
         <button 
@@ -128,18 +128,23 @@ export default function Topbar() {
           {/* Animated glow background on focus */}
           <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full opacity-0 group-focus-within:opacity-25 blur-md transition-opacity duration-500"></div>
           
-          <div className="relative">
+          <div className="relative group/search backdrop-blur-xl bg-white/60 dark:bg-black/40 border border-slate-200/50 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_8px_30px_rgba(0,0,0,0.4)] dark:hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_8px_30px_rgba(0,0,0,0.6)] transition-all duration-300 rounded-2xl overflow-hidden">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Search size={16} className="text-slate-500 dark:text-slate-400 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-purple-400 transition-colors" />
+              <Search size={18} className="text-slate-400 dark:text-slate-500 group-focus-within/search:text-indigo-600 dark:group-focus-within/search:text-indigo-400 transition-colors duration-300" />
             </div>
             <input
               type="text"
-              className="block w-full pl-11 pr-12 py-2 bg-slate-50 dark:bg-[#121214] border border-slate-200 dark:border-white/10 rounded-lg leading-5 text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 transition-all sm:text-sm"
-              placeholder="Search leads, companies, emails..."
+              className="block w-full pl-12 pr-14 py-3 bg-transparent border-none rounded-2xl leading-5 text-slate-900 dark:text-slate-100 placeholder-slate-400/80 dark:placeholder-slate-500/80 focus:outline-none focus:ring-0 transition-all sm:text-[15px]"
+              placeholder="Search anything..."
             />
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 dark:text-gray-500 border border-slate-200 dark:border-white/10 rounded-md px-1.5 py-0.5 bg-slate-100 dark:bg-white/5">⌘K</span>
+              <kbd className="hidden sm:inline-flex items-center gap-1 text-[10px] font-semibold text-slate-500 dark:text-slate-400 border border-slate-200/60 dark:border-white/10 border-b-[2px] rounded-md px-2 py-1 bg-white/50 dark:bg-white/5 shadow-sm">
+                <span className="text-xs">⌘</span>K
+              </kbd>
             </div>
+            
+            {/* Subtle bottom border gradient effect on focus */}
+            <div className="absolute bottom-0 left-0 h-[2px] w-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 group-focus-within/search:w-full transition-all duration-500 ease-out"></div>
           </div>
         </div>
       </div>

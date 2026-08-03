@@ -142,16 +142,16 @@ export default function InvoiceBuilderClient({ initialData }: { initialData?: an
     }
   };
 
-  const inputClass = "w-full bg-slate-50 dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-[#8B5CF6]/50 focus:ring-1 focus:ring-[#8B5CF6]/50 transition-all placeholder:text-slate-400";
+  const inputClass = "w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-[#8B5CF6]/50 focus:ring-1 focus:ring-[#8B5CF6]/50 transition-all placeholder:text-slate-400";
   const labelClass = "block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5";
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#09090B] pb-24">
       {/* Header Navbar */}
-      <div className="sticky top-0 z-40 bg-white/80 dark:bg-[#09090B]/80 backdrop-blur-md border-b border-slate-200 dark:border-[#232734]">
+      <div className="sticky top-0 z-40 bg-white/80 dark:bg-[#09090B]/80 backdrop-blur-md border-b border-[#E2E8F0] dark:border-[#1a1a1a]">
         <div className="max-w-[1400px] mx-auto px-4 md:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/finance/invoices" className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] flex items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm">
+            <Link href="/finance/invoices" className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] flex items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
               <ArrowLeft size={18} />
             </Link>
             <div>
@@ -164,7 +164,7 @@ export default function InvoiceBuilderClient({ initialData }: { initialData?: an
             <button 
               onClick={downloadPDF}
               disabled={isGeneratingPDF}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none disabled:opacity-50"
             >
               {isGeneratingPDF ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
               {isGeneratingPDF ? 'Generating...' : 'Download PDF'}
@@ -186,7 +186,7 @@ export default function InvoiceBuilderClient({ initialData }: { initialData?: an
           
           {/* LEFT: Builder Form */}
           <div className="w-full lg:w-[450px] shrink-0 space-y-6">
-            <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 shadow-sm space-y-6">
+            <div className="bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-[24px] p-6 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none space-y-6">
               
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
@@ -218,7 +218,7 @@ export default function InvoiceBuilderClient({ initialData }: { initialData?: an
                 </div>
               </div>
 
-              <div className="w-full h-px bg-slate-200 dark:bg-[#232734]"></div>
+              <div className="w-full h-px bg-[#E2E8F0] dark:bg-[#1a1a1a]"></div>
 
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
@@ -248,7 +248,7 @@ export default function InvoiceBuilderClient({ initialData }: { initialData?: an
                 </div>
               </div>
 
-              <div className="w-full h-px bg-slate-200 dark:bg-[#232734]"></div>
+              <div className="w-full h-px bg-[#E2E8F0] dark:bg-[#1a1a1a]"></div>
 
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
@@ -270,7 +270,7 @@ export default function InvoiceBuilderClient({ initialData }: { initialData?: an
                 </div>
               </div>
 
-              <div className="w-full h-px bg-slate-200 dark:bg-[#232734]"></div>
+              <div className="w-full h-px bg-[#E2E8F0] dark:bg-[#1a1a1a]"></div>
 
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
@@ -278,8 +278,8 @@ export default function InvoiceBuilderClient({ initialData }: { initialData?: an
                 </h3>
                 <div className="space-y-4">
                   {items.map((item, idx) => (
-                    <div key={item.id} className="relative bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-[#232734]">
-                      <button onClick={() => removeItem(idx)} disabled={items.length === 1} className="absolute -top-2 -right-2 w-6 h-6 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-full flex items-center justify-center text-rose-500 hover:text-rose-600 hover:border-rose-500 transition-colors shadow-sm disabled:opacity-0 disabled:pointer-events-none">
+                    <div key={item.id} className="relative bg-slate-50 dark:bg-[#09090B] p-4 rounded-xl border border-[#E2E8F0] dark:border-[#1a1a1a]">
+                      <button onClick={() => removeItem(idx)} disabled={items.length === 1} className="absolute -top-2 -right-2 w-6 h-6 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-full flex items-center justify-center text-rose-500 hover:text-rose-600 hover:border-rose-500 transition-colors shadow-sm disabled:opacity-0 disabled:pointer-events-none">
                         <Trash2 size={12} />
                       </button>
                       <div className="space-y-3">
@@ -300,13 +300,13 @@ export default function InvoiceBuilderClient({ initialData }: { initialData?: an
                       </div>
                     </div>
                   ))}
-                  <button onClick={addItem} className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-dashed border-slate-200 dark:border-[#232734] text-slate-500 hover:text-[#8B5CF6] hover:border-[#8B5CF6] transition-colors text-sm font-bold">
+                  <button onClick={addItem} className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-dashed border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-500 hover:text-[#8B5CF6] hover:border-[#8B5CF6] transition-colors text-sm font-bold">
                     <Plus size={16} /> Add Another Item
                   </button>
                 </div>
               </div>
 
-              <div className="w-full h-px bg-slate-200 dark:bg-[#232734]"></div>
+              <div className="w-full h-px bg-[#E2E8F0] dark:bg-[#1a1a1a]"></div>
 
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">

@@ -147,7 +147,7 @@ export default function LeadsTable({
     className?: string;
   }) => (
     <th
-      className={`px-5 py-4 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest whitespace-nowrap select-none border-b border-slate-200 dark:border-[#232734] ${col ? 'cursor-pointer group hover:text-slate-900 dark:hover:text-white transition-colors' : ''} ${className}`}
+      className={`px-5 py-4 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest whitespace-nowrap select-none ${col ? 'cursor-pointer group hover:text-slate-900 dark:hover:text-white transition-colors' : ''} ${className}`}
       onClick={col ? () => handleSort(col) : undefined}
     >
       <div className="flex items-center gap-2">
@@ -183,7 +183,7 @@ export default function LeadsTable({
           <thead className="sticky top-0 z-20 bg-slate-100/90 dark:bg-[#040509]/90 backdrop-blur-md shadow-sm">
             <tr>
               {/* Checkbox */}
-              <th className="pl-6 pr-3 py-4 w-12 border-b border-slate-200 dark:border-[#232734]">
+              <th className="pl-6 pr-3 py-4 w-12">
                 <button
                   onClick={toggleAll}
                   className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all ${
@@ -206,11 +206,11 @@ export default function LeadsTable({
               <Th col="status" className="min-w-[140px]">Status</Th>
               <Th col="createdAt" className="min-w-[130px]">Added</Th>
               <Th className="min-w-[140px]">Next Follow-up</Th>
-              <th className="pr-6 py-4 w-12 border-b border-slate-200 dark:border-[#232734]" />
+              <th className="pr-6 py-4 w-12" />
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-slate-200 dark:divide-[#232734]/50">
+          <tbody className="divide-none">
             <AnimatePresence>
               {sorted.map((lead, i) => {
                 const isSelected = selectedLeads.includes(lead._id);
@@ -229,10 +229,10 @@ export default function LeadsTable({
                     animate="show"
                     exit="exit"
                     onClick={() => handleCardClick(lead)}
-                    className={`cursor-pointer transition-all duration-200 group ${
+                    className={`cursor-pointer transition-all duration-200 group rounded-xl ${
                       isSelected
-                        ? 'bg-indigo-500/10'
-                        : 'hover:bg-white/5 dark:hover:bg-[#151821]'
+                        ? 'bg-[#2563EB]/10 dark:bg-[#3B82F6]/10'
+                        : 'hover:bg-slate-100/50 dark:hover:bg-[#111111]'
                     }`}
                   >
                     {/* Checkbox */}
@@ -341,7 +341,7 @@ export default function LeadsTable({
       </div>
 
       {/* ─── Mobile Card List ───────────────────────────────────────────────── */}
-      <div className="md:hidden divide-y divide-[#232734]">
+      <div className="md:hidden flex flex-col gap-2 p-2">
         <AnimatePresence>
           {sorted.map((lead, i) => {
             const isSelected  = selectedLeads.includes(lead._id);
@@ -360,7 +360,7 @@ export default function LeadsTable({
                 animate="show"
                 exit="exit"
                 onClick={() => handleCardClick(lead)}
-                className={`p-5 cursor-pointer transition-colors ${isSelected ? 'bg-indigo-500/10' : 'hover:bg-white/5 dark:hover:bg-[#151821]'}`}
+                className={`p-5 rounded-2xl cursor-pointer transition-colors ${isSelected ? 'bg-[#2563EB]/10 dark:bg-[#3B82F6]/10' : 'hover:bg-slate-100/50 dark:hover:bg-[#111111]'}`}
               >
                 <div className="flex items-start gap-4">
                   {/* Checkbox */}

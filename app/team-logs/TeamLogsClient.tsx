@@ -89,7 +89,7 @@ export default function TeamLogsClient({ currentUser }: { currentUser: any }) {
     <div className="space-y-6">
       {/* Date Picker & Top Performer */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-1 neu-flat rounded-3xl p-6 bg-white/40 dark:bg-slate-900/40">
+        <div className="md:col-span-1 bg-white dark:bg-[#11131A] border border-slate-100 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 shadow-[0_2px_10px_rgb(0,0,0,0.02)]">
           <label className="block text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Select Date</label>
           <DatePicker 
             value={date} 
@@ -98,7 +98,7 @@ export default function TeamLogsClient({ currentUser }: { currentUser: any }) {
         </div>
 
         {topPerformer && topPerformer.totalSeconds > 0 && (
-          <div className="md:col-span-2 neu-flat rounded-3xl p-6 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-200 dark:border-indigo-500/20 flex items-center gap-6 relative overflow-hidden">
+          <div className="md:col-span-2 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-[24px] p-6 lg:p-8 flex items-center gap-6 relative overflow-hidden shadow-[0_2px_10px_rgb(0,0,0,0.02)]">
             <div className="absolute -right-10 -top-10 text-indigo-500/10 rotate-12">
               <Award size={150} />
             </div>

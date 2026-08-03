@@ -18,6 +18,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
 import { createDailyExpense, updateDailyExpense, deleteDailyExpense } from '@/app/actions/dailyExpenseActions';
+import BorrowLendTab from '@/components/expenses/BorrowLendTab';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Expense {
@@ -31,6 +32,7 @@ interface Expense {
 
 interface ExpensesClientProps {
   initialExpenses: Expense[];
+  initialLoans: any[];
 }
 
 // ─── Configs ──────────────────────────────────────────────────────────────────
@@ -56,9 +58,10 @@ const formatCurrency = (amount: number) =>
 const formatDate = (date: string | Date) => 
   new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-export default function DailyExpensesClient({ initialExpenses }: ExpensesClientProps) {
+export default function DailyExpensesClient({ initialExpenses, initialLoans }: ExpensesClientProps) {
   const { confirm } = useConfirm();
   const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
+  const [activeTab, setActiveTab] = useState<'expenses' | 'loans'>('expenses');
   
   // UI States
   const [searchQuery, setSearchQuery] = useState('');
@@ -279,27 +282,47 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
                 </div>
                 <span className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Expense Management</span>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tracking-tight font-jakarta mb-1.5">Expenses</h1>
-              <p className="text-sm font-medium text-[#94A3B8]">Track, categorize, and analyze business expenses.</p>
+              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tracking-tight font-jakarta mb-1.5">Finance</h1>
+              <p className="text-sm font-medium text-[#94A3B8]">Track expenses and manage your personal loans.</p>
             </div>
             
-            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-              <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-white dark:bg-[#11131A] hover:bg-slate-200 dark:bg-[#232734] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white transition-all">
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+              <div className="flex bg-slate-50 dark:bg-[#111111] p-1 rounded-xl border border-[#E2E8F0] dark:border-[#1a1a1a] w-full sm:w-auto">
+                <button 
+                  onClick={() => setActiveTab('expenses')}
+                  className={`flex-1 sm:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'expenses' ? 'bg-white dark:bg-[#1a1a1a] text-slate-900 dark:text-white shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)]' : 'text-slate-500 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white'}`}
+                >
+                  Daily Expenses
+                </button>
+                <button 
+                  onClick={() => setActiveTab('loans')}
+                  className={`flex-1 sm:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'loans' ? 'bg-white dark:bg-[#1a1a1a] text-slate-900 dark:text-white shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)]' : 'text-slate-500 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white'}`}
+                >
+                  Borrow & Lend
+                </button>
+              </div>
+              <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-white dark:bg-[#111111] hover:bg-slate-100 dark:hover:bg-[#1a1a1a] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white transition-all">
                 <UploadCloud size={16} /> Upload Receipt
               </button>
-              <button onClick={handleExport} disabled={isExporting} className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-white dark:bg-[#11131A] hover:bg-slate-200 dark:bg-[#232734] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white transition-all disabled:opacity-50">
+              <button onClick={handleExport} disabled={isExporting} className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-white dark:bg-[#111111] hover:bg-slate-100 dark:hover:bg-[#1a1a1a] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white transition-all disabled:opacity-50">
                 {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} 
                 {isExporting ? 'Exporting...' : 'Export'}
               </button>
-              <button onClick={openAddPanel} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
-                <Plus size={16} strokeWidth={2.5} /> Add Expense
-              </button>
+              {activeTab === 'expenses' && (
+                <button onClick={openAddPanel} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
+                  <Plus size={16} strokeWidth={2.5} /> Add Expense
+                </button>
+              )}
             </div>
           </motion.div>
+        </motion.div>
 
-          {/* ── KPI Cards ─────────────────────────────────────────────────── */}
+        {activeTab === 'expenses' ? (
+          <>
+          <motion.div variants={containerVariants} initial="hidden" animate="show">
+            {/* ── KPI Cards ─────────────────────────────────────────────────── */}
           <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 relative overflow-hidden group shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none transition-all">
+            <div className="bg-white dark:bg-[#11131A] border border-slate-100 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 flex flex-col justify-center relative overflow-hidden group shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgba(37,99,235,0.08)] transition-all">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Total Expenses</p>
                 <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 flex items-center justify-center text-[#2563EB]"><DollarSign size={16} /></div>
@@ -307,7 +330,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
               <p className="text-3xl font-bold font-mono text-slate-900 dark:text-white tracking-tight">{formatCurrency(totalExpenses)}</p>
             </div>
 
-            <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 relative overflow-hidden group shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none transition-all">
+            <div className="bg-white dark:bg-[#11131A] border border-slate-100 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 flex flex-col justify-center relative overflow-hidden group shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgba(37,99,235,0.08)] transition-all">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Approved</p>
                 <div className="w-8 h-8 rounded-lg bg-[#10B981]/10 flex items-center justify-center text-[#10B981]"><CheckCircle2 size={16} /></div>
@@ -315,7 +338,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
               <p className="text-3xl font-bold font-mono text-slate-900 dark:text-white tracking-tight">{formatCurrency(totalExpenses * 1)}</p>
             </div>
 
-            <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 relative overflow-hidden group shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none transition-all">
+            <div className="bg-white dark:bg-[#11131A] border border-slate-100 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 flex flex-col justify-center relative overflow-hidden group shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgba(37,99,235,0.08)] transition-all">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Pending</p>
                 <div className="w-8 h-8 rounded-lg bg-slate-200 dark:bg-[#232734] flex items-center justify-center text-[#94A3B8]"><AlertCircle size={16} /></div>
@@ -323,7 +346,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
               <p className="text-3xl font-bold font-mono text-[#94A3B8] tracking-tight">৳0</p>
             </div>
 
-            <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 relative overflow-hidden group shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none transition-all">
+            <div className="bg-white dark:bg-[#11131A] border border-slate-100 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 flex flex-col justify-center relative overflow-hidden group shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgba(37,99,235,0.08)] transition-all">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Avg Expense</p>
                 <div className="w-8 h-8 rounded-lg bg-[#7C3AED]/10 flex items-center justify-center text-[#7C3AED]"><TrendingDown size={16} /></div>
@@ -335,7 +358,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
 
         {/* ── Charts ───────────────────────────────────────────────────────── */}
         <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <motion.div variants={itemVariants} className="lg:col-span-2 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 flex flex-col shadow-sm dark:shadow-none">
+          <motion.div variants={itemVariants} className="lg:col-span-2 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-[24px] p-6 flex flex-col shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-6">Expense Trend</h3>
             <div className="flex-1 min-h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -350,7 +373,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
                       content={({ active, payload, label }) => {
                         if (active && payload && payload.length) {
                           return (
-                            <div className="bg-white dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl p-3 shadow-lg">
+                            <div className="bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-xl p-3 shadow-lg">
                               <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">{label}</p>
                               <p className="text-sm font-bold text-slate-900 dark:text-white">
                                 {formatCurrency(payload[0].value as number)}
@@ -379,7 +402,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
                       content={({ active, payload, label }) => {
                         if (active && payload && payload.length) {
                           return (
-                            <div className="bg-white dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl p-3 shadow-lg">
+                            <div className="bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-xl p-3 shadow-lg">
                               <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">{label}</p>
                               <p className="text-sm font-bold text-slate-900 dark:text-white">
                                 {formatCurrency(payload[0].value as number)}
@@ -397,7 +420,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
             </div>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 flex flex-col shadow-sm dark:shadow-none">
+          <motion.div variants={itemVariants} className="bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-[24px] p-6 flex flex-col shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-6">Categories</h3>
             <div className="flex-1 min-h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -428,27 +451,27 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
         </motion.div>
 
         {/* ── Filters & Table ──────────────────────────────────────────────── */}
-        <motion.div variants={containerVariants} initial="hidden" animate="show" className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] overflow-hidden shadow-sm dark:shadow-none">
+        <motion.div variants={containerVariants} initial="hidden" animate="show" className="bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-[24px] overflow-hidden shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
           {/* Table Toolbar */}
           {/* Table Toolbar */}
-          <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row gap-4 justify-between items-center bg-white shadow-sm dark:bg-slate-900/80">
+          <div className="p-6 border-b border-[#E2E8F0] dark:border-[#1a1a1a] flex flex-col md:flex-row gap-4 justify-between items-center bg-white dark:bg-[#111111] shadow-sm dark:shadow-none">
             <div className="flex items-center gap-3 w-full md:w-auto">
               <div className="relative flex-1 md:w-64 group">
                 <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8] group-focus-within:text-[#2563EB] transition-colors" />
                 <input type="text" placeholder="Search expenses..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-sm font-medium rounded-xl pl-11 pr-4 py-2.5 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all" />
+                  className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-800 dark:text-white text-sm font-medium rounded-xl pl-11 pr-4 py-2.5 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all" />
               </div>
             </div>
 
             <div className="flex items-center gap-3 w-full md:w-auto">
               <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}
-                className="bg-white hover:bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-xl pl-4 pr-8 py-2.5 appearance-none focus:outline-none focus:border-[#2563EB]/60 cursor-pointer w-full md:w-auto">
+                className="bg-white hover:bg-slate-50 dark:bg-[#111111] hover:dark:bg-[#141414] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-700 dark:text-slate-300 text-sm font-medium rounded-xl pl-4 pr-8 py-2.5 appearance-none focus:outline-none focus:border-[#2563EB]/60 cursor-pointer w-full md:w-auto">
                 <option value="All">All Categories</option>
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
               
               <select value={dateFilter} onChange={e => setDateFilter(e.target.value as any)}
-                className="bg-white hover:bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-xl pl-4 pr-8 py-2.5 appearance-none focus:outline-none focus:border-[#2563EB]/60 cursor-pointer w-full md:w-auto">
+                className="bg-white hover:bg-slate-50 dark:bg-[#111111] hover:dark:bg-[#141414] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-700 dark:text-slate-300 text-sm font-medium rounded-xl pl-4 pr-8 py-2.5 appearance-none focus:outline-none focus:border-[#2563EB]/60 cursor-pointer w-full md:w-auto">
                 <option value="All">All Time</option>
                 <option value="ThisMonth">This Month</option>
                 <option value="Last3Months">Last 3 Months</option>
@@ -460,8 +483,8 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
           {/* Table */}
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
-              <thead className="bg-slate-100 dark:bg-slate-900/50">
-                <tr className="border-b border-slate-200 dark:border-slate-800">
+              <thead className="bg-slate-50 dark:bg-[#09090B]">
+                <tr className="border-b border-[#E2E8F0] dark:border-[#1a1a1a]">
                   <th className="pl-6 pr-4 py-4 text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest whitespace-nowrap">Expense Title</th>
                   <th className="px-4 py-4 text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest whitespace-nowrap">Category</th>
                   <th className="px-4 py-4 text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest whitespace-nowrap">Amount</th>
@@ -474,7 +497,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
                 {filteredExpenses.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="py-20 text-center">
-                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] mb-4">
+                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] mb-4">
                         <Search size={24} className="text-[#94A3B8]" />
                       </div>
                       <p className="text-sm font-bold text-slate-900 dark:text-white">No expenses found</p>
@@ -486,12 +509,12 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
                     const catColor = CATEGORY_COLORS[e.category] || '#64748B';
                     return (
                       <motion.tr key={e._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.01 }}
-                        className="border-b border-[#232734]/50 hover:bg-slate-50 dark:bg-[#09090B] transition-colors group cursor-pointer"
+                        className="border-b border-[#E2E8F0] dark:border-[#1a1a1a] hover:bg-slate-50 dark:hover:bg-[#141414] dark:bg-transparent transition-colors group cursor-pointer"
                         onClick={() => openEditPanel(e)}>
                         <td className="pl-6 pr-4 py-4 w-[40%]">
                           <div className="flex items-center gap-3">
                             <div className="relative">
-                              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B] text-[#94A3B8]">
+                              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border border-[#E2E8F0] dark:border-[#1a1a1a] bg-slate-50 dark:bg-[#09090B] text-[#94A3B8]">
                                 <FileText size={14} />
                               </div>
                               {e.amount > 100 && (
@@ -507,7 +530,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
                           </div>
                         </td>
                         <td className="px-4 py-4">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-200 dark:bg-[#232734] text-xs font-bold" style={{ color: catColor }}>
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-200 dark:bg-[#1a1a1a] text-xs font-bold" style={{ color: catColor }}>
                             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: catColor }} />
                             {e.category}
                           </span>
@@ -545,19 +568,19 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
                 onClick={() => setIsSlidePanelOpen(false)} className="absolute inset-0 bg-black/30 dark:bg-[#09090B]/70 backdrop-blur-sm" />
               <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                className="relative w-full max-w-[500px] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-2xl z-50 flex flex-col shadow-2xl overflow-hidden max-h-[90vh]"
+                className="relative w-full max-w-[500px] bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-2xl z-50 flex flex-col shadow-2xl overflow-hidden max-h-[90vh]"
               >
                 {/* Header */}
-                <div className="flex-shrink-0 p-6 border-b border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A]">
+                <div className="flex-shrink-0 p-6 border-b border-[#E2E8F0] dark:border-[#1a1a1a] bg-white dark:bg-[#111111]">
                   <div className="flex items-center justify-between mb-5">
                     <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">{editingExpense ? 'Edit Expense' : 'New Expense'}</span>
-                    <button type="button" onClick={() => setIsSlidePanelOpen(false)} className="p-2 rounded-[10px] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] border border-slate-200 dark:border-[#232734] transition-all">
+                    <button type="button" onClick={() => setIsSlidePanelOpen(false)} className="p-2 rounded-[10px] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1a1a1a] border border-[#E2E8F0] dark:border-[#1a1a1a] transition-all">
                       <X size={14} />
                     </button>
                   </div>
                   
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-[14px] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center text-[#2563EB] flex-shrink-0">
+                    <div className="w-12 h-12 rounded-[14px] bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] flex items-center justify-center text-[#2563EB] flex-shrink-0">
                       <CreditCard size={20} />
                     </div>
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight mt-1">
@@ -572,13 +595,13 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
                   <div>
                     <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Amount (৳)</label>
                     <input required type="number" step="0.01" min="0" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})}
-                      className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-lg font-mono focus:border-[#2563EB]/60 focus:outline-none" placeholder="0.00" />
+                      className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-lg font-mono focus:border-[#2563EB]/60 focus:outline-none" placeholder="0.00" />
                   </div>
 
                   <div>
                     <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Expense Title</label>
                     <input required type="text" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
-                      className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none" placeholder="e.g. Client Dinner" />
+                      className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none" placeholder="e.g. Client Dinner" />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -587,7 +610,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
                       <DatePicker 
                         selected={formData.date && !isNaN(new Date(formData.date).getTime()) ? new Date(formData.date) : null} 
                         onChange={(date: Date | null) => setFormData({...formData, date: date ? format(date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')})}
-                        className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none" 
+                        className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none" 
                         dateFormat="MMMM d, yyyy"
                         required
                         popperPlacement="bottom-start"
@@ -597,7 +620,7 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
                     <div>
                       <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Category</label>
                       <select required value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}
-                        className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none cursor-pointer">
+                        className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none cursor-pointer">
                         {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
@@ -606,12 +629,12 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
                   <div>
                     <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Payment Method</label>
                     <select required value={formData.paymentMethod} onChange={e => setFormData({...formData, paymentMethod: e.target.value})}
-                      className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none cursor-pointer">
+                      className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none cursor-pointer">
                       {PAYMENT_METHODS.map(m => <option key={m} value={m}>{m}</option>)}
                     </select>
                   </div>
 
-                  <div className="pt-6 mt-6 border-t border-slate-200 dark:border-[#232734]">
+                  <div className="pt-6 mt-6 border-t border-[#E2E8F0] dark:border-[#1a1a1a]">
                     <button type="submit" disabled={isSubmitting || !formData.amount || !formData.description}
                       className="w-full py-3.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold text-sm rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.25)]">
                       {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : 'Save Expense'}
@@ -623,6 +646,13 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
           )}
         </AnimatePresence>
 
+          </>
+        ) : (
+          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+            <BorrowLendTab initialLoans={initialLoans} />
+          </motion.div>
+        )}
+
         {/* ── Upload Receipt Modal ─────────────────────────────────────── */}
         <AnimatePresence>
           {isUploadModalOpen && (
@@ -631,10 +661,10 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
                 onClick={() => setIsUploadModalOpen(false)} className="absolute inset-0 bg-black/30 dark:bg-[#09090B]/70 backdrop-blur-sm" />
               <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                className="relative w-full max-w-[450px] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-2xl z-50 flex flex-col shadow-2xl overflow-hidden"
+                className="relative w-full max-w-[450px] bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-2xl z-50 flex flex-col shadow-2xl overflow-hidden"
               >
                 {/* Header */}
-                <div className="p-6 border-b border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A] flex items-center justify-between">
+                <div className="p-6 border-b border-[#E2E8F0] dark:border-[#1a1a1a] bg-white dark:bg-[#111111] flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-[12px] bg-[#10B981]/10 border border-[#10B981]/20 flex items-center justify-center text-[#10B981]">
                       <UploadCloud size={18} />
@@ -644,15 +674,15 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
                       <p className="text-[10px] text-[#94A3B8] font-bold uppercase tracking-widest">AI Auto-Extraction</p>
                     </div>
                   </div>
-                  <button type="button" onClick={() => setIsUploadModalOpen(false)} className="p-2 rounded-[10px] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] border border-slate-200 dark:border-[#232734] transition-all">
+                  <button type="button" onClick={() => setIsUploadModalOpen(false)} className="p-2 rounded-[10px] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1a1a1a] border border-[#E2E8F0] dark:border-[#1a1a1a] transition-all">
                     <X size={14} />
                   </button>
                 </div>
 
                 {/* Body */}
                 <div className="p-6 space-y-6">
-                  <div className="w-full h-40 border-2 border-dashed border-slate-200 dark:border-[#232734] rounded-xl flex flex-col items-center justify-center gap-3 hover:border-[#2563EB]/50 hover:bg-[#2563EB]/5 transition-colors cursor-pointer group">
-                    <div className="w-12 h-12 rounded-full bg-white dark:bg-[#11131A] group-hover:bg-[#2563EB]/10 flex items-center justify-center text-[#94A3B8] group-hover:text-[#2563EB] transition-colors">
+                  <div className="w-full h-40 border-2 border-dashed border-[#E2E8F0] dark:border-[#1a1a1a] rounded-xl flex flex-col items-center justify-center gap-3 hover:border-[#2563EB]/50 hover:bg-[#2563EB]/5 transition-colors cursor-pointer group">
+                    <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-[#111111] group-hover:bg-[#2563EB]/10 flex items-center justify-center text-[#94A3B8] group-hover:text-[#2563EB] transition-colors">
                       <UploadCloud size={20} />
                     </div>
                     <div className="text-center">
@@ -662,8 +692,8 @@ export default function DailyExpensesClient({ initialExpenses }: ExpensesClientP
                   </div>
                 </div>
 
-                <div className="p-6 border-t border-slate-200 dark:border-[#232734] bg-slate-100 dark:bg-[#0D0F16] flex gap-3 rounded-b-2xl">
-                  <button type="button" onClick={() => setIsUploadModalOpen(false)} className="flex-1 py-2.5 bg-white dark:bg-transparent border border-slate-200 dark:border-[#232734] hover:bg-slate-200 dark:hover:bg-[#11131A] text-slate-900 dark:text-white font-bold text-sm rounded-xl transition-all shadow-sm">
+                <div className="p-6 border-t border-[#E2E8F0] dark:border-[#1a1a1a] bg-slate-50 dark:bg-[#09090B] flex gap-3 rounded-b-2xl">
+                  <button type="button" onClick={() => setIsUploadModalOpen(false)} className="flex-1 py-2.5 bg-white dark:bg-transparent border border-[#E2E8F0] dark:border-[#1a1a1a] hover:bg-slate-100 dark:hover:bg-[#1a1a1a] text-slate-900 dark:text-white font-bold text-sm rounded-xl transition-all shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
                     Cancel
                   </button>
                   <button type="button" onClick={() => {

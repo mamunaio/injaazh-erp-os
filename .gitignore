@@ -47,3 +47,10 @@ release/
 *.exe
 *.dmg
 *.AppImage
+
+# AI workspace (planning/documentation - not production code)
+Injaazh-ERP-AI-Workspace/
+injaazh-ai-rules/
+
+# mobile expo
+mobile/.expo/

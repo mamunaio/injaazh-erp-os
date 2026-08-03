@@ -145,16 +145,16 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
           </div>
 
           <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
-            <button onClick={() => handleAction('Task Modal')} disabled={!!isActionLoading} className="flex-1 sm:flex-none items-center justify-center gap-2 px-5 py-2.5 bg-slate-50 dark:bg-[#09090B] hover:bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] hover:border-[#2563EB]/50 text-slate-900 dark:text-white font-semibold text-sm rounded-xl transition-all shadow-sm flex disabled:opacity-50">
+            <button onClick={() => handleAction('Task Modal')} disabled={!!isActionLoading} className="flex-1 sm:flex-none items-center justify-center gap-2 px-5 py-2.5 neu-button font-semibold text-sm flex disabled:opacity-50">
               {isActionLoading === 'Task Modal' ? <Activity size={16} className="text-slate-500 dark:text-slate-400 animate-spin" /> : <CheckSquare size={16} className="text-slate-500 dark:text-slate-400" />} Create Task
             </button>
-            <button onClick={() => handleAction('Proposal Draft', '/proposals')} disabled={!!isActionLoading} className="flex-1 sm:flex-none items-center justify-center gap-2 px-5 py-2.5 bg-slate-50 dark:bg-[#09090B] hover:bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] hover:border-[#2563EB]/50 text-slate-900 dark:text-white font-semibold text-sm rounded-xl transition-all shadow-sm flex disabled:opacity-50">
+            <button onClick={() => handleAction('Proposal Draft', '/proposals')} disabled={!!isActionLoading} className="flex-1 sm:flex-none items-center justify-center gap-2 px-5 py-2.5 neu-button font-semibold text-sm flex disabled:opacity-50">
               {isActionLoading === 'Proposal Draft' ? <Activity size={16} className="text-slate-500 dark:text-slate-400 animate-spin" /> : <FileText size={16} className="text-slate-500 dark:text-slate-400" />} New Proposal
             </button>
-            <button onClick={() => handleAction('Project Setup', '/projects')} disabled={!!isActionLoading} className="flex-1 sm:flex-none items-center justify-center gap-2 px-5 py-2.5 bg-slate-50 dark:bg-[#09090B] hover:bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] hover:border-[#2563EB]/50 text-slate-900 dark:text-white font-semibold text-sm rounded-xl transition-all shadow-sm flex disabled:opacity-50">
+            <button onClick={() => handleAction('Project Setup', '/projects')} disabled={!!isActionLoading} className="flex-1 sm:flex-none items-center justify-center gap-2 px-5 py-2.5 neu-button font-semibold text-sm flex disabled:opacity-50">
               {isActionLoading === 'Project Setup' ? <Activity size={16} className="text-slate-500 dark:text-slate-400 animate-spin" /> : <Briefcase size={16} className="text-slate-500 dark:text-slate-400" />} New Project
             </button>
-            <button onClick={() => handleAction('Lead Form', '/prospects')} disabled={!!isActionLoading} className="flex-1 sm:flex-none items-center justify-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold text-sm rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.2)] hover:shadow-[0_0_25px_rgba(37,99,235,0.4)] flex disabled:opacity-50">
+            <button onClick={() => handleAction('Lead Form', '/prospects')} disabled={!!isActionLoading} className="flex-1 sm:flex-none items-center justify-center gap-2 px-5 py-2.5 bg-primary-600 hover:bg-primary-500 text-white font-bold text-sm rounded-xl transition-all shadow-[0_0_20px_rgba(var(--color-primary-500),0.3)] hover:shadow-[0_0_30px_rgba(var(--color-primary-500),0.5)] flex disabled:opacity-50">
               {isActionLoading === 'Lead Form' ? <Activity size={16} className="animate-spin" /> : <Plus size={16} />} Add Lead
             </button>
           </div>
@@ -173,8 +173,16 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 
                 {/* Metric 1: Revenue */}
-                <div className="group bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] p-6 lg:p-8 flex flex-col gap-4 hover:border-[#2563EB]/50 hover:shadow-[0_0_30px_rgba(37,99,235,0.1)] transition-all cursor-pointer relative overflow-hidden">
-                   <div className="absolute top-0 right-0 w-32 h-32 bg-[#2563EB]/5 blur-[40px] rounded-full group-hover:bg-[#2563EB]/10 transition-colors"></div>
+                <div className="group bg-white dark:bg-[#11131A] border border-slate-100 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 flex flex-col gap-4 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgba(37,99,235,0.08)] transition-all cursor-pointer relative overflow-hidden shadow-[0_2px_10px_rgb(0,0,0,0.02)]">
+                   {/* Top colored line */}
+                   <div className="absolute top-0 left-[15%] right-[15%] h-[3px] bg-[#2563EB] rounded-b-md opacity-80"></div>
+                   
+                   {/* Bottom abstract wave */}
+                   <div className="absolute bottom-0 left-0 w-full h-[60%] pointer-events-none opacity-[0.08] dark:opacity-[0.15]">
+                     <svg viewBox="0 0 400 150" preserveAspectRatio="none" className="w-full h-full text-[#2563EB]">
+                       <path fill="currentColor" d="M0,80 C150,150 250,20 400,80 L400,150 L0,150 Z"></path>
+                     </svg>
+                   </div>
                    <div className="flex justify-between items-start relative z-10">
                      <div className="w-10 h-10 rounded-[12px] bg-[#2563EB]/10 border border-[#2563EB]/20 flex items-center justify-center text-[#2563EB]">
                        <DollarSign size={18} />
@@ -190,8 +198,16 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                 </div>
 
                 {/* Metric 2: Active Projects */}
-                <div className="group bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] p-6 lg:p-8 flex flex-col gap-4 hover:border-[#7C3AED]/50 hover:shadow-[0_0_30px_rgba(124,58,237,0.1)] transition-all cursor-pointer relative overflow-hidden">
-                   <div className="absolute top-0 right-0 w-32 h-32 bg-[#7C3AED]/5 blur-[40px] rounded-full group-hover:bg-[#7C3AED]/10 transition-colors"></div>
+                <div className="group bg-white dark:bg-[#11131A] border border-slate-100 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 flex flex-col gap-4 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgba(124,58,237,0.08)] transition-all cursor-pointer relative overflow-hidden shadow-[0_2px_10px_rgb(0,0,0,0.02)]">
+                   {/* Top colored line */}
+                   <div className="absolute top-0 left-[15%] right-[15%] h-[3px] bg-[#7C3AED] rounded-b-md opacity-80"></div>
+                   
+                   {/* Bottom abstract wave */}
+                   <div className="absolute bottom-0 left-0 w-full h-[60%] pointer-events-none opacity-[0.08] dark:opacity-[0.15]">
+                     <svg viewBox="0 0 400 150" preserveAspectRatio="none" className="w-full h-full text-[#7C3AED]">
+                       <path fill="currentColor" d="M0,60 C150,130 250,40 400,100 L400,150 L0,150 Z"></path>
+                     </svg>
+                   </div>
                    <div className="flex justify-between items-start relative z-10">
                      <div className="w-10 h-10 rounded-[12px] bg-[#7C3AED]/10 border border-[#7C3AED]/20 flex items-center justify-center text-[#7C3AED]">
                        <Briefcase size={18} />
@@ -207,8 +223,16 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                 </div>
 
                 {/* Metric 3: Leads */}
-                <div className="group bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] p-6 lg:p-8 flex flex-col gap-4 hover:border-[#F59E0B]/50 hover:shadow-[0_0_30px_rgba(245,158,11,0.1)] transition-all cursor-pointer relative overflow-hidden">
-                   <div className="absolute top-0 right-0 w-32 h-32 bg-[#F59E0B]/5 blur-[40px] rounded-full group-hover:bg-[#F59E0B]/10 transition-colors"></div>
+                <div className="group bg-white dark:bg-[#11131A] border border-slate-100 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 flex flex-col gap-4 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgba(245,158,11,0.08)] transition-all cursor-pointer relative overflow-hidden shadow-[0_2px_10px_rgb(0,0,0,0.02)]">
+                   {/* Top colored line */}
+                   <div className="absolute top-0 left-[15%] right-[15%] h-[3px] bg-[#F59E0B] rounded-b-md opacity-80"></div>
+                   
+                   {/* Bottom abstract wave */}
+                   <div className="absolute bottom-0 left-0 w-full h-[60%] pointer-events-none opacity-[0.08] dark:opacity-[0.15]">
+                     <svg viewBox="0 0 400 150" preserveAspectRatio="none" className="w-full h-full text-[#F59E0B]">
+                       <path fill="currentColor" d="M0,100 C150,20 250,130 400,60 L400,150 L0,150 Z"></path>
+                     </svg>
+                   </div>
                    <div className="flex justify-between items-start relative z-10">
                      <div className="w-10 h-10 rounded-[12px] bg-[#F59E0B]/10 border border-[#F59E0B]/20 flex items-center justify-center text-[#F59E0B]">
                        <Users size={18} />
@@ -224,8 +248,16 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                 </div>
 
                 {/* Metric 4: Clients */}
-                <div className="group bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] p-6 lg:p-8 flex flex-col gap-4 hover:border-[#10B981]/50 hover:shadow-[0_0_30px_rgba(16,185,129,0.1)] transition-all cursor-pointer relative overflow-hidden">
-                   <div className="absolute top-0 right-0 w-32 h-32 bg-[#10B981]/5 blur-[40px] rounded-full group-hover:bg-[#10B981]/10 transition-colors"></div>
+                <div className="group bg-white dark:bg-[#11131A] border border-slate-100 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 flex flex-col gap-4 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgba(16,185,129,0.08)] transition-all cursor-pointer relative overflow-hidden shadow-[0_2px_10px_rgb(0,0,0,0.02)]">
+                   {/* Top colored line */}
+                   <div className="absolute top-0 left-[15%] right-[15%] h-[3px] bg-[#10B981] rounded-b-md opacity-80"></div>
+                   
+                   {/* Bottom abstract wave */}
+                   <div className="absolute bottom-0 left-0 w-full h-[60%] pointer-events-none opacity-[0.08] dark:opacity-[0.15]">
+                     <svg viewBox="0 0 400 150" preserveAspectRatio="none" className="w-full h-full text-[#10B981]">
+                       <path fill="currentColor" d="M0,40 C150,140 250,50 400,90 L400,150 L0,150 Z"></path>
+                     </svg>
+                   </div>
                    <div className="flex justify-between items-start relative z-10">
                      <div className="w-10 h-10 rounded-[12px] bg-[#10B981]/10 border border-[#10B981]/20 flex items-center justify-center text-[#10B981]">
                        <Globe size={18} />
@@ -241,8 +273,16 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                 </div>
 
                 {/* Metric 5: Pending Tasks */}
-                <div className="group bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] p-6 lg:p-8 flex flex-col gap-4 hover:border-[#EF4444]/50 hover:shadow-[0_0_30px_rgba(239,68,68,0.1)] transition-all cursor-pointer relative overflow-hidden">
-                   <div className="absolute top-0 right-0 w-32 h-32 bg-[#EF4444]/5 blur-[40px] rounded-full group-hover:bg-[#EF4444]/10 transition-colors"></div>
+                <div className="group bg-white dark:bg-[#11131A] border border-slate-100 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 flex flex-col gap-4 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgba(239,68,68,0.08)] transition-all cursor-pointer relative overflow-hidden shadow-[0_2px_10px_rgb(0,0,0,0.02)]">
+                   {/* Top colored line */}
+                   <div className="absolute top-0 left-[15%] right-[15%] h-[3px] bg-[#EF4444] rounded-b-md opacity-80"></div>
+                   
+                   {/* Bottom abstract wave */}
+                   <div className="absolute bottom-0 left-0 w-full h-[60%] pointer-events-none opacity-[0.08] dark:opacity-[0.15]">
+                     <svg viewBox="0 0 400 150" preserveAspectRatio="none" className="w-full h-full text-[#EF4444]">
+                       <path fill="currentColor" d="M0,90 C150,30 250,110 400,50 L400,150 L0,150 Z"></path>
+                     </svg>
+                   </div>
                    <div className="flex justify-between items-start relative z-10">
                      <div className="w-10 h-10 rounded-[12px] bg-[#EF4444]/10 border border-[#EF4444]/20 flex items-center justify-center text-[#EF4444]">
                        <Clock size={18} />
@@ -258,8 +298,16 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                 </div>
 
                 {/* Metric 6: Monthly Growth */}
-                <div className="group bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[20px] p-6 lg:p-8 flex flex-col gap-4 hover:border-[#0EA5E9]/50 hover:shadow-[0_0_30px_rgba(14,165,233,0.1)] transition-all cursor-pointer relative overflow-hidden">
-                   <div className="absolute top-0 right-0 w-32 h-32 bg-[#0EA5E9]/5 blur-[40px] rounded-full group-hover:bg-[#0EA5E9]/10 transition-colors"></div>
+                <div className="group bg-white dark:bg-[#11131A] border border-slate-100 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 flex flex-col gap-4 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgba(14,165,233,0.08)] transition-all cursor-pointer relative overflow-hidden shadow-[0_2px_10px_rgb(0,0,0,0.02)]">
+                   {/* Top colored line */}
+                   <div className="absolute top-0 left-[15%] right-[15%] h-[3px] bg-[#0EA5E9] rounded-b-md opacity-80"></div>
+                   
+                   {/* Bottom abstract wave */}
+                   <div className="absolute bottom-0 left-0 w-full h-[60%] pointer-events-none opacity-[0.08] dark:opacity-[0.15]">
+                     <svg viewBox="0 0 400 150" preserveAspectRatio="none" className="w-full h-full text-[#0EA5E9]">
+                       <path fill="currentColor" d="M0,70 C150,140 250,40 400,110 L400,150 L0,150 Z"></path>
+                     </svg>
+                   </div>
                    <div className="flex justify-between items-start relative z-10">
                      <div className="w-10 h-10 rounded-[12px] bg-[#0EA5E9]/10 border border-[#0EA5E9]/20 flex items-center justify-center text-[#0EA5E9]">
                        <TrendingUp size={18} />

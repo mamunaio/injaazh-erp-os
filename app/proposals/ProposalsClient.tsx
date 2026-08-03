@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { createProposal, deleteProposal } from '@/app/actions/proposalActions';
 import toast from 'react-hot-toast';
-
+import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Proposal {
   _id: string;
@@ -365,27 +365,47 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
 
           {/* ── KPI Cards ─────────────────────────────────────────────────── */}
           <motion.div variants={itemVariants} className="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-6">
-            {kpis.map((k, i) => (
+            {kpis.map((k, i) => {
+              const dummyData = [10, 20, 15, 25, 20, 30, 40].map((v, idx) => ({ val: v + (Math.random() * 10 - 5) }));
+              return (
               <motion.div key={k.label}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05, type: 'spring', stiffness: 280, damping: 26 }}
                 whileHover={{ y: -2, transition: { duration: 0.15 } }}
-                className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[18px] p-4 cursor-default group transition-all shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none"
+                  className="relative bg-white dark:bg-[#11131A] border border-slate-100 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 flex flex-col justify-center overflow-hidden transition-all duration-300 shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgba(37,99,235,0.08)] cursor-default group"
               >
-                <div className="flex items-start justify-between mb-3">
+                {/* Subtle Radial Gradient */}
+                <div className="absolute inset-0 opacity-0 dark:opacity-20 transition-opacity duration-300 pointer-events-none"
+                     style={{ background: `radial-gradient(circle at top right, ${k.color}33 0%, transparent 60%)` }} />
+                
+                {/* Recharts Area Wave */}
+                <div className="absolute inset-0 opacity-10 pointer-events-none">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={dummyData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                      <Area type="monotone" dataKey="val" stroke={k.color} strokeWidth={2} fill={k.color} fillOpacity={1} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Top Edge Glow */}
+                <div
+                  className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-[2px] opacity-70 group-hover:opacity-100 transition-opacity duration-300 rounded-b-full pointer-events-none"
+                  style={{ backgroundColor: k.color, boxShadow: `0 4px 15px ${k.color}` }}
+                />
+                <div className="relative z-10 flex items-start justify-between mb-4">
                   <p className="text-[11px] font-bold text-[#94A3B8]">{k.label}</p>
                   <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${k.up ? 'text-[#10B981] bg-[#10B981]/10' : 'text-[#EF4444] bg-[#EF4444]/10'}`}>
                     {k.up ? <ArrowUpRight size={10} className="inline" /> : <ArrowDownRight size={10} className="inline" />} {k.trend}
                   </span>
                 </div>
-                <p className="text-xl font-bold font-mono tracking-tight" style={{ color: k.color }}>{k.value}</p>
+                <p className="relative z-10 text-xl font-bold font-mono tracking-tight" style={{ color: k.color }}>{k.value}</p>
               </motion.div>
-            ))}
+            )})}
           </motion.div>
 
           {/* ── Total Value Banner ────────────────────────────────────────── */}
-          <motion.div variants={itemVariants} className="flex items-center justify-between bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[16px] px-5 py-4 mb-6 shadow-sm dark:shadow-none">
+          <motion.div variants={itemVariants} className="flex items-center justify-between neu-flat rounded-[24px] px-5 py-4 mb-6 shadow-sm dark:shadow-none">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-[10px] bg-[#10B981]/10 border border-[#10B981]/20 flex items-center justify-center text-[#10B981]">
                 <TrendingUp size={15} />
@@ -422,7 +442,7 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
                 placeholder="Search proposals, clients…"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white placeholder-[#94A3B8]/60 text-sm font-medium rounded-xl pl-11 pr-10 py-2.5 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all"
+                className="w-full bg-white dark:bg-[#111111] border-none text-slate-900 dark:text-white placeholder-[#94A3B8]/60 text-sm font-medium rounded-xl pl-11 pr-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)]"
               />
               {searchQuery && (
                 <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-md bg-slate-200 dark:bg-[#232734] flex items-center justify-center text-[#94A3B8] hover:text-slate-900 dark:hover:text-white transition-colors">
@@ -435,7 +455,7 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
             <div className="flex items-center gap-1.5 flex-wrap">
               {STATUSES.map(s => (
                 <button key={s} onClick={() => setStatusFilter(s)}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${statusFilter === s ? 'bg-[#2563EB]/10 text-[#2563EB] border-[#2563EB]/30' : 'bg-white dark:bg-[#11131A] text-[#94A3B8] border-slate-200 dark:border-[#232734] hover:text-slate-900 dark:hover:text-white'}`}>
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${statusFilter === s ? 'bg-[#2563EB]/10 text-[#2563EB]' : 'bg-white dark:bg-[#111111] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-[#1a1a1a]'}`}>
                   {s}
                 </button>
               ))}
@@ -444,21 +464,21 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
             <div className="flex-1 hidden md:block" />
 
             {/* Count */}
-            <div className="hidden md:flex items-center gap-1.5 px-3.5 py-2.5 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl">
+            <div className="hidden md:flex items-center gap-1.5 px-3.5 py-2.5 bg-white dark:bg-[#111111] rounded-xl shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)]">
               <span className="text-sm font-bold text-slate-900 dark:text-white font-mono">{filteredProposals.length}</span>
               <span className="text-xs font-semibold text-[#94A3B8]">proposals</span>
             </div>
 
             {/* View toggle */}
-            <div className="flex items-center bg-slate-50 dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl p-1">
+            <div className="flex items-center bg-slate-50 dark:bg-[#111111] rounded-xl p-1 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)]">
               <button onClick={() => setViewMode('list')}
                 className={`relative p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'text-slate-900 dark:text-white' : 'text-[#94A3B8] hover:text-[#94A3B8]/80'}`} aria-label="List view">
-                {viewMode === 'list' && <motion.div layoutId="proposalView" className="absolute inset-0 bg-white dark:bg-[#232734] rounded-lg -z-10 border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none" />}
+                {viewMode === 'list' && <motion.div layoutId="proposalView" className="absolute inset-0 bg-white dark:bg-[#232734] rounded-lg -z-10 shadow-sm dark:shadow-none" />}
                 <List size={15} />
               </button>
               <button onClick={() => setViewMode('grid')}
                 className={`relative p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'text-slate-900 dark:text-white' : 'text-[#94A3B8] hover:text-[#94A3B8]/80'}`} aria-label="Grid view">
-                {viewMode === 'grid' && <motion.div layoutId="proposalView" className="absolute inset-0 bg-white dark:bg-[#232734] rounded-lg -z-10 border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none" />}
+                {viewMode === 'grid' && <motion.div layoutId="proposalView" className="absolute inset-0 bg-white dark:bg-[#232734] rounded-lg -z-10 shadow-sm dark:shadow-none" />}
                 <LayoutGrid size={15} />
               </button>
             </div>
@@ -468,7 +488,7 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
         {/* ── Main Content ──────────────────────────────────────────────────── */}
         {filteredProposals.length === 0 ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            className="py-32 flex flex-col items-center justify-center bg-white dark:bg-[#11131A] border border-dashed border-slate-200 dark:border-[#232734] rounded-[20px]">
+            className="py-32 flex flex-col items-center justify-center neu-flat rounded-[24px]">
             <div className="w-16 h-16 rounded-[20px] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center mb-4">
               <FileText size={24} className="text-slate-400 dark:text-slate-600" />
             </div>
@@ -484,11 +504,11 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
         ) : viewMode === 'list' ? (
 
           /* ─ Table View ───────────────────────────────────────────────────── */
-          <div className="overflow-hidden rounded-[20px] border border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A] shadow-sm dark:shadow-none">
+          <div className="overflow-hidden neu-flat rounded-[24px] shadow-sm dark:shadow-none">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm">
-                <thead className="sticky top-0 z-10 bg-slate-100 dark:bg-slate-900/50">
-                  <tr className="border-b border-slate-200 dark:border-[#232734]">
+                <thead className="sticky top-0 z-10 bg-slate-100/50 dark:bg-[#0a0a0b]/80 backdrop-blur-md">
+                  <tr>
                     <th className="pl-5 pr-4 py-3 text-left text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest min-w-[300px]">Proposal</th>
                     <th className="pr-4 py-3 text-left text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest min-w-[160px]">Client</th>
                     <th className="pr-4 py-3 text-left text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest min-w-[110px]">Value</th>
@@ -506,7 +526,7 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
                         <motion.tr key={proposal._id}
                           custom={i} variants={rowVariants} initial="hidden" animate="show" exit="exit"
                           onClick={() => setSelectedProposal(proposal)}
-                          className="border-b border-slate-200 dark:border-slate-800/50 cursor-pointer group hover:bg-slate-50 dark:hover:bg-[#09090B]/80 transition-colors"
+                          className="cursor-pointer group hover:bg-slate-50 dark:hover:bg-[#111111] transition-colors"
                         >
                           {/* Proposal title */}
                           <td className="pl-5 pr-4 py-4">
@@ -614,7 +634,7 @@ export default function ProposalsClient({ initialProposals, initialStats }: Prop
                   transition={{ delay: i * 0.04, type: 'spring', stiffness: 280, damping: 26 }}
                   whileHover={{ y: -3, transition: { duration: 0.15 } }}
                   onClick={() => setSelectedProposal(proposal)}
-                  className="group relative bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] hover:border-[#2563EB]/40 p-5 rounded-[20px] transition-all cursor-pointer hover:shadow-[0_0_24px_rgba(37,99,235,0.08)] flex flex-col"
+                  className="group relative neu-flat p-5 rounded-[24px] transition-all cursor-pointer hover:shadow-[0_0_24px_rgba(37,99,235,0.08)] flex flex-col"
                 >
                   {/* Top row */}
                   <div className="flex items-start justify-between mb-4">

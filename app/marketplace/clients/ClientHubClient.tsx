@@ -14,6 +14,7 @@ import { countryToTimezoneMap } from '@/lib/countryToTimezone';
 import { notify } from '@/lib/notify';
 import { useUser } from '@/components/layout/UserContext';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
+import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 
 interface ClientHubClientProps {
   initialClients: any[];
@@ -66,7 +67,7 @@ const InputField = ({ label, icon: Icon, type = "text", value, onChange, placeho
       {label} {required && <span className="text-[#EF4444]">*</span>}
     </label>
     <input required={required} type={type} value={value} onChange={onChange} placeholder={placeholder}
-      className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-3 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all placeholder-[#94A3B8]/60" />
+      className="w-full bg-white dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-xl px-4 py-3 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all placeholder-[#94A3B8]/60 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none" />
   </div>
 );
 
@@ -238,11 +239,11 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
               <p className="text-sm font-medium text-[#94A3B8]">Manage your network, track spending, and organize communications.</p>
             </div>
             <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-              <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-white dark:bg-[#11131A] text-[#94A3B8] border border-slate-200 dark:border-[#232734] hover:text-slate-900 dark:hover:text-white transition-all">
+              <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-white dark:bg-[#111111] text-[#94A3B8] border-none hover:text-slate-900 dark:hover:text-white transition-all shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)]">
                 <DownloadCloud size={15} /> <span className="hidden sm:inline">Export</span>
               </button>
               <button onClick={() => setIsAddModalOpen(true)}
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#3B82F6] text-white shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:shadow-[0_0_30px_rgba(59,130,246,0.6)] transition-all border-none">
                 <Plus size={16} strokeWidth={2.5} /> Add Client
               </button>
             </div>
@@ -250,23 +251,44 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
 
           {/* ── KPI Cards ─────────────────────────────────────────────────── */}
           <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
-            {kpis.map((k, i) => (
-              <motion.div key={k.label}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05, type: 'spring', stiffness: 280, damping: 26 }}
-                whileHover={{ y: -2, transition: { duration: 0.15 } }}
-                className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[18px] p-4 cursor-default group transition-all shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <p className="text-[11px] font-bold text-[#94A3B8] leading-tight max-w-[80px]">{k.label}</p>
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${k.up ? 'text-[#10B981] bg-[#10B981]/10' : 'text-[#EF4444] bg-[#EF4444]/10'}`}>
-                    {k.up ? <ArrowUpRight size={10} className="inline" /> : <ArrowDownRight size={10} className="inline" />} {k.trend}
-                  </span>
-                </div>
-                <p className="text-xl font-bold font-mono tracking-tight" style={{ color: k.color }}>{k.value}</p>
-              </motion.div>
-            ))}
+            {kpis.map((k, i) => {
+              const dummyData = [10, 20, 15, 25, 20, 30, 40].map((v, idx) => ({ val: v + (Math.random() * 10 - 5) }));
+              return (
+                <motion.div key={k.label}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05, type: 'spring', stiffness: 280, damping: 26 }}
+                  whileHover={{ y: -2, transition: { duration: 0.15 } }}
+                  className="relative bg-white dark:bg-[#11131A] border border-slate-100 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 flex flex-col justify-center overflow-hidden transition-all duration-300 shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgba(37,99,235,0.08)] cursor-default group"
+                >
+                  {/* Subtle Radial Gradient */}
+                  <div className="absolute inset-0 opacity-0 dark:opacity-20 transition-opacity duration-300 pointer-events-none"
+                       style={{ background: `radial-gradient(circle at top right, ${k.color}33 0%, transparent 60%)` }} />
+                  
+                  {/* Recharts Area Wave */}
+                  <div className="absolute inset-0 opacity-10 pointer-events-none">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={dummyData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                        <Area type="monotone" dataKey="val" stroke={k.color} strokeWidth={2} fill={k.color} fillOpacity={1} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* Top Edge Glow */}
+                  <div
+                    className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-[2px] opacity-70 group-hover:opacity-100 transition-opacity duration-300 rounded-b-full pointer-events-none"
+                    style={{ backgroundColor: k.color, boxShadow: `0 4px 15px ${k.color}` }}
+                  />
+                  <div className="relative z-10 flex items-start justify-between mb-4">
+                    <p className="text-[11px] font-bold text-[#94A3B8] leading-tight max-w-[80px]">{k.label}</p>
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${k.up ? 'text-[#10B981] bg-[#10B981]/10' : 'text-[#EF4444] bg-[#EF4444]/10'}`}>
+                      {k.up ? <ArrowUpRight size={10} className="inline" /> : <ArrowDownRight size={10} className="inline" />} {k.trend}
+                    </span>
+                  </div>
+                  <p className="relative z-10 text-xl font-bold font-mono tracking-tight" style={{ color: k.color }}>{k.value}</p>
+                </motion.div>
+              );
+            })}
           </motion.div>
 
           {/* ── Filter Bar ────────────────────────────────────────────────── */}
@@ -279,7 +301,7 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
                 placeholder="Search clients…"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white placeholder-[#94A3B8]/60 text-sm font-medium rounded-xl pl-11 pr-10 py-2.5 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all"
+                className="w-full bg-white dark:bg-[#111111] border-none text-slate-900 dark:text-white placeholder-[#94A3B8]/60 text-sm font-medium rounded-xl pl-11 pr-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)]"
               />
               {searchQuery && (
                 <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-md bg-slate-200 dark:bg-[#232734] flex items-center justify-center text-[#94A3B8] hover:text-slate-900 dark:hover:text-white transition-colors">
@@ -294,7 +316,7 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
                 if (user?.role === 'marketplace_team' && f === 'Direct') return null;
                 return (
                   <button key={f} onClick={() => setActiveFilter(f)}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all flex-shrink-0 ${activeFilter === f ? 'bg-[#2563EB]/10 text-[#2563EB] border-[#2563EB]/30' : 'bg-white dark:bg-[#11131A] text-[#94A3B8] border-slate-200 dark:border-[#232734] hover:text-slate-900 dark:hover:text-white'}`}>
+                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex-shrink-0 ${activeFilter === f ? 'bg-[#2563EB]/10 text-[#2563EB]' : 'bg-white dark:bg-[#111111] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-[#1a1a1a]'}`}>
                     {f}
                   </button>
                 );
@@ -304,7 +326,7 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
             <div className="flex-1 hidden md:block" />
 
             {/* Count */}
-            <div className="hidden md:flex items-center gap-1.5 px-3.5 py-2.5 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl">
+            <div className="hidden md:flex items-center gap-1.5 px-3.5 py-2.5 bg-white dark:bg-[#111111] rounded-xl shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)]">
               <span className="text-sm font-bold text-slate-900 dark:text-white font-mono">{filteredClients.length}</span>
               <span className="text-xs font-semibold text-[#94A3B8]">clients</span>
             </div>
@@ -314,23 +336,23 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
         {/* ── Main Content Table ───────────────────────────────────────────── */}
         {filteredClients.length === 0 ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            className="py-32 flex flex-col items-center justify-center bg-white dark:bg-[#11131A] border border-dashed border-slate-200 dark:border-[#232734] rounded-[20px]">
+            className="py-32 flex flex-col items-center justify-center neu-flat rounded-[24px]">
             <div className="w-16 h-16 rounded-[20px] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center mb-4">
               <Users size={24} className="text-slate-400 dark:text-slate-600" />
             </div>
             <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">No clients found</p>
             <p className="text-xs text-[#94A3B8] mb-6">Add a new client to get started.</p>
             <button onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white text-xs font-bold rounded-xl transition-all">
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#3B82F6] text-white text-xs font-bold rounded-xl shadow-[0_0_15px_rgba(37,99,235,0.4)] hover:shadow-[0_0_25px_rgba(59,130,246,0.6)] transition-all">
               <Plus size={14} strokeWidth={2.5} /> Add Client
             </button>
           </motion.div>
         ) : (
-          <div className="overflow-hidden rounded-[20px] border border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A] shadow-sm dark:shadow-none">
+          <div className="overflow-hidden neu-flat rounded-[24px] shadow-sm dark:shadow-none">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm">
-                <thead className="sticky top-0 z-10 bg-slate-100 dark:bg-slate-900/50">
-                  <tr className="border-b border-slate-200 dark:border-[#232734]">
+                <thead className="sticky top-0 z-10 bg-slate-100/50 dark:bg-[#0a0a0b]/80 backdrop-blur-md">
+                  <tr>
                     <th className="pl-5 pr-4 py-3 text-left text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest min-w-[240px]">Client</th>
                     <th className="pr-4 py-3 text-left text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest min-w-[120px]">Platform</th>
                     <th className="pr-4 py-3 text-left text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest min-w-[140px] hidden md:table-cell">Location</th>
@@ -350,7 +372,7 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
                           initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98 }}
                           transition={{ delay: i * 0.03, type: 'spring', stiffness: 320, damping: 28 }}
                           onClick={() => setSelectedClient(client)}
-                          className="border-b border-slate-200 dark:border-slate-800/50 cursor-pointer group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                          className="cursor-pointer group hover:bg-slate-50 dark:hover:bg-[#111111] transition-colors"
                         >
                           {/* Client Name/Avatar */}
                           <td className="pl-5 pr-4 py-4">
@@ -617,11 +639,11 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-white/80 dark:bg-[#09090B]/80 backdrop-blur-md" onClick={closeModal} />
               <motion.div initial={{ opacity: 0, scale: 0.92, y: 24 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92, y: 24 }}
                 transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-                className="relative w-full max-w-2xl bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] flex flex-col overflow-hidden shadow-2xl"
+                className="relative w-full max-w-2xl bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#1a1a1a] rounded-[24px] flex flex-col overflow-hidden shadow-2xl"
               >
-                <div className="flex justify-between items-start p-6 border-b border-slate-200 dark:border-[#232734] bg-slate-50 dark:bg-[#09090B]">
+                <div className="flex justify-between items-start p-6 border-b border-[#E2E8F0] dark:border-[#1a1a1a] bg-white dark:bg-[#111111]">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-[14px] bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] flex items-center justify-center text-[#2563EB]">
+                    <div className="w-12 h-12 rounded-[14px] bg-slate-50/50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] flex items-center justify-center text-[#2563EB]">
                       {editingClient ? <Edit2 size={20} /> : <UserIcon size={20} />}
                     </div>
                     <div>
@@ -629,7 +651,7 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
                       <p className="text-xs font-semibold text-[#94A3B8] mt-1">Manage details for your network.</p>
                     </div>
                   </div>
-                  <button onClick={closeModal} className="p-2.5 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-xl text-[#94A3B8] hover:text-slate-900 dark:hover:text-white transition-all shadow-sm">
+                  <button onClick={closeModal} className="p-2.5 bg-slate-50/50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-xl text-[#94A3B8] hover:text-slate-900 dark:hover:text-white transition-all shadow-sm">
                     <X size={20} />
                   </button>
                 </div>
@@ -643,7 +665,7 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
                       </label>
                       <div className="relative">
                         <select value={formData.platform} onChange={e => setFormData({...formData, platform: e.target.value})}
-                          className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all appearance-none cursor-pointer">
+                          className="w-full bg-white dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all appearance-none cursor-pointer shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
                           {user?.role !== 'marketplace_team' && <option value="Direct">Direct</option>}
                           <option value="Upwork">Upwork</option>
                           <option value="Freelancer">Freelancer</option>
@@ -660,7 +682,7 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
                     <InputField label="Email Address" icon={Mail} type="email" value={formData.email} onChange={(e:any) => setFormData({...formData, email: e.target.value})} placeholder="john@example.com" />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-[20px]">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-[20px] shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
                     <InputField label="Country" icon={Globe} value={formData.country} onChange={handleCountryChange} placeholder="e.g. United States" />
                     <InputField label="Timezone" icon={Clock} value={formData.timezone} onChange={(e:any) => setFormData({...formData, timezone: e.target.value})} placeholder="e.g. EST" />
                   </div>
@@ -670,8 +692,8 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
                     <InputField label="Avatar Image URL" icon={ImageIcon} type="url" value={formData.profilePic} onChange={(e:any) => setFormData({...formData, profilePic: e.target.value})} placeholder="https://..." />
                   </div>
 
-                  <div className="pt-6 mt-4 flex justify-end gap-3 border-t border-slate-200 dark:border-[#232734]">
-                    <button type="button" onClick={closeModal} className="px-6 py-2.5 rounded-xl text-xs font-bold text-[#94A3B8] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] transition-colors">
+                  <div className="pt-6 mt-4 flex justify-end gap-3 border-t border-[#E2E8F0] dark:border-[#1a1a1a]">
+                    <button type="button" onClick={closeModal} className="px-6 py-2.5 rounded-xl text-xs font-bold text-[#94A3B8] bg-white dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#1a1a1a] transition-colors shadow-sm dark:shadow-none">
                       Cancel
                     </button>
                     <button type="submit" disabled={isSubmitting || !formData.name} className="px-8 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold text-xs rounded-xl transition-all disabled:opacity-50 flex items-center gap-2">

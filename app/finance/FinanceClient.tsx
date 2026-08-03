@@ -283,7 +283,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
               <Link href="/finance/invoices" className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#8B5CF6]/10 hover:bg-[#8B5CF6]/20 border border-[#8B5CF6]/20 text-[#8B5CF6] transition-all">
                 <FileText size={16} /> Manage Invoices
               </Link>
-              <button onClick={handleExport} disabled={isExporting} className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-white dark:bg-[#11131A] hover:bg-slate-200 dark:bg-[#232734] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white transition-all disabled:opacity-50">
+              <button onClick={handleExport} disabled={isExporting} className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-white dark:bg-[#111111] hover:bg-slate-100 dark:hover:bg-[#1a1a1a] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white transition-all disabled:opacity-50 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
                 {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} 
                 {isExporting ? 'Exporting...' : 'Export'}
               </button>
@@ -295,57 +295,53 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
 
           {/* ── KPI Cards ─────────────────────────────────────────────────── */}
           <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-[#11131A] border border-[#10B981]/20 rounded-[24px] p-6 relative overflow-hidden group shadow-sm hover:shadow-md dark:shadow-[0_0_15px_rgba(16,185,129,0.05)] dark:hover:shadow-[0_0_25px_rgba(16,185,129,0.1)] transition-all">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[#10B981]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#10B981]/20 transition-colors" />
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Total Revenue</p>
-                <div className="w-8 h-8 rounded-lg bg-[#10B981]/10 flex items-center justify-center text-[#10B981]">
-                  <ArrowUpRight size={16} />
+            {[
+              { title: 'Total Revenue', value: formatCurrency(totalIncome), icon: ArrowUpRight, color: '#10B981', trend: '+12%', data: [40, 30, 50, 40, 60, 50, 70, 60, 80, 70, 90] },
+              { title: 'Total Expenses', value: formatCurrency(totalExpense), icon: ArrowDownRight, color: '#EF4444', trend: '-5%', data: [60, 50, 70, 60, 80, 70, 90, 80, 100, 90, 110] },
+              { title: 'Net Profit', value: formatCurrency(netProfit), icon: Briefcase, color: '#2563EB', trend: '+18%', data: [30, 20, 40, 30, 50, 40, 60, 50, 70, 60, 80] },
+              { title: 'Cash Flow Ratio', value: `${totalIncome > 0 ? Math.round((netProfit / totalIncome) * 100) : 0}%`, icon: TrendingUp, color: '#7C3AED', trend: '+2%', data: [50, 40, 60, 50, 70, 60, 80, 70, 90, 80, 100] }
+            ].map((kpi, idx) => (
+              <div key={idx} className="bg-white dark:bg-[#11131A] border border-slate-100 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 flex flex-col justify-center relative overflow-hidden group transition-all duration-300 cursor-pointer shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgba(37,99,235,0.08)]">
+                <div className="absolute top-0 left-0 w-full h-1" style={{ background: kpi.color }} />
+                
+                {/* Background Wave */}
+                <div className="absolute bottom-0 left-0 right-0 h-16 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={kpi.data.map((val, i) => ({ val, i }))}>
+                      <defs>
+                        <linearGradient id={`gradient-${idx}`} x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={kpi.color} stopOpacity={1} />
+                          <stop offset="100%" stopColor={kpi.color} stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <Area type="monotone" dataKey="val" stroke={kpi.color} fill={`url(#gradient-${idx})`} strokeWidth={2} />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
-              </div>
-              <p className="text-4xl lg:text-5xl font-bold font-mono text-slate-900 dark:text-white tracking-tight drop-shadow-md">{formatCurrency(totalIncome)}</p>
-            </div>
 
-            <div className="bg-white dark:bg-[#11131A] border border-[#EF4444]/20 rounded-[24px] p-6 relative overflow-hidden group shadow-sm hover:shadow-md dark:shadow-[0_0_15px_rgba(239,68,68,0.05)] dark:hover:shadow-[0_0_25px_rgba(239,68,68,0.1)] transition-all">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[#EF4444]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#EF4444]/20 transition-colors" />
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Total Expenses</p>
-                <div className="w-8 h-8 rounded-lg bg-[#EF4444]/10 flex items-center justify-center text-[#EF4444]">
-                  <ArrowDownRight size={16} />
-                </div>
-              </div>
-              <p className="text-4xl lg:text-5xl font-bold font-mono text-slate-900 dark:text-white tracking-tight drop-shadow-md">{formatCurrency(totalExpense)}</p>
-            </div>
+                {/* Hover Gradient Glow */}
+                <div 
+                  className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none"
+                  style={{ background: `radial-gradient(circle at 50% 120%, ${kpi.color}, transparent 70%)` }}
+                />
 
-            <div className="bg-white dark:bg-[#11131A] border border-[#2563EB]/20 rounded-[24px] p-6 relative overflow-hidden group shadow-sm hover:shadow-md dark:shadow-[0_0_15px_rgba(37,99,235,0.05)] dark:hover:shadow-[0_0_25px_rgba(37,99,235,0.1)] transition-all">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[#2563EB]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#2563EB]/20 transition-colors" />
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Net Profit</p>
-                <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 flex items-center justify-center text-[#2563EB]">
-                  <Briefcase size={16} />
+                <div className="flex items-start justify-between relative z-10">
+                  <div>
+                    <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-1">{kpi.title}</p>
+                    <h3 className="text-2xl font-bold font-mono text-slate-900 dark:text-white tracking-tight">{kpi.value}</h3>
+                  </div>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center border" style={{ backgroundColor: `${kpi.color}15`, color: kpi.color, borderColor: `${kpi.color}30` }}>
+                    <kpi.icon size={16} />
+                  </div>
                 </div>
               </div>
-              <p className="text-4xl lg:text-5xl font-bold font-mono text-slate-900 dark:text-white tracking-tight drop-shadow-md">{formatCurrency(netProfit)}</p>
-            </div>
-
-            <div className="bg-white dark:bg-[#11131A] border border-[#7C3AED]/20 rounded-[24px] p-6 relative overflow-hidden group shadow-sm hover:shadow-md dark:shadow-[0_0_15px_rgba(124,58,237,0.05)] dark:hover:shadow-[0_0_25px_rgba(124,58,237,0.1)] transition-all">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[#7C3AED]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#7C3AED]/20 transition-colors" />
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Cash Flow Ratio</p>
-                <div className="w-8 h-8 rounded-lg bg-[#7C3AED]/10 flex items-center justify-center text-[#7C3AED]">
-                  <TrendingUp size={16} />
-                </div>
-              </div>
-              <p className="text-4xl lg:text-5xl font-bold font-mono text-slate-900 dark:text-white tracking-tight drop-shadow-md">
-                {totalIncome > 0 ? Math.round((netProfit / totalIncome) * 100) : 0}%
-              </p>
-            </div>
+            ))}
           </motion.div>
         </motion.div>
 
         {/* ── Charts ───────────────────────────────────────────────────────── */}
         <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <motion.div variants={itemVariants} className="lg:col-span-2 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 flex flex-col relative overflow-hidden shadow-sm dark:shadow-none">
+          <motion.div variants={itemVariants} className="lg:col-span-2 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-[24px] p-6 flex flex-col relative overflow-hidden shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-6">Revenue vs Expenses</h3>
             <div className="flex-1 min-h-[300px] relative">
               {filteredTransactions.length === 0 ? (
@@ -356,7 +352,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
                       <path d="M0,50 Q25,40 50,45 T100,30" fill="none" stroke="#EF4444" strokeWidth="2" strokeDasharray="4 4" />
                     </svg>
                   </div>
-                  <button onClick={openAddPanel} className="z-10 bg-white/80 dark:bg-[#09090B]/80 backdrop-blur-md border border-slate-200 dark:border-[#232734] px-5 py-3 rounded-2xl flex items-center gap-3 hover:border-[#2563EB]/50 hover:shadow-[0_0_24px_rgba(37,99,235,0.2)] transition-all shadow-xl">
+                  <button onClick={openAddPanel} className="z-10 bg-white/80 dark:bg-[#09090B]/80 backdrop-blur-md border border-[#E2E8F0] dark:border-[#1a1a1a] px-5 py-3 rounded-2xl flex items-center gap-3 hover:border-[#2563EB]/50 hover:shadow-[0_0_24px_rgba(37,99,235,0.2)] transition-all shadow-xl">
                     <div className="w-8 h-8 rounded-xl bg-[#2563EB]/10 flex items-center justify-center text-[#2563EB]">
                       <Plus size={16} />
                     </div>
@@ -403,7 +399,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
             </div>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 flex flex-col relative overflow-hidden shadow-sm dark:shadow-none">
+          <motion.div variants={itemVariants} className="bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-[24px] p-6 flex flex-col relative overflow-hidden shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-6">Profit Trend</h3>
             <div className="flex-1 min-h-[300px] relative">
               {filteredTransactions.length === 0 ? (
@@ -447,27 +443,27 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
         </motion.div>
 
         {/* ── Filters & Table ──────────────────────────────────────────────── */}
-        <motion.div variants={containerVariants} initial="hidden" animate="show" className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] overflow-hidden shadow-sm dark:shadow-none">
+        <motion.div variants={containerVariants} initial="hidden" animate="show" className="bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-[24px] overflow-hidden shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
           {/* Table Toolbar */}
-          <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row gap-4 justify-between items-center bg-white shadow-sm dark:bg-slate-900/80">
+          <div className="p-6 border-b border-[#E2E8F0] dark:border-[#1a1a1a] flex flex-col md:flex-row gap-4 justify-between items-center bg-white dark:bg-[#111111]">
             <div className="flex items-center gap-3 w-full md:w-auto">
               <div className="relative flex-1 md:w-64 group">
                 <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8] group-focus-within:text-[#2563EB] transition-colors" />
                 <input type="text" placeholder="Search transactions..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-sm font-medium rounded-xl pl-11 pr-4 py-2.5 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all" />
+                  className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-800 dark:text-white text-sm font-medium rounded-xl pl-11 pr-4 py-2.5 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all" />
               </div>
             </div>
 
             <div className="flex items-center gap-3 w-full md:w-auto">
               <select value={typeFilter} onChange={e => setTypeFilter(e.target.value as any)}
-                className="bg-white hover:bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-xl pl-4 pr-8 py-2.5 appearance-none focus:outline-none focus:border-[#2563EB]/60 cursor-pointer w-full md:w-auto">
+                className="bg-white hover:bg-slate-50 dark:bg-[#09090B] dark:hover:bg-[#141414] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-700 dark:text-slate-300 text-sm font-medium rounded-xl pl-4 pr-8 py-2.5 appearance-none focus:outline-none focus:border-[#2563EB]/60 cursor-pointer w-full md:w-auto">
                 <option value="All">All Types</option>
                 <option value="Income">Income</option>
                 <option value="Expense">Expense</option>
               </select>
               
               <select value={dateFilter} onChange={e => setDateFilter(e.target.value as any)}
-                className="bg-white hover:bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-xl pl-4 pr-8 py-2.5 appearance-none focus:outline-none focus:border-[#2563EB]/60 cursor-pointer w-full md:w-auto">
+                className="bg-white hover:bg-slate-50 dark:bg-[#09090B] dark:hover:bg-[#141414] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-700 dark:text-slate-300 text-sm font-medium rounded-xl pl-4 pr-8 py-2.5 appearance-none focus:outline-none focus:border-[#2563EB]/60 cursor-pointer w-full md:w-auto">
                 <option value="All">All Time</option>
                 <option value="ThisMonth">This Month</option>
                 <option value="Last3Months">Last 3 Months</option>
@@ -479,8 +475,8 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
           {/* Table */}
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
-              <thead className="bg-slate-100 dark:bg-slate-900/50">
-                <tr className="border-b border-slate-200 dark:border-slate-800">
+              <thead className="bg-slate-50 dark:bg-[#09090B]">
+                <tr className="border-b border-[#E2E8F0] dark:border-[#1a1a1a]">
                   <th className="pl-6 pr-4 py-4 text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest whitespace-nowrap">Transaction</th>
                   <th className="px-4 py-4 text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest whitespace-nowrap">Amount</th>
                   <th className="px-4 py-4 text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest whitespace-nowrap">Category</th>
@@ -491,26 +487,26 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
               </thead>
               <tbody>
                 {/* ── Inline Quick Add Row ── */}
-                <tr className="border-b-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0f111a] shadow-sm relative z-10">
+                <tr className="border-b-2 border-[#E2E8F0] dark:border-[#1a1a1a] bg-slate-50 dark:bg-[#111111] shadow-sm relative z-10">
                   <td className="pl-6 pr-4 py-3">
                     <form id="inline-form" onSubmit={handleInlineSubmit} className="hidden" />
                     <input form="inline-form" type="text" placeholder="Add new transaction..." value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
-                      className="w-full bg-white border border-slate-200 dark:bg-[#09090b] dark:border-slate-700/50 focus:ring-2 focus:ring-[#2563EB]/50 text-slate-900 dark:text-slate-100 text-sm font-bold rounded-xl px-4 py-2.5 focus:outline-none transition-colors placeholder:text-slate-400" />
+                      className="w-full bg-white dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] focus:ring-2 focus:ring-[#2563EB]/50 text-slate-900 dark:text-slate-100 text-sm font-bold rounded-xl px-4 py-2.5 focus:outline-none transition-colors placeholder:text-slate-400" />
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <select form="inline-form" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}
-                        className="bg-white dark:bg-[#09090b] border border-slate-200 dark:border-slate-700/50 focus:ring-2 focus:ring-[#2563EB]/50 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl px-1 py-2.5 focus:outline-none transition-colors w-12 cursor-pointer appearance-none text-center">
+                        className="bg-white dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] focus:ring-2 focus:ring-[#2563EB]/50 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl px-1 py-2.5 focus:outline-none transition-colors w-12 cursor-pointer appearance-none text-center">
                         <option value="Income">+</option>
                         <option value="Expense">-</option>
                       </select>
                       <input form="inline-form" required type="number" step="0.01" min="0" placeholder="0.00" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})}
-                        className="w-24 bg-white border border-slate-200 dark:bg-[#09090b] dark:border-slate-700/50 focus:ring-2 focus:ring-[#2563EB]/50 text-slate-900 dark:text-slate-100 text-sm font-mono font-bold rounded-xl px-3 py-2.5 focus:outline-none transition-colors" />
+                        className="w-24 bg-white dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] focus:ring-2 focus:ring-[#2563EB]/50 text-slate-900 dark:text-slate-100 text-sm font-mono font-bold rounded-xl px-3 py-2.5 focus:outline-none transition-colors" />
                     </div>
                   </td>
                   <td className="px-4 py-3">
                     <select form="inline-form" required value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}
-                      className="w-28 bg-white border border-slate-200 dark:bg-[#09090b] dark:border-slate-700/50 focus:ring-2 focus:ring-[#2563EB]/50 text-slate-900 dark:text-slate-100 text-[11px] font-bold uppercase tracking-widest rounded-xl px-3 py-2.5 focus:outline-none transition-colors cursor-pointer">
+                      className="w-28 bg-white dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] focus:ring-2 focus:ring-[#2563EB]/50 text-slate-900 dark:text-slate-100 text-[11px] font-bold uppercase tracking-widest rounded-xl px-3 py-2.5 focus:outline-none transition-colors cursor-pointer">
                       <option value="Sales">Sales</option>
                       <option value="Services">Services</option>
                       <option value="Software">Software</option>
@@ -522,11 +518,11 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
                   </td>
                   <td className="px-4 py-3">
                     <input form="inline-form" required type="date" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})}
-                      className="w-[140px] bg-white border border-slate-200 dark:bg-[#09090b] dark:border-slate-700/50 focus:ring-2 focus:ring-[#2563EB]/50 text-slate-900 dark:text-slate-100 text-xs font-bold rounded-xl px-3 py-2.5 focus:outline-none transition-colors [color-scheme:light] dark:[color-scheme:dark]" />
+                      className="w-[140px] bg-white dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] focus:ring-2 focus:ring-[#2563EB]/50 text-slate-900 dark:text-slate-100 text-xs font-bold rounded-xl px-3 py-2.5 focus:outline-none transition-colors [color-scheme:light] dark:[color-scheme:dark]" />
                   </td>
                   <td className="px-4 py-3">
                     <select form="inline-form" required value={formData.platform} onChange={e => setFormData({...formData, platform: e.target.value})}
-                      className="w-28 bg-white border border-slate-200 dark:bg-[#09090b] dark:border-slate-700/50 focus:ring-2 focus:ring-[#2563EB]/50 text-slate-900 dark:text-slate-100 text-xs font-bold rounded-xl px-3 py-2.5 focus:outline-none transition-colors cursor-pointer">
+                      className="w-28 bg-white dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] focus:ring-2 focus:ring-[#2563EB]/50 text-slate-900 dark:text-slate-100 text-xs font-bold rounded-xl px-3 py-2.5 focus:outline-none transition-colors cursor-pointer">
                       <option value="Direct">Direct</option>
                       <option value="Upwork">Upwork</option>
                       <option value="Fiverr">Fiverr</option>
@@ -554,7 +550,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
                 ) : (
                   filteredTransactions.map((t, i) => (
                     <motion.tr key={t._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.01 }}
-                      className="border-b border-[#232734]/50 hover:bg-slate-50 dark:bg-[#09090B] dark:hover:bg-[#131620] transition-colors group cursor-pointer"
+                      className="border-b border-[#E2E8F0] dark:border-[#1a1a1a] hover:bg-slate-50 dark:hover:bg-[#141414] transition-colors group cursor-pointer"
                       onClick={() => openEditPanel(t)}>
                       <td className="pl-6 pr-4 py-4">
                         <div className="flex items-center gap-3">
@@ -572,7 +568,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
                         </span>
                       </td>
                       <td className="px-4 py-4">
-                        <span className="inline-flex px-2 py-1 rounded-md bg-slate-200 dark:bg-[#232734] text-[#94A3B8] text-[10px] font-bold uppercase tracking-widest">
+                        <span className="inline-flex px-2 py-1 rounded-md bg-slate-100 dark:bg-[#1a1a1a] text-[#94A3B8] text-[10px] font-bold uppercase tracking-widest">
                           {t.category}
                         </span>
                       </td>
@@ -598,20 +594,19 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
                 onClick={() => setIsSlidePanelOpen(false)} className="absolute inset-0 bg-white/80 dark:bg-[#09090B]/80 backdrop-blur-sm" />
               <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                className="relative w-full max-w-[500px] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-2xl z-50 flex flex-col shadow-2xl overflow-hidden max-h-[90vh]"
+                className="relative w-full max-w-[500px] bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-[24px] z-50 flex flex-col shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none overflow-hidden max-h-[90vh]"
               >
                 {/* Header */}
-                <div className="flex-shrink-0 p-6 border-b border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A]">
+                <div className="flex-shrink-0 p-6 border-b border-[#E2E8F0] dark:border-[#1a1a1a] bg-white dark:bg-[#111111]">
                   <div className="flex items-center justify-between mb-5">
                     <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">{editingTransaction ? 'Edit Transaction' : 'New Transaction'}</span>
-                    <button type="button" onClick={() => setIsSlidePanelOpen(false)} className="p-2 rounded-[10px] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] border border-slate-200 dark:border-[#232734] transition-all">
+                    <button type="button" onClick={() => setIsSlidePanelOpen(false)} className="p-2 rounded-[10px] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1a1a1a] border border-[#E2E8F0] dark:border-[#1a1a1a] transition-all">
                       <X size={14} />
                     </button>
                   </div>
                   
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-[14px] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center text-[#2563EB] flex-shrink-0">
+                    <div className="w-12 h-12 rounded-[14px] bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] flex items-center justify-center text-[#2563EB] flex-shrink-0">
                       <CreditCard size={20} />
                     </div>
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight mt-1">
@@ -624,7 +619,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
                 <form onSubmit={handleSubmit} className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-6 space-y-6">
                   
                   {/* Type Selector */}
-                  <div className="flex bg-white dark:bg-[#11131A] p-1 rounded-xl border border-slate-200 dark:border-[#232734]">
+                  <div className="flex bg-slate-50 dark:bg-[#09090B] p-1 rounded-xl border border-[#E2E8F0] dark:border-[#1a1a1a]">
                     <button type="button" onClick={() => setFormData({...formData, type: 'Income'})}
                       className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${formData.type === 'Income' ? 'bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/30' : 'text-[#94A3B8] hover:text-slate-900 dark:hover:text-white'}`}>
                       Income
@@ -638,13 +633,13 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
                   <div>
                     <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Amount ($)</label>
                     <input required type="number" step="0.01" min="0" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})}
-                      className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-lg font-mono focus:border-[#2563EB]/60 focus:outline-none" placeholder="0.00" />
+                      className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-lg font-mono focus:border-[#2563EB]/60 focus:outline-none" placeholder="0.00" />
                   </div>
 
                   <div>
                     <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Description</label>
                     <input required type="text" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
-                      className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none" placeholder="e.g. Website Redesign Deposit" />
+                      className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none" placeholder="e.g. Website Redesign Deposit" />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -653,7 +648,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
                       <DatePicker 
                         selected={new Date(formData.date + 'T00:00:00')} 
                         onChange={(date: Date | null) => setFormData({...formData, date: date ? format(date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')})}
-                        className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none" 
+                        className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none" 
                         dateFormat="MMMM d, yyyy"
                         required
                         popperPlacement="bottom-start"
@@ -663,7 +658,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
                     <div>
                       <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Category</label>
                       <select required value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}
-                        className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none cursor-pointer">
+                        className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none cursor-pointer">
                         <option value="Sales">Sales</option>
                         <option value="Services">Services</option>
                         <option value="Software">Software</option>
@@ -678,7 +673,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
                   <div>
                     <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Platform / Account</label>
                     <select required value={formData.platform} onChange={e => setFormData({...formData, platform: e.target.value})}
-                      className="w-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none cursor-pointer">
+                      className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none cursor-pointer">
                       <option value="Direct">Direct (Bank/Stripe)</option>
                       <option value="Upwork">Upwork</option>
                       <option value="Fiverr">Fiverr</option>
@@ -686,7 +681,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
                     </select>
                   </div>
 
-                  <div className="pt-6 mt-6 border-t border-slate-200 dark:border-[#232734]">
+                  <div className="pt-6 mt-6 border-t border-[#E2E8F0] dark:border-[#1a1a1a]">
                     <button type="submit" disabled={isSubmitting || !formData.amount || !formData.description}
                       className="w-full py-3.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold text-sm rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.25)]">
                       {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : 'Save Transaction'}

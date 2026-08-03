@@ -63,7 +63,7 @@ export default function InvoicesClient({ initialInvoices }: { initialInvoices: a
           </div>
           
           <div className="flex items-center gap-3 w-full md:w-auto">
-            <Link href="/finance" className="px-5 py-2.5 rounded-xl font-bold text-sm bg-white dark:bg-[#11131A] hover:bg-slate-200 dark:hover:bg-[#232734] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white transition-all shadow-sm">
+            <Link href="/finance" className="px-5 py-2.5 rounded-xl font-bold text-sm bg-white dark:bg-[#111111] hover:bg-slate-100 dark:hover:bg-[#1a1a1a] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white transition-all shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
               Back to Finance
             </Link>
             <Link href="/finance/invoices/create" className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#8B5CF6] hover:bg-[#7C3AED] text-white transition-all shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.5)]">
@@ -74,7 +74,7 @@ export default function InvoicesClient({ initialInvoices }: { initialInvoices: a
         </div>
 
         {/* Filters */}
-        <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
+        <div className="bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-[24px] p-6 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none flex flex-col md:flex-row gap-4 justify-between items-center">
           <div className="relative w-full md:w-80 group">
             <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8] group-focus-within:text-[#8B5CF6] transition-colors" />
             <input 
@@ -82,13 +82,13 @@ export default function InvoicesClient({ initialInvoices }: { initialInvoices: a
               placeholder="Search by client or invoice number..." 
               value={searchQuery} 
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-[#232734] text-slate-800 dark:text-white text-sm font-medium rounded-xl pl-11 pr-4 py-2.5 focus:outline-none focus:border-[#8B5CF6]/60 focus:ring-2 focus:ring-[#8B5CF6]/10 transition-all" 
+              className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-800 dark:text-white text-sm font-medium rounded-xl pl-11 pr-4 py-2.5 focus:outline-none focus:border-[#8B5CF6]/60 focus:ring-2 focus:ring-[#8B5CF6]/10 transition-all" 
             />
           </div>
           <select 
             value={statusFilter} 
             onChange={e => setStatusFilter(e.target.value)}
-            className="w-full md:w-auto bg-white hover:bg-slate-50 dark:bg-[#11131A] hover:dark:bg-[#1A1D27] border border-slate-200 dark:border-[#232734] text-slate-700 dark:text-slate-300 text-sm font-medium rounded-xl px-4 py-2.5 appearance-none focus:outline-none focus:border-[#8B5CF6]/60 cursor-pointer"
+            className="w-full md:w-auto bg-white hover:bg-slate-50 dark:bg-[#111111] hover:dark:bg-[#141414] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-700 dark:text-slate-300 text-sm font-medium rounded-xl px-4 py-2.5 appearance-none focus:outline-none focus:border-[#8B5CF6]/60 cursor-pointer"
           >
             <option value="All">All Statuses</option>
             <option value="Draft">Draft</option>
@@ -100,11 +100,11 @@ export default function InvoicesClient({ initialInvoices }: { initialInvoices: a
         </div>
 
         {/* Invoice List */}
-        <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] overflow-hidden shadow-sm">
+        <div className="bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-[24px] overflow-hidden shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50/50 dark:bg-[#09090B]/50 border-b border-slate-200 dark:border-[#232734]">
+                <tr className="bg-slate-50 dark:bg-[#09090B] border-b border-[#E2E8F0] dark:border-[#1a1a1a]">
                   <th className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">Invoice</th>
                   <th className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">Client</th>
                   <th className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">Date & Due</th>
@@ -113,12 +113,12 @@ export default function InvoicesClient({ initialInvoices }: { initialInvoices: a
                   <th className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-[#232734]">
+              <tbody className="divide-y divide-[#E2E8F0] dark:divide-[#1a1a1a]">
                 {filteredInvoices.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-12 text-center">
-                      <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 dark:bg-[#232734] mb-4">
-                        <FileText size={20} className="text-slate-400" />
+                      <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] mb-4">
+                        <FileText size={20} className="text-[#94A3B8]" />
                       </div>
                       <p className="text-sm font-bold text-slate-900 dark:text-white">No invoices found</p>
                       <p className="text-sm text-slate-500 mt-1">Try adjusting your filters or create a new invoice.</p>
@@ -126,7 +126,7 @@ export default function InvoicesClient({ initialInvoices }: { initialInvoices: a
                   </tr>
                 ) : (
                   filteredInvoices.map((inv) => (
-                    <tr key={inv._id} className="hover:bg-slate-50/50 dark:hover:bg-[#151821]/50 transition-colors group">
+                    <tr key={inv._id} className="hover:bg-slate-50 dark:hover:bg-[#141414] transition-colors group">
                       <td className="px-6 py-4">
                         <span className="text-sm font-bold text-slate-900 dark:text-white block">{inv.invoiceNumber}</span>
                       </td>

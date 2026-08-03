@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import DailyExpensesClient from './DailyExpensesClient';
 import { getDailyExpenses } from '@/app/actions/dailyExpenseActions';
+import { getPersonalLoans } from '@/app/actions/loanActions';
 import { getCurrentUser } from '@/app/actions/authActions';
 import { redirect } from 'next/navigation';
 
@@ -20,6 +21,8 @@ export default async function DailyExpensesPage() {
   }
 
   const expenses = await getDailyExpenses();
+  const loansRes = await getPersonalLoans();
+  const loans = loansRes.success ? loansRes.data : [];
 
-  return <DailyExpensesClient initialExpenses={expenses} />;
+  return <DailyExpensesClient initialExpenses={expenses} initialLoans={loans} />;
 }

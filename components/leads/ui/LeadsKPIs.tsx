@@ -99,14 +99,14 @@ export default function LeadsKPIs({ leads }: LeadsKPIsProps) {
         >
           {/* Ambient Background Glow */}
           <div 
-            className="absolute -top-12 -right-12 w-32 h-32 rounded-full blur-[40px] opacity-40 group-hover:opacity-60 transition-opacity duration-300 pointer-events-none"
+            className="absolute -top-12 -right-12 w-32 h-32 rounded-full blur-[40px] opacity-30 group-hover:opacity-50 transition-opacity duration-300 pointer-events-none"
             style={{ backgroundColor: stat.accent }}
           />
 
-          {/* Hover Border Glow */}
+          {/* Top Edge Glow */}
           <div
-            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-[24px] pointer-events-none"
-            style={{ boxShadow: `0 0 0 1px ${stat.border}, 0 0 24px ${stat.glow}` }}
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-[2px] opacity-70 group-hover:opacity-100 transition-opacity duration-300 rounded-b-full pointer-events-none"
+            style={{ backgroundColor: stat.accent, boxShadow: `0 4px 15px ${stat.accent}` }}
           />
 
           {/* Top row */}

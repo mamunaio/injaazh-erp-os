@@ -22,7 +22,7 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { CSS } from '@dnd-kit/utilities';
 
 import { createProject, updateProject, deleteProject } from '@/app/actions/projectActions';
-
+import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Project {
   _id: string;
@@ -366,7 +366,7 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
               <p className="text-sm font-medium text-[#94A3B8]">Manage execution, timelines, and deliverables across your team.</p>
             </div>
             <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-              <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-white dark:bg-[#11131A] text-[#94A3B8] border border-slate-200 dark:border-[#232734] hover:text-slate-900 dark:hover:text-white transition-all">
+              <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-white dark:bg-[#111111] text-[#94A3B8] border border-[#E2E8F0] dark:border-[#1a1a1a] hover:text-slate-900 dark:hover:text-white transition-all shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
                 <UserPlus size={15} /> <span className="hidden sm:inline">Invite Member</span>
               </button>
               <button onClick={openAdd}
@@ -380,14 +380,32 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
           <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
             {kpis.map((k) => {
               const isSelected = statusFilter === k.id;
+              const dummyData = [10, 20, 15, 25, 20, 30, 40].map((v) => ({ val: v + (Math.random() * 10 - 5) }));
               return (
                 <button key={k.id} onClick={() => setStatusFilter(k.id as any)}
-                  className={`relative text-left bg-white dark:bg-[#11131A] border rounded-[18px] p-4 flex flex-col justify-center overflow-hidden transition-all duration-300 shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none
-                    ${isSelected 
-                      ? 'border-[#2563EB] shadow-md dark:shadow-none' 
-                      : 'border-slate-200 dark:border-[#232734] hover:border-[#2563EB]/40'}`}>
+                  className={`relative text-left bg-white dark:bg-[#11131A] border border-slate-100 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 flex flex-col justify-center overflow-hidden transition-all duration-300 shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgba(37,99,235,0.08)] group ${isSelected ? 'ring-2 ring-[#2563EB]' : ''}`}>
+                  
+                  {/* Subtle Radial Gradient */}
+                  <div className="absolute inset-0 opacity-0 dark:opacity-20 transition-opacity duration-300 pointer-events-none"
+                       style={{ background: `radial-gradient(circle at top right, ${k.color}33 0%, transparent 60%)` }} />
+                  
+                  {/* Recharts Area Wave */}
+                  <div className="absolute inset-0 opacity-10 pointer-events-none">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={dummyData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                        <Area type="monotone" dataKey="val" stroke={k.color} strokeWidth={2} fill={k.color} fillOpacity={1} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+  
+                  {/* Top Edge Glow */}
+                  <div
+                    className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-[2px] opacity-70 group-hover:opacity-100 transition-opacity duration-300 rounded-b-full pointer-events-none"
+                    style={{ backgroundColor: k.color, boxShadow: `0 4px 15px ${k.color}` }}
+                  />
+
                   {isSelected && <div className="absolute inset-0 bg-[#2563EB]/5 pointer-events-none" />}
-                  <p className="text-[11px] font-bold text-[#94A3B8] leading-tight mb-2 relative z-10">{k.label}</p>
+                  <p className="text-[11px] font-bold text-[#94A3B8] leading-tight mb-3 relative z-10">{k.label}</p>
                   <p className="text-xl font-bold font-mono tracking-tight relative z-10" style={{ color: k.color }}>{k.value}</p>
                 </button>
               );
@@ -451,10 +469,10 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
                   return (
                     <motion.div key={p._id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
                       onClick={() => openPanel(p)}
-                      className="group relative bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] hover:border-[#2563EB]/40 p-5 rounded-[24px] transition-all cursor-pointer shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-none flex flex-col">
+                      className="group relative bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] hover:border-[#2563EB]/40 p-5 rounded-[24px] transition-all cursor-pointer shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] hover:shadow-md dark:shadow-none dark:hover:shadow-none flex flex-col">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-[12px] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center ${ss.color}`}>
+                          <div className={`w-10 h-10 rounded-[12px] bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] flex items-center justify-center ${ss.color}`}>
                             <ss.icon size={18} />
                           </div>
                           <div className="min-w-0">
@@ -480,12 +498,12 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
                             <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">Progress</span>
                             <span className="text-[10px] font-bold text-slate-900 dark:text-white font-mono">{p.progress || 0}%</span>
                           </div>
-                          <div className="h-1.5 w-full bg-slate-50 dark:bg-[#09090B] rounded-full overflow-hidden border border-slate-200 dark:border-[#232734]">
+                          <div className="h-1.5 w-full bg-slate-50 dark:bg-[#09090B] rounded-full overflow-hidden border border-[#E2E8F0] dark:border-[#1a1a1a]">
                             <motion.div initial={{ width: 0 }} animate={{ width: `${p.progress || 0}%` }} transition={{ duration: 0.8, ease: 'easeOut' }} className={`h-full rounded-full transition-colors ${isComplete ? 'bg-[#10B981]' : 'bg-[#2563EB]'}`} />
                           </div>
                         </div>
                         
-                        <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-[#232734]">
+                        <div className="flex items-center justify-between pt-4 border-t border-[#E2E8F0] dark:border-[#1a1a1a]">
                           {p.deadline ? (
                             <span className={`flex items-center gap-1 text-[10px] font-bold ${health.label === 'Overdue' ? 'text-[#EF4444]' : 'text-[#94A3B8]'}`}>
                               <Calendar size={10} /> {p.status === 'Completed' ? 'Completed ' : 'Due '}{fmtShortDate(p.deadline)}
@@ -497,7 +515,7 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
                           )}
                           <div className="flex -space-x-1.5">
                             {(p.assignees || []).slice(0,3).map((a, j) => (
-                              <div key={j} className="w-6 h-6 rounded-full bg-slate-200 dark:bg-[#232734] border-2 border-[#11131A] flex items-center justify-center text-[8px] font-bold text-slate-900 dark:text-white">{getInitials(a)}</div>
+                              <div key={j} className="w-6 h-6 rounded-full bg-slate-50 dark:bg-[#09090B] border-2 border-white dark:border-[#111111] flex items-center justify-center text-[8px] font-bold text-slate-900 dark:text-white shadow-sm">{getInitials(a)}</div>
                             ))}
                           </div>
                         </div>
@@ -639,10 +657,10 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.92, y: 24 }}
                   transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-                  className="relative w-full max-w-lg max-h-[90vh] bg-white dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-2xl z-50 flex flex-col shadow-2xl overflow-hidden pointer-events-auto"
+                  className="relative w-full max-w-2xl max-h-[90vh] bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-2xl z-50 flex flex-col shadow-2xl overflow-hidden pointer-events-auto"
                 >
                   {/* Header */}
-                  <div className="flex-shrink-0 p-6 border-b border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A]">
+                  <div className="flex-shrink-0 p-6 border-b border-[#E2E8F0] dark:border-[#1a1a1a] bg-white dark:bg-[#111111]">
                     <div className="flex items-center justify-between mb-5">
                       <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">{isAddOpen ? 'New Project' : 'Project Details'}</span>
                       <div className="flex items-center gap-2">
@@ -651,13 +669,13 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
                             <Trash2 size={14} />
                           </button>
                         )}
-                        <button onClick={() => { setIsAddOpen(false); setSelectedProject(null); }} className="p-2 rounded-[10px] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] border border-slate-200 dark:border-[#232734] transition-all">
+                        <button onClick={() => { setIsAddOpen(false); setSelectedProject(null); }} className="p-2 rounded-[10px] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#1a1a1a] border border-[#E2E8F0] dark:border-[#1a1a1a] transition-all">
                           <X size={14} />
                         </button>
                       </div>
                     </div>
                     <div className="flex items-start gap-4 mb-4">
-                      <div className="w-12 h-12 rounded-[14px] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center text-[#2563EB] flex-shrink-0">
+                      <div className="w-12 h-12 rounded-[14px] bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] flex items-center justify-center text-[#2563EB] flex-shrink-0">
                         <Briefcase size={20} />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -671,35 +689,37 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
                   <form onSubmit={handleSaveProject} className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-6 space-y-6">
                     
                     <div className="space-y-4">
-                      <div>
-                        <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Project Title</label>
-                        <input required type="text" value={formData.title || ''} onChange={e => setFormData({...formData, title: e.target.value})}
-                          className="w-full bg-slate-50 dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none placeholder-[#94A3B8]/60" placeholder="Enter title..." />
-                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Project Title</label>
+                          <input required type="text" value={formData.title || ''} onChange={e => setFormData({...formData, title: e.target.value})}
+                            className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none placeholder-[#94A3B8]/60 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none" placeholder="Enter title..." />
+                        </div>
 
-                      <div>
-                        <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Client Name</label>
-                        <select value={formData.clientName || ''} onChange={e => setFormData({...formData, clientName: e.target.value})}
-                          className="w-full bg-slate-50 dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none cursor-pointer">
-                          <option value="">No Client Assigned</option>
-                          {initialClients?.map(client => (
-                            <option key={client._id} value={client.name}>{client.name}</option>
-                          ))}
-                        </select>
+                        <div>
+                          <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Client Name</label>
+                          <select value={formData.clientName || ''} onChange={e => setFormData({...formData, clientName: e.target.value})}
+                            className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none cursor-pointer shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
+                            <option value="">No Client Assigned</option>
+                            {initialClients?.map(client => (
+                              <option key={client._id} value={client.name}>{client.name}</option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
                       
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Status</label>
                           <select value={formData.status || 'Planning'} onChange={e => setFormData({...formData, status: e.target.value})}
-                            className="w-full bg-slate-50 dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none">
+                            className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
                             {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                           </select>
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Priority</label>
                           <select value={formData.priority || 'Medium'} onChange={e => setFormData({...formData, priority: e.target.value})}
-                            className="w-full bg-slate-50 dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none">
+                            className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
                             {['Low', 'Medium', 'High', 'Urgent'].map(p => <option key={p} value={p}>{p}</option>)}
                           </select>
                         </div>
@@ -708,21 +728,21 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
                       <div>
                         <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Description</label>
                         <textarea value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})}
-                          className="w-full bg-slate-50 dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm min-h-[100px] resize-none focus:border-[#2563EB]/60 focus:outline-none placeholder-[#94A3B8]/60" placeholder="Project goals..." />
+                          className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm min-h-[100px] resize-none focus:border-[#2563EB]/60 focus:outline-none placeholder-[#94A3B8]/60 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none" placeholder="Project goals..." />
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Progress (%)</label>
                           <input type="number" min="0" max="100" value={formData.progress || 0} onChange={e => setFormData({...formData, progress: Number(e.target.value)})}
-                            className="w-full bg-slate-50 dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none" />
+                            className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none" />
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Deadline</label>
                           <DatePicker 
                             selected={formData.deadline && !isNaN(new Date(formData.deadline).getTime()) ? new Date(formData.deadline) : null} 
                             onChange={(date: Date | null) => setFormData({...formData, deadline: date ? format(date, 'yyyy-MM-dd') : ''})}
-                            className="w-full bg-slate-50 dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none" 
+                            className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none" 
                             dateFormat="MMMM d, yyyy"
                             placeholderText="Select deadline..."
                             popperPlacement="bottom-start"
@@ -735,12 +755,12 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
                         <div>
                           <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Budget ($)</label>
                           <input type="number" step="0.01" min="0" value={formData.budget || ''} onChange={e => setFormData({...formData, budget: e.target.value ? Number(e.target.value) : undefined})}
-                            className="w-full bg-slate-50 dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none" placeholder="0.00" />
+                            className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none" placeholder="0.00" />
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Platform</label>
                           <select value={formData.platform || ''} onChange={e => setFormData({...formData, platform: e.target.value})}
-                            className="w-full bg-slate-50 dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none cursor-pointer">
+                            className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none cursor-pointer shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
                             <option value="">No Platform</option>
                             <option value="Upwork">Upwork</option>
                             <option value="Freelancer">Freelancer.com</option>
@@ -754,12 +774,12 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
                       <div>
                         <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Assignees</label>
                         <input type="text" value={formData.assignees || ''} onChange={e => setFormData({...formData, assignees: e.target.value})}
-                          className="w-full bg-slate-50 dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none placeholder-[#94A3B8]/60" placeholder="Comma separated names..." />
+                          className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none placeholder-[#94A3B8]/60 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none" placeholder="Comma separated names..." />
                       </div>
                     </div>
                     
                     {/* Save Button is sticky at bottom */}
-                    <div className="pt-6 mt-6 border-t border-slate-200 dark:border-[#232734]">
+                    <div className="pt-6 mt-6 border-t border-[#E2E8F0] dark:border-[#1a1a1a]">
                       <button type="submit" disabled={isSubmitting || !formData.title}
                         className="w-full py-3.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold text-sm rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.25)]">
                         {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : <>{isAddOpen ? 'Create Project' : 'Save Changes'}</>}
