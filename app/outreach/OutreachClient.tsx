@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { createProposal } from '@/app/actions/proposalActions';
 import { updateLead, sendOutreachEmail } from '@/app/actions/leadActions';
 import { syncInboxesAction } from '@/app/actions/outreachAutomationActions';
+import { getEmailAccounts } from '@/app/actions/emailAccountActions';
 import { notify } from '@/lib/notify';
 
 interface OutreachClientProps {
@@ -101,6 +102,16 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
   const [emailBody, setEmailBody] = useState('');
   const [whatsappBody, setWhatsappBody] = useState('');
   const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [emailAccounts, setEmailAccounts] = useState<any[]>([]);
+  const [senderAccountId, setSenderAccountId] = useState<string>('auto');
+
+  React.useEffect(() => {
+    getEmailAccounts().then(res => {
+      if (res.success && res.accounts) {
+        setEmailAccounts(res.accounts.filter((a: any) => a.isActive));
+      }
+    });
+  }, []);
 
   React.useEffect(() => {
     setVisibleCount(20);
@@ -185,12 +196,29 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
       setEmailBody(selectedLead.email_draft || '');
       setWhatsappBody(selectedLead.facebook_draft || '');
       
+      // Try to find the previously used email account and set it
+      if (emailAccounts.length > 0) {
+        let matchedId = 'auto';
+        const lastEmailLog = selectedLead.outreach_logs?.find((l: any) => l.method === 'Email' && l.notes?.includes('Sent Via: '));
+        if (lastEmailLog) {
+          const match = lastEmailLog.notes.match(/Sent Via:\s*([^\s\n]+)/);
+          if (match && match[1]) {
+            const emailUsed = match[1].trim().toLowerCase();
+            const foundAcc = emailAccounts.find(a => a.email.toLowerCase() === emailUsed);
+            if (foundAcc) {
+              matchedId = foundAcc._id;
+            }
+          }
+        }
+        setSenderAccountId(matchedId);
+      }
+      
       // Mark as read locally so the blue dot disappears
       if (!readLeads.includes(selectedLead._id)) {
         setReadLeads(prev => [...prev, selectedLead._id]);
       }
     }
-  }, [selectedLeadId]);
+  }, [selectedLead, emailAccounts]);
 
   const handleSaveDrafts = async () => {
     if (!selectedLead) return;
@@ -214,7 +242,7 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
       // First save the draft
       await updateLead(selectedLead._id, { email_subject_draft: emailSubject, email_draft: emailBody });
       
-      const res = await sendOutreachEmail(selectedLead._id, emailSubject, emailBody);
+      const res = await sendOutreachEmail(selectedLead._id, emailSubject, emailBody, senderAccountId);
       if (res.success) {
         notify.mailSend('Reply Sent! Your email was successfully delivered.');
         
@@ -667,7 +695,24 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
                         <motion.div key="email"
                           initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
                           transition={{ duration: 0.2 }} className="p-6 space-y-4">
-                          <h3 className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">Email Sequence Draft</h3>
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">Email Sequence Draft</h3>
+                            
+                            {/* Sender Account Selection */}
+                            <div className="flex items-center gap-2">
+                              <label className="text-[10px] font-bold text-[#94A3B8] uppercase">From:</label>
+                              <select 
+                                value={senderAccountId}
+                                onChange={(e) => setSenderAccountId(e.target.value)}
+                                className="bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-lg px-2 py-1 text-[11px] font-bold text-slate-700 dark:text-slate-300 outline-none focus:border-[#2563EB]/50"
+                              >
+                                <option value="auto">Auto-select (Previous/Rotate)</option>
+                                {emailAccounts.map(acc => (
+                                  <option key={acc._id} value={acc._id}>{acc.email}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
                           <div>
                             <label className="block text-xs font-bold text-[#94A3B8] mb-2">Subject Line</label>
                             <input
