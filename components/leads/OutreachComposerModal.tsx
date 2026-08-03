@@ -846,9 +846,7 @@ export default function OutreachComposerModal({
                   <DatePicker
                     selected={scheduleTime}
                     onChange={(date: Date | null) => setScheduleTime(date)}
-                    showTimeSelect
-                    timeFormat="HH:mm"
-                    timeIntervals={15}
+                    showTimeInput
                     dateFormat="MMM d, yyyy h:mm aa"
                     placeholderText="Select date & time"
                     minDate={new Date()}
