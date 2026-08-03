@@ -101,7 +101,7 @@ export default function LeadDetailsModal({
     onClose();
   };
 
-  const inputClasses = "w-full px-4 py-3 bg-white/5 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all font-medium text-sm";
+  const inputClasses = "w-full px-4 py-3 bg-white/50 dark:bg-white/5 border border-slate-200/50 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/30 backdrop-blur-md transition-all font-medium text-sm shadow-sm";
   const labelClasses = "block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider";
   const optionClass = "bg-white dark:bg-[#0F1117] text-slate-900 dark:text-white";
 
@@ -121,10 +121,10 @@ export default function LeadDetailsModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-2xl bg-white dark:bg-[#0F1117] border border-slate-200 dark:border-[#232734] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] rounded-[24px] flex flex-col max-h-[90vh] overflow-hidden"
+          className="relative w-full max-w-2xl bg-white/90 dark:bg-[#0a0a0f]/90 backdrop-blur-2xl border border-white/20 dark:border-white/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] rounded-[24px] flex flex-col max-h-[90vh] overflow-hidden ring-1 ring-white/10"
         >
           {/* Header */}
-          <div className="flex justify-between items-center px-8 py-6 border-b border-slate-200 dark:border-[#232734] bg-slate-50/50 dark:bg-[#151821]/50 relative overflow-hidden">
+          <div className="flex justify-between items-center px-8 py-6 border-b border-slate-200/50 dark:border-white/5 bg-slate-50/30 dark:bg-white/5 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-[40px] rounded-full pointer-events-none" />
             <div className="relative z-10 flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shadow-inner">
@@ -148,7 +148,7 @@ export default function LeadDetailsModal({
           </div>
 
           {/* Tabs */}
-          <div className="px-8 pt-4 border-b border-slate-200 dark:border-[#232734] bg-white dark:bg-[#0F1117]">
+          <div className="px-8 pt-4 border-b border-slate-200/50 dark:border-white/5 bg-transparent">
             <div className="flex gap-6">
               <button
                 type="button"
@@ -487,7 +487,7 @@ export default function LeadDetailsModal({
           </form>
 
           {/* Footer */}
-          <div className="px-8 py-6 border-t border-slate-200 dark:border-[#232734] bg-slate-50/50 dark:bg-[#151821]/50 flex items-center justify-end gap-4 shrink-0">
+          <div className="px-8 py-6 border-t border-slate-200/50 dark:border-white/5 bg-slate-50/30 dark:bg-white/5 flex items-center justify-end gap-4 shrink-0 backdrop-blur-md">
             <button 
               type="button" 
               onClick={onClose}
