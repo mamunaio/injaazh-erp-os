@@ -29,19 +29,12 @@ export async function getCampaigns() {
           status: 'Sent' 
         }).lean();
         
-        // Only count logs that ACTUALLY belong to this campaign if possible.
-        // For backwards compatibility we still include leadId match, but since it causes bugs, 
-        // we should really just count the logs that match the campaign. Wait, old logs don't have campaignId!
-        // So for old campaigns, we'll just count logs by leadId. For new ones, it's safer to use campaignId.
-        // Actually, if we use $or, it will still match old manual emails. 
-        // To fix the "Emails Sent: 5" bug perfectly:
-        let campaignLogs = logs;
-        if (logs.some(l => l.campaignId)) {
-           // If ANY log has a campaignId, filter to ONLY this campaign!
-           campaignLogs = logs.filter((l: any) => l.campaignId && l.campaignId.toString() === camp._id.toString());
-        } else {
-           // If no logs have campaignId (old data), just use all logs for these leads
-           campaignLogs = logs;
+        // Only count logs that ACTUALLY belong to this campaign by strictly matching campaignId.
+        // For old campaigns (before Aug 2026) that didn't record campaignId, we fallback to logs without campaignId.
+        let campaignLogs = logs.filter((l: any) => l.campaignId && l.campaignId.toString() === camp._id.toString());
+        
+        if (campaignLogs.length === 0 && new Date(camp.createdAt) < new Date('2026-08-01')) {
+           campaignLogs = logs.filter((l: any) => !l.campaignId);
         }
 
         const emailsSent = campaignLogs.length;
