@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Trash2, Mail, Bot, Type, Loader2, CheckCircle, Clock } from 'lucide-react';
+import { X, Plus, Trash2, Mail, Bot, Type, Loader2, CheckCircle2, Activity, Clock } from 'lucide-react';
 import { createCampaign, updateCampaign } from '@/app/actions/campaignActions';
 import toast from 'react-hot-toast';
 
