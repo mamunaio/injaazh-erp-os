@@ -365,21 +365,40 @@ export default function SettingsClient() {
     emailSent: true,
     errorAlert: true
   });
-  const [bootSoundChoice, setBootSoundChoice] = useState('login1');
-  const [isBootMenuOpen, setIsBootMenuOpen] = useState(false);
+  const [soundVariants, setSoundVariants] = useState<Record<string, string>>({
+    systemBoot: 'login1',
+    newLead: 'edit1',
+    leadConverted: 'success1',
+    paymentReceived: 'income1',
+    expenseLogged: 'expense1',
+    itemDeleted: 'delete1',
+    emailSent: 'mailSend1',
+    errorAlert: 'error1'
+  });
+  const [openSoundDropdown, setOpenSoundDropdown] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const choice = localStorage.getItem('bootSoundChoice');
-      if (choice) setBootSoundChoice(choice);
+      setSoundVariants({
+        systemBoot: localStorage.getItem('sound_systemBoot') || 'login1',
+        newLead: localStorage.getItem('sound_newLead') || 'edit1',
+        leadConverted: localStorage.getItem('sound_leadConverted') || 'success1',
+        paymentReceived: localStorage.getItem('sound_paymentReceived') || 'income1',
+        expenseLogged: localStorage.getItem('sound_expenseLogged') || 'expense1',
+        itemDeleted: localStorage.getItem('sound_itemDeleted') || 'delete1',
+        emailSent: localStorage.getItem('sound_emailSent') || 'mailSend1',
+        errorAlert: localStorage.getItem('sound_errorAlert') || 'error1'
+      });
     }
   }, []);
 
-  const handleBootSoundChange = (choice: string) => {
-    setBootSoundChoice(choice);
-    localStorage.setItem('bootSoundChoice', choice);
-    if (masterSound) playSound(choice as any);
-    setIsBootMenuOpen(false);
+  const handleSoundVariantChange = (itemKey: string, variantKey: string) => {
+    setSoundVariants(prev => ({ ...prev, [itemKey]: variantKey }));
+    localStorage.setItem(`sound_${itemKey}`, variantKey);
+    if (masterSound) {
+      if ((sounds as any)[variantKey]) (sounds as any)[variantKey]();
+    }
+    setOpenSoundDropdown(null);
   };
 
   const [dangerConfirm, setDangerConfirm] = useState('');
@@ -799,7 +818,7 @@ export default function SettingsClient() {
                       <label className="flex items-center gap-3 cursor-pointer bg-slate-50 dark:bg-[#09090B] px-4 py-2 rounded-xl border border-slate-200 dark:border-[#232734]">
                         <span className="text-xs font-bold uppercase tracking-widest text-[#94A3B8]">Master Sound</span>
                         <div className="relative">
-                          <input type="checkbox" className="sr-only" checked={masterSound} onChange={() => { setMasterSound(!masterSound); if (!masterSound) playSound('success'); triggerChange(); }} />
+                          <input type="checkbox" className="sr-only" checked={masterSound} onChange={() => { setMasterSound(!masterSound); if (!masterSound && (sounds as any)[soundVariants['leadConverted']]) (sounds as any)[soundVariants['leadConverted']](); triggerChange(); }} />
                           <div className={`block w-10 h-6 rounded-full transition-colors ${masterSound ? 'bg-primary-600' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
                           <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${masterSound ? 'transform translate-x-4' : ''}`}></div>
                         </div>
@@ -808,52 +827,48 @@ export default function SettingsClient() {
 
                     <div className="space-y-4">
                       {[
-                        { id: 'systemBoot', label: 'System Boot', desc: 'Plays a welcoming chord when logging in.', sound: 'login' as const },
-                        { id: 'newLead', label: 'New Lead Added', desc: 'Plays a subtle pop when a lead enters the system.', sound: 'pop' as const },
-                        { id: 'leadConverted', label: 'Lead Converted', desc: 'Plays a success chime when a deal is won.', sound: 'success' as const },
-                        { id: 'paymentReceived', label: 'Income Logged', desc: 'Plays a distinct coin chime when income is logged.', sound: 'cash' as const },
-                        { id: 'expenseLogged', label: 'Expense Logged', desc: 'Plays a low thud when an expense is recorded.', sound: 'expense' as const },
-                        { id: 'itemDeleted', label: 'Item Deleted', desc: 'Plays a deep pop when something is deleted.', sound: 'delete' as const },
-                        { id: 'emailSent', label: 'Email Sent', desc: 'Plays a swoosh sound when an outreach email is sent.', sound: 'mailSend' as const },
-                        { id: 'errorAlert', label: 'Error Alert', desc: 'Plays an alert sound when an error occurs.', sound: 'error' as const },
+                        { id: 'systemBoot', label: 'System Boot', desc: 'Plays a welcoming chord when logging in.', variants: [{val: 'login1', name: 'Classic Chord'}, {val: 'login2', name: 'Modern Ascending'}, {val: 'login3', name: 'Minimal Chime'}] },
+                        { id: 'newLead', label: 'New Lead Added', desc: 'Plays a subtle pop when a lead enters the system.', variants: [{val: 'edit1', name: 'Gentle Chime'}, {val: 'edit2', name: 'Modern Pop'}, {val: 'edit3', name: 'Short Blip'}] },
+                        { id: 'leadConverted', label: 'Lead Converted', desc: 'Plays a success chime when a deal is won.', variants: [{val: 'success1', name: 'Success Chime'}, {val: 'success2', name: 'Triple Ascend'}, {val: 'success3', name: 'Grand Chord'}] },
+                        { id: 'paymentReceived', label: 'Income Logged', desc: 'Plays a distinct coin chime when income is logged.', variants: [{val: 'income1', name: 'Coin Drop'}, {val: 'income2', name: 'Synth Cash'}, {val: 'income3', name: 'Rich Chime'}] },
+                        { id: 'expenseLogged', label: 'Expense Logged', desc: 'Plays a low thud when an expense is recorded.', variants: [{val: 'expense1', name: 'Low Thud'}, {val: 'expense2', name: 'Double Tap'}, {val: 'expense3', name: 'Deep Saw'}] },
+                        { id: 'itemDeleted', label: 'Item Deleted', desc: 'Plays a deep pop when something is deleted.', variants: [{val: 'delete1', name: 'Deep Pop'}, {val: 'delete2', name: 'Saw Snap'}, {val: 'delete3', name: 'Double Pluck'}] },
+                        { id: 'emailSent', label: 'Email Sent', desc: 'Plays a swoosh sound when an outreach email is sent.', variants: [{val: 'mailSend1', name: 'Air Swoosh'}, {val: 'mailSend2', name: 'Digital Swoosh'}, {val: 'mailSend3', name: 'Long Swoosh'}] },
+                        { id: 'errorAlert', label: 'Error Alert', desc: 'Plays an alert sound when an error occurs.', variants: [{val: 'error1', name: 'Harsh Buzz'}, {val: 'error2', name: 'Double Buzz'}, {val: 'error3', name: 'Discordant Chord'}] },
                       ].map(item => (
                         <div key={item.id} className={`flex items-center justify-between p-5 rounded-xl border transition-all ${soundSettings[item.id as keyof typeof soundSettings] && masterSound ? 'bg-slate-50 dark:bg-[#09090B] border-primary-600/30 shadow-[0_0_15px_rgba(37,99,235,0.05)]' : 'bg-slate-50 dark:bg-[#09090B] border-slate-200 dark:border-[#232734]'}`}>
                           <div className="flex items-center gap-4">
-                            <button onClick={() => masterSound ? playSound(item.id === 'systemBoot' ? bootSoundChoice as any : item.sound) : toast.error("Master sound muted")} className="w-10 h-10 rounded-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] flex items-center justify-center text-[#94A3B8] hover:text-primary-600 transition-all" title="Preview Sound">
+                            <button onClick={() => masterSound ? (sounds as any)[soundVariants[item.id]]?.() : toast.error("Master sound muted")} className="w-10 h-10 rounded-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] flex items-center justify-center text-[#94A3B8] hover:text-primary-600 transition-all" title="Preview Sound">
                               <Play size={14} className="ml-1" />
                             </button>
                             <div>
                               <h4 className="font-bold text-sm text-slate-900 dark:text-white">{item.label}</h4>
                               <p className="text-xs font-medium text-[#94A3B8] mt-0.5">{item.desc}</p>
-                              {item.id === 'systemBoot' && (
-                                <div className="relative mt-3">
-                                  <button
-                                    onClick={() => setIsBootMenuOpen(!isBootMenuOpen)}
-                                    className="flex items-center justify-between w-48 px-3 py-1.5 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-lg focus:outline-none focus:border-primary-600/50 text-slate-900 dark:text-white text-xs font-medium transition-all"
-                                  >
-                                    <span>
-                                      {bootSoundChoice === 'login1' ? 'Classic Chord' : 
-                                       bootSoundChoice === 'login2' ? 'Modern Ascending' : 'Minimal Chime'}
-                                    </span>
-                                    <ChevronRight className={`w-3 h-3 text-[#94A3B8] transition-transform ${isBootMenuOpen ? 'rotate-90' : ''}`} />
-                                  </button>
-                                  
-                                  <AnimatePresence>
-                                    {isBootMenuOpen && (
-                                      <motion.div
-                                        initial={{ opacity: 0, y: -5 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -5 }}
-                                        className="absolute z-10 w-48 mt-1 bg-white/90 dark:bg-[#11131A]/90 backdrop-blur-xl border border-slate-200 dark:border-[#232734] rounded-lg shadow-xl overflow-hidden"
-                                      >
-                                        <button onClick={() => handleBootSoundChange('login1')} className="w-full text-left px-3 py-2 text-xs font-medium hover:bg-primary-600/10 hover:text-primary-600 text-slate-700 dark:text-slate-300 transition-colors">Classic Chord</button>
-                                        <button onClick={() => handleBootSoundChange('login2')} className="w-full text-left px-3 py-2 text-xs font-medium hover:bg-primary-600/10 hover:text-primary-600 text-slate-700 dark:text-slate-300 transition-colors">Modern Ascending</button>
-                                        <button onClick={() => handleBootSoundChange('login3')} className="w-full text-left px-3 py-2 text-xs font-medium hover:bg-primary-600/10 hover:text-primary-600 text-slate-700 dark:text-slate-300 transition-colors">Minimal Chime</button>
-                                      </motion.div>
-                                    )}
-                                  </AnimatePresence>
-                                </div>
-                              )}
+                              
+                              <div className="relative mt-3">
+                                <button
+                                  onClick={() => setOpenSoundDropdown(openSoundDropdown === item.id ? null : item.id)}
+                                  className="flex items-center justify-between w-48 px-3 py-1.5 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-lg focus:outline-none focus:border-primary-600/50 text-slate-900 dark:text-white text-xs font-medium transition-all"
+                                >
+                                  <span>{item.variants.find(v => v.val === soundVariants[item.id])?.name || 'Select Sound'}</span>
+                                  <ChevronRight className={`w-3 h-3 text-[#94A3B8] transition-transform ${openSoundDropdown === item.id ? 'rotate-90' : ''}`} />
+                                </button>
+                                
+                                <AnimatePresence>
+                                  {openSoundDropdown === item.id && (
+                                    <motion.div
+                                      initial={{ opacity: 0, y: -5 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      exit={{ opacity: 0, y: -5 }}
+                                      className="absolute z-10 w-48 mt-1 bg-white/90 dark:bg-[#11131A]/90 backdrop-blur-xl border border-slate-200 dark:border-[#232734] rounded-lg shadow-xl overflow-hidden"
+                                    >
+                                      {item.variants.map(v => (
+                                        <button key={v.val} onClick={() => handleSoundVariantChange(item.id, v.val)} className="w-full text-left px-3 py-2 text-xs font-medium hover:bg-primary-600/10 hover:text-primary-600 text-slate-700 dark:text-slate-300 transition-colors">{v.name}</button>
+                                      ))}
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </div>
                             </div>
                           </div>
                           <label className="relative cursor-pointer">
