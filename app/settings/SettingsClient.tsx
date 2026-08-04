@@ -22,6 +22,7 @@ import { getActiveSessions, revokeSession } from '@/app/actions/sessionActions';
 import EmailAccountsManager from './EmailAccountsManager';
 import AiKeysManager from './AiKeysManager';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
+import { sounds } from '@/lib/sound';
 
 const MOCK_ROLES = [
   { id: 'owner', name: 'Owner', description: 'Full access to all settings, billing, and team management.', users: 1, isSystem: true },
@@ -72,8 +73,15 @@ const INITIAL_AUDIT_LOGS = [
   { id: 'log5', user: 'Sarah J.', action: 'Deleted Lead (John Doe)', ip: '172.16.0.4', time: 'Yesterday', status: 'warning' },
 ];
 
-const playSound = (type: 'success' | 'pop' | 'error' | 'cash') => {
+const playSound = (type: 'success' | 'pop' | 'error' | 'cash' | 'income' | 'expense' | 'delete' | 'mailSend' | 'edit' | 'login') => {
   try {
+    if (type === 'income') return sounds.income();
+    if (type === 'expense') return sounds.expense();
+    if (type === 'delete') return sounds.delete();
+    if (type === 'mailSend') return sounds.mailSend();
+    if (type === 'edit') return sounds.edit();
+    if (type === 'login') return sounds.login();
+
     const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioContext) return;
     const ctx = new AudioContext();
@@ -343,7 +351,16 @@ export default function SettingsClient() {
   
   // Notification States
   const [masterSound, setMasterSound] = useState(true);
-  const [soundSettings, setSoundSettings] = useState({ newLead: true, leadConverted: true, paymentReceived: true });
+  const [soundSettings, setSoundSettings] = useState({ 
+    systemBoot: true,
+    newLead: true, 
+    leadConverted: true, 
+    paymentReceived: true,
+    expenseLogged: true,
+    itemDeleted: true,
+    emailSent: true,
+    errorAlert: true
+  });
   const [dangerConfirm, setDangerConfirm] = useState('');
 
   const triggerChange = () => setHasUnsavedChanges(true);
@@ -770,9 +787,14 @@ export default function SettingsClient() {
 
                     <div className="space-y-4">
                       {[
+                        { id: 'systemBoot', label: 'System Boot', desc: 'Plays a welcoming chord when logging in.', sound: 'login' as const },
                         { id: 'newLead', label: 'New Lead Added', desc: 'Plays a subtle pop when a lead enters the system.', sound: 'pop' as const },
                         { id: 'leadConverted', label: 'Lead Converted', desc: 'Plays a success chime when a deal is won.', sound: 'success' as const },
-                        { id: 'paymentReceived', label: 'Payment Received', desc: 'Plays a distinct coin chime when income is logged.', sound: 'cash' as const },
+                        { id: 'paymentReceived', label: 'Income Logged', desc: 'Plays a distinct coin chime when income is logged.', sound: 'cash' as const },
+                        { id: 'expenseLogged', label: 'Expense Logged', desc: 'Plays a low thud when an expense is recorded.', sound: 'expense' as const },
+                        { id: 'itemDeleted', label: 'Item Deleted', desc: 'Plays a deep pop when something is deleted.', sound: 'delete' as const },
+                        { id: 'emailSent', label: 'Email Sent', desc: 'Plays a swoosh sound when an outreach email is sent.', sound: 'mailSend' as const },
+                        { id: 'errorAlert', label: 'Error Alert', desc: 'Plays an alert sound when an error occurs.', sound: 'error' as const },
                       ].map(item => (
                         <div key={item.id} className={`flex items-center justify-between p-5 rounded-xl border transition-all ${soundSettings[item.id as keyof typeof soundSettings] && masterSound ? 'bg-slate-50 dark:bg-[#09090B] border-primary-600/30 shadow-[0_0_15px_rgba(37,99,235,0.05)]' : 'bg-slate-50 dark:bg-[#09090B] border-slate-200 dark:border-[#232734]'}`}>
                           <div className="flex items-center gap-4">
