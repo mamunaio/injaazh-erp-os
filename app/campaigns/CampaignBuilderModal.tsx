@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Trash2, Mail, Bot, Type, Loader2, CheckCircle2, Activity, Clock } from 'lucide-react';
 import { createCampaign, updateCampaign } from '@/app/actions/campaignActions';
 import toast from 'react-hot-toast';
+import { sounds } from '@/lib/sound';
 
 import CampaignLeadsManager from './CampaignLeadsManager';
 
@@ -90,9 +91,11 @@ export default function CampaignBuilderModal({ isOpen, onClose, onSave, initialD
     }
     setIsSaving(false);
     if (res.success) {
+      sounds.success();
       toast.success("Campaign saved successfully");
       onSave(res.campaign);
     } else {
+      sounds.error();
       toast.error("Error: " + res.error);
     }
   };
