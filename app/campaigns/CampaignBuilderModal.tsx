@@ -103,31 +103,31 @@ export default function CampaignBuilderModal({ isOpen, onClose, onSave, initialD
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="w-full max-w-4xl neu-flat rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] min-h-[500px]"
+        className="w-full max-w-3xl neu-flat rounded-[24px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] min-h-[400px]"
       >
-        <div className="flex justify-between items-center p-6 md:p-8 relative overflow-hidden shrink-0">
+        <div className="flex justify-between items-center p-5 md:p-6 relative overflow-hidden shrink-0">
           <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[80px] pointer-events-none transform translate-x-1/2 -translate-y-1/2"></div>
           
-          <div className="flex items-center gap-5 relative z-10">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
-              <Mail size={24} strokeWidth={2.5} />
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+              <Mail size={20} strokeWidth={2.5} />
             </div>
             <div>
-              <h2 className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 tracking-tight">Campaign Builder</h2>
-              <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Design your automated email sequence</p>
+              <h2 className="text-lg font-black bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 tracking-tight">Campaign Builder</h2>
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">Design your automated email sequence</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-3 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 rounded-2xl transition-all relative z-10">
-            <X size={20} strokeWidth={2.5} />
+          <button onClick={onClose} className="p-2.5 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-all relative z-10">
+            <X size={18} strokeWidth={2.5} />
           </button>
         </div>
 
         {initialData && initialData._id && (
-          <div className="px-6 md:px-8 py-4 shrink-0">
-            <div className="inline-flex items-center p-1.5 bg-slate-200/50 dark:bg-[#1A1D24] rounded-2xl">
+          <div className="px-5 md:px-6 py-2 shrink-0">
+            <div className="inline-flex items-center p-1 bg-slate-200/50 dark:bg-[#1A1D24] rounded-xl">
               <button
                 onClick={() => setActiveTab('sequences')}
-                className={`px-8 py-2.5 font-bold text-sm rounded-xl transition-all ${
+                className={`px-6 py-2 font-bold text-xs rounded-lg transition-all ${
                   activeTab === 'sequences' ? 'bg-white dark:bg-[#232734] text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
@@ -135,7 +135,7 @@ export default function CampaignBuilderModal({ isOpen, onClose, onSave, initialD
               </button>
               <button
                 onClick={() => setActiveTab('leads')}
-                className={`px-8 py-2.5 font-bold text-sm rounded-xl transition-all ${
+                className={`px-6 py-2 font-bold text-xs rounded-lg transition-all ${
                   activeTab === 'leads' ? 'bg-white dark:bg-[#232734] text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
@@ -145,128 +145,125 @@ export default function CampaignBuilderModal({ isOpen, onClose, onSave, initialD
           </div>
         )}
 
-        <div className="p-6 md:p-8 overflow-y-auto flex-1 min-h-0 custom-scrollbar relative">
+        <div className="p-5 md:p-6 overflow-y-auto flex-1 min-h-0 custom-scrollbar relative">
           {activeTab === 'sequences' ? (
-            <div className="max-w-3xl mx-auto">
+            <div className="max-w-2xl mx-auto">
               {/* Campaign Details */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                 <div className="group">
-                  <label className="block text-[11px] font-black text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-widest pl-1">Campaign Name</label>
+                  <label className="block text-[10px] font-black text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-widest pl-1">Campaign Name</label>
                   <input 
                     value={name}
                     onChange={e => setName(e.target.value)}
                     placeholder="e.g. Q3 Roofers Outreach"
-                    className="w-full bg-slate-50 dark:bg-[#111111] border-none rounded-2xl px-5 py-4 text-slate-900 dark:text-white font-bold focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)]"
+                    className="w-full bg-slate-50 dark:bg-[#111111] border-none rounded-xl px-4 py-3 text-slate-900 dark:text-white font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all text-sm shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)]"
                   />
                 </div>
                 <div className="group">
-                  <label className="block text-[11px] font-black text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-widest pl-1">Target Niche <span className="font-medium normal-case tracking-normal text-slate-400">(Optional)</span></label>
+                  <label className="block text-[10px] font-black text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-widest pl-1">Target Niche <span className="font-medium normal-case tracking-normal text-slate-400">(Optional)</span></label>
                   <input 
                     value={niche}
                     onChange={e => setNiche(e.target.value)}
                     placeholder="e.g. Roofing, Real Estate"
-                    className="w-full bg-slate-50 dark:bg-[#111111] border-none rounded-2xl px-5 py-4 text-slate-900 dark:text-white font-bold focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)]"
+                    className="w-full bg-slate-50 dark:bg-[#111111] border-none rounded-xl px-4 py-3 text-slate-900 dark:text-white font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all text-sm shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)]"
                   />
                 </div>
               </div>
 
               {/* Sequence Builder */}
-              <div className="space-y-8 relative">
+              <div className="space-y-6 relative">
                 {/* Visual connecting line */}
-                <div className="absolute left-[2.25rem] top-8 bottom-24 w-1 bg-gradient-to-b from-indigo-200 to-indigo-100 dark:from-indigo-500/20 dark:to-transparent rounded-full hidden sm:block"></div>
+                <div className="absolute left-[1.5rem] top-6 bottom-16 w-0.5 bg-gradient-to-b from-indigo-200 to-indigo-100 dark:from-indigo-500/20 dark:to-transparent rounded-full hidden sm:block"></div>
 
-                <div className="flex items-center gap-4 mb-4 relative z-10">
-                  <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
-                    <Mail size={24} />
+                <div className="flex items-center gap-3 mb-2 relative z-10">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
+                    <Mail size={16} />
                   </div>
-                  <h3 className="text-xl font-black text-slate-900 dark:text-white">Sequence Timeline</h3>
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white">Sequence Timeline</h3>
                 </div>
                 
                 {sequences.map((step, idx) => (
                   <div key={idx} className="relative z-10">
                     {/* Wait block if not first step */}
                     {idx > 0 && (
-                      <div className="flex items-center gap-4 ml-0 sm:ml-20 mb-6 group">
-                        <div className="flex items-center gap-3 bg-white dark:bg-[#1A1D24] px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-[#232734] shadow-sm hover:border-indigo-300 dark:hover:border-indigo-500/50 transition-colors">
-                          <Clock size={16} className="text-indigo-500" />
-                          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Wait</span>
+                      <div className="flex items-center gap-3 ml-0 sm:ml-12 mb-4 group">
+                        <div className="flex items-center gap-2 bg-white dark:bg-[#1A1D24] px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#232734] shadow-sm hover:border-indigo-300 dark:hover:border-indigo-500/50 transition-colors">
+                          <Clock size={14} className="text-indigo-500" />
+                          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Wait</span>
                           <input 
                             type="number"
                             min="1"
                             value={step.delayDays}
                             onChange={e => updateStep(idx, 'delayDays', parseInt(e.target.value))}
-                            className="w-16 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl px-2 py-1.5 text-center font-black text-indigo-600 dark:text-indigo-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                            className="w-12 bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-lg px-2 py-1 text-center font-black text-indigo-600 dark:text-indigo-400 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                           />
-                          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">days</span>
+                          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">days</span>
                         </div>
                       </div>
                     )}
 
-                    <div className="bg-slate-50 dark:bg-[#111111] border border-slate-200/50 dark:border-[#232734]/30 rounded-[2rem] p-6 sm:p-8 relative group shadow-sm transition-shadow">
+                    <div className="bg-slate-50 dark:bg-[#111111] border border-slate-200/50 dark:border-[#232734]/30 rounded-2xl p-5 relative group shadow-sm transition-shadow">
                       {sequences.length > 1 && (
                         <button 
                           onClick={() => removeStep(idx)}
-                          className="absolute top-6 right-6 p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all opacity-0 group-hover:opacity-100"
+                          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                         >
-                          <Trash2 size={18} />
+                          <Trash2 size={16} />
                         </button>
                       )}
                       
-                      <div className="flex items-center gap-5 mb-8">
-                        <div className="w-12 h-12 rounded-2xl bg-indigo-500 text-white flex items-center justify-center font-black text-lg shadow-lg shadow-indigo-500/20 shrink-0">
+                      <div className="flex items-center gap-4 mb-5">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-500 text-white flex items-center justify-center font-black text-base shadow-lg shadow-indigo-500/20 shrink-0">
                           {step.stepNumber}
                         </div>
                         <div>
-                          <h4 className="font-black text-lg text-slate-900 dark:text-white">Step {step.stepNumber}</h4>
-                          <p className="text-xs font-medium text-slate-500 mt-0.5">{step.useAI ? 'AI Generated Email' : 'Fixed Template Email'}</p>
+                          <h4 className="font-black text-base text-slate-900 dark:text-white">Step {step.stepNumber}</h4>
+                          <p className="text-[11px] font-medium text-slate-500">{step.useAI ? 'AI Generated Email' : 'Fixed Template Email'}</p>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 gap-6">
+                      <div className="grid grid-cols-1 gap-5">
                         <div>
-                          <label className="block text-[11px] font-black text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-widest pl-1">Subject Line</label>
+                          <label className="block text-[10px] font-black text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-widest pl-1">Subject Line</label>
                           <input 
                             value={step.subjectTemplate}
                             onChange={e => updateStep(idx, 'subjectTemplate', e.target.value)}
                             placeholder="e.g. Quick question regarding {{company_name}}"
-                            className="w-full bg-white dark:bg-[#09090B] border-none rounded-2xl px-5 py-4 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all text-sm shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)]"
+                            className="w-full bg-white dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-2.5 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all text-xs shadow-sm"
                           />
                         </div>
 
                         <div>
-                          <div className="flex justify-between items-center mb-3">
-                            <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">Email Body</label>
+                          <div className="flex justify-between items-center mb-2">
+                            <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">Email Body</label>
                             
-                            <div className="flex items-center bg-slate-100 dark:bg-[#09090B] p-1 rounded-xl">
+                            <div className="flex items-center bg-slate-100 dark:bg-[#09090B] p-0.5 rounded-lg">
                               <button 
                                 onClick={() => updateStep(idx, 'useAI', false)}
-                                className={`flex items-center gap-2 text-[11px] font-bold px-4 py-2 rounded-lg transition-all ${!step.useAI ? 'bg-white dark:bg-[#232734] text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                                className={`flex items-center gap-1.5 text-[10px] font-bold px-3 py-1.5 rounded-md transition-all ${!step.useAI ? 'bg-white dark:bg-[#232734] text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                               >
-                                <Type size={14} /> Fixed
+                                <Type size={12} /> Fixed
                               </button>
                               <button 
                                 onClick={() => updateStep(idx, 'useAI', true)}
-                                className={`flex items-center gap-2 text-[11px] font-bold px-4 py-2 rounded-lg transition-all ${step.useAI ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/20' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                                className={`flex items-center gap-1.5 text-[10px] font-bold px-3 py-1.5 rounded-md transition-all ${step.useAI ? 'bg-indigo-500 text-white shadow-sm shadow-indigo-500/20' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                               >
-                                <Bot size={14} /> AI Mode
+                                <Bot size={12} /> AI Mode
                               </button>
                             </div>
                           </div>
                           
                           <div className="relative">
-                            {step.useAI && (
-                              <div className="absolute -inset-[1px] bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl opacity-20 blur-[2px]"></div>
-                            )}
                             <textarea 
                               value={step.bodyTemplate}
                               onChange={e => updateStep(idx, 'bodyTemplate', e.target.value)}
                               placeholder={step.useAI ? "Write instructions for the AI on how to write this email... (e.g. Keep it under 50 words, mention their recent news)" : "Write the exact email body here. Use {{company_name}} for variables..."}
-                              className={`w-full relative z-10 bg-white dark:bg-[#09090B] border ${step.useAI ? 'border-indigo-200 dark:border-indigo-500/30' : 'border-transparent dark:border-[#232734]/30'} rounded-2xl px-5 py-4 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all text-sm resize-none h-48 leading-relaxed shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)]`}
+                              className={`w-full relative z-10 bg-white dark:bg-[#09090B] border ${step.useAI ? 'border-indigo-200 dark:border-indigo-500/30' : 'border-slate-200 dark:border-[#232734]'} rounded-xl px-4 py-3 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all text-xs resize-none h-28 leading-relaxed shadow-sm`}
                             />
                           </div>
                           {step.useAI && (
-                            <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-3 font-semibold flex items-center gap-2 bg-indigo-50 dark:bg-indigo-500/10 px-4 py-3 rounded-xl border border-indigo-100 dark:border-indigo-500/20">
-                              <Bot size={16} /> The AI will read this prompt and generate a highly personalized email for each lead.
+                            <p className="text-[10px] text-indigo-600 dark:text-indigo-400 mt-2 font-semibold flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-500/10 px-3 py-2 rounded-lg border border-indigo-100 dark:border-indigo-500/20">
+                              <Bot size={14} /> The AI will read this prompt and generate a highly personalized email for each lead.
                             </p>
                           )}
                         </div>
@@ -275,13 +272,13 @@ export default function CampaignBuilderModal({ isOpen, onClose, onSave, initialD
                   </div>
                 ))}
 
-                <div className="pt-4 sm:ml-20 relative z-10">
+                <div className="pt-2 sm:ml-12 relative z-10">
                   <button 
                     onClick={addStep}
-                    className="w-full py-6 bg-slate-50 dark:bg-[#111111] border-none hover:bg-indigo-50/50 dark:hover:bg-indigo-500/5 rounded-[2rem] text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold text-sm transition-all flex flex-col items-center justify-center gap-3 group"
+                    className="w-full py-4 bg-slate-50 dark:bg-[#111111] border border-dashed border-slate-300 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-indigo-50/50 dark:hover:bg-indigo-500/5 rounded-2xl text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold text-xs transition-all flex flex-col items-center justify-center gap-2 group"
                   >
-                    <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-[#1A1D24] group-hover:bg-indigo-100 dark:group-hover:bg-indigo-500/20 flex items-center justify-center transition-colors">
-                      <Plus size={20} strokeWidth={2.5} />
+                    <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#1A1D24] group-hover:bg-indigo-100 dark:group-hover:bg-indigo-500/20 flex items-center justify-center transition-colors">
+                      <Plus size={16} strokeWidth={2.5} />
                     </div>
                     Add Next Sequence Step
                   </button>
@@ -294,19 +291,19 @@ export default function CampaignBuilderModal({ isOpen, onClose, onSave, initialD
         </div>
 
         {activeTab === 'sequences' && (
-          <div className="p-6 md:px-8 md:py-6 flex justify-end gap-4 shrink-0">
+          <div className="p-4 md:px-6 md:py-4 flex justify-end gap-3 shrink-0 border-t border-slate-200 dark:border-[#232734]">
             <button 
               onClick={onClose}
-              className="px-8 py-3.5 rounded-2xl font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all"
+              className="px-6 py-2.5 rounded-xl font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all text-xs"
             >
               Cancel
             </button>
             <button 
               onClick={handleSave}
               disabled={isSaving}
-              className="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold rounded-2xl transition-all flex items-center gap-2 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-0.5 active:translate-y-0"
+              className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-all shadow-md shadow-indigo-500/20 flex items-center gap-2 disabled:opacity-50 text-xs"
             >
-              {isSaving ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} strokeWidth={2.5} />}
+              {isSaving ? <Activity size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
               Save Campaign
             </button>
           </div>
