@@ -359,8 +359,25 @@ export default function SettingsClient() {
     expenseLogged: true,
     itemDeleted: true,
     emailSent: true,
+    emailSent: true,
     errorAlert: true
   });
+  const [bootSoundChoice, setBootSoundChoice] = useState('login1');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const choice = localStorage.getItem('bootSoundChoice');
+      if (choice) setBootSoundChoice(choice);
+    }
+  }, []);
+
+  const handleBootSoundChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const choice = e.target.value;
+    setBootSoundChoice(choice);
+    localStorage.setItem('bootSoundChoice', choice);
+    if (masterSound) playSound(choice as any);
+  };
+
   const [dangerConfirm, setDangerConfirm] = useState('');
 
   const triggerChange = () => setHasUnsavedChanges(true);
@@ -798,12 +815,23 @@ export default function SettingsClient() {
                       ].map(item => (
                         <div key={item.id} className={`flex items-center justify-between p-5 rounded-xl border transition-all ${soundSettings[item.id as keyof typeof soundSettings] && masterSound ? 'bg-slate-50 dark:bg-[#09090B] border-primary-600/30 shadow-[0_0_15px_rgba(37,99,235,0.05)]' : 'bg-slate-50 dark:bg-[#09090B] border-slate-200 dark:border-[#232734]'}`}>
                           <div className="flex items-center gap-4">
-                            <button onClick={() => masterSound ? playSound(item.sound) : toast.error("Master sound muted")} className="w-10 h-10 rounded-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] flex items-center justify-center text-[#94A3B8] hover:text-primary-600 transition-all" title="Preview Sound">
+                            <button onClick={() => masterSound ? playSound(item.id === 'systemBoot' ? bootSoundChoice as any : item.sound) : toast.error("Master sound muted")} className="w-10 h-10 rounded-full bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] flex items-center justify-center text-[#94A3B8] hover:text-primary-600 transition-all" title="Preview Sound">
                               <Play size={14} className="ml-1" />
                             </button>
                             <div>
                               <h4 className="font-bold text-sm text-slate-900 dark:text-white">{item.label}</h4>
                               <p className="text-xs font-medium text-[#94A3B8] mt-0.5">{item.desc}</p>
+                              {item.id === 'systemBoot' && (
+                                <select 
+                                  value={bootSoundChoice} 
+                                  onChange={handleBootSoundChange}
+                                  className="mt-2 px-3 py-1.5 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-lg focus:outline-none focus:border-primary-600/50 text-slate-900 dark:text-white text-xs font-medium appearance-none cursor-pointer w-48"
+                                >
+                                  <option value="login1">Classic Chord</option>
+                                  <option value="login2">Modern Ascending</option>
+                                  <option value="login3">Minimal Chime</option>
+                                </select>
+                              )}
                             </div>
                           </div>
                           <label className="relative cursor-pointer">

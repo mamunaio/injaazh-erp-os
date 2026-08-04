@@ -88,8 +88,25 @@ export const sounds = {
     // Crisp click-pop
     playTone(800, 'sine', 0.05, 0.2, 1200);
   },
-  login: () => {
+  login1: () => {
     // Welcoming boot-up chord (C major 7th approximation)
     playChord([261.63, 329.63, 392.00, 493.88], 'sine', 1.5, 0.2);
+  },
+  login2: () => {
+    // Modern Ascending
+    playTone(440, 'sine', 0.1, 0.2);
+    setTimeout(() => playTone(554.37, 'sine', 0.1, 0.2), 100);
+    setTimeout(() => playTone(659.25, 'sine', 0.3, 0.2), 200);
+  },
+  login3: () => {
+    // Minimal Chime
+    playTone(1046.50, 'triangle', 0.4, 0.15);
+  },
+  login: () => {
+    const choice = typeof window !== 'undefined' ? localStorage.getItem('bootSoundChoice') : 'login1';
+    if (choice === 'login2') sounds.login2();
+    else if (choice === 'login3') sounds.login3();
+    else sounds.login1();
   }
 };
+
