@@ -85,8 +85,9 @@ export const sounds = {
     playTone(800, 'sine', 0.2, 0.2, 2000);
   },
   edit: () => {
-    // Crisp click-pop
-    playTone(800, 'sine', 0.05, 0.2, 1200);
+    // 1-second gentle chime for New Lead Added
+    playTone(900, 'sine', 1.0, 0.2);
+    setTimeout(() => playTone(1200, 'sine', 0.8, 0.1), 150);
   },
   login1: () => {
     // Welcoming boot-up chord (C major 7th approximation)
