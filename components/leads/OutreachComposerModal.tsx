@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { fromZonedTime } from 'date-fns-tz';
-import { sendOutreachEmail, scheduleOutreachEmail, cancelOutreachSchedule } from '@/app/actions/leadActions';
+import { sendOutreachEmail, scheduleOutreachEmail, cancelOutreachSchedule, getLastSenderForLead } from '@/app/actions/leadActions';
 import { getEmailAccounts } from '@/app/actions/emailAccountActions';
 import { generateAIEmailDraft, generateAITemplateVariables } from '@/app/actions/aiActions';
 import { getEmailTemplates, createEmailTemplate, updateEmailTemplate, deleteEmailTemplate } from '@/app/actions/emailTemplateActions';
@@ -304,7 +304,24 @@ export default function OutreachComposerModal({
       const fetchAccounts = async () => {
         const res = await getEmailAccounts();
         if (res.success && res.accounts) {
-          setActiveAccounts(res.accounts.filter((a: any) => a.isActive));
+          const active = res.accounts.filter((a: any) => a.isActive);
+          setActiveAccounts(active);
+
+          // Pre-select the account used for the last email to this lead
+          if (lead._id) {
+            const lastSender = await getLastSenderForLead(lead._id.toString());
+            if (lastSender.success && lastSender.accountId) {
+              // Only pre-select if that account is still active
+              const stillActive = active.find((a: any) => a._id.toString() === lastSender.accountId);
+              if (stillActive) {
+                setSelectedSenderId(lastSender.accountId);
+              } else {
+                setSelectedSenderId('auto'); // Fallback if account was deactivated
+              }
+            } else {
+              setSelectedSenderId('auto'); // No previous email — use auto
+            }
+          }
         }
       };
       fetchAccounts();

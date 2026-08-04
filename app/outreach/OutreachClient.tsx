@@ -196,24 +196,18 @@ export default function OutreachClient({ initialLeads, initialAnalytics }: Outre
       setEmailSubject(selectedLead.email_subject_draft || '');
       setEmailBody(selectedLead.email_draft || '');
       setWhatsappBody(selectedLead.facebook_draft || '');
-      
-      // Try to find the previously used email account and set it
+      // Fetch the last sender from backend
       if (emailAccounts.length > 0) {
-        let matchedId = 'auto';
-        const lastEmailLog = selectedLead.outreach_logs?.find((l: any) => l.method === 'Email' && l.notes?.includes('Sent Via: '));
-        if (lastEmailLog) {
-          const match = lastEmailLog.notes.match(/Sent Via:\s*([^\s\n]+)/);
-          if (match && match[1]) {
-            const emailUsed = match[1].trim().toLowerCase();
-            const foundAcc = emailAccounts.find(a => a.email.toLowerCase() === emailUsed);
-            if (foundAcc) {
-              matchedId = foundAcc._id;
+        import('@/app/actions/leadActions').then(({ getLastSenderForLead }) => {
+          getLastSenderForLead(selectedLead._id).then((res) => {
+            if (res.success && res.accountId) {
+              setSenderAccountId(res.accountId);
+            } else {
+              setSenderAccountId('auto');
             }
-          }
-        }
-        setSenderAccountId(matchedId);
-      }
-      
+          });
+        });
+      }      
       // Mark as read locally so the blue dot disappears
       if (!readLeads.includes(selectedLead._id)) {
         setReadLeads(prev => [...prev, selectedLead._id]);

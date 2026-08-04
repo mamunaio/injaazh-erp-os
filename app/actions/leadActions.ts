@@ -8,6 +8,20 @@ import { decrypt } from '@/lib/encryption';
 import { createNotification } from './notificationActions';
 import mongoose from 'mongoose';
 
+export async function getLastSenderForLead(leadId: string) {
+  try {
+    await connectToDatabase();
+    const { EmailCampaignLog } = await import('@/models/EmailCampaignLog');
+    const log = await EmailCampaignLog.findOne({ leadId, status: 'Sent' }).sort({ createdAt: -1 }).lean();
+    if (log && log.accountId) {
+      return { success: true, accountId: log.accountId.toString() };
+    }
+    return { success: false };
+  } catch (e) {
+    return { success: false };
+  }
+}
+
 export async function createLead(data: any) {
   try {
     await connectToDatabase();
@@ -437,7 +451,7 @@ export async function sendOutreachEmail(leadId: string, subject: string, body: s
 
     if (senderAccountId === 'auto') {
       // Check if this lead already has an email history
-      const previousLog = await EmailCampaignLog.findOne({ leadId: lead._id, status: 'Sent' }).sort({ createdAt: 1 }).lean();
+      const previousLog = await EmailCampaignLog.findOne({ leadId: lead._id, status: 'Sent' }).sort({ createdAt: -1 }).lean();
       if (previousLog && previousLog.accountId) {
         senderAccountId = previousLog.accountId.toString();
       }
