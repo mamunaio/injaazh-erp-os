@@ -451,31 +451,29 @@ export async function forceRunCampaign(campaignId: string) {
     }
 
     const { after } = await import('next/server');
-    const fs = require('fs');
-    const logFile = 'scratch/campaign-log.txt';
-    fs.appendFileSync(logFile, `[${new Date().toISOString()}] Started campaign run for ${activeCampaignLeads.length} leads\n`);
+    console.log(`[FORCE RUN] [${new Date().toISOString()}] Started campaign run for ${activeCampaignLeads.length} leads`);
 
     after(async () => {
       let processedCount = 0;
       for (const cl of activeCampaignLeads) {
-        fs.appendFileSync(logFile, `[${new Date().toISOString()}] Processing lead: ${cl.leadId}\n`);
+        console.log(`[FORCE RUN] [${new Date().toISOString()}] Processing lead: ${cl.leadId}`);
         try {
           const res = await executeCampaignSequence(cl._id.toString());
           if (res.success) {
             processedCount++;
-            fs.appendFileSync(logFile, `[${new Date().toISOString()}] Successfully sent email to lead: ${cl.leadId}\n`);
+            console.log(`[FORCE RUN] [${new Date().toISOString()}] Successfully sent email to lead: ${cl.leadId}`);
           } else {
-            fs.appendFileSync(logFile, `[${new Date().toISOString()}] Error for lead ${cl.leadId}: ${res.error}\n`);
+            console.error(`[FORCE RUN] [${new Date().toISOString()}] Error for lead ${cl.leadId}: ${res.error}`);
           }
         } catch (e: any) {
-          fs.appendFileSync(logFile, `[${new Date().toISOString()}] CRASH for lead ${cl.leadId}: ${e.message}\n${e.stack}\n`);
+          console.error(`[FORCE RUN] [${new Date().toISOString()}] CRASH for lead ${cl.leadId}: ${e.message}\n${e.stack}`);
         }
         
         const randomDelayMs = Math.floor(Math.random() * (240000 - 120000 + 1)) + 120000;
-        fs.appendFileSync(logFile, `[${new Date().toISOString()}] Waiting ${Math.round(randomDelayMs / 1000)} seconds...\n`);
+        console.log(`[FORCE RUN] [${new Date().toISOString()}] Waiting ${Math.round(randomDelayMs / 1000)} seconds...`);
         await new Promise(r => setTimeout(r, randomDelayMs));
       }
-      fs.appendFileSync(logFile, `[${new Date().toISOString()}] Finished processing ${processedCount} leads\n`);
+      console.log(`[FORCE RUN] [${new Date().toISOString()}] Finished processing ${processedCount} leads`);
     });
 
     return { success: true, message: `Successfully started sending to ${activeCampaignLeads.length} leads in the background. Emails will be sent 2-4 mins apart.` };
