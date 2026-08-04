@@ -362,7 +362,6 @@ export default function SettingsClient() {
     expenseLogged: true,
     itemDeleted: true,
     emailSent: true,
-    emailSent: true,
     errorAlert: true
   });
   const [soundVariants, setSoundVariants] = useState<Record<string, string>>({
