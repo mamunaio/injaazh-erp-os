@@ -93,14 +93,15 @@ export const sounds = {
     playChord([261.63, 329.63, 392.00, 493.88], 'sine', 1.5, 0.2);
   },
   login2: () => {
-    // Modern Ascending
-    playTone(440, 'sine', 0.1, 0.2);
-    setTimeout(() => playTone(554.37, 'sine', 0.1, 0.2), 100);
-    setTimeout(() => playTone(659.25, 'sine', 0.3, 0.2), 200);
+    // Modern Ascending (~2s total)
+    playTone(440, 'sine', 0.6, 0.2);
+    setTimeout(() => playTone(554.37, 'sine', 0.8, 0.2), 300);
+    setTimeout(() => playTone(659.25, 'sine', 1.5, 0.2), 600);
   },
   login3: () => {
-    // Minimal Chime
-    playTone(1046.50, 'triangle', 0.4, 0.15);
+    // Minimal Chime (~2s total)
+    playTone(1046.50, 'triangle', 2.0, 0.15);
+    setTimeout(() => playTone(1318.51, 'triangle', 1.8, 0.1), 200);
   },
   login: () => {
     const choice = typeof window !== 'undefined' ? localStorage.getItem('bootSoundChoice') : 'login1';
