@@ -73,7 +73,7 @@ const INITIAL_AUDIT_LOGS = [
   { id: 'log5', user: 'Sarah J.', action: 'Deleted Lead (John Doe)', ip: '172.16.0.4', time: 'Yesterday', status: 'warning' },
 ];
 
-const playSound = (type: 'success' | 'pop' | 'error' | 'cash' | 'income' | 'expense' | 'delete' | 'mailSend' | 'edit' | 'login') => {
+const playSound = (type: 'success' | 'pop' | 'error' | 'cash' | 'income' | 'expense' | 'delete' | 'mailSend' | 'edit' | 'login' | 'login1' | 'login2' | 'login3') => {
   try {
     if (type === 'income') return sounds.income();
     if (type === 'expense') return sounds.expense();
@@ -81,6 +81,9 @@ const playSound = (type: 'success' | 'pop' | 'error' | 'cash' | 'income' | 'expe
     if (type === 'mailSend') return sounds.mailSend();
     if (type === 'edit') return sounds.edit();
     if (type === 'login') return sounds.login();
+    if (type === 'login1') return sounds.login1();
+    if (type === 'login2') return sounds.login2();
+    if (type === 'login3') return sounds.login3();
 
     const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioContext) return;
@@ -363,6 +366,7 @@ export default function SettingsClient() {
     errorAlert: true
   });
   const [bootSoundChoice, setBootSoundChoice] = useState('login1');
+  const [isBootMenuOpen, setIsBootMenuOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -371,11 +375,11 @@ export default function SettingsClient() {
     }
   }, []);
 
-  const handleBootSoundChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const choice = e.target.value;
+  const handleBootSoundChange = (choice: string) => {
     setBootSoundChoice(choice);
     localStorage.setItem('bootSoundChoice', choice);
     if (masterSound) playSound(choice as any);
+    setIsBootMenuOpen(false);
   };
 
   const [dangerConfirm, setDangerConfirm] = useState('');
@@ -822,15 +826,33 @@ export default function SettingsClient() {
                               <h4 className="font-bold text-sm text-slate-900 dark:text-white">{item.label}</h4>
                               <p className="text-xs font-medium text-[#94A3B8] mt-0.5">{item.desc}</p>
                               {item.id === 'systemBoot' && (
-                                <select 
-                                  value={bootSoundChoice} 
-                                  onChange={handleBootSoundChange}
-                                  className="mt-2 px-3 py-1.5 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-lg focus:outline-none focus:border-primary-600/50 text-slate-900 dark:text-white text-xs font-medium appearance-none cursor-pointer w-48"
-                                >
-                                  <option value="login1">Classic Chord</option>
-                                  <option value="login2">Modern Ascending</option>
-                                  <option value="login3">Minimal Chime</option>
-                                </select>
+                                <div className="relative mt-3">
+                                  <button
+                                    onClick={() => setIsBootMenuOpen(!isBootMenuOpen)}
+                                    className="flex items-center justify-between w-48 px-3 py-1.5 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-lg focus:outline-none focus:border-primary-600/50 text-slate-900 dark:text-white text-xs font-medium transition-all"
+                                  >
+                                    <span>
+                                      {bootSoundChoice === 'login1' ? 'Classic Chord' : 
+                                       bootSoundChoice === 'login2' ? 'Modern Ascending' : 'Minimal Chime'}
+                                    </span>
+                                    <ChevronRight className={`w-3 h-3 text-[#94A3B8] transition-transform ${isBootMenuOpen ? 'rotate-90' : ''}`} />
+                                  </button>
+                                  
+                                  <AnimatePresence>
+                                    {isBootMenuOpen && (
+                                      <motion.div
+                                        initial={{ opacity: 0, y: -5 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -5 }}
+                                        className="absolute z-10 w-48 mt-1 bg-white/90 dark:bg-[#11131A]/90 backdrop-blur-xl border border-slate-200 dark:border-[#232734] rounded-lg shadow-xl overflow-hidden"
+                                      >
+                                        <button onClick={() => handleBootSoundChange('login1')} className="w-full text-left px-3 py-2 text-xs font-medium hover:bg-primary-600/10 hover:text-primary-600 text-slate-700 dark:text-slate-300 transition-colors">Classic Chord</button>
+                                        <button onClick={() => handleBootSoundChange('login2')} className="w-full text-left px-3 py-2 text-xs font-medium hover:bg-primary-600/10 hover:text-primary-600 text-slate-700 dark:text-slate-300 transition-colors">Modern Ascending</button>
+                                        <button onClick={() => handleBootSoundChange('login3')} className="w-full text-left px-3 py-2 text-xs font-medium hover:bg-primary-600/10 hover:text-primary-600 text-slate-700 dark:text-slate-300 transition-colors">Minimal Chime</button>
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
                               )}
                             </div>
                           </div>
