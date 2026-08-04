@@ -6,6 +6,7 @@ import { Mail, Lock, ArrowRight, Eye, EyeOff, Loader2, Command, ShieldCheck, Arr
 import Link from 'next/link';
 import { loginUser, verifyTwoFactorLogin } from '@/app/actions/authActions';
 import { toast } from 'react-hot-toast';
+import { notify } from '@/lib/notify';
 import ThemeToggle from '@/components/layout/ThemeToggle';
 import { useRouter } from 'next/navigation';
 
@@ -101,7 +102,7 @@ export default function LoginPage() {
       setIsLoading(false);
       
       if (result.success) {
-        toast.success(result.message || 'Login successful');
+        notify.login(result.message || 'Login successful');
         router.push('/dashboard');
       } else {
         toast.error(result.message || 'Invalid 2FA code');
@@ -121,7 +122,7 @@ export default function LoginPage() {
     }
     
     if (result.success) {
-      toast.success(result.message || 'Welcome back!');
+      notify.login(result.message || 'Welcome back!');
       router.push('/dashboard');
     } else {
       toast.error(result.message || 'Login failed');

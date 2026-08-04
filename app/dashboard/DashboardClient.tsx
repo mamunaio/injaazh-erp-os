@@ -59,13 +59,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
   const [revenueFilter, setRevenueFilter] = useState<'30days' | '6months' | 'year'>('30days');
   const router = useRouter();
 
-  useEffect(() => {
-    // Play login sound only once per session when dashboard is first loaded
-    if (!sessionStorage.getItem('hasPlayedLoginSound')) {
-      notify.login('Welcome back!');
-      sessionStorage.setItem('hasPlayedLoginSound', 'true');
-    }
-  }, []);
+
 
   const handleAction = (actionName: string, routeTo?: string) => {
     setIsActionLoading(actionName);
