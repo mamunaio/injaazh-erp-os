@@ -308,20 +308,25 @@ export default function OutreachComposerModal({
           setActiveAccounts(active);
 
           // Pre-select the account used for the last email to this lead
+          let assignedAccountId = null;
           if (lead._id) {
             const lastSender = await getLastSenderForLead(lead._id.toString());
             if (lastSender.success && lastSender.accountId) {
               // Only pre-select if that account is still active
               const stillActive = active.find((a: any) => a._id.toString() === lastSender.accountId);
               if (stillActive) {
-                setSelectedSenderId(lastSender.accountId);
-              } else {
-                setSelectedSenderId('auto'); // Fallback if account was deactivated
+                assignedAccountId = lastSender.accountId;
               }
-            } else {
-              setSelectedSenderId('auto'); // No previous email — use auto
             }
           }
+          
+          if (!assignedAccountId && active.length > 0) {
+            // Replicate backend rotation: pick active account with lowest usage
+            const lowestUsage = active.reduce((prev, curr) => (prev.sentToday < curr.sentToday ? prev : curr));
+            assignedAccountId = lowestUsage._id.toString();
+          }
+
+          setSelectedSenderId(assignedAccountId || 'auto');
         }
       };
       fetchAccounts();
@@ -788,10 +793,7 @@ export default function OutreachComposerModal({
                       <CustomSelect 
                         value={selectedSenderId} 
                         onChange={setSelectedSenderId} 
-                        options={[
-                          { value: 'auto', label: '🚀 Auto-select best sender' },
-                          ...activeAccounts.map(a => ({ value: a._id.toString(), label: `${a.email} (${a.sentToday}/${a.dailyLimit} sent)` }))
-                        ]}
+                        options={activeAccounts.map(a => ({ value: a._id.toString(), label: `${a.email} (${a.sentToday}/${a.dailyLimit} sent)` }))}
                         className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white font-medium"
                       />
                     </div>
