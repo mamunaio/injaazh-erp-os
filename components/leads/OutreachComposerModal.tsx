@@ -322,7 +322,7 @@ export default function OutreachComposerModal({
           
           if (!assignedAccountId && active.length > 0) {
             // Replicate backend rotation: pick active account with lowest usage
-            const lowestUsage = active.reduce((prev, curr) => (prev.sentToday < curr.sentToday ? prev : curr));
+            const lowestUsage = active.reduce((prev: any, curr: any) => (prev.sentToday < curr.sentToday ? prev : curr));
             assignedAccountId = lowestUsage._id.toString();
           }
 
