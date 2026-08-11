@@ -84,6 +84,16 @@ export async function checkRepliesForAccount(account: any) {
             console.log(`[IMAP] Logged reply from Lead: ${lead.email} | Subject: ${subject}`);
           }
         }
+        
+        // Ensure that Campaign automation stops for this lead
+        if (log.campaignId) {
+          const { CampaignLead } = await import('@/models/CampaignLead');
+          await CampaignLead.findOneAndUpdate(
+            { campaignId: log.campaignId, leadId: log.leadId },
+            { status: 'Replied' }
+          );
+          console.log(`[IMAP] Marked CampaignLead as Replied for Lead: ${log.leadId}`);
+        }
 
         // Mark message as read so we don't process it again
         await connection.addFlags(msg.attributes.uid, ['\\Seen']);

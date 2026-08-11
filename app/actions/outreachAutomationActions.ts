@@ -244,6 +244,13 @@ export async function executeCampaignSequence(campaignLeadId: string) {
       return { success: false, error: 'Campaign is paused or draft' };
     }
     
+    // Safety check: Don't send follow-ups to people who already replied
+    if (lead.is_replied || lead.outreach_status === 'Replied') {
+      campaignLead.status = 'Replied';
+      await campaignLead.save();
+      return { success: false, error: 'Lead already replied. Automation stopped.' };
+    }
+    
     const step = campaign.sequences.find((s: any) => s.stepNumber === campaignLead.currentStep);
     if (!step) {
       campaignLead.status = 'Finished';
