@@ -402,7 +402,6 @@ export async function executeCampaignSequence(campaignLeadId: string) {
     // Update Lead status
     lead.outreach_status = 'Email Sent';
     lead.last_contacted_date = new Date();
-    await lead.save();
 
     // Advance CampaignLead step
     const nextStepNum = campaignLead.currentStep + 1;
@@ -413,10 +412,13 @@ export async function executeCampaignSequence(campaignLeadId: string) {
       const nextDate = new Date();
       nextDate.setDate(nextDate.getDate() + nextStep.delayDays);
       campaignLead.nextActionDate = nextDate;
+      lead.nextFollowUpDate = nextDate; // Sync to Lead model so UI shows it
     } else {
       campaignLead.status = 'Finished';
+      lead.nextFollowUpDate = undefined;
     }
     
+    await lead.save();
     await campaignLead.save();
 
     // Auto-complete the campaign if no active leads are left
