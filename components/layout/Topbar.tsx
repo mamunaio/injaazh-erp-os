@@ -177,7 +177,7 @@ export default function Topbar() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 transition={{ duration: 0.2 }}
-                className="absolute right-0 mt-3 w-80 bg-white dark:bg-[#121214] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50"
+                className="absolute right-0 mt-3 w-[calc(100vw-32px)] sm:w-80 bg-white dark:bg-[#121214] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50"
               >
                 <div className="px-5 py-4 border-b border-slate-200 dark:border-white/5 flex justify-between items-center">
                   <h3 className="font-bold text-slate-800 dark:text-white">Notifications</h3>
@@ -251,7 +251,7 @@ export default function Topbar() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 transition={{ duration: 0.2 }}
-                className="absolute right-0 mt-4 w-60 bg-white dark:bg-[#121214] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 p-2"
+                className="absolute right-0 mt-4 w-[calc(100vw-32px)] sm:w-64 bg-white dark:bg-[#121214] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 p-2"
               >
                 <div className="px-4 py-3 mb-2 border-b border-slate-100 dark:border-white/5 flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 p-[1px] flex-shrink-0">
