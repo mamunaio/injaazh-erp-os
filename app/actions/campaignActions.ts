@@ -218,7 +218,7 @@ export async function importCSVToCampaign(campaignId: string, mappedData: any[])
       mappedData.map(data => ({
         ...data,
         source: 'CSV Upload (Campaign)',
-        outreach_status: 'New',
+        outreach_status: 'Queued',
         outreach_scheduled_for: new Date()
       }))
     );
