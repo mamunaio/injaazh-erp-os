@@ -206,7 +206,7 @@ export default function LeadsTable({
               <Th col="status" className="min-w-[140px]">Status</Th>
               <Th col="createdAt" className="min-w-[130px]">Added</Th>
               <Th className="min-w-[140px]">Next Follow-up</Th>
-              <th className="pr-6 py-4 w-12" />
+              <th className="pr-6 py-4 w-12 sticky right-0 bg-slate-100/90 dark:bg-[#040509]/90 z-20 shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.05)] dark:shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.4)] border-l border-transparent" />
             </tr>
           </thead>
 
@@ -247,12 +247,12 @@ export default function LeadsTable({
                     </td>
 
                     {/* Company */}
-                    <td className="pl-2 pr-4 py-4">
-                      <div className="flex items-center gap-3">
+                    <td className="pl-2 pr-4 py-4 max-w-[220px]">
+                      <div className="flex items-center gap-3 min-w-0">
                         <div className="w-9 h-9 rounded-xl bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center text-slate-500 dark:text-slate-400 text-xs font-bold flex-shrink-0 group-hover:border-slate-600 transition-colors">
                           {initials}
                         </div>
-                        <span className="font-bold text-slate-900 dark:text-white text-[13px] truncate max-w-[160px]">
+                        <span className="font-bold text-slate-900 dark:text-white text-[13px] truncate block">
                           {lead.company_name || 'Unknown'}
                         </span>
                       </div>
@@ -266,15 +266,15 @@ export default function LeadsTable({
                     </td>
 
                     {/* Email */}
-                    <td className="pr-4 py-4">
+                    <td className="pr-4 py-4 max-w-[200px]">
                       {lead.email ? (
                         <a
                           href={`mailto:${lead.email}`}
                           onClick={e => e.stopPropagation()}
-                          className="text-[13px] font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 transition-colors truncate max-w-[180px]"
+                          className="text-[13px] font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 transition-colors min-w-0"
                         >
                           <Mail size={14} className="text-slate-500 flex-shrink-0" />
-                          {lead.email}
+                          <span className="truncate">{lead.email}</span>
                         </a>
                       ) : (
                         <span className="text-slate-600">—</span>
@@ -321,7 +321,11 @@ export default function LeadsTable({
                     </td>
 
                     {/* Actions */}
-                    <td className="pr-6 py-4 text-right">
+                    <td className={`pr-6 py-4 text-right sticky right-0 z-10 transition-colors duration-200 shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.05)] dark:shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.4)] border-l border-slate-200/50 dark:border-white/5 ${
+                      isSelected
+                        ? 'bg-blue-50/80 dark:bg-[#1e293b]'
+                        : 'bg-white dark:bg-[#11131A] group-hover:bg-slate-50 dark:group-hover:bg-[#1a1c23]'
+                    }`}>
                       <button
                         onClick={e => toggleMenu(lead._id, e)}
                         className={`w-8 h-8 rounded-lg inline-flex items-center justify-center text-slate-400 dark:text-slate-500 transition-all hover:text-slate-900 dark:hover:text-white neu-button ${
