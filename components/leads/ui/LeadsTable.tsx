@@ -324,13 +324,11 @@ export default function LeadsTable({
                     <td className={`pr-6 py-4 text-right sticky right-0 z-10 transition-colors duration-200 shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.05)] dark:shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.4)] border-l border-slate-200/50 dark:border-white/5 ${
                       isSelected
                         ? 'bg-blue-50/80 dark:bg-[#1e293b]'
-                        : 'bg-white dark:bg-[#11131A] group-hover:bg-slate-50 dark:group-hover:bg-[#1a1c23]'
+                        : 'bg-white dark:bg-[#0a0a0b] group-hover:bg-slate-50 dark:group-hover:bg-[#111111]'
                     }`}>
                       <button
                         onClick={e => toggleMenu(lead._id, e)}
-                        className={`w-8 h-8 rounded-lg inline-flex items-center justify-center text-slate-400 dark:text-slate-500 transition-all hover:text-slate-900 dark:hover:text-white neu-button ${
-                          openMenuId === lead._id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                        }`}
+                        className={`w-8 h-8 rounded-lg inline-flex items-center justify-center text-slate-400 dark:text-slate-500 transition-all hover:text-slate-900 dark:hover:text-white neu-button opacity-100`}
                         aria-label="More actions"
                       >
                         <MoreHorizontal size={16} />
