@@ -143,7 +143,7 @@ export default function EditProjectModal({ isOpen, onClose, project, onUpdatePro
               </div>
 
               {/* Client Name & Status */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
                     Client Name
@@ -209,7 +209,7 @@ export default function EditProjectModal({ isOpen, onClose, project, onUpdatePro
               </div>
 
               {/* Assignees, Progress, Priority */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
                     Assignees
@@ -253,7 +253,7 @@ export default function EditProjectModal({ isOpen, onClose, project, onUpdatePro
               </div>
 
               {/* Start Date, Deadline & Budget */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
                     <Calendar size={14} /> Start Date
