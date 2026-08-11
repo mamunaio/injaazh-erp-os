@@ -1,8 +1,1 @@
-{
-  "crons": [
-    {
-      "path": "/api/cron/master?token=outreach-email-247-cron",
-      "schedule": "*/10 * * * *"
-    }
-  ]
-}
+{}
