@@ -226,6 +226,7 @@ export default function OutreachComposerModal({
   // Sender Account Selection
   const [activeAccounts, setActiveAccounts] = useState<any[]>([]);
   const [selectedSenderId, setSelectedSenderId] = useState<string>('auto');
+  const [lastUsedAccountId, setLastUsedAccountId] = useState<string | null>(null);
   
   // Anti-Spam Cooldown & Scheduling State
   const [scheduleTime, setScheduleTime] = useState<Date | null>(null);
@@ -316,8 +317,13 @@ export default function OutreachComposerModal({
               const stillActive = active.find((a: any) => a._id.toString() === lastSender.accountId);
               if (stillActive) {
                 assignedAccountId = lastSender.accountId;
+                setLastUsedAccountId(lastSender.accountId);
               }
             }
+          }
+          
+          if (!assignedAccountId) {
+            setLastUsedAccountId(null);
           }
           
           if (!assignedAccountId && active.length > 0) {
@@ -720,9 +726,11 @@ export default function OutreachComposerModal({
                 </div>
                 <div>
                   <h2 className="text-sm font-bold text-slate-900 dark:text-white">Compose Outreach</h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-2">
-                    To: <span className="font-semibold text-slate-700 dark:text-slate-300">{lead.email}</span>
-                  </p>
+                  <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex flex-wrap items-center gap-2">
+                    <span>To: <span className="font-semibold text-slate-700 dark:text-slate-300">{lead.email}</span></span>
+                    <span className="text-slate-300 dark:text-slate-600">|</span>
+                    <span>From: <span className="font-semibold text-indigo-600 dark:text-indigo-400">{activeAccounts.find(a => a._id.toString() === selectedSenderId)?.email || 'Auto Select'}</span></span>
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -793,7 +801,13 @@ export default function OutreachComposerModal({
                       <CustomSelect 
                         value={selectedSenderId} 
                         onChange={setSelectedSenderId} 
-                        options={activeAccounts.map(a => ({ value: a._id.toString(), label: `${a.email} (${a.sentToday}/${a.dailyLimit} sent)` }))}
+                        options={activeAccounts.map(a => {
+                          const isLastUsed = a._id.toString() === lastUsedAccountId;
+                          return { 
+                            value: a._id.toString(), 
+                            label: `${a.email} (${a.sentToday}/${a.dailyLimit} sent)${isLastUsed ? ' - Last Used (Follow-up)' : ''}` 
+                          };
+                        })}
                         className="w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white font-medium"
                       />
                     </div>
