@@ -5,9 +5,12 @@
   "main": "main.js",
   "scripts": {
     "dev": "next dev",
+    "dev:turbo": "next dev --turbopack",
+    "dev:webpack": "next dev --webpack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "clean": "node -e \"fs.rmSync('.next', { recursive: true, force: true })\"",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on tcp:3000 && electron .\"",
     "electron:build": "electron-builder -w"
   },

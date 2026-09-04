@@ -152,55 +152,88 @@
     background-color: #f8fafc;
   }
   .dark .neu-base-bg {
-    background-color: #0A0A0B;
+    background-color: #08090C;
   }
   
   .neu-flat {
     background-color: #ffffff;
-    border: none;
-    border-radius: 1.5rem; /* 24px */
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    border-radius: 1.25rem;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
   }
 
   .dark .neu-flat {
-    background-color: #050505;
-    border: none;
-    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.4);
+    background-color: #0E1017;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.5);
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04);
+  }
+
+  .dark .glass-card {
+    background: rgba(14, 16, 23, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.6);
+  }
+
+  .glass-panel {
+    background: rgba(248, 250, 252, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(226, 232, 240, 0.6);
+  }
+
+  .dark .glass-panel {
+    background: rgba(10, 11, 16, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
 
   .neu-pressed {
     background-color: #f1f5f9;
-    border: none;
+    border: 1px solid rgba(226, 232, 240, 0.5);
     border-radius: 1rem;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.04);
   }
   .dark .neu-pressed {
-    background-color: #000000;
-    border: none;
-    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.8);
+    background-color: #07080B;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.9);
   }
   
   .neu-button {
     background-color: #ffffff;
-    border: none;
-    box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 2px 6px -1px rgba(0, 0, 0, 0.04);
     border-radius: 0.75rem;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     color: #0f172a;
   }
   .neu-button:hover {
     background-color: #f8fafc;
-    box-shadow: 0 6px 15px -3px rgba(0, 0, 0, 0.1);
+    border-color: rgba(203, 213, 225, 0.9);
+    box-shadow: 0 6px 16px -3px rgba(0, 0, 0, 0.08);
   }
   .dark .neu-button {
-    background-color: #0a0a0a;
-    border: none;
-    box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.4);
-    color: white;
+    background-color: #121520;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.4);
+    color: #f1f5f9;
   }
   .dark .neu-button:hover {
-    background-color: #111111;
-    box-shadow: 0 6px 15px -3px rgba(0, 0, 0, 0.6);
+    background-color: #181C2B;
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 6px 20px -3px rgba(0, 0, 0, 0.6);
   }
   
   .neu-button:active, .neu-button-active {
@@ -208,8 +241,31 @@
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
   }
   .dark .neu-button:active, .dark .neu-button-active {
-    background-color: #000000;
-    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.8);
+    background-color: #07080C;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+  }
+
+  /* Shimmer effect for skeleton loading */
+  .shimmer {
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.8s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  /* Glow helpers */
+  .glow-primary {
+    box-shadow: 0 0 25px -5px rgba(168, 85, 247, 0.35);
+  }
+  .glow-cyan {
+    box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.35);
+  }
+  .glow-emerald {
+    box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.35);
   }
 
   /* React Datepicker Custom Styles for Dark Minimal Look */
@@ -218,16 +274,16 @@
   }
   .react-datepicker {
     font-family: inherit !important;
-    border: none !important;
+    border: 1px solid rgba(226, 232, 240, 0.8) !important;
     background-color: #ffffff !important;
     border-radius: 1rem !important;
     padding: 0.5rem;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
   }
   .dark .react-datepicker {
-    background-color: #050505 !important;
-    border: none !important;
-    box-shadow: 0 10px 40px -5px rgba(0, 0, 0, 0.5);
+    background-color: #0E1017 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 10px 40px -5px rgba(0, 0, 0, 0.6);
   }
   .react-datepicker__header {
     background-color: transparent !important;
@@ -261,7 +317,7 @@
     color: #0f172a !important;
   }
   .dark .react-datepicker__day:hover {
-    background-color: rgba(255, 255, 255, 0.05) !important;
+    background-color: rgba(255, 255, 255, 0.08) !important;
     color: #fff !important;
   }
   .react-datepicker__day--selected, .react-datepicker__day--keyboard-selected {

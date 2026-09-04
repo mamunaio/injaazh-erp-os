@@ -11,6 +11,7 @@ export default function WorkTimeTracker() {
   const [isActive, setIsActive] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isIdlePaused, setIsIdlePaused] = useState(false);
+  const [activeProject, setActiveProject] = useState<string>('General');
   const pathname = usePathname();
   const [isLoaded, setIsLoaded] = useState(false);
   const startTimeRef = useRef<number | null>(null);
@@ -24,6 +25,9 @@ export default function WorkTimeTracker() {
       const storedIdle = localStorage.getItem('timeTracker_isIdlePaused');
       const storedStartTime = localStorage.getItem('timeTracker_startTime');
       const storedTotalSeconds = localStorage.getItem('timeTracker_totalSeconds');
+      const storedProject = localStorage.getItem('timeTracker_project');
+
+      if (storedProject) setActiveProject(storedProject);
 
       if (storedIdle === 'true') {
         setIsIdlePaused(true);
@@ -45,6 +49,22 @@ export default function WorkTimeTracker() {
     } finally {
       setIsLoaded(true);
     }
+  }, []);
+
+  // Event listener for project-specific time tracking
+  useEffect(() => {
+    const handleStartProjectTimer = (e: any) => {
+      const projName = e.detail?.projectName || 'General';
+      setActiveProject(projName);
+      setIsActive(true);
+      setIsIdlePaused(false);
+      startTimeRef.current = Date.now();
+      localStorage.setItem('timeTracker_project', projName);
+      toast.success(`Tracking billable time for: ${projName}`);
+    };
+
+    window.addEventListener('start-project-timer' as any, handleStartProjectTimer);
+    return () => window.removeEventListener('start-project-timer' as any, handleStartProjectTimer);
   }, []);
 
   // Save to localStorage when state changes
@@ -142,8 +162,8 @@ export default function WorkTimeTracker() {
 
         const pageName = pathname === '/' ? 'Dashboard' : pathname.split('/').filter(Boolean).map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' / ');
         const res = await createTimeLog({
-          project: 'General',
-          task: `Tracked on ${pageName}`,
+          project: activeProject || 'General',
+          task: activeProject !== 'General' ? `Sprint work on ${activeProject}` : `Tracked on ${pageName}`,
           date: now.toISOString(),
           startTime: startTimeStr,
           endTime: endTimeStr,
@@ -151,7 +171,7 @@ export default function WorkTimeTracker() {
         });
 
         if (res.success) {
-          toast.success(`Saved ${formatTime(totalSeconds)} to Timesheet!`);
+          toast.success(`Saved ${formatTime(totalSeconds)} for ${activeProject} to Timesheet!`);
         } else {
           toast.error(res.error || 'Failed to save timesheet entry.');
         }
@@ -165,6 +185,8 @@ export default function WorkTimeTracker() {
         localStorage.removeItem('timeTracker_isIdlePaused');
         localStorage.removeItem('timeTracker_startTime');
         localStorage.removeItem('timeTracker_totalSeconds');
+        localStorage.removeItem('timeTracker_project');
+        setActiveProject('General');
       } finally {
         setTotalSeconds(0);
         startTimeRef.current = null;
@@ -173,6 +195,8 @@ export default function WorkTimeTracker() {
         localStorage.removeItem('timeTracker_isIdlePaused');
         localStorage.removeItem('timeTracker_startTime');
         localStorage.removeItem('timeTracker_totalSeconds');
+        localStorage.removeItem('timeTracker_project');
+        setActiveProject('General');
       }
     } else {
       // Start
@@ -204,11 +228,11 @@ export default function WorkTimeTracker() {
           )}
         </button>
 
-        <div className="flex flex-col min-w-[70px]">
+        <div className="flex flex-col min-w-[70px] max-w-[140px]">
           <div className="flex items-center gap-1.5 mb-0.5">
-            <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]' : isIdlePaused ? 'bg-amber-500 animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.6)]' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
-            <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">
-              {isSaving ? "Saving" : isActive ? "Tracking" : isIdlePaused ? "Paused (Idle)" : "Ready"}
+            <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isActive ? 'bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]' : isIdlePaused ? 'bg-amber-500 animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.6)]' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
+            <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none truncate">
+              {isSaving ? "Saving" : isActive ? (activeProject !== 'General' ? activeProject : "Tracking") : isIdlePaused ? "Paused (Idle)" : "Ready"}
             </span>
           </div>
           <span className={`text-sm font-mono font-black leading-none ${isActive ? 'text-emerald-600 dark:text-emerald-400' : isIdlePaused ? 'text-amber-500' : 'text-slate-800 dark:text-slate-200'}`}>

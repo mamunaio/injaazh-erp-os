@@ -44,7 +44,9 @@ export default function AppLayoutWrapper({ children, initialUser }: { children: 
       <UserProvider initialUser={initialUser}>
         <ConfirmDialogProvider>
           <SidebarProvider>
-            <AppContent children={children} initialUser={initialUser} />
+            <AppContent initialUser={initialUser}>
+              {children}
+            </AppContent>
           </SidebarProvider>
         </ConfirmDialogProvider>
       </UserProvider>

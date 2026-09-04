@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { fixProposalIndex } from '@/app/actions/fixProposalIndex';
 
 export default function FixIndexPage() {
@@ -52,7 +53,7 @@ export default function FixIndexPage() {
         )}
 
         <p className="mt-6 text-xs text-slate-500 dark:text-gray-500">
-          After fixing, you can navigate back to <a href="/proposals" className="text-indigo-600 hover:underline">Proposals</a>
+          After fixing, you can navigate back to <Link href="/proposals" className="text-indigo-600 hover:underline">Proposals</Link>
         </p>
       </div>
     </div>

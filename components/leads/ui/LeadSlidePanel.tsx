@@ -5,8 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Building2, User, Mail, Phone, Globe, Calendar, Tag,
   Activity, FileText, CheckCircle2, MessageSquare, Edit,
-  Clock, LinkIcon, Sparkles, StickyNote, LayoutList
+  Clock, LinkIcon, Sparkles, StickyNote, LayoutList, Loader2, ArrowRight, Target, Zap
 } from 'lucide-react';
+import { analyzeLeadQualification } from '@/app/actions/aiActions';
+import { toast } from 'react-hot-toast';
 
 interface LeadSlidePanelProps {
   isOpen: boolean;
@@ -100,6 +102,31 @@ export default function LeadSlidePanel({
 }: LeadSlidePanelProps) {
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
   const [isStatusMenuOpen, setIsStatusMenuOpen] = useState(false);
+  const [aiQualification, setAiQualification] = useState<any>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  useEffect(() => {
+    setAiQualification(null);
+  }, [lead?._id]);
+
+  const handleRunAiQualification = async () => {
+    if (!lead?._id || isAnalyzing) return;
+    setIsAnalyzing(true);
+    toast.loading('Qualifying lead with Gemini AI...', { id: 'ai-lead-score' });
+    try {
+      const res = await analyzeLeadQualification(lead._id);
+      if (res.success && res.data) {
+        setAiQualification(res.data);
+        toast.success(`Scored ${res.data.score}/100 with ${res.data.intentLevel} intent!`, { id: 'ai-lead-score' });
+      } else {
+        toast.error(res.error || 'Failed to qualify lead', { id: 'ai-lead-score' });
+      }
+    } catch {
+      toast.error('Error qualifying lead with AI', { id: 'ai-lead-score' });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -297,6 +324,74 @@ export default function LeadSlidePanel({
                     transition={{ duration: 0.2 }}
                     className="p-6 space-y-6"
                   >
+                    {/* AI Qualification & Deal Intelligence */}
+                    <div className="rounded-[18px] p-4.5 bg-gradient-to-br from-primary-500/[0.08] via-indigo-500/[0.04] to-transparent border border-primary-500/20 relative overflow-hidden">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-lg bg-primary-500/20 text-primary-500 flex items-center justify-center">
+                            <Sparkles size={14} />
+                          </div>
+                          <div>
+                            <h4 className="text-xs font-bold text-slate-900 dark:text-white">AI Deal Qualification</h4>
+                            <p className="text-[10px] text-slate-400">Gemini 2.5 Intent Engine</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={handleRunAiQualification}
+                          disabled={isAnalyzing}
+                          className="px-3 py-1.5 rounded-lg bg-primary-600 hover:bg-primary-500 text-white font-bold text-xs transition-all flex items-center gap-1.5 shadow-sm shadow-primary-500/20 disabled:opacity-50"
+                        >
+                          {isAnalyzing ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
+                          {aiQualification ? 'Re-Analyze' : 'Analyze Lead'}
+                        </button>
+                      </div>
+
+                      {aiQualification ? (
+                        <div className="space-y-3 pt-2 border-t border-primary-500/10">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Viability Score:</span>
+                              <span className="text-sm font-bold font-mono text-emerald-500">{aiQualification.score}/100</span>
+                            </div>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                              aiQualification.intentLevel === 'High' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+                              aiQualification.intentLevel === 'Medium' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                              'bg-rose-500/10 text-rose-500 border-rose-500/20'
+                            }`}>
+                              {aiQualification.intentLevel} Intent
+                            </span>
+                          </div>
+                          
+                          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
+                            {aiQualification.reasoning}
+                          </p>
+
+                          {aiQualification.recommendedAction && (
+                            <div className="p-3 rounded-xl bg-white/60 dark:bg-black/40 border border-slate-200/80 dark:border-white/10">
+                              <p className="text-[10px] font-bold text-primary-500 uppercase tracking-wider mb-1 flex items-center gap-1">
+                                <Target size={11} /> Recommended Action
+                              </p>
+                              <p className="text-xs text-slate-700 dark:text-slate-200 font-medium">
+                                {aiQualification.recommendedAction}
+                              </p>
+                              {onOpenEmailComposer && (
+                                <button
+                                  onClick={() => onOpenEmailComposer(lead)}
+                                  className="mt-2 text-xs font-bold text-primary-500 hover:underline flex items-center gap-1"
+                                >
+                                  Draft Email for this Strategy <ArrowRight size={12} />
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                          Click &quot;Analyze Lead&quot; to score buying intent, identify pain points, and get actionable sales recommendations.
+                        </p>
+                      )}
+                    </div>
+
                     {/* Contact Info */}
                     <div>
                       <h3 className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-3">Contact Information</h3>

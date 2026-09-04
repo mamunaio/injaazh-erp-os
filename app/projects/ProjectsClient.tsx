@@ -6,7 +6,8 @@ import {
   Plus, LayoutGrid, List, Clock, Calendar, Search, Filter, Briefcase, 
   UserPlus, DownloadCloud, MoreHorizontal, X, Edit2, Trash2, 
   LayoutList, Activity, StickyNote, AlertTriangle, ArrowUpRight, 
-  ArrowDownRight, Loader2, PlayCircle, Columns, GitMerge, FileText, CheckCircle
+  ArrowDownRight, Loader2, PlayCircle, Columns, GitMerge, FileText, CheckCircle,
+  Timer, Sparkles, CheckSquare, Zap, Copy
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
@@ -22,6 +23,7 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { CSS } from '@dnd-kit/utilities';
 
 import { createProject, updateProject, deleteProject } from '@/app/actions/projectActions';
+import { generateProjectTaskChecklist } from '@/app/actions/aiActions';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Project {
@@ -172,7 +174,17 @@ function SortableProjectCard({ project }: { project: Project }) {
         </div>
       </div>
       
-      <div className="flex justify-end pl-2 mt-1">
+      <div className="flex items-center justify-between pl-2 mt-1">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            window.dispatchEvent(new CustomEvent('start-project-timer', { detail: { projectName: project.title } }));
+          }}
+          title="Start tracking time for this project"
+          className="px-2 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 text-[10px] font-bold flex items-center gap-1 transition-colors"
+        >
+          <Timer size={11} /> Start Timer
+        </button>
         {(project.assignees || []).length > 0 ? (
           <div className="flex -space-x-1.5">
             {(project.assignees || []).slice(0, 3).map((a, i) => (
@@ -192,6 +204,31 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
   
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [aiTasks, setAiTasks] = useState<any[]>([]);
+  const [isGeneratingAiTasks, setIsGeneratingAiTasks] = useState(false);
+
+  const handleGenerateAiTasks = async () => {
+    if (!formData.title || isGeneratingAiTasks) return;
+    setIsGeneratingAiTasks(true);
+    toast.loading('Generating sprint tasks with Gemini AI...', { id: 'ai-tasks' });
+    try {
+      const res = await generateProjectTaskChecklist({
+        projectTitle: formData.title,
+        description: formData.description,
+        techStack: formData.techStack,
+      });
+      if (res.success && res.tasks) {
+        setAiTasks(res.tasks);
+        toast.success(`Generated ${res.tasks.length} sprint tasks!`, { id: 'ai-tasks' });
+      } else {
+        toast.error(res.error || 'Failed to generate sprint tasks', { id: 'ai-tasks' });
+      }
+    } catch {
+      toast.error('Error generating sprint tasks', { id: 'ai-tasks' });
+    } finally {
+      setIsGeneratingAiTasks(false);
+    }
+  };
   
   // Search & Filter
   const [searchQuery, setSearchQuery] = useState('');
@@ -775,6 +812,73 @@ export default function ProjectsClient({ initialProjects, initialClients = [] }:
                         <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Assignees</label>
                         <input type="text" value={formData.assignees || ''} onChange={e => setFormData({...formData, assignees: e.target.value})}
                           className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none placeholder-[#94A3B8]/60 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none" placeholder="Comma separated names..." />
+                      </div>
+
+                      {/* AI Sprint Task Breakdown */}
+                      <div className="p-4 rounded-xl bg-gradient-to-br from-indigo-500/[0.08] via-purple-500/[0.04] to-transparent border border-indigo-500/20 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-lg bg-indigo-500/20 text-indigo-500 flex items-center justify-center">
+                              <Sparkles size={13} />
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-slate-900 dark:text-white">AI Sprint Tasks Breakdown</h4>
+                              <p className="text-[10px] text-[#94A3B8]">Auto-generate sprint deliverables with Gemini</p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleGenerateAiTasks}
+                            disabled={isGeneratingAiTasks || !formData.title}
+                            className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition-all flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+                          >
+                            {isGeneratingAiTasks ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
+                            {aiTasks.length > 0 ? 'Re-Generate' : 'Generate Sprint Tasks'}
+                          </button>
+                        </div>
+
+                        {aiTasks.length > 0 && (
+                          <div className="space-y-2 pt-2 border-t border-indigo-500/15">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider">
+                                {aiTasks.length} Actionable Subtasks
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const taskText = aiTasks.map((t, idx) => `${idx + 1}. [${t.priority || 'Medium'}] ${t.title} (${t.estimatedHours || 2}h)`).join('\n');
+                                  navigator.clipboard.writeText(taskText);
+                                  toast.success('Tasks copied to clipboard!');
+                                }}
+                                className="text-[10px] font-bold text-indigo-500 hover:underline flex items-center gap-1"
+                              >
+                                <Copy size={10} /> Copy Tasks
+                              </button>
+                            </div>
+                            <div className="space-y-1.5 max-h-48 overflow-y-auto custom-scrollbar pr-1">
+                              {aiTasks.map((task, idx) => (
+                                <div key={idx} className="p-2 rounded-lg bg-white/70 dark:bg-black/30 border border-slate-200/80 dark:border-white/5 flex items-center justify-between text-xs">
+                                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                                    <CheckSquare size={13} className="text-indigo-500 shrink-0" />
+                                    <span className="text-slate-800 dark:text-slate-200 font-medium truncate">{task.title}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2 shrink-0 ml-2">
+                                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${
+                                      task.priority === 'High' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
+                                      task.priority === 'Medium' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                                      'bg-slate-500/10 text-slate-500 border-slate-500/20'
+                                    }`}>
+                                      {task.priority || 'Medium'}
+                                    </span>
+                                    {task.estimatedHours && (
+                                      <span className="text-[10px] font-mono text-slate-400">{task.estimatedHours}h</span>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                     

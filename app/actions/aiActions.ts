@@ -1,175 +1,408 @@
 'use server';
 
+import connectToDatabase from '@/lib/mongodb';
+import { Lead } from '@/models/Lead';
+import { Project } from '@/models/Project';
+import { Proposal } from '@/models/Proposal';
+import { Transaction } from '@/models/Transaction';
 import { generateAIContent } from '@/lib/aiProvider';
+import { getAuthUser } from '@/lib/auth';
 
-export async function generateAIEmailDraft(leadData: any) {
+/**
+ * 1. Generate High-Converting Cold Outreach Email for a Lead
+ */
+export async function generateLeadOutreachEmail(params: {
+  leadId: string;
+  angle?: 'Value-First' | 'Direct Problem Solving' | 'Case Study Proof' | 'Concise Follow-up';
+  customNote?: string;
+  saveToDraft?: boolean;
+}) {
   try {
-    // We construct a specific prompt forcing anti-AI, human-like behavior
+    const user = await getAuthUser();
+    if (!user) return { success: false, error: 'Unauthorized' };
 
-    const { company_name, contact_person, targetService, website_url, lead_context } = leadData;
-    const name = contact_person && contact_person !== company_name ? contact_person : 'there';
-    
-    // We construct a specific prompt forcing anti-AI, human-like behavior
-    const prompt = `
-You are a top 1% B2B Sales SDR. You need to write a highly personalized, casual, and human-sounding cold email icebreaker and pitch.
-    
-Target Company: ${company_name}
-Contact Person: ${name}
-Their Website: ${website_url || 'Unknown'}
-Service we are pitching: ${targetService || 'Custom Software Solutions'}
-CRITICAL LEAD CONTEXT: ${lead_context || 'None provided'}
+    await connectToDatabase();
+    const lead = await Lead.findById(params.leadId).lean();
+    if (!lead) return { success: false, error: 'Lead not found' };
 
-STRICT RULES:
-1. Write in a casual, concise, and highly human tone. Like you are sending a quick message to a colleague.
-2. DO NOT use typical AI jargon like: Synergy, Elevate, Innovative, Delve, Transformative, Landscape, Paradigm, Unleash, Foster.
-3. DO NOT use generic AI intro phrases like "In today's fast-paced digital world", "I hope this email finds you well", "I wanted to reach out", or "I was impressed by". Start directly with something relevant.
-3. If "CRITICAL LEAD CONTEXT" is provided above, you MUST base the email heavily on those notes. Address their specific pain points mentioned.
-4. Briefly mention how Injaazh Global can help them with the "Service to Pitch".
-5. Keep it conversational, short, and to the point.
-6. Write a catchy, personalized, and casual Subject Line as well.
-7. Return ONLY a valid JSON object matching this schema:
+    const prompt = `You are a world-class B2B Sales & Cold Outreach Strategist for "Injaazh Global" (an elite enterprise agency specializing in Web Development, Next.js / SaaS Apps, Technical SEO, AEO/GEO, and UI/UX).
+
+LEAD INFORMATION:
+- Company Name: ${lead.company_name}
+- Contact Person: ${lead.full_name || lead.contact_person || 'Hiring Decision Maker'}
+- Title: ${lead.title || 'Founder / Executive'}
+- Target Service: ${lead.targetService || 'High-end Web Development'}
+- Website URL: ${lead.website_url || 'N/A'}
+- City / Country: ${lead.city || ''} ${lead.country || ''}
+- Context / Notes: ${lead.lead_context || 'N/A'}
+- Selected Angle: ${params.angle || 'Value-First'}
+${params.customNote ? `- Special Custom Instructions: ${params.customNote}` : ''}
+
+TASK:
+Write a personalized, concise, and ultra-compelling cold outreach email.
+- Avoid generic corporate fluff. Sound like a knowledgeable peer.
+- Mention a specific value proposition related to their ${lead.targetService || 'digital presence'}.
+- End with a low-friction call to action (e.g. 10-minute quick audit or chat).
+
+FORMAT YOUR OUTPUT EXACTLY AS JSON:
 {
-  "subject": "The generated subject line",
-  "body": "The generated email body text (without the subject line)"
-}
-8. Sign off the body as:
-   Best,
-   Injaazh Global`;
+  "subject": "Compelling, curiosity-inducing subject line (no clickbait)",
+  "body": "Complete email body including professional greeting, paragraph breaks, and signature signoff placeholder"
+}`;
 
-    const response = await generateAIContent({
-      prompt,
-      jsonMode: true
-    });
-
-    if (!response.success || !response.text) {
-      throw new Error(response.error || 'AI returned empty response');
+    const result = await generateAIContent({ prompt, jsonMode: true });
+    if (!result.success || !result.text) {
+      return { success: false, error: result.error || 'Failed to generate email' };
     }
-    
-    // Clean potential markdown blocks
-    const cleanText = response.text.replace(/```json/gi, '').replace(/```/g, '').trim();
-    const data = JSON.parse(cleanText);
+
+    let parsed;
+    try {
+      parsed = JSON.parse(result.text);
+    } catch {
+      return { success: false, error: 'Invalid AI response format' };
+    }
+
+    if (params.saveToDraft) {
+      await Lead.findByIdAndUpdate(params.leadId, {
+        email_subject_draft: parsed.subject,
+        email_draft: parsed.body,
+      });
+    }
 
     return {
       success: true,
-      data: data
+      data: {
+        subject: parsed.subject,
+        body: parsed.body,
+      },
     };
-
   } catch (error: any) {
-    console.error('Error generating AI email:', error);
-    return {
-      success: false,
-      error: error.message || 'Failed to generate AI email'
-    };
+    console.error('generateLeadOutreachEmail error:', error);
+    return { success: false, error: error.message || 'Internal error' };
   }
 }
 
-export async function enrichLeadData(companyName: string, websiteUrl: string) {
+/**
+ * 2. Analyze & Qualify Lead Intent & Priority Score
+ */
+export async function analyzeLeadQualification(leadId: string) {
   try {
-    const prompt = `You are an expert Data Enrichment AI. Based on your training data, fill in the missing details for the company "${companyName}" (Website: ${websiteUrl || 'unknown'}).
-    Provide reasonable and accurate guesses for the following fields if you know them. If completely unknown, return empty strings. Do not invent fake names for people.
-    Return ONLY a valid JSON object matching this exact schema:
-    {
-      "contact_person": "Name of CEO/Founder or HR (if known, else empty)",
-      "facebook_url": "facebook link (if known, else empty)",
-      "linkedin_url": "linkedin company link (if known, else empty)",
-      "instagram_url": "instagram link (if known, else empty)"
-    }`;
+    const user = await getAuthUser();
+    if (!user) return { success: false, error: 'Unauthorized' };
 
-    const response = await generateAIContent({
-      prompt,
-      jsonMode: true
-    });
-    
-    if (!response.success || !response.text) {
-      throw new Error(response.error || 'AI returned empty response');
+    await connectToDatabase();
+    const lead = await Lead.findById(leadId).lean();
+    if (!lead) return { success: false, error: 'Lead not found' };
+
+    const prompt = `You are an AI Lead Scoring & B2B Qualification Engine.
+Analyze the following lead data and provide an objective scoring & tactical action plan:
+
+LEAD DETAILS:
+- Company: ${lead.company_name}
+- Target Service: ${lead.targetService}
+- Website: ${lead.website_url || 'None provided'}
+- Source: ${lead.source}
+- Status: ${lead.outreach_status}
+- Lead Context: ${lead.lead_context || 'None provided'}
+- Location: ${lead.city || ''}, ${lead.country || ''}
+
+OUTPUT STRICT JSON:
+{
+  "score": 85, // Integer 1-100 based on viability and service fit
+  "intentLevel": "High" | "Medium" | "Low",
+  "reasoning": "1-2 sentence explanation of why this score was assigned",
+  "keyPainPoints": ["Point 1", "Point 2"],
+  "recommendedAction": "Immediate next strategic step to close this deal"
+}`;
+
+    const result = await generateAIContent({ prompt, jsonMode: true });
+    if (!result.success || !result.text) {
+      return { success: false, error: result.error || 'Failed to qualify lead' };
     }
-    
-    // Clean potential markdown blocks
-    const cleanText = response.text.replace(/```json/gi, '').replace(/```/g, '').trim();
-    const data = JSON.parse(cleanText);
+
+    const data = JSON.parse(result.text);
     return { success: true, data };
-  } catch(error: any) {
-    console.error('Enrichment error:', error);
-    return { success: false, error: error.message };
-  }
-}
-
-export async function generateQuickAction(actionType: string, leadData: any) {
-  try {
-    let prompt = '';
-    if (actionType === 'linkedin') {
-      prompt = `Write a short, engaging LinkedIn connection request note (max 300 characters) for ${leadData.contact_person || leadData.company_name} at ${leadData.company_name}. Keep it casual, professional, and no AI jargon.`;
-    } else if (actionType === 'summarize') {
-      prompt = `Summarize the following interaction history with ${leadData.company_name} into 2-3 brief bullet points. Focus on key decisions or statuses:\n\n${JSON.stringify(leadData.outreach_logs)}`;
-    }
-
-    const response = await generateAIContent({
-      prompt
-    });
-
-    if (!response.success || !response.text) throw new Error(response.error || 'AI returned empty response');
-    
-    return { success: true, data: response.text };
-  } catch(error: any) {
-    console.error('Quick action error:', error);
-    return { success: false, error: error.message };
-  }
-}
-
-export async function generateAITemplateVariables(leadData: any, variables: string[], templateContext: string) {
-  try {
-    const { company_name, website_url, lead_context } = leadData;
-    
-    // We construct a specific prompt focusing on filling out variables safely
-    const prompt = `
-You are an expert Data Enrichment and B2B Context AI.
-I have an outreach email template. The user needs to fill in dynamic variables: ${JSON.stringify(variables)}.
-
-Target Company: ${company_name}
-Their Website: ${website_url || 'Unknown'}
-Additional Context: ${lead_context || 'None provided'}
-
-The template looks like this (for context only, DO NOT rewrite it):
----
-${templateContext}
----
-
-STRICT RULES:
-1. You have access to Google Search. You MUST search the web for the company's location (city) if unknown, and actively search Google for the top competitor in their exact city and niche.
-2. Provide a factual, accurate value for each requested variable based on your search results.
-3. Do not overthink. For 'competitor', just find ANY decent sized competitor in that specific city and niche.
-4. Keep the values short. E.g., for 'city', just the city name. For 'competitor', just the company name.
-5. Return ONLY a valid JSON object where the keys are exactly the requested variables. Example format:
-{
-  "city": "New York",
-  "niche": "Hardwood Floor",
-  "competitor": "Empire Today"
-}
-`;
-
-    const response = await generateAIContent({
-      prompt,
-      jsonMode: true,
-      useSearch: true
-    });
-
-    if (!response.success || !response.text) {
-      throw new Error(response.error || 'AI returned empty response');
-    }
-    
-    const cleanText = response.text.replace(/```json/gi, '').replace(/```/g, '').trim();
-    const data = JSON.parse(cleanText);
-
-    return {
-      success: true,
-      data: data
-    };
-
   } catch (error: any) {
-    console.error('Error generating AI variables:', error);
-    return {
-      success: false,
-      error: error.message || 'Failed to generate AI variables'
-    };
+    console.error('analyzeLeadQualification error:', error);
+    return { success: false, error: error.message || 'Internal error' };
   }
 }
+
+/**
+ * 3. Generate Executive Proposal Summary & Scope
+ */
+export async function generateProposalSummary(params: {
+  title: string;
+  clientName: string;
+  deliverables: string[];
+  budget?: number | string;
+}) {
+  try {
+    const user = await getAuthUser();
+    if (!user) return { success: false, error: 'Unauthorized' };
+
+    const prompt = `You are a Senior Solutions Architect & Proposal Strategist for Injaazh Global.
+Generate an executive-grade proposal summary and scope of work for:
+
+- Project Title: ${params.title}
+- Client Name: ${params.clientName}
+- Key Deliverables: ${params.deliverables.join(', ')}
+${params.budget ? `- Estimated Budget: $${params.budget}` : ''}
+
+OUTPUT STRICT JSON:
+{
+  "executiveSummary": "A punchy, high-impact executive overview highlighting ROI and modern engineering excellence",
+  "problemStatement": "Clear definition of the client's current challenge or digital growth bottleneck",
+  "solutionApproach": "How Injaazh Global executes this with modern architecture (Next.js, Tailwind, AI, Cloud)",
+  "projectPhases": [
+    { "phase": "Phase 1: Discovery & Architecture", "duration": "1-2 Weeks" },
+    { "phase": "Phase 2: Core Engineering & UI", "duration": "2-3 Weeks" },
+    { "phase": "Phase 3: QA, Deployment & Launch", "duration": "1 Week" }
+  ]
+}`;
+
+    const result = await generateAIContent({ prompt, jsonMode: true });
+    if (!result.success || !result.text) {
+      return { success: false, error: result.error || 'Failed to generate proposal summary' };
+    }
+
+    const data = JSON.parse(result.text);
+    return { success: true, data };
+  } catch (error: any) {
+    console.error('generateProposalSummary error:', error);
+    return { success: false, error: error.message || 'Internal error' };
+  }
+}
+
+/**
+ * 4. Generate Project Sprint Task Breakdown
+ */
+export async function generateProjectTaskChecklist(params: {
+  projectTitle: string;
+  description?: string;
+  techStack?: string[];
+}) {
+  try {
+    const user = await getAuthUser();
+    if (!user) return { success: false, error: 'Unauthorized' };
+
+    const prompt = `You are a Technical Project Manager.
+Break down the following project into 5-8 actionable sprint tasks:
+
+- Project: ${params.projectTitle}
+- Overview: ${params.description || 'Enterprise web & SaaS deliverable'}
+- Tech Stack: ${(params.techStack || ['Next.js', 'TypeScript', 'MongoDB']).join(', ')}
+
+OUTPUT STRICT JSON:
+{
+  "tasks": [
+    {
+      "title": "Task title (e.g. Set up authentication & role-based middleware)",
+      "priority": "High" | "Medium" | "Low",
+      "estimatedHours": 4
+    }
+  ]
+}`;
+
+    const result = await generateAIContent({ prompt, jsonMode: true });
+    if (!result.success || !result.text) {
+      return { success: false, error: result.error || 'Failed to generate tasks' };
+    }
+
+    const data = JSON.parse(result.text);
+    return { success: true, tasks: data.tasks || [] };
+  } catch (error: any) {
+    console.error('generateProjectTaskChecklist error:', error);
+    return { success: false, error: error.message || 'Internal error' };
+  }
+}
+
+/**
+ * 5. Dynamic Realtime AI Executive Briefing for Dashboard
+ */
+export async function getRealtimeAiExecutiveBriefing() {
+  try {
+    const user = await getAuthUser();
+    if (!user) return { success: false, error: 'Unauthorized' };
+
+    await connectToDatabase();
+    const [leads, projects, proposals, transactions] = await Promise.all([
+      Lead.find({}).lean(),
+      Project.find({ status: { $in: ['In Progress', 'In Review', 'Planning'] } }).lean(),
+      Proposal.find({ status: { $in: ['Draft', 'Sent', 'Viewed', 'Accepted'] } }).lean(),
+      Transaction.find({}).sort({ date: -1 }).limit(10).lean(),
+    ]);
+
+    const incomeTransactions = transactions.filter((t: any) => t.type === 'Income' || t.type === 'income');
+    const totalIncomeMonth = incomeTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+    const activeLeadsCount = leads.filter((l: any) => l.outreach_status !== 'Closed' && l.outreach_status !== 'Not Interested').length;
+    const pendingProposalsValue = proposals.filter((p: any) => p.status !== 'Accepted').reduce((sum, p) => sum + (p.value || 0), 0);
+
+    const prompt = `You are the AI Executive Chief of Staff for Injaazh ERP OS.
+Analyze this real-time enterprise snapshot and deliver an ultra-sharp, actionable 3-point business intelligence summary:
+
+SNAPSHOT:
+- Active In-Progress Projects: ${projects.length}
+- Active Pipeline Prospects: ${activeLeadsCount}
+- Pending Proposals Pipeline: $${pendingProposalsValue.toLocaleString()}
+- Recent Income Recorded: $${totalIncomeMonth.toLocaleString()}
+
+INSTRUCTIONS:
+Provide a concise, motivating executive summary with exactly 2-3 sentences. Mention the financial trajectory, high-priority focus for today, and one concrete revenue-maximizing action.`;
+
+    const result = await generateAIContent({ prompt });
+    if (!result.success || !result.text) {
+      return { 
+        success: true, 
+        text: `You have ${projects.length} active projects and ${activeLeadsCount} prospects in the pipeline worth $${pendingProposalsValue.toLocaleString()}. Focus today on following up on pending proposals to maximize monthly cash flow.` 
+      };
+    }
+
+    return { success: true, text: result.text.trim() };
+  } catch (error: any) {
+    console.error('getRealtimeAiExecutiveBriefing error:', error);
+    return { success: false, error: error.message || 'Internal error' };
+  }
+}
+
+/**
+ * 6. Generate AI Template Variables for Cold Outreach
+ */
+export async function generateAITemplateVariables(lead: any, variables: string[], templateContext?: string) {
+  try {
+    const user = await getAuthUser();
+    if (!user) return { success: false, error: 'Unauthorized' };
+
+    const prompt = `You are an AI personalization engine for cold outreach emails.
+We have an email template with specific placeholder variables that need to be filled based on lead data.
+
+LEAD DATA:
+- Company Name: ${lead.company_name || ''}
+- Contact Person: ${lead.full_name || lead.contact_person || ''}
+- Service / Niche: ${lead.targetService || ''}
+- Website: ${lead.website_url || ''}
+- City / State / Country: ${lead.city || ''}, ${lead.state || ''}, ${lead.country || ''}
+- Context / Notes: ${lead.lead_context || ''}
+
+REQUIRED VARIABLES TO POPULATE:
+${variables.map(v => `- ${v}`).join('\n')}
+
+${templateContext ? `TEMPLATE CONTEXT:\n${templateContext}` : ''}
+
+INSTRUCTIONS:
+Return a JSON object mapping each requested variable name to its personalized value.
+If a variable (e.g. competitor or city) cannot be determined, infer a reasonable natural value or use "[NEEDS REVIEW]".
+
+OUTPUT STRICT JSON FORMAT:
+{
+  ${variables.map(v => `"${v}": "personalized value"`).join(',\n  ')}
+}`;
+
+    const result = await generateAIContent({ prompt, jsonMode: true });
+    if (!result.success || !result.text) {
+      return { success: false, error: result.error || 'Failed to generate variables' };
+    }
+
+    const data = JSON.parse(result.text);
+    return { success: true, data };
+  } catch (error: any) {
+    console.error('generateAITemplateVariables error:', error);
+    return { success: false, error: error.message || 'Internal error' };
+  }
+}
+
+/**
+ * 7. Legacy / Generic AI Email Draft Generator
+ */
+export async function generateAIEmailDraft(params: {
+  company_name: string;
+  contact_person?: string;
+  targetService?: string;
+  website_url?: string;
+  lead_context?: string;
+}) {
+  try {
+    const user = await getAuthUser();
+    if (!user) return { success: false, error: 'Unauthorized' };
+
+    const prompt = `You are a cold email copywriter for Injaazh Global.
+Write a personalized B2B outreach email for:
+- Company: ${params.company_name}
+- Contact: ${params.contact_person || 'Business Owner'}
+- Target Service: ${params.targetService || 'High-end Web Development'}
+- Website: ${params.website_url || 'N/A'}
+- Context: ${params.lead_context || 'N/A'}
+
+OUTPUT STRICT JSON:
+{
+  "subject": "Compelling subject line",
+  "body": "Full body of the email"
+}`;
+
+    const result = await generateAIContent({ prompt, jsonMode: true });
+    if (!result.success || !result.text) {
+      return { success: false, error: result.error || 'Failed to generate draft' };
+    }
+
+    const data = JSON.parse(result.text);
+    return { success: true, data };
+  } catch (error: any) {
+    console.error('generateAIEmailDraft error:', error);
+    return { success: false, error: error.message || 'Internal error' };
+  }
+}
+
+/**
+ * 8. AI Financial Health & Cash Flow Diagnostic
+ */
+export async function analyzeFinancialHealth(params: {
+  totalIncome: number;
+  totalExpense: number;
+  netProfit: number;
+  profitMarginPercent: number;
+  timeframe: string;
+  topCategories?: { name: string; amount: number }[];
+  platformBreakdown?: { [key: string]: number };
+}) {
+  try {
+    const user = await getAuthUser();
+    if (!user) return { success: false, error: 'Unauthorized' };
+
+    const prompt = `You are a Fractional CFO and AI Financial Strategist for a fast-growing digital agency/consultancy (Injaazh Global).
+Analyze the following financial snapshot and provide an executive diagnostic report:
+
+FINANCIAL METRICS (${params.timeframe}):
+- Total Income / Revenue: $${params.totalIncome.toLocaleString()}
+- Total Expenses: $${params.totalExpense.toLocaleString()}
+- Net Profit: $${params.netProfit.toLocaleString()}
+- Profit Margin: ${params.profitMarginPercent.toFixed(1)}%
+${params.topCategories && params.topCategories.length > 0 ? `- Top Expense/Income Categories: ${JSON.stringify(params.topCategories)}` : ''}
+${params.platformBreakdown ? `- Platform Revenue Sources: ${JSON.stringify(params.platformBreakdown)}` : ''}
+
+OUTPUT STRICT JSON WITH THIS STRUCTURE:
+{
+  "financialHealthScore": 88,
+  "cashFlowStatus": "Healthy",
+  "burnRateAssessment": "Short 1-2 sentence assessment of monthly burn rate vs revenue",
+  "marginAnalysis": "Short evaluation of current profit margin",
+  "strategicRecommendations": [
+    "Actionable bullet 1",
+    "Actionable bullet 2",
+    "Actionable bullet 3"
+  ],
+  "growthOpportunity": "A clear actionable strategy to boost net cash flow by 15-25% in the next quarter"
+}`;
+
+    const result = await generateAIContent({ prompt, jsonMode: true });
+    if (!result.success || !result.text) {
+      return { success: false, error: result.error || 'Failed to generate financial diagnostic' };
+    }
+
+    const data = JSON.parse(result.text);
+    return { success: true, data };
+  } catch (error: any) {
+    console.error('analyzeFinancialHealth error:', error);
+    return { success: false, error: error.message || 'Internal error' };
+  }
+}
+

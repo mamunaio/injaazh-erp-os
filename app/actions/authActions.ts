@@ -277,11 +277,11 @@ export async function resetPassword(formData: FormData, token: string) {
 
 export async function getCurrentUser() {
   try {
-    await connectToDatabase();
     const authUser = await getAuthUser();
     if (!authUser) {
       return { success: false, error: 'Not authenticated' };
     }
+    await connectToDatabase();
     const user = await User.findById(authUser.id).select('-password');
     if (!user) {
       return { success: false, error: 'User not found' };

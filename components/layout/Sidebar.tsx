@@ -3,27 +3,27 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-
-import { LayoutDashboard, Users, FileText, Briefcase, Store, DollarSign, Settings, Globe, Activity, X, Wallet, Mail, Map, Clock, BookOpen, Hexagon } from 'lucide-react';
+import { 
+  LayoutDashboard, Users, FileText, Briefcase, DollarSign, Settings, Activity, X, Wallet, Mail, Map, Clock, Hexagon, Sparkles 
+} from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import { useSidebar } from './SidebarContext';
 import { useAppearance } from './AppearanceContext';
 import { useUser } from './UserContext';
 
 const navItems = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Prospects', href: '/prospects', icon: Users },
-  { name: 'Campaigns', href: '/campaigns', icon: Mail },
-  { name: 'Outreach', href: '/outreach', icon: Activity },
-  { name: 'Proposals', href: '/proposals', icon: FileText },
-  { name: 'Projects', href: '/projects', icon: Briefcase },
-  { name: 'Roadmap', href: '/roadmap', icon: Map },
-  { name: 'Timesheets', href: '/timesheets', icon: Clock },
-  { name: 'Clients', href: '/marketplace/clients', icon: Users },
-  { name: 'Finance', href: '/finance', icon: DollarSign },
-  { name: 'Expenses', href: '/daily-expenses', icon: Wallet },
-
-  { name: 'Settings', href: '/settings', icon: Settings },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, category: 'Home' },
+  { name: 'Prospects', href: '/prospects', icon: Users, category: 'Leads' },
+  { name: 'Campaigns', href: '/campaigns', icon: Mail, category: 'Leads' },
+  { name: 'Outreach', href: '/outreach', icon: Activity, category: 'Leads' },
+  { name: 'Proposals', href: '/proposals', icon: FileText, category: 'Sales' },
+  { name: 'Clients', href: '/marketplace/clients', icon: Users, category: 'Sales' },
+  { name: 'Projects', href: '/projects', icon: Briefcase, category: 'Work' },
+  { name: 'Roadmap', href: '/roadmap', icon: Map, category: 'Work' },
+  { name: 'Timesheets', href: '/timesheets', icon: Clock, category: 'Work' },
+  { name: 'Finance', href: '/finance', icon: DollarSign, category: 'Finance' },
+  { name: 'Expenses', href: '/daily-expenses', icon: Wallet, category: 'Finance' },
+  { name: 'Settings', href: '/settings', icon: Settings, category: 'System' },
 ];
 
 export default function Sidebar() {
@@ -55,76 +55,84 @@ export default function Sidebar() {
     return false;
   });
 
+  const categories = [
+    { name: 'Home', items: filteredNavItems.filter(i => i.category === 'Home') },
+    { name: 'Leads', items: filteredNavItems.filter(i => i.category === 'Leads') },
+    { name: 'Sales', items: filteredNavItems.filter(i => i.category === 'Sales') },
+    { name: 'Work', items: filteredNavItems.filter(i => i.category === 'Work') },
+    { name: 'Finance', items: filteredNavItems.filter(i => i.category === 'Finance') },
+    { name: 'System', items: filteredNavItems.filter(i => i.category === 'System') },
+  ].filter(cat => cat.items.length > 0);
+
   return (
     <>
       {/* Mobile Backdrop */}
       {isMobileSidebarOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-white/50 dark:bg-black/50 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-md lg:hidden"
           onClick={() => setIsMobileSidebarOpen(false)}
         />
       )}
       
-      <aside className={`${isCollapsed ? 'w-[88px]' : 'w-[260px]'} fixed top-0 bottom-0 left-0 z-50 bg-slate-50/80 dark:bg-black flex flex-col transition-all duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-[120%] lg:translate-x-0'}`}>
-        {/* Logo */}
-        <div className={`h-[72px] flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-6'}`}>
-          <Link href="/" className="flex items-center gap-3 group" onClick={() => setIsMobileSidebarOpen(false)}>
-            <div className="w-8 h-8 rounded-lg bg-primary-500/10 flex items-center justify-center border border-primary-500/20 text-primary-500 transition-all duration-300 group-hover:scale-105">
-              <Hexagon size={18} fill="currentColor" />
+      <aside className={`${isCollapsed ? 'w-[84px]' : 'w-[260px]'} fixed top-0 bottom-0 left-0 z-50 bg-white/90 dark:bg-[#07080B]/95 backdrop-blur-2xl border-r border-slate-200/80 dark:border-white/5 flex flex-col transition-all duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-[120%] lg:translate-x-0'}`}>
+        
+        {/* Logo Section */}
+        <div className={`h-[72px] flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-5'} border-b border-slate-200/50 dark:border-white/[0.04]`}>
+          <Link href="/dashboard" className="flex items-center gap-3 group" onClick={() => setIsMobileSidebarOpen(false)}>
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-primary-500/20 group-hover:scale-105 transition-transform duration-300">
+              <Hexagon size={20} fill="currentColor" />
             </div>
             {!isCollapsed && (
-              <span className="font-bold text-[15px] tracking-tight text-slate-900 dark:text-white">
-                Injaazh Global
-              </span>
+              <div className="flex flex-col">
+                <span className="font-bold text-[15px] tracking-tight text-slate-900 dark:text-white leading-tight">
+                  Injaazh ERP
+                </span>
+                <span className="text-[10px] font-semibold text-primary-500 tracking-wider uppercase flex items-center gap-1">
+                  <Sparkles size={10} /> AI Operating OS
+                </span>
+              </div>
             )}
           </Link>
           <button 
             onClick={() => setIsMobileSidebarOpen(false)}
-            className="lg:hidden p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors"
+            className="lg:hidden p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+        {/* Navigation List */}
+        <nav className="flex-1 px-3 py-3 space-y-4 overflow-y-auto custom-scrollbar">
           {loading ? (
-            <div className="space-y-1">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
-                  <div className="w-4 h-4 rounded-md bg-white/5 animate-pulse"></div>
-                  <div className="h-3.5 bg-white/5 rounded w-24 animate-pulse"></div>
+            <div className="space-y-2 p-2">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 animate-pulse">
+                  <div className="w-4 h-4 rounded bg-slate-200 dark:bg-white/10" />
+                  <div className="h-3 bg-slate-200 dark:bg-white/10 rounded w-24" />
                 </div>
               ))}
             </div>
           ) : (
-            <>
-              {/* Grouping based on the image: HOME, LEADS, SALES, WORK, FINANCE, SYSTEM */}
-              
-              {!isCollapsed && <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2 mb-2 px-3 transition-opacity">Home</div>}
-              {filteredNavItems.filter(i => ['/dashboard'].includes(i.href)).map(renderNavItem)}
-
-              {!isCollapsed && <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3 transition-opacity">Leads</div>}
-              {filteredNavItems.filter(i => ['/prospects', '/campaigns', '/outreach'].includes(i.href)).map(renderNavItem)}
-
-              {!isCollapsed && <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3 transition-opacity">Sales</div>}
-              {filteredNavItems.filter(i => ['/deals', '/proposals', '/marketplace/clients'].includes(i.href)).map(renderNavItem)}
-
-              {!isCollapsed && <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3 transition-opacity">Work</div>}
-              {filteredNavItems.filter(i => ['/projects', '/roadmap', '/timesheets'].includes(i.href)).map(renderNavItem)}
-
-              {!isCollapsed && <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3 transition-opacity">Finance</div>}
-              {filteredNavItems.filter(i => ['/finance', '/daily-expenses'].includes(i.href)).map(renderNavItem)}
-
-              {!isCollapsed && <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3 transition-opacity">System</div>}
-              {filteredNavItems.filter(i => ['/settings'].includes(i.href)).map(renderNavItem)}
-            </>
+            categories.map((cat, idx) => (
+              <div key={cat.name} className="space-y-1">
+                {!isCollapsed && (
+                  <div className="flex items-center justify-between px-3 pt-1 pb-1">
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                      {cat.name}
+                    </span>
+                  </div>
+                )}
+                {cat.items.map(renderNavItem)}
+              </div>
+            ))
           )}
         </nav>
 
-        {/* Theme Switcher at Bottom */}
-        <div className="w-full flex justify-center py-4 mt-auto px-4">
-          <ThemeToggle />
+        {/* Bottom Theme & User Info */}
+        <div className="p-3 border-t border-slate-200/60 dark:border-white/[0.04] bg-slate-50/50 dark:bg-black/20 flex flex-col gap-2">
+          <div className="flex items-center justify-center">
+            <ThemeToggle />
+          </div>
         </div>
       </aside>
     </>
@@ -146,15 +154,26 @@ export default function Sidebar() {
         href={item.href}
         title={isCollapsed ? item.name : undefined}
         onClick={() => setIsMobileSidebarOpen(false)}
-        className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-3'} py-2 rounded-xl transition-all duration-200 group relative ${
+        className={`group relative flex items-center ${isCollapsed ? 'justify-center w-11 h-11 mx-auto' : 'gap-3 px-3 py-2.5'} rounded-xl text-sm font-medium transition-all duration-200 ${
           isActive 
-            ? 'bg-primary-500/10 text-primary-600 dark:bg-primary-500/20 dark:text-primary-400 shadow-[0_0_20px_rgba(var(--color-primary-500),0.15)] dark:shadow-[0_0_20px_rgba(var(--color-primary-500),0.3)]' 
-            : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+            ? 'bg-primary-500/10 text-primary-600 dark:bg-primary-500/15 dark:text-primary-400 font-semibold shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]' 
+            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-white/[0.04]'
         }`}
       >
-        <Icon size={isCollapsed ? 22 : 18} className={`${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors'}`} />
+        {/* Active Pill Indicator */}
+        {isActive && (
+          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary-500 rounded-r-full shadow-[0_0_8px_rgba(var(--color-primary-500),0.8)]" />
+        )}
+        
+        <Icon 
+          size={isCollapsed ? 20 : 18} 
+          className={`shrink-0 transition-transform duration-200 group-hover:scale-110 ${
+            isActive ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white'
+          }`} 
+        />
+        
         {!isCollapsed && (
-          <span className={`font-semibold text-[13px] ${isActive ? 'text-primary-600 dark:text-primary-400' : ''}`}>
+          <span className="truncate">
             {item.name}
           </span>
         )}
