@@ -1,9 +1,7 @@
 'use server';
 
 import connectToDatabase from '@/lib/mongodb';
-import { Lead } from '@/models/Lead';
 import { Project } from '@/models/Project';
-import { Proposal } from '@/models/Proposal';
 import { Transaction } from '@/models/Transaction';
 import MarketplaceProject from '@/models/MarketplaceProject';
 import SeoProject from '@/models/SeoProject';
@@ -13,49 +11,21 @@ export async function getDashboardData() {
     await connectToDatabase();
 
     // Fetch all data in parallel
-    const [leads, projects, proposals, transactions, marketplaceProjects, seoProjects, clients] = await Promise.all([
-      Lead.find({}).lean(),
+    const [projects, transactions, marketplaceProjects, seoProjects, clients] = await Promise.all([
       Project.find({}).lean(),
-      Proposal.find({}).lean(),
       Transaction.find({}).sort({ date: -1 }).lean(),
       MarketplaceProject.find({}).lean(),
       SeoProject.find({}).sort({ lastAudited: -1 }).limit(3).lean(),
       connectToDatabase().then(() => require('@/models/MarketplaceClient').default.find({}).lean()),
     ]);
 
-    // Calculate lead stats
-    const totalLeads = leads.length;
-    const activeLeads = leads.filter((l: any) => 
-      l.outreach_status !== 'Closed' && l.outreach_status !== 'Lost' && l.outreach_status !== 'Not Interested'
-    ).length;
-    const closedLeads = leads.filter((l: any) => l.outreach_status === 'Closed').length;
-    const leadConversionRate = totalLeads > 0 ? Math.round((closedLeads / totalLeads) * 100) : 0;
-
-    // Calculate today's updates
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
-
-    const leadsUpdatedToday = leads.filter((l: any) => {
-      const updatedAt = new Date(l.updatedAt);
-      return updatedAt >= startOfToday;
-    }).length;
-
-    const newLeadsToday = leads.filter((l: any) => {
-      const createdAt = new Date(l.createdAt);
-      return createdAt >= startOfToday;
-    }).length;
-
-    let outreachAddedToday = 0;
-    leads.forEach((l: any) => {
-      if (l.outreach_logs && Array.isArray(l.outreach_logs)) {
-        l.outreach_logs.forEach((log: any) => {
-          const logDate = new Date(log.date);
-          if (logDate >= startOfToday) {
-            outreachAddedToday++;
-          }
-        });
-      }
-    });
+    const totalLeads = 0;
+    const activeLeads = 0;
+    const closedLeads = 0;
+    const leadConversionRate = 0;
+    const leadsUpdatedToday = 0;
+    const newLeadsToday = 0;
+    const outreachAddedToday = 0;
 
     // Combine regular projects and marketplace projects
     const totalProjects = projects.length + marketplaceProjects.length;
@@ -65,19 +35,11 @@ export async function getDashboardData() {
       mp.status === 'In Progress' || mp.status === 'Planning' || mp.status === 'In Review'
     ).length;
 
-    const totalProposals = proposals.length;
-    const pendingProposals = proposals.filter((p: any) => 
-      p.status === 'Draft' || p.status === 'Sent' || p.status === 'Viewed'
-    ).length;
-
-    // Calculate proposal pipeline values
-    const outstandingPipelineValue = proposals
-      .filter((p: any) => p.status === 'Draft' || p.status === 'Sent' || p.status === 'Viewed')
-      .reduce((sum: number, p: any) => sum + (p.value || 0), 0);
-
-    const acceptedProposalsValue = proposals
-      .filter((p: any) => p.status === 'Accepted')
-      .reduce((sum: number, p: any) => sum + (p.value || 0), 0);
+    const totalMarketplaceProjects = marketplaceProjects.length;
+    const totalProposals = 0;
+    const pendingProposals = 0;
+    const outstandingPipelineValue = 0;
+    const acceptedProposalsValue = 0;
 
     // Calculate income and expenses (from transactions)
     const totalIncome = transactions
@@ -132,13 +94,7 @@ export async function getDashboardData() {
       }
     });
 
-    const pendingFollowUpsCount = leads.filter((l: any) => {
-      if (!l.nextFollowUpDate) return false;
-      const date = new Date(l.nextFollowUpDate);
-      return date.getTime() > Date.now() && l.outreach_status !== 'Closed' && l.outreach_status !== 'Not Interested';
-    }).length;
-
-    const totalPendingTasks = pendingTasksCount + pendingFollowUpsCount;
+    const totalPendingTasks = pendingTasksCount;
 
     // Get upcoming deadlines (projects with deadline in next 7 days)
     const now = new Date();
@@ -188,33 +144,28 @@ export async function getDashboardData() {
       category: t.category || '',
     }));
 
-    // Get recent leads
-    const recentLeads = leads
-      .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      .slice(0, 5)
-      .map((l: any) => ({
-        _id: l._id?.toString() || '',
-        company_name: l.company_name || '',
-        outreach_status: l.outreach_status || '',
-        targetService: l.targetService || '',
-        createdAt: l.createdAt ? new Date(l.createdAt).toISOString() : '',
-      }));
+    // Recent leads (empty, leads module removed)
+    const recentLeads: any[] = [];
 
-    // Get recent proposals
-    const recentProposals = proposals
+    // Recent proposals (removed - empty for backward compat)
+    const recentProposals: any[] = [];
+
+    // Recent marketplace projects
+    const recentMarketplaceProjects = marketplaceProjects
       .sort((a: any, b: any) => {
-        const dateA = new Date(a.updatedAt || a.createdAt).getTime();
-        const dateB = new Date(b.updatedAt || b.createdAt).getTime();
+        const dateA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+        const dateB = new Date(b.updatedAt || b.createdAt || 0).getTime();
         return dateB - dateA;
       })
       .slice(0, 5)
-      .map((p: any) => ({
-        _id: p._id?.toString() || '',
-        title: p.title || '',
-        clientName: p.clientName || '',
-        status: p.status || '',
-        value: p.value || 0,
-        updatedAt: p.updatedAt ? new Date(p.updatedAt).toISOString() : (p.createdAt ? new Date(p.createdAt).toISOString() : ''),
+      .map((mp: any) => ({
+        _id: mp._id?.toString() || '',
+        title: mp.title || '',
+        clientName: mp.clientName || 'Direct Client',
+        platform: mp.platform || 'Freelancer',
+        status: mp.status || 'Planning',
+        budget: mp.budget || '$0',
+        updatedAt: mp.updatedAt ? new Date(mp.updatedAt).toISOString() : (mp.createdAt ? new Date(mp.createdAt).toISOString() : ''),
       }));
 
     // Project status distribution
@@ -344,20 +295,6 @@ export async function getDashboardData() {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const todayLeadTasks = leads
-      .filter((l: any) => {
-        if (!l.nextFollowUpDate) return false;
-        const date = new Date(l.nextFollowUpDate);
-        return date >= today && date < tomorrow;
-      })
-      .map((l: any) => ({
-        id: `lead_${l._id}`,
-        title: `Follow up with ${l.company_name}`,
-        due_date: l.nextFollowUpDate,
-        status: l.outreach_status,
-        type: 'Lead'
-      }));
-
     const todayProjectTasks: any[] = [];
     projects.forEach((p: any) => {
       if (p.deadline) {
@@ -393,37 +330,19 @@ export async function getDashboardData() {
       }
     });
 
-    const todayTasks = [...todayLeadTasks, ...todayProjectTasks];
+    const todayTasks = [...todayProjectTasks];
 
     // Upcoming Meetings
-    const upcomingMeetings = leads
-      .filter((l: any) => {
-        if (l.outreach_status !== 'Meeting Booked' || !l.nextFollowUpDate) return false;
-        const date = new Date(l.nextFollowUpDate);
-        return date >= today;
-      })
-      .map((l: any) => ({
-        id: l._id?.toString(),
-        title: `Meeting with ${l.company_name}`,
-        date: l.nextFollowUpDate,
-        attendees: [l.contact_person || l.company_name]
-      })).slice(0, 5);
+    const upcomingMeetings: any[] = [];
 
     // Recent Activity Synthesized
     const allActivity = [
-      ...recentLeads.map((l: any) => ({
-        id: `lead_${l._id}`,
-        title: 'New Lead Added',
-        description: `${l.company_name} was added to leads`,
-        timestamp: l.createdAt,
-        type: 'lead'
-      })),
-      ...recentProposals.map((p: any) => ({
-        id: `prop_${p._id}`,
-        title: 'Proposal Updated',
-        description: `Proposal for ${p.clientName} is now ${p.status}`,
-        timestamp: p.updatedAt,
-        type: 'proposal'
+      ...marketplaceProjects.slice(0, 3).map((mp: any) => ({
+        id: `mp_${mp._id}`,
+        title: 'Marketplace Project Active',
+        description: `${mp.title} (${mp.platform || 'Marketplace'})`,
+        timestamp: mp.updatedAt ? new Date(mp.updatedAt).toISOString() : (mp.createdAt ? new Date(mp.createdAt).toISOString() : new Date().toISOString()),
+        type: 'project'
       })),
       ...recentTransactions.slice(0, 3).map((t: any) => ({
         id: `txn_${t._id}`,
@@ -434,17 +353,17 @@ export async function getDashboardData() {
       }))
     ].sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5);
 
-    // Accurate Lead Funnel
+    // Lead Funnel
     const leadFunnel = {
-      New: leads.filter((l: any) => l.outreach_status === 'New').length,
-      Active: leads.filter((l: any) => ['Queued', 'Email Sent', 'Replied', 'Meeting Booked'].includes(l.outreach_status)).length,
-      Closed: leads.filter((l: any) => l.outreach_status === 'Closed').length
+      New: 0,
+      Active: 0,
+      Closed: 0
     };
 
-    // Sales Pipeline Accurate
+    // Sales Pipeline / Milestones Value
     const salesPipeline = {
-      Pending: proposals.filter((p: any) => ['Draft', 'Sent', 'Viewed'].includes(p.status)).reduce((sum: number, p: any) => sum + (p.value || 0), 0),
-      Accepted: proposals.filter((p: any) => p.status === 'Accepted').reduce((sum: number, p: any) => sum + (p.value || 0), 0)
+      Pending: pendingMilestoneValue,
+      Accepted: totalIncome
     };
 
     // AI Insights Generator
@@ -454,10 +373,10 @@ export async function getDashboardData() {
     
     if (upcomingMeetings.length > 0) aiInsights += `Prepare for your ${upcomingMeetings.length} upcoming meeting${upcomingMeetings.length > 1 ? 's' : ''}. `;
     
-    if (pendingProposals > 0) aiInsights += `You have ${pendingProposals} pending proposal${pendingProposals > 1 ? 's' : ''} worth $${salesPipeline.Pending.toLocaleString()}; try to follow up and close them! `;
+    if (pendingMilestoneValue > 0) aiInsights += `You have $${pendingMilestoneValue.toLocaleString()} in pending milestones to deliver across your marketplace projects. `;
     
     if (thisMonthIncome > 0) aiInsights += `Great job generating $${thisMonthIncome.toLocaleString()} in revenue this month! Keep up the momentum.`;
-    else aiInsights += `Revenue is slow this month. Focus on converting active leads and following up on pending proposals.`;
+    else aiInsights += `Stay proactive on your marketplace deliverables to unlock milestone payments.`;
 
     return {
       success: true,
@@ -467,6 +386,7 @@ export async function getDashboardData() {
           activeLeads,
           totalProjects,
           activeProjects,
+          totalMarketplaceProjects,
           totalProposals,
           pendingProposals,
           totalIncome,
@@ -488,6 +408,7 @@ export async function getDashboardData() {
         recentTransactions,
         recentLeads,
         recentProposals,
+        recentMarketplaceProjects,
         projectStatusDistribution,
         platformIncome,
         revenueTrend30Days,

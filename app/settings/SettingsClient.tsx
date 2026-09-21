@@ -19,7 +19,6 @@ import { sendTestEmail } from '@/app/actions/emailActions';
 import { useUser } from '@/components/layout/UserContext';
 import { getTeamMembers, createTeamMember, updateTeamMemberRole, deleteTeamMember, updateUserProfile } from '@/app/actions/teamActions';
 import { getActiveSessions, revokeSession } from '@/app/actions/sessionActions';
-import EmailAccountsManager from './EmailAccountsManager';
 import AiKeysManager from './AiKeysManager';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 import { sounds } from '@/lib/sound';
@@ -185,7 +184,6 @@ const TABS = [
   { id: 'appearance', label: 'Appearance', icon: Palette },
   { id: 'security', label: 'Security', icon: ShieldCheck },
   { id: 'api_keys', label: 'API Keys', icon: Key },
-  { id: 'email_accounts', label: 'Outreach Emails', icon: Mail },
   { id: 'smtp', label: 'SMTP Configurations', icon: Mail },
   { id: 'integrations', label: 'Integrations', icon: Blocks },
   { id: 'billing', label: 'Billing', icon: CreditCard, adminOnly: true },
@@ -356,8 +354,6 @@ export default function SettingsClient() {
   const [masterSound, setMasterSound] = useState(true);
   const [soundSettings, setSoundSettings] = useState({ 
     systemBoot: true,
-    newLead: true, 
-    leadConverted: true, 
     paymentReceived: true,
     expenseLogged: true,
     itemDeleted: true,
@@ -366,8 +362,6 @@ export default function SettingsClient() {
   });
   const [soundVariants, setSoundVariants] = useState<Record<string, string>>({
     systemBoot: 'login1',
-    newLead: 'edit1',
-    leadConverted: 'success1',
     paymentReceived: 'income1',
     expenseLogged: 'expense1',
     itemDeleted: 'delete1',
@@ -380,8 +374,6 @@ export default function SettingsClient() {
     if (typeof window !== 'undefined') {
       setSoundVariants({
         systemBoot: localStorage.getItem('sound_systemBoot') || 'login1',
-        newLead: localStorage.getItem('sound_newLead') || 'edit1',
-        leadConverted: localStorage.getItem('sound_leadConverted') || 'success1',
         paymentReceived: localStorage.getItem('sound_paymentReceived') || 'income1',
         expenseLogged: localStorage.getItem('sound_expenseLogged') || 'expense1',
         itemDeleted: localStorage.getItem('sound_itemDeleted') || 'delete1',
@@ -626,7 +618,7 @@ export default function SettingsClient() {
               {[
                 { title: 'Personal', items: ['profile', 'appearance', 'notifications'] },
                 { title: 'Workspace', items: ['company', 'workspace', 'team', 'roles'] },
-                { title: 'Advanced & Developer', items: ['api_keys', 'smtp', 'email_accounts', 'integrations', 'security', 'billing', 'backup', 'audit', 'danger'] }
+                { title: 'Advanced & Developer', items: ['api_keys', 'smtp', 'integrations', 'security', 'billing', 'backup', 'audit', 'danger'] }
               ].map(group => {
                 const groupTabs = tabsToRender.filter(t => group.items.includes(t.id));
                 if (groupTabs.length === 0) return null;
@@ -817,7 +809,7 @@ export default function SettingsClient() {
                       <label className="flex items-center gap-3 cursor-pointer bg-slate-50 dark:bg-[#09090B] px-4 py-2 rounded-xl border border-slate-200 dark:border-[#232734]">
                         <span className="text-xs font-bold uppercase tracking-widest text-[#94A3B8]">Master Sound</span>
                         <div className="relative">
-                          <input type="checkbox" className="sr-only" checked={masterSound} onChange={() => { setMasterSound(!masterSound); if (!masterSound && (sounds as any)[soundVariants['leadConverted']]) (sounds as any)[soundVariants['leadConverted']](); triggerChange(); }} />
+                          <input type="checkbox" className="sr-only" checked={masterSound} onChange={() => { setMasterSound(!masterSound); if (!masterSound && (sounds as any)[soundVariants['paymentReceived']]) (sounds as any)[soundVariants['paymentReceived']](); triggerChange(); }} />
                           <div className={`block w-10 h-6 rounded-full transition-colors ${masterSound ? 'bg-primary-600' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
                           <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${masterSound ? 'transform translate-x-4' : ''}`}></div>
                         </div>
@@ -827,8 +819,6 @@ export default function SettingsClient() {
                     <div className="space-y-4">
                       {[
                         { id: 'systemBoot', label: 'System Boot', desc: 'Plays a welcoming chord when logging in.', variants: [{val: 'login1', name: 'Classic Chord'}, {val: 'login2', name: 'Modern Ascending'}, {val: 'login3', name: 'Minimal Chime'}] },
-                        { id: 'newLead', label: 'New Lead Added', desc: 'Plays a subtle pop when a lead enters the system.', variants: [{val: 'edit1', name: 'Gentle Chime'}, {val: 'edit2', name: 'Modern Pop'}, {val: 'edit3', name: 'Short Blip'}] },
-                        { id: 'leadConverted', label: 'Lead Converted', desc: 'Plays a success chime when a deal is won.', variants: [{val: 'success1', name: 'Success Chime'}, {val: 'success2', name: 'Triple Ascend'}, {val: 'success3', name: 'Grand Chord'}] },
                         { id: 'paymentReceived', label: 'Income Logged', desc: 'Plays a distinct coin chime when income is logged.', variants: [{val: 'income1', name: 'Coin Drop'}, {val: 'income2', name: 'Synth Cash'}, {val: 'income3', name: 'Rich Chime'}] },
                         { id: 'expenseLogged', label: 'Expense Logged', desc: 'Plays a low thud when an expense is recorded.', variants: [{val: 'expense1', name: 'Low Thud'}, {val: 'expense2', name: 'Double Tap'}, {val: 'expense3', name: 'Deep Saw'}] },
                         { id: 'itemDeleted', label: 'Item Deleted', desc: 'Plays a deep pop when something is deleted.', variants: [{val: 'delete1', name: 'Deep Pop'}, {val: 'delete2', name: 'Saw Snap'}, {val: 'delete3', name: 'Double Pluck'}] },
@@ -1026,16 +1016,7 @@ export default function SettingsClient() {
                   </GlassCard>
                 )}
 
-                {/* ── EMAIL & SMTP ── */}
-                {activeTab === 'email_accounts' && (
-                  <GlassCard>
-                    <div className="border-b border-slate-200 dark:border-[#232734] pb-6 mb-8">
-                      <h2 className="text-xl font-bold font-jakarta mb-1">Outreach Emails</h2>
-                      <p className="text-sm text-[#94A3B8]">Connect email accounts for outbound campaigns.</p>
-                    </div>
-                    <EmailAccountsManager />
-                  </GlassCard>
-                )}
+                {/* ── SMTP ── */}
 
                 {activeTab === 'smtp' && (
                   <GlassCard>
@@ -1445,7 +1426,7 @@ export default function SettingsClient() {
 
                     <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#09090B] border border-rose-500/30">
                       <h4 className="font-bold text-rose-500 mb-2">Factory Reset Database</h4>
-                      <p className="text-xs font-medium text-rose-500/60 mb-6">Permanently delete all leads, projects, transactions, and proposals.</p>
+                      <p className="text-xs font-medium text-rose-500/60 mb-6">Permanently delete all projects, marketplace records, transactions, and logs.</p>
                       <div className="flex gap-4">
                         <input type="text" value={dangerConfirm} onChange={(e) => setDangerConfirm(e.target.value)} placeholder="Type CONFIRM" className="flex-1 px-4 py-2 bg-white dark:bg-[#11131A] border border-rose-500/30 rounded-xl focus:outline-none focus:border-rose-500/60 text-rose-500 font-bold placeholder-rose-900/50" />
                         <button disabled={dangerConfirm !== 'CONFIRM'} onClick={async () => { 

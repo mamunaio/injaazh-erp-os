@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
-  LayoutDashboard, Users, FileText, Briefcase, DollarSign, Settings, Activity, X, Wallet, Mail, Map, Clock, Hexagon, Sparkles 
+  LayoutDashboard, Users, Briefcase, DollarSign, Settings, X, Wallet, Map, Clock, Hexagon, Sparkles, Globe 
 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import { useSidebar } from './SidebarContext';
@@ -13,11 +13,8 @@ import { useUser } from './UserContext';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, category: 'Home' },
-  { name: 'Prospects', href: '/prospects', icon: Users, category: 'Leads' },
-  { name: 'Campaigns', href: '/campaigns', icon: Mail, category: 'Leads' },
-  { name: 'Outreach', href: '/outreach', icon: Activity, category: 'Leads' },
-  { name: 'Proposals', href: '/proposals', icon: FileText, category: 'Sales' },
-  { name: 'Clients', href: '/marketplace/clients', icon: Users, category: 'Sales' },
+  { name: 'Marketplace', href: '/marketplace', icon: Globe, category: 'Marketplace' },
+  { name: 'Clients', href: '/marketplace/clients', icon: Users, category: 'Marketplace' },
   { name: 'Projects', href: '/projects', icon: Briefcase, category: 'Work' },
   { name: 'Roadmap', href: '/roadmap', icon: Map, category: 'Work' },
   { name: 'Timesheets', href: '/timesheets', icon: Clock, category: 'Work' },
@@ -43,7 +40,7 @@ export default function Sidebar() {
     }
     
     if (user.role === 'editor') {
-      const allowed = ['/dashboard', '/prospects', '/outreach', '/proposals', '/projects', '/roadmap', '/timesheets', '/team-logs'];
+      const allowed = ['/dashboard', '/marketplace', '/marketplace/clients', '/projects', '/roadmap', '/timesheets', '/team-logs'];
       return allowed.includes(item.href);
     }
 
@@ -57,8 +54,7 @@ export default function Sidebar() {
 
   const categories = [
     { name: 'Home', items: filteredNavItems.filter(i => i.category === 'Home') },
-    { name: 'Leads', items: filteredNavItems.filter(i => i.category === 'Leads') },
-    { name: 'Sales', items: filteredNavItems.filter(i => i.category === 'Sales') },
+    { name: 'Marketplace', items: filteredNavItems.filter(i => i.category === 'Marketplace') },
     { name: 'Work', items: filteredNavItems.filter(i => i.category === 'Work') },
     { name: 'Finance', items: filteredNavItems.filter(i => i.category === 'Finance') },
     { name: 'System', items: filteredNavItems.filter(i => i.category === 'System') },

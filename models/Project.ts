@@ -16,8 +16,6 @@ export interface IProject extends Document {
   platformFee?: number;
   clientId?: mongoose.Types.ObjectId;
   clientName?: string;
-  leadId?: mongoose.Types.ObjectId;
-  proposalId?: mongoose.Types.ObjectId;
   marketplaceProjectId?: mongoose.Types.ObjectId;
   attachments?: number;
   comments?: number;
@@ -53,8 +51,6 @@ const ProjectSchema = new Schema<IProject>({
   platformFee: { type: Number },
   clientId: { type: Schema.Types.ObjectId, ref: 'MarketplaceClient' },
   clientName: { type: String },
-  leadId: { type: Schema.Types.ObjectId, ref: 'Lead' },
-  proposalId: { type: Schema.Types.ObjectId, ref: 'Proposal' },
   marketplaceProjectId: { type: Schema.Types.ObjectId, ref: 'MarketplaceProject' },
   attachments: { type: Number, default: 0 },
   comments: { type: Number, default: 0 },

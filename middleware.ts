@@ -16,9 +16,7 @@ export async function middleware(request: NextRequest) {
     pathname === '/login' ||
     pathname === '/register' ||
     pathname === '/forgot-password' ||
-    pathname.startsWith('/reset-password') ||
-    pathname.startsWith('/p/') || // public proposals /p/[id]
-    pathname.startsWith('/api/cron'); // allow cron API routes
+    pathname.startsWith('/reset-password');
 
   // Extract the user token from the request cookies
   const token = request.cookies.get('user_token')?.value;

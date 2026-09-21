@@ -8,7 +8,6 @@ import WorkTimeTracker from "@/components/layout/WorkTimeTracker";
 import { Toaster } from "react-hot-toast";
 import { getCurrentUser } from "@/app/actions/authActions";
 import ChatWidget from "@/components/ui/ChatWidget";
-import WarmupWorker from "@/components/WarmupWorker";
 
 // Primary font - Outfit (premium, modern, geometric)
 const outfit = Outfit({
@@ -73,7 +72,6 @@ export default async function RootLayout({
                 <CommandCenter />
                 <WorkTimeTracker />
                 <ChatWidget />
-                <WarmupWorker />
               </>
             )}
           </AppLayoutWrapper>

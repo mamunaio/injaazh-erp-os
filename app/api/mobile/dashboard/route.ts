@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
-import { Lead } from '@/models/Lead';
 import { Project } from '@/models/Project';
 import { Transaction } from '@/models/Transaction';
 
@@ -35,10 +34,6 @@ export async function GET() {
     await connectToDatabase();
 
     // 1. Fetch Aggregated Metrics
-    const activeLeadsCount = await Lead.countDocuments({
-      outreach_status: { $nin: ['Closed', 'Not Interested'] }
-    });
-
     const activeProjectsCount = await Project.countDocuments({
       status: 'In Progress'
     });
@@ -50,9 +45,8 @@ export async function GET() {
     const totalIncome = incomeSumArray[0]?.total || 0;
 
     // 2. Fetch Recent Activities from Multiple Collections
-    const [recentTransactions, recentLeads, recentProjects] = await Promise.all([
+    const [recentTransactions, recentProjects] = await Promise.all([
       Transaction.find().sort({ date: -1 }).limit(5).lean(),
-      Lead.find().sort({ createdAt: -1 }).limit(5).lean(),
       Project.find().sort({ updatedAt: -1 }).limit(5).lean()
     ]);
 
@@ -70,19 +64,6 @@ export async function GET() {
         color: isIncome ? '#10b981' : '#f43f5e',
         amount: isIncome ? `+$${tx.amount.toLocaleString()}` : `-$${tx.amount.toLocaleString()}`,
         sortDate: new Date(tx.date)
-      });
-    });
-
-    recentLeads.forEach((lead: any) => {
-      activitiesList.push({
-        id: `lead_${lead._id}`,
-        title: `Lead: ${lead.company_name}`,
-        desc: `Status is outreach '${lead.outreach_status}'`,
-        time: getRelativeTime(lead.createdAt),
-        icon: 'user-check',
-        color: '#f59e0b',
-        amount: null,
-        sortDate: new Date(lead.createdAt)
       });
     });
 
@@ -106,7 +87,6 @@ export async function GET() {
 
     // Format output data
     const responseData = {
-      totalLeads: activeLeadsCount,
       activeProjects: activeProjectsCount,
       totalIncome: `$${totalIncome.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
       recentActivity: sortedActivities

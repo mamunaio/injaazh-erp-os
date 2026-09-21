@@ -2,9 +2,8 @@ import { NextResponse } from 'next/server';
 import { generateAIContent } from '@/lib/aiProvider';
 import { getAuthUser } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
-import { Lead } from '@/models/Lead';
 import { Project } from '@/models/Project';
-import { Proposal } from '@/models/Proposal';
+import MarketplaceProject from '@/models/MarketplaceProject';
 import { Transaction } from '@/models/Transaction';
 
 export async function POST(req: Request) {
@@ -25,22 +24,21 @@ export async function POST(req: Request) {
     let liveErpContext = '';
     try {
       await connectDB();
-      const [leads, projects, proposals, transactions] = await Promise.all([
-        Lead.find({}).lean(),
+      const [projects, marketplaceProjects, transactions] = await Promise.all([
         Project.find({ status: { $in: ['In Progress', 'In Review', 'Planning'] } }).limit(5).lean(),
-        Proposal.find({}).lean(),
+        MarketplaceProject.find({}).limit(10).lean(),
         Transaction.find({}).sort({ date: -1 }).limit(8).lean(),
       ]);
 
-      const leadsTotal = leads.length;
-      const leadsNew = leads.filter((l: any) => l.outreach_status === 'New').length;
-      const leadsActive = leads.filter((l: any) => ['Queued', 'Email Sent', 'Replied', 'Meeting Booked'].includes(l.outreach_status)).length;
-      const leadsMeetings = leads.filter((l: any) => l.outreach_status === 'Meeting Booked').length;
-
-      const totalProposals = proposals.length;
-      const pendingProposalsValue = proposals
-        .filter((p: any) => ['Draft', 'Sent', 'Viewed'].includes(p.status))
-        .reduce((sum, p) => sum + (p.value || 0), 0);
+      const totalMarketplaceProjects = marketplaceProjects.length;
+      let pendingMilestoneValue = 0;
+      marketplaceProjects.forEach((mp: any) => {
+        if (mp.milestones && Array.isArray(mp.milestones)) {
+          mp.milestones.forEach((m: any) => {
+            if (m.status === 'Pending') pendingMilestoneValue += parseFloat(m.amount) || 0;
+          });
+        }
+      });
 
       const incomeTransactions = transactions.filter((t: any) => t.type === 'Income' || t.type === 'income');
       const totalRecentIncome = incomeTransactions.reduce((acc, curr) => acc + (curr.amount || 0), 0);
@@ -48,9 +46,8 @@ export async function POST(req: Request) {
       liveErpContext = `
 REAL-TIME INJAAZH ERP DATA SNAPSHOT:
 - User: ${user.name || user.email} (${user.role})
-- Total Leads in CRM: ${leadsTotal} (New: ${leadsNew}, Active Pipeline: ${leadsActive}, Meetings Booked: ${leadsMeetings})
 - Active In-Flight Projects (${projects.length}): ${projects.map(p => `"${p.title}" (${p.status}, Progress: ${p.progress}%)`).join(', ') || 'None'}
-- Proposals Pipeline: ${totalProposals} total created ($${pendingProposalsValue.toLocaleString()} currently pending acceptance)
+- Marketplace Projects: ${totalMarketplaceProjects} tracked ($${pendingMilestoneValue.toLocaleString()} in pending milestones)
 - Recent Recorded Income: $${totalRecentIncome.toLocaleString()}
       `;
     } catch (dbErr) {

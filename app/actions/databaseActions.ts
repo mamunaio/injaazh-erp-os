@@ -1,15 +1,10 @@
 'use server';
 
 import connectToDatabase from '@/lib/mongodb';
-import { Lead } from '@/models/Lead';
 import { Project } from '@/models/Project';
-import { Proposal } from '@/models/Proposal';
 import { Transaction } from '@/models/Transaction';
 import MarketplaceProject from '@/models/MarketplaceProject';
 import SeoProject from '@/models/SeoProject';
-import { Campaign } from '@/models/Campaign';
-import { EmailCampaignLog } from '@/models/EmailCampaignLog';
-import { EmailAccount } from '@/models/EmailAccount';
 import { getAuthUser } from '@/lib/auth';
 import User from '@/models/User';
 
@@ -35,15 +30,10 @@ export async function factoryResetDatabase() {
 
     // Delete everything EXCEPT users and settings
     await Promise.all([
-      Lead.deleteMany({}),
       Project.deleteMany({}),
-      Proposal.deleteMany({}),
       Transaction.deleteMany({}),
       MarketplaceProject.deleteMany({}),
-      SeoProject.deleteMany({}),
-      Campaign.deleteMany({}),
-      EmailCampaignLog.deleteMany({}),
-      EmailAccount.deleteMany({})
+      SeoProject.deleteMany({})
     ]);
 
     return { success: true, message: 'Database reset successfully' };

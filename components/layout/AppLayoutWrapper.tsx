@@ -19,23 +19,17 @@ export default function AppLayoutWrapper({ children, initialUser }: { children: 
     pathname === '/forgot-password' || 
     pathname.startsWith('/reset-password');
 
-  const isProposalPublicPage = pathname.startsWith('/p/');
-
   React.useEffect(() => {
-    // If not auth page, not public page, and initialUser is null (session invalid in DB),
+    // If not auth page and initialUser is null (session invalid in DB),
     // force clear the cookie so middleware catches it properly.
-    if (!isAuthPage && !isProposalPublicPage && !initialUser) {
+    if (!isAuthPage && !initialUser) {
       logoutUser().then(() => {
         window.location.href = '/login';
       });
     }
-  }, [isAuthPage, isProposalPublicPage, initialUser]);
+  }, [isAuthPage, initialUser]);
 
   if (isAuthPage) {
-    return <main className="min-h-screen bg-slate-50 dark:bg-[#0A0A0B]">{children}</main>;
-  }
-
-  if (isProposalPublicPage) {
     return <main className="min-h-screen bg-slate-50 dark:bg-[#0A0A0B]">{children}</main>;
   }
 

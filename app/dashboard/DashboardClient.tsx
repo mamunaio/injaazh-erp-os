@@ -110,7 +110,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
     );
   }
 
-  const { stats, revenueTrend30Days, revenueTrend6Months, revenueTrendYear, leadFunnel, salesPipeline, aiInsights } = dashboardData;
+  const { stats, revenueTrend30Days, revenueTrend6Months, revenueTrendYear, projectStatusDistribution, salesPipeline, aiInsights } = dashboardData;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -125,11 +125,16 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
     return 'Good Evening';
   };
 
-  const maxLeads = Math.max(leadFunnel?.New || 0, leadFunnel?.Active || 0, leadFunnel?.Closed || 0) || 1;
+  const maxProjects = Math.max(
+    projectStatusDistribution?.Planning || 0,
+    projectStatusDistribution?.['In Progress'] || 0,
+    projectStatusDistribution?.Completed || 0
+  ) || 1;
+
   const pipelineData = [
-    { name: 'New Leads', value: leadFunnel?.New || 0, color: '#3B82F6', gradient: 'linear-gradient(90deg, #1D4ED8 0%, #3B82F6 100%)', width: `${((leadFunnel?.New || 0) / maxLeads) * 100}%` },
-    { name: 'Active', value: leadFunnel?.Active || 0, color: '#8B5CF6', gradient: 'linear-gradient(90deg, #6D28D9 0%, #8B5CF6 100%)', width: `${((leadFunnel?.Active || 0) / maxLeads) * 100}%` },
-    { name: 'Closed', value: leadFunnel?.Closed || 0, color: '#10B981', gradient: 'linear-gradient(90deg, #047857 0%, #10B981 100%)', width: `${((leadFunnel?.Closed || 0) / maxLeads) * 100}%` },
+    { name: 'Planning', value: projectStatusDistribution?.Planning || 0, color: '#3B82F6', gradient: 'linear-gradient(90deg, #1D4ED8 0%, #3B82F6 100%)', width: `${((projectStatusDistribution?.Planning || 0) / maxProjects) * 100}%` },
+    { name: 'In Progress', value: projectStatusDistribution?.['In Progress'] || 0, color: '#8B5CF6', gradient: 'linear-gradient(90deg, #6D28D9 0%, #8B5CF6 100%)', width: `${((projectStatusDistribution?.['In Progress'] || 0) / maxProjects) * 100}%` },
+    { name: 'Completed', value: projectStatusDistribution?.Completed || 0, color: '#10B981', gradient: 'linear-gradient(90deg, #047857 0%, #10B981 100%)', width: `${((projectStatusDistribution?.Completed || 0) / maxProjects) * 100}%` },
   ];
 
   return (
@@ -159,14 +164,11 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 w-full xl:w-auto">
-            <button onClick={() => handleAction('Proposal Draft', '/proposals')} disabled={!!isActionLoading} className="flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 neu-button font-semibold text-xs flex disabled:opacity-50">
-              <FileText size={15} className="text-slate-400" /> New Proposal
+            <button onClick={() => handleAction('Marketplace Hub', '/marketplace')} disabled={!!isActionLoading} className="flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 neu-button font-semibold text-xs flex disabled:opacity-50">
+              <Globe size={15} className="text-slate-400" /> Marketplace
             </button>
-            <button onClick={() => handleAction('Project Setup', '/projects')} disabled={!!isActionLoading} className="flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 neu-button font-semibold text-xs flex disabled:opacity-50">
-              <Briefcase size={15} className="text-slate-400" /> New Project
-            </button>
-            <button onClick={() => handleAction('Lead Form', '/prospects')} disabled={!!isActionLoading} className="flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-primary-500/20 flex disabled:opacity-50">
-              <Plus size={15} /> Add Prospect
+            <button onClick={() => handleAction('Project Setup', '/projects')} disabled={!!isActionLoading} className="flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-primary-500/20 flex disabled:opacity-50">
+              <Briefcase size={15} /> New Project
             </button>
           </div>
         </motion.div>
@@ -219,20 +221,20 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                    </div>
                 </div>
 
-                {/* Metric 3: Leads */}
-                <div onClick={() => router.push('/prospects')} className="group glass-card rounded-2xl p-5 flex flex-col gap-3 hover:border-amber-500/40 transition-all cursor-pointer relative overflow-hidden">
+                {/* Metric 3: Marketplace Projects */}
+                <div onClick={() => router.push('/marketplace')} className="group glass-card rounded-2xl p-5 flex flex-col gap-3 hover:border-amber-500/40 transition-all cursor-pointer relative overflow-hidden">
                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-500 to-transparent opacity-80" />
                    <div className="flex justify-between items-start">
                      <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
-                       <Users size={17} />
+                       <Globe size={17} />
                      </div>
                      <span className="text-[10px] font-bold text-amber-500 flex items-center gap-0.5 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
-                        Pipeline
+                        Marketplace
                      </span>
                    </div>
                    <div className="mt-1">
-                     <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Prospects & Leads</p>
-                     <p className="text-2xl font-bold text-slate-900 dark:text-white font-mono tracking-tight">{stats?.newLeadsToday || 0}</p>
+                     <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Marketplace Projects</p>
+                     <p className="text-2xl font-bold text-slate-900 dark:text-white font-mono tracking-tight">{stats?.totalMarketplaceProjects ?? stats?.totalProjects ?? 0}</p>
                    </div>
                 </div>
 
@@ -345,10 +347,10 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
               </Card>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Lead Funnel */}
+                {/* Project Status Funnel */}
                 <Card className="flex flex-col p-5">
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Conversion Funnel</h3>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Project Status</h3>
                     <PieChartIcon size={16} className="text-slate-400" />
                   </div>
                   <div className="flex-1 flex flex-col justify-center gap-4">
@@ -377,29 +379,29 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                 {/* Sales Pipeline */}
                 <Card className="flex flex-col p-5">
                    <div className="flex justify-between items-center mb-4">
-                     <h3 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Proposal Value Status</h3>
+                     <h3 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Marketplace Milestones</h3>
                      <Layers size={16} className="text-slate-400" />
                    </div>
                    <div className="flex flex-col gap-3">
                      <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50/80 dark:bg-black/30 border border-slate-200/80 dark:border-white/[0.06]">
                        <div className="flex items-center gap-2.5">
-                         <div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
+                         <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
                          <div>
-                           <p className="text-xs font-bold text-slate-900 dark:text-white">Pending Proposals</p>
-                           <p className="text-[11px] text-slate-400">{stats?.pendingProposals || 0} proposals sent</p>
+                           <p className="text-xs font-bold text-slate-900 dark:text-white">Pending Milestones</p>
+                           <p className="text-[11px] text-slate-400">Escrow funds awaiting delivery</p>
                          </div>
                        </div>
-                       <p className="text-xs font-bold font-mono text-slate-900 dark:text-white">{formatCurrency(salesPipeline?.Pending || 0)}</p>
+                       <p className="text-xs font-bold font-mono text-amber-500">{formatCurrency(stats?.pendingMilestoneValue || 0)}</p>
                      </div>
                      <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50/80 dark:bg-black/30 border border-slate-200/80 dark:border-white/[0.06]">
                        <div className="flex items-center gap-2.5">
                          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
                          <div>
-                           <p className="text-xs font-bold text-slate-900 dark:text-white">Won & Accepted</p>
-                           <p className="text-[11px] text-emerald-500 font-semibold">Closed successfully</p>
+                           <p className="text-xs font-bold text-slate-900 dark:text-white">Realized Revenue</p>
+                           <p className="text-[11px] text-emerald-500 font-semibold">Total collected</p>
                          </div>
                        </div>
-                       <p className="text-xs font-bold font-mono text-emerald-500">{formatCurrency(salesPipeline?.Accepted || 0)}</p>
+                       <p className="text-xs font-bold font-mono text-emerald-500">{formatCurrency(stats?.totalIncome || 0)}</p>
                      </div>
                    </div>
                 </Card>
@@ -408,35 +410,45 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
 
             {/* BOTTOM SECTION (TABLES) */}
             <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-2 w-full min-w-0">
-               {/* Recent Leads Table */}
+               {/* Recent Marketplace Projects Table */}
                <Card className="p-0 overflow-hidden h-full">
                  <div className="p-4.5 border-b border-slate-100 dark:border-white/[0.06] flex justify-between items-center bg-slate-50/50 dark:bg-black/20">
-                   <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Recent Prospects</h3>
-                   <Link href="/prospects" className="text-xs font-bold text-primary-500 hover:underline transition-colors">View All</Link>
+                   <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Marketplace Projects</h3>
+                   <Link href="/marketplace" className="text-xs font-bold text-primary-500 hover:underline transition-colors">View All</Link>
                  </div>
                  <div className="overflow-x-auto">
                    <table className="w-full text-left border-collapse text-xs">
                      <thead>
                        <tr className="bg-slate-50/80 dark:bg-black/30 text-slate-400">
-                         <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[10px]">Company</th>
-                         <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[10px]">Target Service</th>
+                         <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[10px]">Client / Project</th>
+                         <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[10px]">Platform & Budget</th>
                          <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[10px]">Status</th>
                        </tr>
                      </thead>
                      <tbody className="divide-y divide-slate-100 dark:divide-white/[0.04]">
-                       {dashboardData.recentLeads?.length > 0 ? dashboardData.recentLeads.map((lead: any) => (
-                         <tr key={lead._id} onClick={() => router.push('/prospects')} className="hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors cursor-pointer">
-                           <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">{lead.company_name}</td>
-                           <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{lead.targetService || 'Custom Solution'}</td>
+                       {(dashboardData.recentMarketplaceProjects || []).length > 0 ? dashboardData.recentMarketplaceProjects.map((mp: any) => (
+                         <tr key={mp._id} onClick={() => router.push('/marketplace')} className="hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors cursor-pointer">
                            <td className="px-4 py-3">
-                             <span className="inline-block px-2 py-0.5 rounded-md bg-primary-500/10 text-primary-600 dark:text-primary-400 text-[10px] font-bold border border-primary-500/20">
-                               {lead.outreach_status || 'New'}
+                             <p className="font-semibold text-slate-900 dark:text-white">{mp.title}</p>
+                             <p className="text-[11px] text-slate-400 truncate max-w-[160px]">{mp.clientName || 'Marketplace Client'}</p>
+                           </td>
+                           <td className="px-4 py-3 font-mono font-bold text-slate-700 dark:text-slate-300">
+                             <span className="text-[11px] text-primary-500 mr-1 font-sans">{mp.platform}</span>
+                             {mp.budget || '$0'}
+                           </td>
+                           <td className="px-4 py-3">
+                             <span className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                               mp.status === 'Completed'
+                                 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                                 : 'bg-primary-500/10 text-primary-600 dark:text-primary-400 border-primary-500/20'
+                             }`}>
+                               {mp.status || 'Planning'}
                              </span>
                            </td>
                          </tr>
                        )) : (
                          <tr>
-                           <td colSpan={3} className="px-4 py-6 text-center text-slate-400">No recent leads found.</td>
+                           <td colSpan={3} className="px-4 py-6 text-center text-slate-400">No marketplace projects found.</td>
                          </tr>
                        )}
                      </tbody>
@@ -514,7 +526,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                  </div>
                  <div className="relative z-10">
                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-4 font-normal">
-                     {currentAiInsights || "Based on your activity, maintain focus on upcoming project milestones and pending client proposals."}
+                     {currentAiInsights || "Based on your activity, maintain focus on upcoming project deliverables and escrow milestones."}
                    </p>
                    
                    <button
@@ -666,9 +678,7 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                 <div>
                   <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
                     {activeModal === 'Task Modal' && 'Create New Task'}
-                    {activeModal === 'Proposal Draft' && 'Draft New Proposal'}
                     {activeModal === 'Project Setup' && 'Setup New Project'}
-                    {activeModal === 'Lead Form' && 'Add New Lead'}
                     {activeModal === 'Meeting Modal' && 'Schedule New Meeting'}
                   </h2>
                   <p className="text-xs text-[#94A3B8]">Fill in the details below to proceed.</p>

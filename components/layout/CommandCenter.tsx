@@ -6,7 +6,6 @@ import {
   Search, 
   Users, 
   Briefcase, 
-  FileText, 
   DollarSign, 
   Settings, 
   Mail, 
@@ -19,7 +18,8 @@ import {
   Map, 
   Activity,
   Layers,
-  Bot
+  Bot,
+  Globe
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -42,15 +42,13 @@ export default function CommandCenter() {
 
   const allCommands: CommandItem[] = [
     // Quick Actions
-    { id: 'act-lead', name: 'Add New Prospect / Lead', category: 'Actions', icon: PlusCircle, path: '/prospects?action=new', color: 'text-emerald-500 bg-emerald-500/10' },
-    { id: 'act-proposal', name: 'Create Client Proposal', category: 'Actions', icon: FileText, path: '/proposals?action=new', color: 'text-indigo-500 bg-indigo-500/10' },
     { id: 'act-project', name: 'Start New Project', category: 'Actions', icon: Briefcase, path: '/projects?action=new', color: 'text-blue-500 bg-blue-500/10' },
     { id: 'act-expense', name: 'Log Daily Expense', category: 'Actions', icon: Wallet, path: '/daily-expenses?action=new', color: 'text-rose-500 bg-rose-500/10' },
-    { id: 'act-campaign', name: 'New Email Campaign', category: 'Actions', icon: Mail, path: '/campaigns?action=new', color: 'text-purple-500 bg-purple-500/10' },
 
     // Navigation
     { id: 'nav-dashboard', name: 'Go to Dashboard & Insights', category: 'Navigation', icon: Layers, path: '/dashboard', color: 'text-cyan-500 bg-cyan-500/10' },
-    { id: 'nav-prospects', name: 'View Prospects & CRM Pipeline', category: 'Navigation', icon: Users, path: '/prospects', color: 'text-teal-500 bg-teal-500/10' },
+    { id: 'nav-marketplace', name: 'Marketplace Operations', category: 'Navigation', icon: Globe, path: '/marketplace', color: 'text-indigo-500 bg-indigo-500/10' },
+    { id: 'nav-clients', name: 'Marketplace Clients', category: 'Navigation', icon: Users, path: '/marketplace/clients', color: 'text-purple-500 bg-purple-500/10' },
     { id: 'nav-projects', name: 'Projects Kanban Board', category: 'Navigation', icon: Briefcase, path: '/projects', color: 'text-blue-500 bg-blue-500/10' },
     { id: 'nav-roadmap', name: 'Milestone Roadmap', category: 'Navigation', icon: Map, path: '/roadmap', color: 'text-amber-500 bg-amber-500/10' },
     { id: 'nav-timesheets', name: 'Timesheets & Work Logs', category: 'Navigation', icon: Clock, path: '/timesheets', color: 'text-orange-500 bg-orange-500/10' },
@@ -62,7 +60,6 @@ export default function CommandCenter() {
     { id: 'ai-chat', name: 'Open AI Business Copilot', category: 'AI & Tools', icon: Bot, action: () => {
       window.dispatchEvent(new CustomEvent('open-ai-chat'));
     }, color: 'text-primary-500 bg-primary-500/10' },
-    { id: 'ai-outreach', name: 'AI Cold Email Outreach', category: 'AI & Tools', icon: Sparkles, path: '/outreach', color: 'text-violet-500 bg-violet-500/10' },
   ];
 
   const filtered = allCommands.filter(c => 
@@ -147,7 +144,7 @@ export default function CommandCenter() {
               <input
                 ref={inputRef}
                 type="text"
-                placeholder="Type a command or search (e.g., 'Lead', 'Proposal', 'Finance')..."
+                placeholder="Type a command or search (e.g., 'Marketplace', 'Project', 'Finance')..."
                 value={query}
                 onChange={(e) => {
                   setQuery(e.target.value);
