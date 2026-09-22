@@ -32,13 +32,15 @@ export default async function MarketplaceClientsPage() {
   // Calculate total spent per client based on paid milestones and completed projects
   const clientsWithSpending = initialClients.map((client: any) => {
     let totalSpent = 0;
+    const clientProjects: any[] = [];
     
     // Process Marketplace Projects
     projects.forEach((project: any) => {
       // Check if project belongs to this client
       const matchesClient = 
         (project.clientId && project.clientId.toString() === client._id.toString()) ||
-        (project.clientDetails?.clientName === client.name);
+        (project.clientDetails?.clientName && project.clientDetails?.clientName.toLowerCase() === client.name?.toLowerCase()) ||
+        (project.clientName && project.clientName.toLowerCase() === client.name?.toLowerCase());
         
       if (matchesClient) {
         let paidMilestonesSum = 0;
@@ -59,20 +61,34 @@ export default async function MarketplaceClientsPage() {
           : (project.status === 'Completed' ? budgetValue : 0);
           
         totalSpent += earned;
+        clientProjects.push({
+          _id: project._id,
+          title: project.title,
+          platform: project.platform || client.platform,
+          status: project.status || 'In Progress',
+          budget: project.budget,
+          earned: earned,
+          createdAt: project.createdAt
+        });
       }
     });
 
     // Process General Projects (from Work -> Projects)
     generalProjects.forEach((project: any) => {
-      if (project.clientName && project.clientName === client.name && project.status === 'Completed') {
+      if (project.clientName && project.clientName.toLowerCase() === client.name?.toLowerCase() && project.status === 'Completed') {
         totalSpent += project.budget || 0;
       }
     });
 
-    return { ...client, totalSpent };
+    return { 
+      ...client, 
+      totalSpent, 
+      projectCount: clientProjects.length,
+      projects: clientProjects 
+    };
   });
 
   return (
-    <ClientHubClient initialClients={clientsWithSpending} />
+    <ClientHubClient initialClients={clientsWithSpending} allProjects={projects} />
   );
 }

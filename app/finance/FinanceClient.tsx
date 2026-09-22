@@ -442,14 +442,14 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
             {[
               { title: 'Period Revenue', value: formatCurrency(totalIncome), icon: ArrowUpRight, color: '#10B981', trend: '+14%', data: [40, 30, 50, 40, 60, 50, 70, 60, 80, 70, 90] },
               { title: 'Period Expenses', value: formatCurrency(totalExpense), icon: ArrowDownRight, color: '#EF4444', trend: '-4%', data: [60, 50, 70, 60, 80, 70, 90, 80, 100, 90, 110] },
-              { title: 'Net Profit', value: formatCurrency(netProfit), icon: Briefcase, color: '#2563EB', trend: '+18%', data: [30, 20, 40, 30, 50, 40, 60, 50, 70, 60, 80] },
-              { title: 'Profit Margin', value: `${profitMargin.toFixed(1)}%`, icon: TrendingUp, color: '#7C3AED', trend: profitMargin >= 30 ? 'Healthy' : 'Standard', data: [50, 40, 60, 50, 70, 60, 80, 70, 90, 80, 100] }
+              { title: 'Net Profit', value: formatCurrency(netProfit), icon: Briefcase, color: '#6324FC', trend: '+18%', data: [30, 20, 40, 30, 50, 40, 60, 50, 70, 60, 80] },
+              { title: 'Profit Margin', value: `${profitMargin.toFixed(1)}%`, icon: TrendingUp, color: '#00E5FF', trend: profitMargin >= 30 ? 'Healthy' : 'Standard', data: [50, 40, 60, 50, 70, 60, 80, 70, 90, 80, 100] }
             ].map((kpi, idx) => (
-              <div key={idx} className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 flex flex-col justify-center relative overflow-hidden group transition-all duration-300 shadow-sm hover:shadow-md dark:shadow-none">
-                <div className="absolute top-0 left-0 w-full h-1" style={{ background: kpi.color }} />
+              <div key={idx} className="glass-card rounded-lg p-5 flex flex-col justify-center relative overflow-hidden group transition-all duration-300 shadow-md">
+                <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: kpi.color }} />
                 
                 {/* Background Sparkline */}
-                <div className="absolute bottom-0 left-0 right-0 h-14 opacity-10 group-hover:opacity-20 transition-opacity">
+                <div className="absolute bottom-0 left-0 right-0 h-14 opacity-10 group-hover:opacity-25 transition-opacity">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={kpi.data.map((val, i) => ({ val, i }))}>
                       <defs>
@@ -465,10 +465,10 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
 
                 <div className="flex items-start justify-between relative z-10">
                   <div>
-                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{kpi.title}</p>
-                    <h3 className="text-2xl font-bold font-mono text-slate-900 dark:text-white tracking-tight">{kpi.value}</h3>
+                    <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest mb-1">{kpi.title}</p>
+                    <h3 className="text-2xl font-heading font-bold font-mono text-primary tracking-tight">{kpi.value}</h3>
                   </div>
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center border" style={{ backgroundColor: `${kpi.color}15`, color: kpi.color, borderColor: `${kpi.color}30` }}>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center border" style={{ backgroundColor: `${kpi.color}15`, color: kpi.color, borderColor: `${kpi.color}30` }}>
                     <kpi.icon size={16} />
                   </div>
                 </div>
@@ -482,14 +482,14 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
           {Object.entries(platformStats).map(([platform, amount]) => {
             const pct = totalIncome > 0 ? ((amount / totalIncome) * 100).toFixed(0) : '0';
             return (
-              <div key={platform} className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] p-4 rounded-2xl">
+              <div key={platform} className="glass-card p-4 rounded-lg">
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{platform}</span>
-                  <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded bg-primary-500/10 text-primary-500">{pct}%</span>
+                  <span className="text-xs font-heading font-bold text-primary">{platform}</span>
+                  <span className="text-[10px] font-heading font-bold font-mono px-1.5 py-0.5 rounded bg-[#6324FC]/10 text-[#6324FC]">{pct}%</span>
                 </div>
-                <p className="text-base font-bold font-mono text-slate-900 dark:text-white">{formatCurrency(amount)}</p>
-                <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full mt-2 overflow-hidden">
-                  <div className="h-full bg-primary-500 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                <p className="text-base font-heading font-bold font-mono text-primary">{formatCurrency(amount)}</p>
+                <div className="h-1.5 w-full bg-primary/10 rounded-full mt-2 overflow-hidden">
+                  <div className="h-full bg-[#6324FC] rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                 </div>
               </div>
             );
@@ -498,7 +498,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
 
         {/* ── Charts ───────────────────────────────────────────────────────── */}
         <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <motion.div variants={itemVariants} className="lg:col-span-2 bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[24px] p-6 flex flex-col relative overflow-hidden shadow-sm dark:shadow-none">
+          <motion.div variants={itemVariants} className="lg:col-span-2 glass-card rounded-lg p-6 flex flex-col relative overflow-hidden shadow-md">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
                 <BarChart3 size={16} className="text-primary-500" />

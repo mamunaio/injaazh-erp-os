@@ -1,66 +1,44 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Search, Plus, Clock, Briefcase, ShoppingCart, Globe, Users } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  Search, 
+  Plus, 
+  Clock, 
+  Briefcase, 
+  ShoppingCart, 
+  Globe, 
+  Users, 
+  ChevronRight,
+  DollarSign,
+  Layers,
+  Sparkles,
+  Calendar,
+  AlertCircle,
+  Flame,
+  CheckCircle2,
+  TrendingUp,
+  LayoutGrid,
+  List,
+  ExternalLink,
+  CheckSquare,
+  FileText
+} from 'lucide-react';
 import CreateMarketplaceProjectModal from '@/components/CreateMarketplaceProjectModal';
 import { getMarketplaceProjects, createMarketplaceProject } from '@/app/actions/marketplaceActions';
 import toast, { Toaster } from 'react-hot-toast';
-
-const MOCK_PROJECTS = [
-  {
-    id: 'proj-1',
-    title: 'TinaCMS UI Recreation',
-    client: 'Alex Mercer',
-    status: 'In Progress',
-    progress: 75,
-    budget: '$12,500',
-    deadline: '2026-06-15',
-  },
-  {
-    id: 'proj-2',
-    title: 'Next.js Corporate Site',
-    client: 'TechNova Solutions',
-    status: 'Planning',
-    progress: 15,
-    budget: '$8,000',
-    deadline: '2026-07-01',
-  },
-  {
-    id: 'proj-3',
-    title: 'Vue 3 E-commerce Migration',
-    client: 'Global Retail',
-    status: 'In Review',
-    progress: 95,
-    budget: '$4,500',
-    deadline: '2026-05-30',
-  },
-  {
-    id: 'proj-4',
-    title: 'Backend Node.js API Audit',
-    client: 'FinTech Startup',
-    status: 'Completed',
-    progress: 100,
-    budget: '$2,200',
-    deadline: '2026-05-10',
-  },
-  {
-    id: 'proj-5',
-    title: 'SEO Dashboard UI Design',
-    client: 'Marketing Pros',
-    status: 'In Progress',
-    progress: 45,
-    budget: '$3,800',
-    deadline: '2026-06-25',
-  },
-];
 
 export default function PlatformClient({ platform }: { platform: string }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('All');
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const router = useRouter();
 
   useEffect(() => {
@@ -81,13 +59,13 @@ export default function PlatformClient({ platform }: { platform: string }) {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: { staggerChildren: 0.05 }
+      transition: { staggerChildren: 0.06 }
     }
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } }
+    hidden: { opacity: 0, y: 12 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 350, damping: 26 } }
   };
 
   const getPlatformConfig = () => {
@@ -95,164 +73,618 @@ export default function PlatformClient({ platform }: { platform: string }) {
     switch(p) {
       case 'upwork': return { 
         name: 'Upwork', 
-        icon: <Briefcase size={24} className="text-emerald-500" />,
-        accent: 'text-emerald-600 dark:text-emerald-400',
+        tagline: 'Global Freelance & Agency Network',
+        icon: Briefcase,
+        color: '#10B981',
+        glowColor: 'rgba(16,185,129,0.25)',
+        accent: 'text-emerald-400',
+        badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
         bgAccent: 'bg-emerald-500',
-        hoverBg: 'hover:bg-emerald-500/5 dark:hover:bg-emerald-500/10'
       };
       case 'fiverr': return { 
         name: 'Fiverr', 
-        icon: <ShoppingCart size={24} className="text-fuchsia-500" />,
-        accent: 'text-fuchsia-600 dark:text-fuchsia-400',
-        bgAccent: 'bg-fuchsia-500',
-        hoverBg: 'hover:bg-fuchsia-500/5 dark:hover:bg-fuchsia-500/10'
+        tagline: 'Gig Deliverables & Studio Studio',
+        icon: ShoppingCart,
+        color: '#EC4899',
+        glowColor: 'rgba(236,72,153,0.25)',
+        accent: 'text-pink-400',
+        badge: 'bg-pink-500/10 text-pink-400 border-pink-500/30',
+        bgAccent: 'bg-pink-500',
       };
       case 'freelancer': return { 
-        name: 'Freelancer', 
-        icon: <Globe size={24} className="text-cyan-500" />,
-        accent: 'text-cyan-600 dark:text-cyan-400',
-        bgAccent: 'bg-cyan-500',
-        hoverBg: 'hover:bg-cyan-500/5 dark:hover:bg-cyan-500/10'
+        name: 'Freelancer.com', 
+        tagline: 'Contests, Milestone Escrow & Bids',
+        icon: Globe,
+        color: '#00E5FF',
+        glowColor: 'rgba(0,229,255,0.25)',
+        accent: 'text-[#00E5FF]',
+        badge: 'bg-[#00E5FF]/10 text-[#00E5FF] border-[#00E5FF]/30',
+        bgAccent: 'bg-[#00E5FF]',
       };
       case 'direct': default: return { 
         name: 'Direct Clients', 
-        icon: <Users size={24} className="text-indigo-500" />,
-        accent: 'text-indigo-600 dark:text-indigo-400',
-        bgAccent: 'bg-indigo-500',
-        hoverBg: 'hover:bg-indigo-500/5 dark:hover:bg-indigo-500/10'
+        tagline: 'Enterprise Retainers & Custom Invoices',
+        icon: Users,
+        color: '#6324FC',
+        glowColor: 'rgba(99,36,252,0.25)',
+        accent: 'text-purple-400',
+        badge: 'bg-[#6324FC]/10 text-purple-300 border-[#6324FC]/30',
+        bgAccent: 'bg-[#6324FC]',
       };
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch(status) {
-      case 'In Progress': return 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20';
-      case 'Planning': return 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20';
-      case 'In Review': return 'bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/20';
-      case 'Completed': return 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20';
-      default: return 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20';
     }
   };
 
   const pConf = getPlatformConfig();
+  const Icon = pConf.icon;
+
+  // Calculate platform financial telemetry
+  const telemetry = useMemo(() => {
+    let totalEarned = 0;
+    let totalPipeline = 0;
+    let inProgressCount = 0;
+    let inReviewCount = 0;
+    let planningCount = 0;
+    let completedCount = 0;
+
+    projects.forEach((project) => {
+      const budgetValue = project.budget 
+        ? parseFloat(project.budget.replace(/[^0-9.-]+/g, '')) 
+        : 0;
+        
+      let paidMilestonesSum = 0;
+      if (project.milestones && Array.isArray(project.milestones)) {
+        project.milestones.forEach((m: any) => {
+          if (m.status === 'Paid') {
+            paidMilestonesSum += parseFloat(m.amount) || 0;
+          }
+        });
+      }
+      
+      const earned = paidMilestonesSum > 0 
+        ? paidMilestonesSum 
+        : (project.status === 'Completed' ? budgetValue : 0);
+        
+      const pipelineAmount = project.status === 'Cancelled' ? 0 : Math.max(0, budgetValue - earned);
+
+      totalEarned += earned;
+      if (project.status !== 'Completed' && project.status !== 'Cancelled') {
+        totalPipeline += pipelineAmount;
+      }
+
+      if (project.status === 'In Progress') inProgressCount++;
+      else if (project.status === 'In Review') inReviewCount++;
+      else if (project.status === 'Planning') planningCount++;
+      else if (project.status === 'Completed') completedCount++;
+    });
+
+    const totalProjects = projects.length;
+    const completionRate = totalProjects > 0 ? Math.round((completedCount / totalProjects) * 100) : 0;
+
+    return {
+      totalEarned,
+      totalPipeline,
+      inProgressCount,
+      inReviewCount,
+      planningCount,
+      completedCount,
+      activeCount: inProgressCount + inReviewCount,
+      totalProjects,
+      completionRate,
+    };
+  }, [projects]);
+
+  const getStatusBadge = (status: string) => {
+    switch(status) {
+      case 'In Progress': return 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
+      case 'Planning': return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+      case 'In Review': return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+      case 'Completed': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+      default: return 'bg-white/5 text-secondary border-white/10';
+    }
+  };
+
+  const filteredProjects = useMemo(() => {
+    return projects.filter((p) => {
+      if (statusFilter !== 'All' && p.status !== statusFilter) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const titleMatch = (p.title || '').toLowerCase().includes(q);
+        const clientMatch = (p.clientDetails?.clientName || p.clientName || '').toLowerCase().includes(q);
+        if (!titleMatch && !clientMatch) return false;
+      }
+      return true;
+    });
+  }, [projects, statusFilter, searchQuery]);
 
   return (
-    <div className="min-h-screen p-4 md:p-8 neu-base-bg text-slate-800 dark:text-slate-200 relative overflow-hidden">
+    <div className="min-h-screen bg-[#060608] text-white p-4 md:p-8 pt-6 pb-24 font-sans selection:bg-[#6324FC] selection:text-white relative overflow-hidden">
+      <Toaster position="top-right" />
 
+      {/* Ambient background glows */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div 
+          className="absolute top-1/6 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] blur-[140px] rounded-full opacity-20"
+          style={{ backgroundColor: pConf.color }}
+        />
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-[#6324FC]/5 rounded-full blur-[120px]" />
+      </div>
 
-      <div className="max-w-7xl mx-auto relative z-10">
+      <div className="max-w-[1680px] mx-auto relative z-10 space-y-6">
         
         {/* Navigation Breadcrumb */}
         <Link 
           href="/marketplace"
-          className="inline-flex items-center gap-2 text-sm font-jakarta font-bold text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors mb-8 group"
+          className="inline-flex items-center gap-2 text-xs font-heading font-semibold text-secondary hover:text-white transition-colors group px-1"
         >
-          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-          Back to Folders
+          <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+          <span>Back to Marketplace Directory</span>
         </Link>
 
-        {/* Dynamic Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6 neu-flat rounded-[2rem] p-6 md:p-8">
+        {/* Dynamic Channel Header Banner */}
+        <div className="p-6 md:p-8 rounded-3xl bg-[#0a0a0d] border border-white/10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 relative overflow-hidden shadow-2xl">
+          {/* Top Neon Glow line */}
+          <div 
+            className="absolute top-0 left-0 right-0 h-[2.5px]"
+            style={{ 
+              backgroundImage: `linear-gradient(to right, transparent, ${pConf.color}, transparent)`,
+              boxShadow: `0 0 14px ${pConf.color}`
+            }}
+          />
+
           <div className="flex items-center gap-5">
-            <div className="w-14 h-14 neu-pressed rounded-2xl flex items-center justify-center">
-              {pConf.icon}
+            <div 
+              className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-xl shrink-0 transition-transform duration-300 group-hover:scale-105"
+              style={{
+                backgroundColor: `${pConf.color}15`,
+                border: `1px solid ${pConf.color}35`,
+                color: pConf.color,
+                boxShadow: `0 0 25px ${pConf.color}25`
+              }}
+            >
+              <Icon size={32} />
             </div>
+
             <div>
-              <h1 className="flex items-center gap-3">
-                {pConf.name} Projects
+              <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                <span className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${pConf.badge}`}>
+                  <Sparkles size={10} className="inline mr-1" />
+                  {pConf.name.toUpperCase()} CHANNEL
+                </span>
+                <span className="text-xs text-secondary">•</span>
+                <span className="text-xs font-mono text-secondary">
+                  {telemetry.totalProjects} Total Deliverables Logged
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-extrabold text-white">
+                {pConf.name} Deliverables
               </h1>
-              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 font-medium">Manage active pipeline and deliverables</p>
+              <p className="text-xs md:text-sm font-sans text-secondary mt-0.5">
+                {pConf.tagline}. Manage contracts, milestone releases, and client scopes.
+              </p>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
-            {/* Search Bar */}
-            <div className="relative w-full sm:w-72">
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
+          {/* Action Controls */}
+          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+            {/* Search Input */}
+            <div className="relative flex-1 sm:w-64">
+              <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary" />
               <input 
                 type="text" 
-                placeholder="Search projects..." 
-                className="w-full pl-11 pr-4 py-3 neu-pressed rounded-xl text-sm font-inter text-[15px] focus:outline-none text-slate-800 dark:text-slate-200 placeholder-slate-400 transition-all"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search projects or clients..." 
+                className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-9 pr-4 py-2.5 text-xs text-white placeholder:text-secondary outline-none transition-colors"
               />
             </div>
+
+            {/* View Mode Toggle */}
+            <div className="flex items-center gap-1 p-1 bg-[#060608] border border-white/10 rounded-xl">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-1.5 rounded-lg transition-all ${
+                  viewMode === 'grid' ? 'bg-[#6324FC] text-white' : 'text-secondary hover:text-white'
+                }`}
+                title="Grid Cards View"
+              >
+                <LayoutGrid size={15} />
+              </button>
+              <button
+                onClick={() => setViewMode('table')}
+                className={`p-1.5 rounded-lg transition-all ${
+                  viewMode === 'table' ? 'bg-[#6324FC] text-white' : 'text-secondary hover:text-white'
+                }`}
+                title="Data Table View"
+              >
+                <List size={15} />
+              </button>
+            </div>
             
-            {/* Action Button */}
+            {/* + New Project Laser Conic CTA */}
             <button 
               onClick={() => setIsModalOpen(true)}
-              className="flex items-center justify-center gap-2 px-6 py-3 neu-button text-indigo-500 font-jakarta font-bold rounded-xl hover:-translate-y-0.5 transition-all text-sm w-full sm:w-auto flex-shrink-0"
+              className="group relative p-[1.5px] rounded-xl overflow-hidden flex items-center justify-center cursor-pointer transition-all duration-300 active:scale-95 shadow-[0_0_15px_rgba(99,36,252,0.3)] hover:shadow-[0_0_25px_rgba(0,229,255,0.5)]"
             >
-              <Plus size={18} /> New Project
+              <span className="absolute -inset-[180%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0deg,transparent_60deg,#6324FC_130deg,#00E5FF_180deg,#6324FC_230deg,transparent_300deg)] blur-[4px] opacity-75" />
+              <span className="absolute -inset-[180%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0deg,transparent_60deg,#6324FC_130deg,#00E5FF_180deg,#6324FC_230deg,transparent_300deg)] opacity-100" />
+              
+              <div className="relative z-10 px-4 py-2.5 rounded-[10px] bg-[#0a0a0d] group-hover:bg-[#121218] text-white font-heading font-bold text-xs flex items-center gap-2 transition-colors">
+                <Plus size={15} className="text-[#00E5FF] group-hover:rotate-90 transition-transform duration-300" />
+                <span className="tracking-wide">+ New {pConf.name} Project</span>
+              </div>
             </button>
           </div>
         </div>
 
-        {/* High-Density List View (Data Table) */}
+        {/* ========================================================================= */}
+        {/* EXECUTIVE TELEMETRY 4 KPI CARDS */}
+        {/* ========================================================================= */}
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+        >
+          {/* Card 1: Realized Channel Revenue */}
+          <motion.div 
+            variants={itemVariants} 
+            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#10B981]/60 hover:shadow-[0_12px_30px_rgba(16,185,129,0.25)] bg-[#0a0a0d]"
+          >
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#10B981]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#10B981] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#10B981]" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+            <div className="flex justify-between items-start mb-3 relative z-10">
+              <div className="w-9 h-9 rounded-xl bg-[#10B981]/15 border border-[#10B981]/30 flex items-center justify-center text-[#10B981] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(16,185,129,0.6)] group-hover:border-[#10B981] transition-all duration-300">
+                <Flame size={17} />
+              </div>
+              <span className="text-[10px] font-heading font-bold text-emerald-400 flex items-center gap-0.5 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 group-hover:border-emerald-500/40 transition-colors">
+                <DollarSign size={11} /> Realized Inflow
+              </span>
+            </div>
+            <div className="relative z-10">
+              <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">{pConf.name} Revenue</p>
+              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-white font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#00E5FF] transition-all">
+                ${telemetry.totalEarned.toLocaleString('en-US', { minimumFractionDigits: 0 })}
+              </p>
+              <p className="text-[10px] font-sans text-secondary/70 mt-1 truncate">Released milestones & completed contracts</p>
+            </div>
+          </motion.div>
+
+          {/* Card 2: Active Contracts in Flight */}
+          <motion.div 
+            variants={itemVariants} 
+            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#00E5FF]/60 hover:shadow-[0_12px_30px_rgba(0,229,255,0.25)] bg-[#0a0a0d]"
+          >
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#00E5FF]/20 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#00E5FF] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#00E5FF]" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+            <div className="flex justify-between items-start mb-3 relative z-10">
+              <div className="w-9 h-9 rounded-xl bg-[#00E5FF]/15 border border-[#00E5FF]/30 flex items-center justify-center text-[#00E5FF] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(0,229,255,0.6)] group-hover:border-[#00E5FF] transition-all duration-300">
+                <Clock size={17} />
+              </div>
+              <span className="text-[10px] font-heading font-bold text-[#00E5FF] bg-[#00E5FF]/10 px-2 py-0.5 rounded-md border border-[#00E5FF]/20 group-hover:border-[#00E5FF]/40 transition-colors">
+                In Production
+              </span>
+            </div>
+            <div className="relative z-10">
+              <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">Active Operations</p>
+              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-white font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#00E5FF] transition-all">
+                {telemetry.activeCount}
+              </p>
+              <p className="text-[10px] font-sans text-secondary/70 mt-1 truncate">In-Progress & In-Review deliverables</p>
+            </div>
+          </motion.div>
+
+          {/* Card 3: Escrow Pipeline Buffer */}
+          <motion.div 
+            variants={itemVariants} 
+            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#6324FC]/60 hover:shadow-[0_12px_30px_rgba(99,36,252,0.25)] bg-[#0a0a0d]"
+          >
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#6324FC]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#6324FC] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#6324FC]" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+            <div className="flex justify-between items-start mb-3 relative z-10">
+              <div className="w-9 h-9 rounded-xl bg-[#6324FC]/15 border border-[#6324FC]/30 flex items-center justify-center text-[#6324FC] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(99,36,252,0.6)] group-hover:border-[#6324FC] transition-all duration-300">
+                <Briefcase size={17} />
+              </div>
+              <span className="text-[10px] font-heading font-bold text-purple-300 bg-[#6324FC]/15 px-2 py-0.5 rounded-md border border-[#6324FC]/30 group-hover:border-[#6324FC]/50 transition-colors">
+                Escrow Pipeline
+              </span>
+            </div>
+            <div className="relative z-10">
+              <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">Unreleased Pipeline</p>
+              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-white font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#00E5FF] transition-all">
+                ${telemetry.totalPipeline.toLocaleString('en-US', { minimumFractionDigits: 0 })}
+              </p>
+              <p className="text-[10px] font-sans text-secondary/70 mt-1 truncate">Unreleased milestone escrow balances</p>
+            </div>
+          </motion.div>
+
+          {/* Card 4: Fulfillments & Delivery Rate */}
+          <motion.div 
+            variants={itemVariants} 
+            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#F59E0B]/60 hover:shadow-[0_12px_30px_rgba(245,158,11,0.25)] bg-[#0a0a0d]"
+          >
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#F59E0B]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#F59E0B] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#F59E0B]" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+            <div className="flex justify-between items-start mb-3 relative z-10">
+              <div className="w-9 h-9 rounded-xl bg-[#F59E0B]/15 border border-[#F59E0B]/30 flex items-center justify-center text-[#F59E0B] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(245,158,11,0.6)] group-hover:border-[#F59E0B] transition-all duration-300">
+                <CheckCircle2 size={17} />
+              </div>
+              <span className="text-[10px] font-heading font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 group-hover:border-amber-500/40 transition-colors">
+                {telemetry.completionRate}% Rate
+              </span>
+            </div>
+            <div className="relative z-10">
+              <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">Completed Projects</p>
+              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-white font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#00E5FF] transition-all">
+                {telemetry.completedCount}
+              </p>
+              <p className="text-[10px] font-sans text-secondary/70 mt-1 truncate">Out of {telemetry.totalProjects} total engagements</p>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* Status Filters Navigation Bar */}
+        <div className="flex items-center justify-between gap-3 pt-2">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
+            {[
+              { id: 'All', label: 'All Projects', count: telemetry.totalProjects },
+              { id: 'In Progress', label: 'In Progress ⚡', count: telemetry.inProgressCount },
+              { id: 'In Review', label: 'In Review 🔍', count: telemetry.inReviewCount },
+              { id: 'Planning', label: 'Planning 📋', count: telemetry.planningCount },
+              { id: 'Completed', label: 'Completed ✅', count: telemetry.completedCount },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setStatusFilter(tab.id)}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-heading font-bold whitespace-nowrap transition-all flex items-center gap-2 ${
+                  statusFilter === tab.id
+                    ? 'bg-white text-black shadow-md'
+                    : 'bg-[#0a0a0d] text-secondary hover:text-white border border-white/10 hover:border-white/20'
+                }`}
+              >
+                <span>{tab.label}</span>
+                <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
+                  statusFilter === tab.id ? 'bg-black/15 text-black' : 'bg-white/5 text-secondary'
+                }`}>
+                  {tab.count}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ========================================================================= */}
+        {/* MAIN DELIVERABLES SECTION (GRID OR TABLE) */}
+        {/* ========================================================================= */}
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+          <div className="flex flex-col items-center justify-center py-24 space-y-3">
+            <div className="w-8 h-8 rounded-full border-2 border-t-transparent border-[#6324FC] animate-spin" />
+            <p className="text-xs font-mono text-secondary">Loading {pConf.name} deliverables...</p>
           </div>
-        ) : projects.length === 0 ? (
-          <div className="text-center py-20 neu-pressed rounded-3xl">
-            <p className="text-slate-500 dark:text-gray-400">No projects found. Create one to get started!</p>
+        ) : filteredProjects.length === 0 ? (
+          <div className="text-center py-20 bg-[#0a0a0d] rounded-3xl border border-white/10 p-6 shadow-xl">
+            <AlertCircle size={32} className="text-secondary mx-auto mb-2" />
+            <h3 className="text-base font-heading font-bold text-white mb-1">No {pConf.name} Projects Found</h3>
+            <p className="text-xs font-sans text-secondary max-w-sm mx-auto mb-4">
+              {searchQuery || statusFilter !== 'All' 
+                ? 'No projects match your active search query or status filter.' 
+                : `No active contracts found for ${pConf.name}. Create your first project to start tracking milestones!`}
+            </p>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="px-5 py-2.5 rounded-xl bg-[#6324FC] hover:bg-[#521bd6] text-white text-xs font-heading font-bold shadow-[0_0_15px_rgba(99,36,252,0.4)] transition-all"
+            >
+              + Create New Project
+            </button>
           </div>
+        ) : viewMode === 'grid' ? (
+          /* ========================================================================= */
+          /* GRID VIEW (KANBAN CARDS) */
+          /* ========================================================================= */
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pb-16"
+          >
+            {filteredProjects.map((project) => {
+              const clientName = project.clientDetails?.clientName || project.clientName || 'Direct Client';
+              const tasksCount = project.tasks && Array.isArray(project.tasks) ? project.tasks.length : 0;
+              const completedTasksCount = project.tasks && Array.isArray(project.tasks) 
+                ? project.tasks.filter((t: any) => t.completed).length 
+                : 0;
+
+              const milestonesCount = project.milestones && Array.isArray(project.milestones) ? project.milestones.length : 0;
+              const paidMilestones = project.milestones && Array.isArray(project.milestones)
+                ? project.milestones.filter((m: any) => m.status === 'Paid')
+                : [];
+
+              return (
+                <motion.div
+                  key={project._id}
+                  variants={itemVariants}
+                >
+                  <Link
+                    href={`/marketplace/${platform.toLowerCase()}/${project._id}`}
+                    className="block group h-full outline-none focus:outline-none"
+                  >
+                    <div className="glass-card rounded-3xl p-6 bg-[#0a0a0d] border border-white/10 hover:border-white/25 hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between h-full shadow-lg relative overflow-hidden group-hover:shadow-[0_12px_30px_rgba(0,0,0,0.6)]">
+                      
+                      {/* Top Accent Neon Line on Hover */}
+                      <div 
+                        className="absolute top-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        style={{ 
+                          backgroundImage: `linear-gradient(to right, transparent, ${pConf.color}, transparent)`,
+                          boxShadow: `0 0 10px ${pConf.color}`
+                        }}
+                      />
+
+                      {/* Header: Client & Status */}
+                      <div>
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-xs font-heading font-bold text-white shrink-0">
+                              {clientName.substring(0, 2).toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                              <span className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider block truncate">
+                                {clientName}
+                              </span>
+                            </div>
+                          </div>
+
+                          <span className={`px-2.5 py-0.5 text-[9px] uppercase tracking-wider font-mono font-bold rounded-lg border shrink-0 ${getStatusBadge(project.status)}`}>
+                            {project.status}
+                          </span>
+                        </div>
+
+                        {/* Title */}
+                        <h3 className="text-base font-heading font-bold text-white group-hover:text-[#00E5FF] transition-colors line-clamp-2 mb-2 leading-snug">
+                          {project.title}
+                        </h3>
+
+                        {/* Scope preview if available */}
+                        {project.scope && (
+                          <p className="text-xs text-secondary font-sans line-clamp-2 mb-4 leading-relaxed">
+                            {project.scope}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Middle: Progress Rate */}
+                      <div className="space-y-3 my-3 pt-3 border-t border-white/5">
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between items-center text-[10px] font-mono text-secondary">
+                            <span>Fulfillment Progress</span>
+                            <span className="font-bold text-white">{project.progress || 0}%</span>
+                          </div>
+                          <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full rounded-full transition-all duration-700"
+                              style={{ 
+                                width: `${project.progress || 0}%`,
+                                backgroundColor: pConf.color 
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Task & Milestone Mini Pills */}
+                        <div className="flex flex-wrap items-center gap-2 pt-1 text-[10px] font-mono text-secondary">
+                          {tasksCount > 0 && (
+                            <span className="px-2 py-0.5 rounded bg-white/5 border border-white/5 flex items-center gap-1">
+                              <CheckSquare size={10} className="text-[#00E5FF]" />
+                              {completedTasksCount}/{tasksCount} Tasks
+                            </span>
+                          )}
+                          {milestonesCount > 0 && (
+                            <span className="px-2 py-0.5 rounded bg-white/5 border border-white/5 flex items-center gap-1">
+                              <DollarSign size={10} className="text-emerald-400" />
+                              {paidMilestones.length}/{milestonesCount} Milestones
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Footer: Budget & Deadline */}
+                      <div className="pt-3 border-t border-white/5 flex items-center justify-between mt-auto">
+                        <div>
+                          <span className="text-[9px] font-heading font-bold text-secondary uppercase block">Contract Budget</span>
+                          <span className="text-sm font-mono font-bold text-white">{project.budget || '$0'}</span>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <span className="text-[9px] font-heading font-bold text-secondary uppercase block">Target Date</span>
+                            <span className="text-xs font-mono text-secondary">
+                              {project.deadline 
+                                ? new Date(project.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                                : 'Flexible'}
+                            </span>
+                          </div>
+                          
+                          <div className="w-8 h-8 rounded-xl bg-white/5 group-hover:bg-[#6324FC] text-secondary group-hover:text-white flex items-center justify-center transition-all">
+                            <ChevronRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </motion.div>
         ) : (
-          <div className="space-y-4 pb-20">
-            {/* Column Headers (Hidden on small screens) */}
-            <div className="hidden md:grid grid-cols-12 gap-6 px-8 py-2 text-xs font-jakarta font-extrabold uppercase tracking-widest text-slate-500 dark:text-slate-400 dark:text-slate-500 ml-2">
-              <div className="col-span-4">Project Name</div>
-              <div className="col-span-2">Status</div>
-              <div className="col-span-3">Progress</div>
+          /* ========================================================================= */
+          /* TABLE VIEW (HIGH DENSITY ROWS) */
+          /* ========================================================================= */
+          <div className="space-y-3 pb-16">
+            <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-2 text-[10px] font-heading font-bold uppercase tracking-widest text-secondary">
+              <div className="col-span-4">Project & Client Details</div>
+              <div className="col-span-2">Execution Status</div>
+              <div className="col-span-3">Progress Rate</div>
               <div className="col-span-1">Budget</div>
-              <div className="col-span-2 text-right">Deadline</div>
+              <div className="col-span-2 text-right">Target Deadline</div>
             </div>
 
             <motion.div 
               variants={containerVariants}
               initial="hidden"
               animate="show"
-              className="flex flex-col gap-5"
+              className="space-y-3"
             >
-              {projects.map((project) => (
+              {filteredProjects.map((project) => (
                 <motion.div
                   key={project._id}
                   variants={itemVariants}
                   className="group block relative"
                 >
-                  <Link href={`/marketplace/${platform.toLowerCase()}/${project._id}`} className="block relative z-10 neu-flat rounded-[1.5rem] p-6 md:p-7 hover:-translate-y-1.5 transition-all duration-300">
-                    
-                    {/* Hover Glow Effect */}
-                    <div className="absolute inset-0 neu-pressed opacity-0 group-hover:opacity-100 rounded-[1.5rem] pointer-events-none transition-all duration-500" />
-                    
-                    <div className="flex flex-col md:grid md:grid-cols-12 gap-6 md:items-center relative z-10">
+                  <Link 
+                    href={`/marketplace/${platform.toLowerCase()}/${project._id}`} 
+                    className="block rounded-2xl p-5 md:p-6 bg-[#0a0a0d] border border-white/10 hover:border-white/25 hover:-translate-y-1 transition-all duration-300 shadow-md group"
+                  >
+                    <div className="flex flex-col md:grid md:grid-cols-12 gap-4 md:items-center relative z-10">
                       
                       {/* Project Title & Client */}
-                      <div className="col-span-4">
-                        <h3 className={`mb-2 group-hover:${pConf.accent} transition-colors line-clamp-1`}>
+                      <div className="col-span-4 min-w-0">
+                        <h3 className="text-sm font-heading font-bold text-white group-hover:text-[#00E5FF] transition-colors truncate">
                           {project.title}
                         </h3>
-                        <p className="text-sm font-inter font-bold text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                          <Users size={14} className="opacity-70" /> {project.clientDetails?.clientName || 'Unknown Client'}
+                        <p className="text-xs font-sans text-secondary mt-0.5 flex items-center gap-1.5 truncate">
+                          <Users size={12} className="opacity-70" /> 
+                          <span>{project.clientDetails?.clientName || project.clientName || 'Direct Client'}</span>
                         </p>
                       </div>
 
                       {/* Status */}
                       <div className="col-span-2 flex items-center">
-                        <span className={`px-4 py-1.5 text-[11px] uppercase tracking-widest font-jakarta font-black rounded-xl border ${getStatusBadge(project.status)} shadow-sm`}>
+                        <span className={`px-2.5 py-0.5 text-[10px] uppercase tracking-wider font-mono font-bold rounded-lg border ${getStatusBadge(project.status)}`}>
                           {project.status}
                         </span>
                       </div>
 
                       {/* Progress */}
                       <div className="col-span-3 flex items-center">
-                        <div className="flex flex-col w-full max-w-[180px] gap-2">
-                          <div className="flex justify-between items-center text-xs font-jakarta font-bold text-slate-500 dark:text-slate-400">
-                            <span className="uppercase tracking-widest text-[10px]">Completion</span>
-                            <span className="font-mono">{project.progress}%</span>
+                        <div className="flex flex-col w-full max-w-[200px] gap-1.5">
+                          <div className="flex justify-between items-center text-[10px] font-mono text-secondary">
+                            <span>Completion</span>
+                            <span>{project.progress || 0}%</span>
                           </div>
-                          <div className="h-2.5 w-full neu-pressed rounded-full overflow-hidden">
+                          <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
                             <div 
-                              className={`h-full rounded-full ${pConf.bgAccent} shadow-sm transition-all duration-1000 ease-out`}
-                              style={{ width: `${project.progress}%` }}
+                              className="h-full rounded-full transition-all duration-700"
+                              style={{ 
+                                width: `${project.progress || 0}%`,
+                                backgroundColor: pConf.color 
+                              }}
                             />
                           </div>
                         </div>
@@ -260,17 +692,22 @@ export default function PlatformClient({ platform }: { platform: string }) {
 
                       {/* Budget */}
                       <div className="col-span-1 flex items-center">
-                        <span className="font-mono font-black text-slate-700 dark:text-slate-200 neu-pressed px-3.5 py-1.5 rounded-xl">
-                          {project.budget}
+                        <span className="font-mono font-bold text-sm text-white bg-[#060608] border border-white/5 px-2.5 py-1 rounded-lg">
+                          {project.budget || '$0'}
                         </span>
                       </div>
 
                       {/* Deadline */}
-                      <div className="col-span-2 flex items-center md:justify-end">
-                        <div className="flex items-center gap-2.5 text-sm font-jakarta font-bold text-slate-600 dark:text-slate-300 neu-pressed px-4 py-2.5 rounded-xl transition-colors">
-                          <Clock size={16} className={pConf.accent} />
-                          {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(project.deadline))}
+                      <div className="col-span-2 flex items-center justify-between md:justify-end gap-3">
+                        <div className="flex items-center gap-1.5 text-xs font-mono text-secondary">
+                          <Clock size={13} className="text-[#00E5FF]" />
+                          <span>
+                            {project.deadline 
+                              ? new Date(project.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                              : 'Flexible'}
+                          </span>
                         </div>
+                        <ChevronRight size={16} className="text-secondary group-hover:text-white group-hover:translate-x-1 transition-all" />
                       </div>
                       
                     </div>
@@ -282,12 +719,13 @@ export default function PlatformClient({ platform }: { platform: string }) {
         )}
       </div>
 
-      <Toaster position="bottom-right" />
-
+      {/* ========================================================================= */}
+      {/* CREATE MARKETPLACE PROJECT MODAL */}
+      {/* ========================================================================= */}
       <CreateMarketplaceProjectModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        defaultPlatform={platform}
+        defaultPlatform={platform.charAt(0).toUpperCase() + platform.slice(1)}
         onSave={async (data) => {
           const loadingToast = toast.loading('Creating project...');
           

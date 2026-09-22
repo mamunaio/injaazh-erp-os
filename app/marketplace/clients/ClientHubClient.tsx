@@ -1,161 +1,288 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Plus, Search, MoreHorizontal, Building2, Mail, Globe, Clock,
+  Plus, Search, Building2, Mail, Globe, Clock,
   User as UserIcon, DollarSign, Link as LinkIcon, Image as ImageIcon,
-  X, Edit2, ArrowRight, Trash2, FileText, Calendar, ExternalLink,
-  ChevronRight, ArrowUpRight, ArrowDownRight, Activity, StickyNote,
-  LayoutList, Download, Users, Briefcase, DownloadCloud, Loader2, ChevronDown
+  X, Edit2, Trash2, FileText, Calendar, ExternalLink,
+  ChevronRight, ArrowUpRight, Activity, StickyNote,
+  LayoutGrid, List, DownloadCloud, Loader2, Sparkles,
+  ArrowLeft, Users, Briefcase, ShoppingCart, Shield,
+  Copy, Check, Flame, FolderKanban
 } from 'lucide-react';
-import { createMarketplaceClient, deleteMarketplaceClient, updateMarketplaceClient } from '@/actions/marketplaceClientActions';
+import { 
+  createMarketplaceClient, 
+  deleteMarketplaceClient, 
+  updateMarketplaceClient 
+} from '@/actions/marketplaceClientActions';
+import { createMarketplaceProject } from '@/app/actions/marketplaceActions';
 import { countryToTimezoneMap } from '@/lib/countryToTimezone';
-import { notify } from '@/lib/notify';
 import { useUser } from '@/components/layout/UserContext';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
-import { AreaChart, Area, ResponsiveContainer } from 'recharts';
+import toast, { Toaster } from 'react-hot-toast';
+import CreateMarketplaceProjectModal from '@/components/CreateMarketplaceProjectModal';
 
 interface ClientHubClientProps {
   initialClients: any[];
+  allProjects?: any[];
 }
 
 type PanelTab = 'profile' | 'notes' | 'timeline';
+type ViewMode = 'grid' | 'table';
+type SortOption = 'revenue-desc' | 'revenue-asc' | 'name-asc' | 'newest' | 'projects-desc';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function fmtCurrency(v: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v || 0);
+  return new Intl.NumberFormat('en-US', { 
+    style: 'currency', 
+    currency: 'USD', 
+    minimumFractionDigits: 0, 
+    maximumFractionDigits: 0 
+  }).format(v || 0);
 }
-function fmtCompact(v: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 }).format(v || 0);
-}
+
 function fmtDate(d?: string) {
   if (!d) return '—';
-  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(d));
+  try {
+    return new Intl.DateTimeFormat('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    }).format(new Date(d));
+  } catch {
+    return '—';
+  }
 }
-function getInitials(name: string) { return name ? name.substring(0, 2).toUpperCase() : '??'; }
 
-const getPlatformBadge = (platform: string) => {
-  switch (platform) {
-    case 'Upwork': return { bg: 'bg-[#10B981]/10', text: 'text-[#10B981]', border: 'border-[#10B981]/20', dot: 'bg-[#10B981]' };
-    case 'Freelancer': return { bg: 'bg-[#0EA5E9]/10', text: 'text-[#0EA5E9]', border: 'border-[#0EA5E9]/20', dot: 'bg-[#0EA5E9]' };
-    case 'Fiverr': return { bg: 'bg-[#84CC16]/10', text: 'text-[#84CC16]', border: 'border-[#84CC16]/20', dot: 'bg-[#84CC16]' };
-    case 'Direct': return { bg: 'bg-[#A855F7]/10', text: 'text-[#A855F7]', border: 'border-[#A855F7]/20', dot: 'bg-[#A855F7]' };
-    default: return { bg: 'bg-[#7C3AED]/10', text: 'text-[#7C3AED]', border: 'border-[#7C3AED]/20', dot: 'bg-[#7C3AED]' };
+function getInitials(name: string) { 
+  if (!name) return '??';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return name.substring(0, 2).toUpperCase(); 
+}
+
+const PLATFORMS_CONFIG: Record<string, { 
+  name: string; 
+  icon: any; 
+  color: string; 
+  glowColor: string;
+  borderColor: string;
+  badgeClass: string;
+  bg: string;
+  dot: string; 
+}> = {
+  'Freelancer': { 
+    name: 'Freelancer', 
+    icon: Globe, 
+    color: '#00E5FF', 
+    glowColor: 'rgba(0,229,255,0.25)',
+    borderColor: 'hover:border-[#00E5FF]/60',
+    badgeClass: 'bg-[#00E5FF]/10 text-[#00E5FF] border-[#00E5FF]/30',
+    bg: 'bg-[#00E5FF]/10', 
+    dot: 'bg-[#00E5FF]' 
+  },
+  'Direct': { 
+    name: 'Direct Client', 
+    icon: Users, 
+    color: '#6324FC', 
+    glowColor: 'rgba(99,36,252,0.25)',
+    borderColor: 'hover:border-[#6324FC]/60',
+    badgeClass: 'bg-[#6324FC]/10 text-purple-300 border-[#6324FC]/30',
+    bg: 'bg-[#6324FC]/10', 
+    dot: 'bg-[#6324FC]' 
+  },
+  'Upwork': { 
+    name: 'Upwork', 
+    icon: Briefcase, 
+    color: '#10B981', 
+    glowColor: 'rgba(16,185,129,0.25)',
+    borderColor: 'hover:border-[#10B981]/60',
+    badgeClass: 'bg-[#10B981]/10 text-emerald-400 border-[#10B981]/30',
+    bg: 'bg-[#10B981]/10', 
+    dot: 'bg-[#10B981]' 
+  },
+  'Fiverr': { 
+    name: 'Fiverr', 
+    icon: ShoppingCart, 
+    color: '#EC4899', 
+    glowColor: 'rgba(236,72,153,0.25)',
+    borderColor: 'hover:border-[#EC4899]/60',
+    badgeClass: 'bg-[#EC4899]/10 text-pink-400 border-[#EC4899]/30',
+    bg: 'bg-[#EC4899]/10', 
+    dot: 'bg-[#EC4899]' 
+  },
+  'Other': { 
+    name: 'Other', 
+    icon: Shield, 
+    color: '#F59E0B', 
+    glowColor: 'rgba(245,158,11,0.25)',
+    borderColor: 'hover:border-[#F59E0B]/60',
+    badgeClass: 'bg-[#F59E0B]/10 text-amber-400 border-[#F59E0B]/30',
+    bg: 'bg-[#F59E0B]/10', 
+    dot: 'bg-[#F59E0B]' 
   }
 };
 
-const getAvatarColor = (name: string) => {
-  const colors = [
-    { bg: 'bg-[#EC4899]/10', text: 'text-[#EC4899]', border: 'border-[#EC4899]/20' },
-    { bg: 'bg-[#F59E0B]/10', text: 'text-[#F59E0B]', border: 'border-[#F59E0B]/20' },
-    { bg: 'bg-[#14B8A6]/10', text: 'text-[#14B8A6]', border: 'border-[#14B8A6]/20' },
-    { bg: 'bg-[#8B5CF6]/10', text: 'text-[#8B5CF6]', border: 'border-[#8B5CF6]/20' },
-    { bg: 'bg-[#F43F5E]/10', text: 'text-[#F43F5E]', border: 'border-[#F43F5E]/20' },
-    { bg: 'bg-[#3B82F6]/10', text: 'text-[#3B82F6]', border: 'border-[#3B82F6]/20' },
-  ];
-  if (!name) return colors[0];
-  const charCode = name.charCodeAt(0);
-  return colors[charCode % colors.length];
+const getPlatformBadge = (platform: string) => {
+  const norm = Object.keys(PLATFORMS_CONFIG).find(k => k.toLowerCase() === (platform || '').toLowerCase());
+  return norm ? PLATFORMS_CONFIG[norm] : PLATFORMS_CONFIG['Direct'];
 };
-
-// ── Input Field Component ──────────────────────────────────────────────────
-const InputField = ({ label, icon: Icon, type = "text", value, onChange, placeholder = "", required = false }: any) => (
-  <div className="group relative w-full">
-    <label className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">
-      {Icon && <Icon size={12} className="text-[#94A3B8] group-focus-within:text-[#2563EB] transition-colors" />}
-      {label} {required && <span className="text-[#EF4444]">*</span>}
-    </label>
-    <input required={required} type={type} value={value} onChange={onChange} placeholder={placeholder}
-      className="w-full bg-white dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-xl px-4 py-3 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all placeholder-[#94A3B8]/60 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none" />
-  </div>
-);
 
 const getLocalTime = (timezone: string) => {
   if (!timezone) return null;
   try {
-    return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric', timeZone: timezone }).format(new Date());
-  } catch (e) {
+    return new Intl.DateTimeFormat('en-US', { 
+      hour: 'numeric', 
+      minute: 'numeric',
+      timeZone: timezone.includes('/') ? timezone : undefined 
+    }).format(new Date());
+  } catch {
     return null;
   }
 };
 
-export default function ClientHubClient({ initialClients }: ClientHubClientProps) {
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 350, damping: 26 } }
+};
+
+export default function ClientHubClient({ initialClients = [], allProjects = [] }: ClientHubClientProps) {
+  const router = useRouter();
   const { user } = useUser();
   const { confirm } = useConfirm();
-  const [clients, setClients] = useState(initialClients);
-  const [currentTimeTick, setCurrentTimeTick] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTimeTick(t => t + 1), 60000);
-    return () => clearInterval(timer);
-  }, []);
   
-  // ── Preserved State ────────────────────────────────────────────────────────
+  const [clients, setClients] = useState(initialClients);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState('All');
+  const [platformFilter, setPlatformFilter] = useState<string>('All');
+  const [tierFilter, setTierFilter] = useState<'All' | 'VIP' | 'Growth' | 'Starter'>('All');
+  const [sortBy, setSortBy] = useState<SortOption>('revenue-desc');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+
+  // Modals & Panels
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<any>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedClient, setSelectedClient] = useState<any>(null);
+  const [panelTab, setPanelTab] = useState<PanelTab>('profile');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Create project shortcut modal from client
+  const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
+  const [createProjectPlatform, setCreateProjectPlatform] = useState('Freelancer');
+
+  // Client Notes State
   const [notesDraft, setNotesDraft] = useState('');
   const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [copiedEmail, setCopiedEmail] = useState<string | null>(null);
 
+  // Form State for Add / Edit
   const [formData, setFormData] = useState({
-    name: '', company: '', email: '', timezone: '', country: '', profileLink: '', profilePic: '', platform: 'Direct', totalSpent: 0,
+    name: '',
+    company: '',
+    email: '',
+    timezone: '',
+    country: '',
+    profileLink: '',
+    profilePic: '',
+    platform: 'Freelancer',
+    totalSpent: 0,
+    notes: '',
   });
 
-  // New slide panel tab state
-  const [panelTab, setPanelTab] = useState<PanelTab>('profile');
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  useEffect(() => {
+    setClients(initialClients);
+  }, [initialClients]);
 
-  // ── Preserved Logic ─────────────────────────────────────────────────────────
-  const filteredClients = useMemo(() => {
-    return clients.filter(client => {
-      if (user?.role === 'marketplace_team' && client.platform === 'Direct') return false;
-      if (activeFilter !== 'All' && client.platform !== activeFilter) return false;
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const nameMatch = client.name?.toLowerCase().includes(q);
-        const companyMatch = client.company?.toLowerCase().includes(q);
-        if (!nameMatch && !companyMatch) return false;
-      }
-      return true;
-    });
-  }, [clients, activeFilter, searchQuery, user]);
-
-  const handleSaveClient = async (e: React.FormEvent) => {
-    e.preventDefault(); setIsSubmitting(true);
-    if (editingClient) {
-      const result = await updateMarketplaceClient(editingClient._id, formData);
-      if (result.success) {
-        setClients(clients.map(c => c._id === editingClient._id ? result.data : c));
-        if (selectedClient?._id === editingClient._id) setSelectedClient(result.data);
-        notify.edit('Client updated successfully'); closeModal();
-      } else { notify.error(result.error || 'Failed to update client'); }
-    } else {
-      const result = await createMarketplaceClient(formData);
-      if (result.success) {
-        setClients([result.data, ...clients]);
-        notify.success('Client added successfully'); closeModal();
-      } else { notify.error(result.error || 'Failed to add client'); }
+  useEffect(() => {
+    if (selectedClient) {
+      setNotesDraft(selectedClient.notes || '');
     }
-    setIsSubmitting(false);
+  }, [selectedClient]);
+
+  // ── Handlers ─────────────────────────────────────────────────────────────
+  const handleSaveClient = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name.trim()) {
+      toast.error('Client name is required');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      if (editingClient) {
+        const result = await updateMarketplaceClient(editingClient._id, formData);
+        if (result.success && result.data) {
+          setClients(prev => prev.map(c => c._id === editingClient._id ? { ...c, ...result.data } : c));
+          if (selectedClient?._id === editingClient._id) {
+            setSelectedClient((prev: any) => ({ ...prev, ...result.data }));
+          }
+          toast.success('Client updated successfully');
+          closeModal();
+        } else {
+          toast.error(result.error || 'Failed to update client');
+        }
+      } else {
+        const result = await createMarketplaceClient(formData);
+        if (result.success && result.data) {
+          setClients(prev => [{ ...result.data, totalSpent: 0, projectCount: 0, projects: [] }, ...prev]);
+          toast.success(`Client "${result.data.name}" added!`);
+          closeModal();
+        } else {
+          toast.error(result.error || 'Failed to add client');
+        }
+      }
+    } catch {
+      toast.error('An unexpected error occurred');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const openEditModal = (client: any, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setEditingClient(client);
+    setFormData({
+      name: client.name || '',
+      company: client.company || '',
+      email: client.email || '',
+      timezone: client.timezone || '',
+      country: client.country || '',
+      profileLink: client.profileLink || '',
+      profilePic: client.profilePic || '',
+      platform: client.platform || 'Freelancer',
+      totalSpent: client.totalSpent || 0,
+      notes: client.notes || '',
+    });
+    setIsAddModalOpen(true);
   };
 
   const closeModal = () => {
-    setIsAddModalOpen(false); setEditingClient(null);
-    setFormData({ name: '', company: '', email: '', timezone: '', country: '', profileLink: '', profilePic: '', platform: 'Direct', totalSpent: 0 });
-  };
-
-  const openEditModal = (client: any) => {
-    setEditingClient(client);
+    setIsAddModalOpen(false);
+    setEditingClient(null);
     setFormData({
-      name: client.name || '', company: client.company || '', email: client.email || '',
-      timezone: client.timezone || '', country: client.country || '', profileLink: client.profileLink || '',
-      profilePic: client.profilePic || '', platform: client.platform || 'Direct', totalSpent: client.totalSpent || 0,
+      name: '',
+      company: '',
+      email: '',
+      timezone: '',
+      country: '',
+      profileLink: '',
+      profilePic: '',
+      platform: 'Freelancer',
+      totalSpent: 0,
+      notes: '',
     });
-    setIsAddModalOpen(true);
   };
 
   const handleCountryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -166,16 +293,28 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
     setFormData({ ...formData, country, timezone });
   };
 
-  const handleDeleteClient = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const isConfirmed = await confirm({ message: 'Are you sure you want to delete this client?', danger: true });
+  const handleDeleteClient = async (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const isConfirmed = await confirm({
+      title: 'Delete Client Record?',
+      message: 'Are you sure you want to delete this client? This action cannot be undone.',
+      danger: true,
+      confirmText: 'Delete Client',
+    });
     if (!isConfirmed) return;
-    const result = await deleteMarketplaceClient(id);
-    if (result.success) {
-      setClients(clients.filter(c => c._id !== id));
-      if (selectedClient?._id === id) setSelectedClient(null);
-      notify.delete('Client deleted');
-    } else { notify.error(result.error || 'Failed to delete client'); }
+
+    try {
+      const result = await deleteMarketplaceClient(id);
+      if (result.success) {
+        setClients(prev => prev.filter(c => c._id !== id));
+        if (selectedClient?._id === id) setSelectedClient(null);
+        toast.success('Client deleted');
+      } else {
+        toast.error(result.error || 'Failed to delete client');
+      }
+    } catch {
+      toast.error('Error deleting client');
+    }
   };
 
   const handleSaveNotes = async () => {
@@ -183,289 +322,830 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
     setIsSavingNotes(true);
     try {
       const res = await updateMarketplaceClient(selectedClient._id, { notes: notesDraft });
-      if (res.success) {
-        setClients(clients.map(c => c._id === selectedClient._id ? res.data : c));
-        setSelectedClient(res.data); notify.edit('Notes saved');
-      } else { notify.error('Failed to save notes'); }
-    } catch (err) { notify.error('An error occurred'); } 
-    finally { setIsSavingNotes(false); }
+      if (res.success && res.data) {
+        setClients(prev => prev.map(c => c._id === selectedClient._id ? { ...c, notes: notesDraft } : c));
+        setSelectedClient((prev: any) => ({ ...prev, notes: notesDraft }));
+        toast.success('Notes saved');
+      } else {
+        toast.error('Failed to save notes');
+      }
+    } catch {
+      toast.error('An error occurred');
+    } finally {
+      setIsSavingNotes(false);
+    }
   };
 
-  useEffect(() => {
-    if (selectedClient) setNotesDraft(selectedClient.notes || '');
-  }, [selectedClient]);
-
-  const toggleMenu = (id: string, e: React.MouseEvent) => {
-    e.preventDefault(); e.stopPropagation();
-    setOpenMenuId(openMenuId === id ? null : id);
+  const handleCopyEmail = (email: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(email);
+    setCopiedEmail(email);
+    toast.success('Email copied to clipboard');
+    setTimeout(() => setCopiedEmail(null), 2000);
   };
 
-  // ── KPI Logic ───────────────────────────────────────────────────────────────
-  const thisMonth = new Date();
-  const totalValue = clients.reduce((acc, c) => acc + (c.totalSpent || 0), 0);
-  const newThisMonth = clients.filter(c => {
-    if (!c.createdAt) return false;
-    const d = new Date(c.createdAt);
-    return d.getMonth() === thisMonth.getMonth() && d.getFullYear() === thisMonth.getFullYear();
-  }).length;
-  const vipClients = clients.filter(c => (c.totalSpent || 0) > 10000).length;
+  const handleExportCSV = () => {
+    if (clients.length === 0) {
+      toast.error('No clients to export');
+      return;
+    }
+
+    const headers = ['Client Name', 'Company', 'Platform', 'Email', 'Country', 'Timezone', 'Total Spent (USD)', 'Associated Projects', 'Created Date'];
+    const rows = filteredClients.map(c => [
+      `"${(c.name || '').replace(/"/g, '""')}"`,
+      `"${(c.company || '').replace(/"/g, '""')}"`,
+      `"${c.platform || 'Direct'}"`,
+      `"${c.email || ''}"`,
+      `"${c.country || ''}"`,
+      `"${c.timezone || ''}"`,
+      c.totalSpent || 0,
+      c.projectCount || (c.projects ? c.projects.length : 0),
+      `"${fmtDate(c.createdAt)}"`
+    ]);
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `marketplace_clients_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('Exported clients to CSV');
+  };
+
+  // ── Filtered & Sorted Clients ─────────────────────────────────────────────
+  const filteredClients = useMemo(() => {
+    return clients.filter(client => {
+      if (user?.role === 'marketplace_team' && client.platform === 'Direct') return false;
+      
+      // Platform filter
+      if (platformFilter !== 'All') {
+        if ((client.platform || '').toLowerCase() !== platformFilter.toLowerCase()) return false;
+      }
+
+      // Spending tier filter
+      const spent = client.totalSpent || 0;
+      if (tierFilter === 'VIP' && spent < 5000) return false;
+      if (tierFilter === 'Growth' && (spent < 1000 || spent >= 5000)) return false;
+      if (tierFilter === 'Starter' && spent >= 1000) return false;
+
+      // Search Query
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const nameMatch = client.name?.toLowerCase().includes(q);
+        const companyMatch = client.company?.toLowerCase().includes(q);
+        const emailMatch = client.email?.toLowerCase().includes(q);
+        const countryMatch = client.country?.toLowerCase().includes(q);
+        const notesMatch = client.notes?.toLowerCase().includes(q);
+        if (!nameMatch && !companyMatch && !emailMatch && !countryMatch && !notesMatch) return false;
+      }
+
+      return true;
+    }).sort((a, b) => {
+      if (sortBy === 'revenue-desc') return (b.totalSpent || 0) - (a.totalSpent || 0);
+      if (sortBy === 'revenue-asc') return (a.totalSpent || 0) - (b.totalSpent || 0);
+      if (sortBy === 'name-asc') return (a.name || '').localeCompare(b.name || '');
+      if (sortBy === 'newest') return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+      if (sortBy === 'projects-desc') return (b.projectCount || b.projects?.length || 0) - (a.projectCount || a.projects?.length || 0);
+      return 0;
+    });
+  }, [clients, platformFilter, tierFilter, searchQuery, sortBy, user]);
+
+  // ── KPI Telemetry Calculations ────────────────────────────────────────────
+  const totalRevenue = clients.reduce((acc, c) => acc + (c.totalSpent || 0), 0);
+  const vipCount = clients.filter(c => (c.totalSpent || 0) >= 5000).length;
+  const avgSpent = clients.length > 0 ? Math.round(totalRevenue / clients.length) : 0;
   
-  const kpis = [
-    { label: 'Total Clients', value: clients.length, color: '#2563EB', trend: '+12%', up: true },
-    { label: 'Active',        value: clients.length, color: '#10B981', trend: '+5%', up: true }, // Simplifying active for now
-    { label: 'VIP Clients',   value: vipClients,     color: '#F59E0B', trend: '+1', up: true },
-    { label: 'New This Month',value: newThisMonth,   color: '#7C3AED', trend: String(newThisMonth), up: true },
-    { label: 'Lifetime Value',value: fmtCompact(totalValue), color: '#0EA5E9', trend: '+8%', up: true },
-  ];
+  const uniqueCountries = useMemo(() => {
+    const set = new Set(clients.map(c => c.country?.trim()).filter(Boolean));
+    return set.size;
+  }, [clients]);
 
-  const containerVariants = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
-  const itemVariants = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 26 } } };
+  const platformCounts = useMemo(() => {
+    const counts: Record<string, number> = { Freelancer: 0, Direct: 0, Upwork: 0, Fiverr: 0 };
+    clients.forEach(c => {
+      const p = c.platform || 'Direct';
+      if (counts[p] !== undefined) counts[p]++;
+      else counts['Direct']++;
+    });
+    return counts;
+  }, [clients]);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#09090B] p-4 md:p-8 selection:bg-[#2563EB]/30">
-      <div className="max-w-[1600px] mx-auto">
+    <div className="min-h-screen bg-[#060608] text-white p-4 md:p-8 pt-6 pb-24 font-sans selection:bg-[#6324FC] selection:text-white">
+      <Toaster position="top-right" toastOptions={{ style: { background: '#0a0a0d', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' } }} />
+      
+      {/* Ambient background glows */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-1/6 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-[#6324FC]/10 rounded-full blur-[140px]" />
+        <div className="absolute bottom-1/3 right-1/4 w-[500px] h-[500px] bg-[#00E5FF]/5 rounded-full blur-[130px]" />
+      </div>
 
-        {/* ── Page Header ──────────────────────────────────────────────────── */}
-        <motion.div variants={containerVariants} initial="hidden" animate="show" className="mb-8">
-          <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-end gap-5 mb-6">
+      <div className="max-w-[1680px] mx-auto relative z-10 space-y-6">
+
+        {/* ── Page Header & Telemetry Actions ───────────────────────────────── */}
+        <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-4">
+          
+          {/* Breadcrumb & Subtitle */}
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-xs font-mono text-secondary">
+              <Link href="/marketplace" className="hover:text-[#00E5FF] transition-colors flex items-center gap-1">
+                <ArrowLeft size={13} /> Marketplace Hub
+              </Link>
+              <span>/</span>
+              <span className="text-white font-semibold">CRM Clients</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-[#6324FC]/15 text-[#00E5FF] border border-[#6324FC]/30 shadow-[0_0_12px_rgba(99,36,252,0.2)]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-pulse shadow-[0_0_8px_#00E5FF]" />
+                Live Client Telemetry
+              </span>
+            </div>
+          </div>
+
+          {/* Title & Primary Toolbar */}
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-5 pb-2 border-b border-white/5">
             <div>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-9 h-9 rounded-[10px] bg-[#2563EB]/10 border border-[#2563EB]/20 flex items-center justify-center text-[#2563EB]">
+              <div className="flex items-center gap-3 mb-1.5">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6324FC]/20 to-[#00E5FF]/20 border border-white/15 flex items-center justify-center text-[#00E5FF] shadow-[0_0_20px_rgba(99,36,252,0.3)]">
+                  <Users size={20} />
+                </div>
+                <div>
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-extrabold text-white tracking-tight">
+                    Client Network & CRM
+                  </h1>
+                </div>
+              </div>
+              <p className="text-xs sm:text-sm font-sans text-secondary max-w-2xl">
+                Global client directory, contract history, lifetime value tracking, and communication telemetry.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+              {/* Export Button */}
+              <button 
+                onClick={handleExportCSV}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-heading font-bold bg-[#0a0a0d] hover:bg-[#121218] text-secondary hover:text-white border border-white/10 hover:border-white/25 transition-all shadow-sm"
+                title="Export Clients to CSV"
+              >
+                <DownloadCloud size={15} />
+                <span>Export CSV</span>
+              </button>
+
+              {/* View Mode Toggle */}
+              <div className="flex items-center p-1 rounded-xl bg-[#0a0a0d] border border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 rounded-lg text-xs font-bold transition-all ${
+                    viewMode === 'grid' 
+                      ? 'bg-[#6324FC] text-white shadow-[0_0_10px_rgba(99,36,252,0.5)]' 
+                      : 'text-secondary hover:text-white'
+                  }`}
+                  title="Grid Cards View"
+                >
+                  <LayoutGrid size={15} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('table')}
+                  className={`p-2 rounded-lg text-xs font-bold transition-all ${
+                    viewMode === 'table' 
+                      ? 'bg-[#6324FC] text-white shadow-[0_0_10px_rgba(99,36,252,0.5)]' 
+                      : 'text-secondary hover:text-white'
+                  }`}
+                  title="Table View"
+                >
+                  <List size={15} />
+                </button>
+              </div>
+
+              {/* Add Client Button */}
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-heading font-bold text-xs bg-gradient-to-r from-[#6324FC] to-[#8B5CF6] hover:brightness-110 text-white shadow-[0_0_20px_rgba(99,36,252,0.4)] hover:shadow-[0_0_30px_rgba(99,36,252,0.6)] transition-all border border-purple-400/30"
+              >
+                <Plus size={16} strokeWidth={2.5} />
+                <span>Add Client</span>
+              </button>
+            </div>
+          </div>
+
+          {/* ── Executive KPI Telemetry Cards (Aligned with Standard Design & Hover) ── */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
+            
+            {/* KPI 1: Total Clients */}
+            <motion.div
+              variants={itemVariants}
+              className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#6324FC]/60 hover:shadow-[0_12px_30px_rgba(99,36,252,0.25)] bg-[#0a0a0d] border border-white/10"
+            >
+              {/* Radial Hover Spotlight */}
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#6324FC]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              {/* Top Accent Neon Line - Expands on Hover */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#6324FC] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#6324FC]" />
+              {/* Subtle Card Glass Sheen */}
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+              <div className="flex justify-between items-start mb-3 relative z-10">
+                <div className="w-9 h-9 rounded-xl bg-[#6324FC]/15 border border-[#6324FC]/30 flex items-center justify-center text-[#6324FC] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(99,36,252,0.6)] group-hover:border-[#6324FC] transition-all duration-300">
                   <Users size={17} />
                 </div>
-                <span className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Customer Relationship Management</span>
+                <span className="text-[10px] font-heading font-bold text-[#00E5FF] bg-[#6324FC]/15 px-2 py-0.5 rounded-md border border-[#6324FC]/30 group-hover:border-[#6324FC]/50 transition-colors">
+                  Live Network
+                </span>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tracking-tight font-jakarta mb-1.5">Clients</h1>
-              <p className="text-sm font-medium text-[#94A3B8]">Manage your network, track spending, and organize communications.</p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-              <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-white dark:bg-[#111111] text-[#94A3B8] border-none hover:text-slate-900 dark:hover:text-white transition-all shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)]">
-                <DownloadCloud size={15} /> <span className="hidden sm:inline">Export</span>
-              </button>
-              <button onClick={() => setIsAddModalOpen(true)}
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#3B82F6] text-white shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:shadow-[0_0_30px_rgba(59,130,246,0.6)] transition-all border-none">
-                <Plus size={16} strokeWidth={2.5} /> Add Client
-              </button>
-            </div>
-          </motion.div>
+              <div className="relative z-10">
+                <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">Total Client Accounts</p>
+                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-white font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#00E5FF] transition-all">
+                  {clients.length}
+                </p>
+                <div className="mt-2 flex items-center gap-1.5 flex-wrap text-[10px] font-mono">
+                  <span className="text-[#00E5FF] font-bold">{platformCounts.Freelancer} FL</span>
+                  <span className="text-secondary">·</span>
+                  <span className="text-[#A78BFA] font-bold">{platformCounts.Direct} Direct</span>
+                  <span className="text-secondary">·</span>
+                  <span className="text-emerald-400 font-bold">{platformCounts.Upwork} Up</span>
+                  <span className="text-secondary">·</span>
+                  <span className="text-pink-400 font-bold">{platformCounts.Fiverr} Fiv</span>
+                </div>
+              </div>
+            </motion.div>
 
-          {/* ── KPI Cards ─────────────────────────────────────────────────── */}
-          <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
-            {kpis.map((k, i) => {
-              const dummyData = [10, 20, 15, 25, 20, 30, 40].map((v, idx) => ({ val: v + (Math.random() * 10 - 5) }));
-              return (
-                <motion.div key={k.label}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05, type: 'spring', stiffness: 280, damping: 26 }}
-                  whileHover={{ y: -2, transition: { duration: 0.15 } }}
-                  className="relative bg-white dark:bg-[#11131A] border border-slate-100 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 flex flex-col justify-center overflow-hidden transition-all duration-300 shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgba(37,99,235,0.08)] cursor-default group"
+            {/* KPI 2: Lifetime Revenue (LTV) */}
+            <motion.div
+              variants={itemVariants}
+              className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#10B981]/60 hover:shadow-[0_12px_30px_rgba(16,185,129,0.25)] bg-[#0a0a0d] border border-white/10"
+            >
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#10B981]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#10B981] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#10B981]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+              <div className="flex justify-between items-start mb-3 relative z-10">
+                <div className="w-9 h-9 rounded-xl bg-[#10B981]/15 border border-[#10B981]/30 flex items-center justify-center text-[#10B981] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(16,185,129,0.6)] group-hover:border-[#10B981] transition-all duration-300">
+                  <DollarSign size={17} />
+                </div>
+                <span className="text-[10px] font-heading font-bold text-emerald-400 flex items-center gap-0.5 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 group-hover:border-emerald-500/40 transition-colors">
+                  <Flame size={11} /> Realized Inflow
+                </span>
+              </div>
+              <div className="relative z-10">
+                <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">Lifetime Client Spend</p>
+                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-emerald-400 font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-emerald-300 group-hover:to-[#00E5FF] transition-all">
+                  {fmtCurrency(totalRevenue)}
+                </p>
+                <p className="text-[10px] font-sans text-secondary/70 mt-1 truncate">Average LTV: {fmtCurrency(avgSpent)} / client</p>
+              </div>
+            </motion.div>
+
+            {/* KPI 3: VIP Enterprise Clients */}
+            <motion.div
+              variants={itemVariants}
+              className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#F59E0B]/60 hover:shadow-[0_12px_30px_rgba(245,158,11,0.25)] bg-[#0a0a0d] border border-white/10"
+            >
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#F59E0B]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#F59E0B] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#F59E0B]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+              <div className="flex justify-between items-start mb-3 relative z-10">
+                <div className="w-9 h-9 rounded-xl bg-[#F59E0B]/15 border border-[#F59E0B]/30 flex items-center justify-center text-[#F59E0B] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(245,158,11,0.6)] group-hover:border-[#F59E0B] transition-all duration-300">
+                  <Sparkles size={17} />
+                </div>
+                <span className="text-[10px] font-heading font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 group-hover:border-amber-500/40 transition-colors">
+                  &gt;$5,000+
+                </span>
+              </div>
+              <div className="relative z-10">
+                <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">VIP Enterprise Tier</p>
+                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-amber-400 font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-amber-300 group-hover:to-[#00E5FF] transition-all">
+                  {vipCount}
+                </p>
+                <p className="text-[10px] font-sans text-secondary/70 mt-1 truncate">High-value enterprise partnerships</p>
+              </div>
+            </motion.div>
+
+            {/* KPI 4: Global Reach & Timezones */}
+            <motion.div
+              variants={itemVariants}
+              className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#00E5FF]/60 hover:shadow-[0_12px_30px_rgba(0,229,255,0.25)] bg-[#0a0a0d] border border-white/10"
+            >
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#00E5FF]/20 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#00E5FF] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#00E5FF]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+              <div className="flex justify-between items-start mb-3 relative z-10">
+                <div className="w-9 h-9 rounded-xl bg-[#00E5FF]/15 border border-[#00E5FF]/30 flex items-center justify-center text-[#00E5FF] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(0,229,255,0.6)] group-hover:border-[#00E5FF] transition-all duration-300">
+                  <Globe size={17} />
+                </div>
+                <span className="text-[10px] font-heading font-bold text-[#00E5FF] bg-[#00E5FF]/10 px-2 py-0.5 rounded-md border border-[#00E5FF]/20 group-hover:border-[#00E5FF]/40 transition-colors">
+                  Global Reach
+                </span>
+              </div>
+              <div className="relative z-10">
+                <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">Country Footprint</p>
+                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-white font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#00E5FF] transition-all">
+                  {uniqueCountries}
+                </p>
+                <p className="text-[10px] font-sans text-secondary/70 mt-1 truncate">Covering US, Europe, Asia & Middle East</p>
+              </div>
+            </motion.div>
+
+          </div>
+
+          {/* ── Filter, Search & Command Bar ──────────────────────────────────── */}
+          <div className="p-4 bg-[#0a0a0d] border border-white/10 rounded-2xl space-y-3.5 shadow-lg">
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+              
+              {/* Search Box */}
+              <div className="relative flex-1 max-w-md group">
+                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary group-focus-within:text-[#00E5FF] transition-colors pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Search by client name, company, email, country, notes..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-9 py-2.5 text-xs text-white placeholder:text-secondary outline-none transition-all shadow-inner"
+                />
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md text-secondary hover:text-white hover:bg-white/10 transition-colors"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+
+              {/* Controls: Platform Pills & Sort */}
+              <div className="flex flex-wrap items-center gap-2">
+                
+                {/* Platform Pills */}
+                <div className="flex items-center gap-1 p-1 bg-[#060608] border border-white/10 rounded-xl overflow-x-auto scrollbar-none">
+                  {['All', 'Freelancer', 'Direct', 'Upwork', 'Fiverr'].map(p => {
+                    if (user?.role === 'marketplace_team' && p === 'Direct') return null;
+                    const isSelected = platformFilter.toLowerCase() === p.toLowerCase();
+                    const pConf = p === 'All' ? null : PLATFORMS_CONFIG[p];
+                    return (
+                      <button
+                        key={p}
+                        onClick={() => setPlatformFilter(p)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-heading font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                          isSelected 
+                            ? 'bg-white/15 text-white border border-white/20 shadow-sm' 
+                            : 'text-secondary hover:text-white hover:bg-white/5'
+                        }`}
+                        style={{
+                          borderColor: isSelected && pConf ? pConf.color : undefined,
+                          color: isSelected && pConf ? pConf.color : undefined
+                        }}
+                      >
+                        {pConf && <pConf.icon size={12} />}
+                        <span>{p === 'Direct' ? 'Direct Client' : p}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Tier Filter */}
+                <select
+                  value={tierFilter}
+                  onChange={(e: any) => setTierFilter(e.target.value)}
+                  className="bg-[#060608] border border-white/10 rounded-xl px-3 py-2 text-xs font-heading font-bold text-secondary focus:text-white outline-none cursor-pointer hover:border-white/20 transition-all"
                 >
-                  {/* Subtle Radial Gradient */}
-                  <div className="absolute inset-0 opacity-0 dark:opacity-20 transition-opacity duration-300 pointer-events-none"
-                       style={{ background: `radial-gradient(circle at top right, ${k.color}33 0%, transparent 60%)` }} />
-                  
-                  {/* Recharts Area Wave */}
-                  <div className="absolute inset-0 opacity-10 pointer-events-none">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={dummyData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                        <Area type="monotone" dataKey="val" stroke={k.color} strokeWidth={2} fill={k.color} fillOpacity={1} />
-                      </AreaChart>
-                    </ResponsiveContainer>
+                  <option value="All">All Tiers</option>
+                  <option value="VIP">VIP (&gt;$5,000)</option>
+                  <option value="Growth">Growth ($1k-$5k)</option>
+                  <option value="Starter">Starter (&lt;$1k)</option>
+                </select>
+
+                {/* Sort Filter */}
+                <select
+                  value={sortBy}
+                  onChange={(e: any) => setSortBy(e.target.value)}
+                  className="bg-[#060608] border border-white/10 rounded-xl px-3 py-2 text-xs font-heading font-bold text-secondary focus:text-white outline-none cursor-pointer hover:border-white/20 transition-all"
+                >
+                  <option value="revenue-desc">Highest Revenue</option>
+                  <option value="revenue-asc">Lowest Revenue</option>
+                  <option value="projects-desc">Most Projects</option>
+                  <option value="newest">Newest Added</option>
+                  <option value="name-asc">Name (A-Z)</option>
+                </select>
+
+              </div>
+            </div>
+
+            {/* Active Filters Summary */}
+            <div className="flex items-center justify-between text-[11px] font-mono text-secondary pt-1 border-t border-white/5">
+              <div>
+                Showing <span className="text-white font-bold">{filteredClients.length}</span> of <span className="text-white font-bold">{clients.length}</span> total clients
+              </div>
+              {(searchQuery || platformFilter !== 'All' || tierFilter !== 'All') && (
+                <button
+                  onClick={() => {
+                    setSearchQuery('');
+                    setPlatformFilter('All');
+                    setTierFilter('All');
+                  }}
+                  className="text-[#00E5FF] hover:underline font-bold"
+                >
+                  Reset Filters
+                </button>
+              )}
+            </div>
+          </div>
+
+        </motion.div>
+
+        {/* ── Main Content: Grid vs Table View ──────────────────────────────── */}
+        {filteredClients.length === 0 ? (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-12 md:p-16 rounded-3xl bg-[#0a0a0d] border border-white/10 text-center flex flex-col items-center justify-center shadow-xl"
+          >
+            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-secondary mb-4">
+              <Users size={28} />
+            </div>
+            <h3 className="text-base sm:text-lg font-heading font-bold text-white mb-1">
+              No clients matched your criteria
+            </h3>
+            <p className="text-xs text-secondary max-w-sm mb-6">
+              Try adjusting your search query, platform filter, or add a new client to your CRM database.
+            </p>
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#6324FC] hover:bg-[#521bd6] text-white text-xs font-heading font-bold transition-all shadow-[0_0_15px_rgba(99,36,252,0.4)]"
+            >
+              <Plus size={14} /> Add New Client
+            </button>
+          </motion.div>
+        ) : viewMode === 'grid' ? (
+          /* ── GRID VIEW (CARDS WITH EXACT SYSTEM DESIGN & HOVER EFFECTS) ── */
+          <motion.div 
+            variants={containerVariants} 
+            initial="hidden" 
+            animate="show"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+          >
+            {filteredClients.map((client: any) => {
+              const pBadge = getPlatformBadge(client.platform);
+              const localTime = getLocalTime(client.timezone);
+              const projectCount = client.projectCount || (client.projects ? client.projects.length : 0);
+
+              return (
+                <motion.div
+                  key={client._id}
+                  variants={itemVariants}
+                  onClick={() => setSelectedClient(client)}
+                  className={`group glass-card rounded-2xl p-5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 bg-[#0a0a0d] border border-white/10 ${pBadge.borderColor}`}
+                  style={{
+                    boxShadow: undefined,
+                  }}
+                >
+                  {/* Radial Hover Spotlight */}
+                  <div 
+                    className="absolute -top-10 -right-10 w-32 h-32 blur-[35px] rounded-full opacity-35 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none"
+                    style={{ backgroundColor: pBadge.color }}
+                  />
+
+                  {/* Top Accent Neon Line - Center-anchored, expands on hover */}
+                  <div 
+                    className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] transition-all duration-500 opacity-90"
+                    style={{ 
+                      backgroundImage: `linear-gradient(to right, transparent, ${pBadge.color}, transparent)`,
+                      boxShadow: `0 0 10px ${pBadge.color}`
+                    }}
+                  />
+
+                  {/* Subtle Card Glass Sheen Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+                  {/* Card Header: Avatar & Platform Badge */}
+                  <div className="relative z-10">
+                    <div className="flex items-start justify-between gap-3 mb-3.5">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {client.profilePic ? (
+                          <img 
+                            src={client.profilePic} 
+                            alt={client.name} 
+                            className="w-10 h-10 rounded-xl object-cover border border-white/15 shrink-0 shadow-md group-hover:scale-110 group-hover:border-white/30 transition-all duration-300"
+                          />
+                        ) : (
+                          <div 
+                            className="w-10 h-10 rounded-xl flex items-center justify-center font-heading font-extrabold text-xs shrink-0 shadow-md transition-all duration-300 group-hover:scale-110"
+                            style={{
+                              backgroundColor: `${pBadge.color}15`,
+                              border: `1px solid ${pBadge.color}35`,
+                              color: pBadge.color,
+                              boxShadow: `0 0 10px ${pBadge.color}20`
+                            }}
+                          >
+                            {getInitials(client.name)}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <h3 
+                            className="text-sm font-heading font-extrabold text-white truncate transition-all duration-300"
+                            style={{
+                              color: undefined
+                            }}
+                          >
+                            <span className="group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#00E5FF] transition-all">
+                              {client.name}
+                            </span>
+                          </h3>
+                          <p className="text-[11px] text-secondary truncate flex items-center gap-1 mt-0.5">
+                            {client.company ? (
+                              <>
+                                <Building2 size={11} className="shrink-0 text-secondary/70" />
+                                <span className="truncate">{client.company}</span>
+                              </>
+                            ) : (
+                              <span className="text-[9px] uppercase tracking-wider font-mono font-bold text-secondary/60">Individual Client</span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Platform Pill */}
+                      <span 
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold shrink-0 border ${pBadge.bg} ${pBadge.badgeClass}`}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full ${pBadge.dot}`} />
+                        {client.platform || 'Direct'}
+                      </span>
+                    </div>
+
+                    {/* Metadata & Location / Local Time */}
+                    <div className="space-y-1.5 py-2.5 border-y border-white/5 text-xs text-secondary">
+                      {/* Location & Time */}
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="flex items-center gap-1.5 truncate">
+                          <Globe size={12} className="text-secondary/70 shrink-0" />
+                          <span className="truncate">{client.country || 'International'}</span>
+                        </span>
+                        {localTime ? (
+                          <span className="font-mono text-[#00E5FF] text-[10px] font-bold">
+                            {localTime}
+                          </span>
+                        ) : client.timezone ? (
+                          <span className="font-mono text-secondary text-[10px]">
+                            {client.timezone}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      {/* Email */}
+                      {client.email && (
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="flex items-center gap-1.5 truncate text-secondary hover:text-white">
+                            <Mail size={12} className="text-secondary/70 shrink-0" />
+                            <span className="truncate">{client.email}</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => handleCopyEmail(client.email, e)}
+                            className="p-1 text-secondary hover:text-[#00E5FF] transition-colors"
+                            title="Copy Email"
+                          >
+                            {copiedEmail === client.email ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Top Edge Glow */}
-                  <div
-                    className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-[2px] opacity-70 group-hover:opacity-100 transition-opacity duration-300 rounded-b-full pointer-events-none"
-                    style={{ backgroundColor: k.color, boxShadow: `0 4px 15px ${k.color}` }}
-                  />
-                  <div className="relative z-10 flex items-start justify-between mb-4">
-                    <p className="text-[11px] font-bold text-[#94A3B8] leading-tight max-w-[80px]">{k.label}</p>
-                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${k.up ? 'text-[#10B981] bg-[#10B981]/10' : 'text-[#EF4444] bg-[#EF4444]/10'}`}>
-                      {k.up ? <ArrowUpRight size={10} className="inline" /> : <ArrowDownRight size={10} className="inline" />} {k.trend}
-                    </span>
+                  {/* Card Footer: Financial Telemetry & Quick Actions */}
+                  <div className="pt-3.5 mt-2 relative z-10">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <div className="text-[9px] font-heading font-bold text-secondary uppercase tracking-widest">
+                          Lifetime Revenue
+                        </div>
+                        <div className="text-base font-mono font-extrabold text-emerald-400">
+                          {fmtCurrency(client.totalSpent)}
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <div className="text-[9px] font-heading font-bold text-secondary uppercase tracking-widest">
+                          Contracts
+                        </div>
+                        <div className="text-xs font-mono font-bold text-white">
+                          {projectCount} Project{projectCount === 1 ? '' : 's'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Quick Button Toolbar */}
+                    <div className="flex items-center gap-1.5 pt-2 border-t border-white/5">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedClient(client);
+                        }}
+                        className="flex-1 py-1.5 rounded-lg bg-white/5 hover:bg-[#6324FC]/20 text-secondary hover:text-[#00E5FF] text-[11px] font-heading font-bold transition-all flex items-center justify-center gap-1 border border-white/5 hover:border-[#6324FC]/40"
+                      >
+                        <FileText size={12} /> Dossier
+                      </button>
+
+                      {client.profileLink && (
+                        <a
+                          href={client.profileLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-secondary hover:text-white transition-colors border border-white/5"
+                          title="Open Platform Profile"
+                        >
+                          <ExternalLink size={13} />
+                        </a>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={(e) => openEditModal(client, e)}
+                        className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-secondary hover:text-white transition-colors border border-white/5"
+                        title="Edit Client"
+                      >
+                        <Edit2 size={13} />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={(e) => handleDeleteClient(client._id, e)}
+                        className="p-1.5 rounded-lg bg-white/5 hover:bg-rose-500/20 text-secondary hover:text-rose-400 transition-colors border border-white/5 hover:border-rose-500/30"
+                        title="Delete Client"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
                   </div>
-                  <p className="relative z-10 text-xl font-bold font-mono tracking-tight" style={{ color: k.color }}>{k.value}</p>
+
                 </motion.div>
               );
             })}
           </motion.div>
-
-          {/* ── Filter Bar ────────────────────────────────────────────────── */}
-          <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-3">
-            {/* Search */}
-            <div className="relative flex-1 min-w-[200px] max-w-sm group">
-              <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8] group-focus-within:text-[#2563EB] transition-colors pointer-events-none" />
-              <input
-                type="text"
-                placeholder="Search clients…"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-white dark:bg-[#111111] border-none text-slate-900 dark:text-white placeholder-[#94A3B8]/60 text-sm font-medium rounded-xl pl-11 pr-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)]"
-              />
-              {searchQuery && (
-                <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-md bg-slate-200 dark:bg-[#232734] flex items-center justify-center text-[#94A3B8] hover:text-slate-900 dark:hover:text-white transition-colors">
-                  <X size={11} />
-                </button>
-              )}
-            </div>
-
-            {/* Platform filter pills */}
-            <div className="flex items-center gap-1.5 flex-wrap overflow-x-auto scrollbar-none">
-              {['All', 'Direct', 'Upwork', 'Freelancer', 'Fiverr'].map(f => {
-                if (user?.role === 'marketplace_team' && f === 'Direct') return null;
-                return (
-                  <button key={f} onClick={() => setActiveFilter(f)}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex-shrink-0 ${activeFilter === f ? 'bg-[#2563EB]/10 text-[#2563EB]' : 'bg-white dark:bg-[#111111] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-[#1a1a1a]'}`}>
-                    {f}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="flex-1 hidden md:block" />
-
-            {/* Count */}
-            <div className="hidden md:flex items-center gap-1.5 px-3.5 py-2.5 bg-white dark:bg-[#111111] rounded-xl shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)]">
-              <span className="text-sm font-bold text-slate-900 dark:text-white font-mono">{filteredClients.length}</span>
-              <span className="text-xs font-semibold text-[#94A3B8]">clients</span>
-            </div>
-          </motion.div>
-        </motion.div>
-
-        {/* ── Main Content Table ───────────────────────────────────────────── */}
-        {filteredClients.length === 0 ? (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            className="py-32 flex flex-col items-center justify-center neu-flat rounded-[24px]">
-            <div className="w-16 h-16 rounded-[20px] bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] flex items-center justify-center mb-4">
-              <Users size={24} className="text-slate-400 dark:text-slate-600" />
-            </div>
-            <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">No clients found</p>
-            <p className="text-xs text-[#94A3B8] mb-6">Add a new client to get started.</p>
-            <button onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-[#3B82F6] text-white text-xs font-bold rounded-xl shadow-[0_0_15px_rgba(37,99,235,0.4)] hover:shadow-[0_0_25px_rgba(59,130,246,0.6)] transition-all">
-              <Plus size={14} strokeWidth={2.5} /> Add Client
-            </button>
-          </motion.div>
         ) : (
-          <div className="overflow-hidden neu-flat rounded-[24px] shadow-sm dark:shadow-none">
+          /* ── TABLE VIEW (TELEMETRY TABLE) ── */
+          <div className="overflow-hidden bg-[#0a0a0d] border border-white/10 rounded-2xl shadow-xl">
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-sm">
-                <thead className="sticky top-0 z-10 bg-slate-100/50 dark:bg-[#0a0a0b]/80 backdrop-blur-md">
+              <table className="w-full border-collapse text-left text-xs">
+                <thead className="sticky top-0 z-10 bg-[#060608] border-b border-white/10">
                   <tr>
-                    <th className="pl-5 pr-4 py-3 text-left text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest min-w-[240px]">Client</th>
-                    <th className="pr-4 py-3 text-left text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest min-w-[120px]">Platform</th>
-                    <th className="pr-4 py-3 text-left text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest min-w-[140px] hidden md:table-cell">Location</th>
-                    <th className="pr-4 py-3 text-left text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest min-w-[180px] hidden lg:table-cell">Contact</th>
-                    <th className="pr-4 py-3 text-right text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest min-w-[120px]">Total Revenue</th>
-                    <th className="pr-5 py-3 w-16 text-right text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest">Actions</th>
+                    <th className="pl-5 pr-4 py-3.5 text-[10px] font-heading font-bold text-secondary uppercase tracking-widest min-w-[220px]">
+                      Client & Company
+                    </th>
+                    <th className="pr-4 py-3.5 text-[10px] font-heading font-bold text-secondary uppercase tracking-widest min-w-[120px]">
+                      Platform
+                    </th>
+                    <th className="pr-4 py-3.5 text-[10px] font-heading font-bold text-secondary uppercase tracking-widest min-w-[160px]">
+                      Location & Time
+                    </th>
+                    <th className="pr-4 py-3.5 text-[10px] font-heading font-bold text-secondary uppercase tracking-widest min-w-[180px] hidden md:table-cell">
+                      Contact Info
+                    </th>
+                    <th className="pr-4 py-3.5 text-[10px] font-heading font-bold text-secondary uppercase tracking-widest min-w-[100px] text-center">
+                      Contracts
+                    </th>
+                    <th className="pr-4 py-3.5 text-[10px] font-heading font-bold text-secondary uppercase tracking-widest min-w-[130px] text-right">
+                      Lifetime Spend
+                    </th>
+                    <th className="pr-5 py-3.5 text-[10px] font-heading font-bold text-secondary uppercase tracking-widest text-right w-24">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-white/5">
                   <AnimatePresence>
-                    {filteredClients.map((client: any, i: number) => {
-                      const badge = getPlatformBadge(client.platform);
-                      const avatar = getAvatarColor(client.name);
+                    {filteredClients.map((client: any) => {
+                      const pBadge = getPlatformBadge(client.platform);
                       const localTime = getLocalTime(client.timezone);
+                      const projectCount = client.projectCount || (client.projects ? client.projects.length : 0);
+
                       return (
-                        <motion.tr key={client._id}
-                          initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98 }}
-                          transition={{ delay: i * 0.03, type: 'spring', stiffness: 320, damping: 28 }}
+                        <motion.tr
+                          key={client._id}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
                           onClick={() => setSelectedClient(client)}
-                          className="cursor-pointer group hover:bg-slate-50 dark:hover:bg-[#111111] transition-colors"
+                          className="hover:bg-white/[0.02] transition-colors cursor-pointer group"
                         >
-                          {/* Client Name/Avatar */}
-                          <td className="pl-5 pr-4 py-4">
+                          {/* Client & Avatar */}
+                          <td className="pl-5 pr-4 py-3.5">
                             <div className="flex items-center gap-3">
                               {client.profilePic ? (
-                                <img src={client.profilePic} alt="" className="w-9 h-9 rounded-[10px] object-cover border border-slate-200 dark:border-[#232734] flex-shrink-0" />
+                                <img 
+                                  src={client.profilePic} 
+                                  alt="" 
+                                  className="w-9 h-9 rounded-xl object-cover border border-white/10 shrink-0" 
+                                />
                               ) : (
-                                <div className={`w-9 h-9 rounded-[10px] ${avatar.bg} border ${avatar.border} flex items-center justify-center ${avatar.text} font-bold text-xs flex-shrink-0`}>
+                                <div 
+                                  className="w-9 h-9 rounded-xl flex items-center justify-center font-heading font-bold text-xs shrink-0"
+                                  style={{
+                                    backgroundColor: `${pBadge.color}15`,
+                                    border: `1px solid ${pBadge.color}35`,
+                                    color: pBadge.color
+                                  }}
+                                >
                                   {getInitials(client.name)}
                                 </div>
                               )}
                               <div className="min-w-0">
-                                <p className="font-bold text-slate-900 dark:text-white truncate hover:text-[#2563EB] transition-colors">{client.name}</p>
-                                <p className="text-xs text-[#94A3B8] truncate flex items-center gap-1 mt-0.5">
-                                  {client.company ? <><Building2 size={10} /> {client.company}</> : <span className="uppercase tracking-wider text-[9px] font-bold text-[#475569]">Individual</span>}
+                                <p className="font-heading font-bold text-white truncate group-hover:text-[#00E5FF] transition-colors text-xs">
+                                  {client.name}
+                                </p>
+                                <p className="text-[10px] text-secondary truncate flex items-center gap-1 mt-0.5">
+                                  {client.company ? (
+                                    <>
+                                      <Building2 size={10} className="shrink-0" /> {client.company}
+                                    </>
+                                  ) : (
+                                    <span className="uppercase tracking-wider font-mono text-[9px] text-secondary/60">Individual</span>
+                                  )}
                                 </p>
                               </div>
                             </div>
                           </td>
 
                           {/* Platform */}
-                          <td className="pr-4 py-4">
-                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold border ${badge.bg} ${badge.border} ${badge.text}`}>
-                              <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${badge.dot}`} />
-                              {client.platform}
+                          <td className="pr-4 py-3.5">
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold border ${pBadge.bg} ${pBadge.badgeClass}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${pBadge.dot}`} />
+                              {client.platform || 'Direct'}
                             </span>
                           </td>
 
-                          {/* Location */}
-                          <td className="pr-4 py-4 hidden md:table-cell">
-                            {client.country ? (
-                              <div className="flex flex-col">
-                                <span className="text-sm text-slate-900 dark:text-white flex items-center gap-1.5"><Globe size={13} className="text-[#94A3B8]" /> {client.country}</span>
-                                {localTime ? (
-                                  <span className="text-[10px] font-bold text-[#0EA5E9] mt-0.5 pl-[19px]">🕙 {localTime} Local</span>
-                                ) : client.timezone && (
-                                  <span className="text-[10px] font-bold text-[#94A3B8] mt-0.5 pl-[19px]">{client.timezone}</span>
-                                )}
-                              </div>
-                            ) : <span className="text-sm text-[#475569]">—</span>}
+                          {/* Location & Time */}
+                          <td className="pr-4 py-3.5">
+                            <div className="flex flex-col">
+                              <span className="text-xs text-white flex items-center gap-1.5 truncate">
+                                <Globe size={12} className="text-secondary shrink-0" />
+                                <span className="truncate">{client.country || '—'}</span>
+                              </span>
+                              {localTime && (
+                                <span className="text-[10px] font-mono font-bold text-[#00E5FF] pl-4 mt-0.5">
+                                  🕙 {localTime}
+                                </span>
+                              )}
+                            </div>
                           </td>
 
                           {/* Contact */}
-                          <td className="pr-4 py-4 hidden lg:table-cell">
+                          <td className="pr-4 py-3.5 hidden md:table-cell">
                             {client.email ? (
-                              <a href={`mailto:${client.email}`} onClick={e => e.stopPropagation()} className="flex items-center gap-1.5 text-sm text-[#94A3B8] hover:text-[#2563EB] transition-colors truncate">
-                                <Mail size={13} /> {client.email}
-                              </a>
+                              <div className="flex items-center gap-1.5 text-xs text-secondary hover:text-white">
+                                <Mail size={12} className="shrink-0" />
+                                <span className="truncate">{client.email}</span>
+                              </div>
                             ) : (
-                              <button onClick={(e) => { e.stopPropagation(); openEditModal(client); }} className="text-[10px] font-bold text-[#94A3B8]/60 hover:text-[#2563EB] transition-colors border border-dashed border-slate-200 dark:border-[#232734] px-2 py-1 rounded-md bg-white dark:bg-[#11131A] shadow-sm">
-                                + Add Contact
-                              </button>
+                              <span className="text-secondary/50 text-[10px] font-mono">—</span>
                             )}
                           </td>
 
-                          {/* Revenue */}
-                          <td className="pr-4 py-4 text-right">
-                            <span className={`text-sm font-bold font-mono ${client.totalSpent > 0 ? 'text-[#10B981]' : 'text-slate-500'}`}>{fmtCurrency(client.totalSpent)}</span>
+                          {/* Contracts Count */}
+                          <td className="pr-4 py-3.5 text-center">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-white/5 border border-white/10 text-xs font-mono font-bold text-white">
+                              <FolderKanban size={11} className="text-secondary" /> {projectCount}
+                            </span>
+                          </td>
+
+                          {/* Lifetime Spend */}
+                          <td className="pr-4 py-3.5 text-right font-mono font-extrabold text-emerald-400 text-xs">
+                            {fmtCurrency(client.totalSpent)}
                           </td>
 
                           {/* Actions */}
-                          <td className="pr-5 py-4" onClick={e => e.stopPropagation()}>
-                            <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button onClick={() => openEditModal(client)}
-                                className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#232734] transition-all" aria-label="Edit">
+                          <td className="pr-5 py-3.5 text-right" onClick={e => e.stopPropagation()}>
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                type="button"
+                                onClick={() => setSelectedClient(client)}
+                                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-secondary hover:text-white transition-colors"
+                                title="Open Dossier"
+                              >
+                                <FileText size={13} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => openEditModal(client, e)}
+                                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-secondary hover:text-white transition-colors"
+                                title="Edit"
+                              >
                                 <Edit2 size={13} />
                               </button>
-                              <div className="relative">
-                                <button onClick={e => toggleMenu(client._id, e)}
-                                  className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#232734] transition-all" aria-label="More actions">
-                                  <MoreHorizontal size={13} />
-                                </button>
-                                <AnimatePresence>
-                                  {openMenuId === client._id && (
-                                    <motion.div
-                                      initial={{ opacity: 0, scale: 0.95, y: -6 }}
-                                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                                      exit={{ opacity: 0, scale: 0.95, y: -6 }}
-                                      transition={{ duration: 0.12 }}
-                                      className="absolute right-0 top-8 z-50 w-40 bg-white dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] shadow-xl rounded-[14px] overflow-hidden"
-                                    >
-                                      <button onClick={e => { setOpenMenuId(null); openEditModal(client); }}
-                                        className="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#232734] transition-colors">
-                                        <Edit2 size={13} /> Edit
-                                      </button>
-                                      <button onClick={e => { setOpenMenuId(null); handleDeleteClient(client._id, e); }}
-                                        className="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-[#EF4444] hover:bg-[#EF4444]/10 transition-colors">
-                                        <Trash2 size={13} /> Delete
-                                      </button>
-                                    </motion.div>
-                                  )}
-                                </AnimatePresence>
-                              </div>
+                              <button
+                                type="button"
+                                onClick={(e) => handleDeleteClient(client._id, e)}
+                                className="p-1.5 rounded-lg bg-white/5 hover:bg-rose-500/20 text-secondary hover:text-rose-400 transition-colors"
+                                title="Delete"
+                              >
+                                <Trash2 size={13} />
+                              </button>
                             </div>
                           </td>
                         </motion.tr>
@@ -478,233 +1158,671 @@ export default function ClientHubClient({ initialClients }: ClientHubClientProps
           </div>
         )}
 
-        {/* ── Client Slide Panel ────────────────────────────────────────────── */}
+        {/* ── Slide-Over Dossier Drawer (Client Details) ────────────────────── */}
         <AnimatePresence>
           {selectedClient && (
-            <>
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
-                onClick={() => setSelectedClient(null)} className="fixed inset-0 bg-black/30 dark:bg-[#09090B]/70 backdrop-blur-sm z-50" />
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 lg:p-10 pointer-events-none">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+              {/* Backdrop */}
+              <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                exit={{ opacity: 0 }} 
+                className="fixed inset-0 bg-black/80 backdrop-blur-xl" 
+                onClick={() => setSelectedClient(null)} 
+              />
+
+              {/* Dossier Modal Box */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.92, y: 24 }}
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.92, y: 24 }}
-                transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-                className="relative w-full max-w-lg max-h-[90vh] bg-white dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-2xl z-50 flex flex-col shadow-2xl overflow-hidden pointer-events-auto"
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ type: "spring", damping: 28, stiffness: 320 }}
+                className="relative w-full max-w-2xl my-auto bg-[#0a0a0d] border border-white/15 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.9),0_0_30px_rgba(99,36,252,0.25)] flex flex-col overflow-hidden z-10 max-h-[92vh]"
+                onClick={(e) => e.stopPropagation()}
               >
-                {/* Panel Header */}
-                <div className="flex-shrink-0 p-6 border-b border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A]">
-                  <div className="flex items-center justify-between mb-5">
-                    <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">Client Profile</span>
-                    <div className="flex items-center gap-2">
-                      <button onClick={(e) => handleDeleteClient(selectedClient._id, e as any)} className="p-2 rounded-[10px] text-[#EF4444] hover:bg-[#EF4444]/10 border border-transparent transition-all" aria-label="Delete">
-                        <Trash2 size={14} />
-                      </button>
-                      <button onClick={() => setSelectedClient(null)} className="p-2 rounded-[10px] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] border border-slate-200 dark:border-[#232734] transition-all" aria-label="Close">
-                        <X size={14} />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4 mb-4">
-                    {selectedClient.profilePic ? (
-                      <img src={selectedClient.profilePic} alt="" className="w-12 h-12 rounded-[14px] object-cover border border-slate-200 dark:border-[#232734]" />
-                    ) : (
-                      <div className={`w-12 h-12 rounded-[14px] ${getAvatarColor(selectedClient.name).bg} border ${getAvatarColor(selectedClient.name).border} flex items-center justify-center ${getAvatarColor(selectedClient.name).text} font-bold text-lg flex-shrink-0`}>
-                        {getInitials(selectedClient.name)}
+                {/* Top Platform Line */}
+                <div 
+                  className="absolute top-0 left-0 right-0 h-[2.5px] z-20"
+                  style={{ 
+                    backgroundImage: `linear-gradient(to right, transparent, ${getPlatformBadge(selectedClient.platform).color}, transparent)`,
+                    boxShadow: `0 0 15px ${getPlatformBadge(selectedClient.platform).color}`
+                  }}
+                />
+
+                {/* Dossier Header */}
+                <div className="p-5 md:p-6 border-b border-white/10 bg-white/[0.02]">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-4 min-w-0">
+                      {selectedClient.profilePic ? (
+                        <img 
+                          src={selectedClient.profilePic} 
+                          alt="" 
+                          className="w-14 h-14 rounded-2xl object-cover border border-white/15 shadow-xl shrink-0" 
+                        />
+                      ) : (
+                        <div 
+                          className="w-14 h-14 rounded-2xl flex items-center justify-center font-heading font-extrabold text-xl shadow-xl shrink-0"
+                          style={{
+                            backgroundColor: `${getPlatformBadge(selectedClient.platform).color}15`,
+                            border: `1px solid ${getPlatformBadge(selectedClient.platform).color}35`,
+                            color: getPlatformBadge(selectedClient.platform).color
+                          }}
+                        >
+                          {getInitials(selectedClient.name)}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h2 className="text-lg md:text-xl font-heading font-extrabold text-white tracking-tight truncate">
+                            {selectedClient.name}
+                          </h2>
+                          <span 
+                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold border ${getPlatformBadge(selectedClient.platform).bg} ${getPlatformBadge(selectedClient.platform).badgeClass}`}
+                          >
+                            {selectedClient.platform || 'Direct'}
+                          </span>
+                        </div>
+                        <p className="text-xs font-sans text-secondary mt-0.5 flex items-center gap-1.5">
+                          {selectedClient.company ? (
+                            <>
+                              <Building2 size={12} className="text-secondary/80" /> {selectedClient.company}
+                            </>
+                          ) : (
+                            <span>Individual Client</span>
+                          )}
+                        </p>
                       </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight truncate mb-1">{selectedClient.name}</h2>
-                      <p className="text-sm text-[#94A3B8] truncate flex items-center gap-1.5">{selectedClient.company ? <><Building2 size={12}/> {selectedClient.company}</> : 'Individual'}</p>
                     </div>
+
+                    <button 
+                      onClick={() => setSelectedClient(null)} 
+                      className="p-2 rounded-xl bg-white/5 hover:bg-rose-500/20 text-secondary hover:text-rose-400 border border-white/5 hover:border-rose-500/30 transition-colors shrink-0"
+                    >
+                      <X size={16} />
+                    </button>
                   </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#10B981]/10 border border-[#10B981]/20 text-[#10B981] text-xs font-bold">
-                      <DollarSign size={11} /> {fmtCurrency(selectedClient.totalSpent)}
-                    </span>
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold border ${getPlatformBadge(selectedClient.platform).bg} ${getPlatformBadge(selectedClient.platform).border} ${getPlatformBadge(selectedClient.platform).text}`}>
-                      {selectedClient.platform}
-                    </span>
+
+                  {/* Top Metric Callouts */}
+                  <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-white/5">
+                    <div className="p-3 rounded-xl bg-[#060608] border border-white/5">
+                      <div className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">
+                        Lifetime Value (LTV)
+                      </div>
+                      <div className="text-lg font-mono font-extrabold text-emerald-400 mt-0.5">
+                        {fmtCurrency(selectedClient.totalSpent)}
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-[#060608] border border-white/5">
+                      <div className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">
+                        Associated Projects
+                      </div>
+                      <div className="text-lg font-mono font-extrabold text-white mt-0.5">
+                        {selectedClient.projectCount || selectedClient.projects?.length || 0} Contracts
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Tabs */}
-                <div className="flex-shrink-0 flex items-center border-b border-slate-200 dark:border-[#232734] px-6 bg-slate-100 dark:bg-[#0D0F16]">
-                  {[{ key: 'profile' as const, label: 'Profile', icon: UserIcon }, { key: 'notes' as const, label: 'Notes', icon: StickyNote }, { key: 'timeline' as const, label: 'Timeline', icon: Activity }].map(t => (
-                    <button key={t.key} onClick={() => setPanelTab(t.key)}
-                      className={`relative flex items-center gap-2 px-4 py-3.5 text-xs font-bold transition-all ${panelTab === t.key ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>
-                      <t.icon size={13} /> {t.label}
-                      {panelTab === t.key && <motion.div layoutId="clientPanelTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#2563EB] rounded-t-full" />}
+                {/* Tabs Selector */}
+                <div className="flex items-center border-b border-white/10 px-5 md:px-6 bg-[#060608]">
+                  {[
+                    { key: 'profile' as const, label: 'Overview & Contracts', icon: UserIcon },
+                    { key: 'notes' as const, label: 'Strategic CRM Notes', icon: StickyNote },
+                    { key: 'timeline' as const, label: 'Activity Timeline', icon: Activity }
+                  ].map(tab => (
+                    <button
+                      key={tab.key}
+                      onClick={() => setPanelTab(tab.key)}
+                      className={`relative flex items-center gap-2 px-4 py-3 text-xs font-heading font-bold transition-all ${
+                        panelTab === tab.key 
+                          ? 'text-white' 
+                          : 'text-secondary hover:text-white'
+                      }`}
+                    >
+                      <tab.icon size={13} />
+                      <span>{tab.label}</span>
+                      {panelTab === tab.key && (
+                        <motion.div 
+                          layoutId="clientPanelTabGlow" 
+                          className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#6324FC] to-[#00E5FF] shadow-[0_0_8px_#00E5FF]" 
+                        />
+                      )}
                     </button>
                   ))}
                 </div>
 
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto">
+                {/* Tab Body */}
+                <div className="p-5 md:p-6 overflow-y-auto max-h-[55vh] custom-scrollbar space-y-5">
                   <AnimatePresence mode="wait">
+                    
+                    {/* TAB 1: OVERVIEW & ASSOCIATED CONTRACTS */}
                     {panelTab === 'profile' && (
-                      <motion.div key="profile" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="p-6 space-y-5">
+                      <motion.div
+                        key="tab-profile"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        className="space-y-5"
+                      >
+                        {/* Contact Information Card */}
                         <div>
-                          <h3 className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-3">Contact Information</h3>
-                          <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[16px] px-5 py-1 divide-y divide-slate-200 dark:divide-[#232734]/60">
-                            {selectedClient.email && (
-                              <div className="flex items-center gap-4 py-3">
-                                <div className="flex items-center gap-2 w-20 flex-shrink-0"><Mail size={13} className="text-[#94A3B8]" /><span className="text-[11px] font-bold text-[#94A3B8] uppercase tracking-widest">Email</span></div>
-                                <a href={`mailto:${selectedClient.email}`} className="flex-1 text-sm font-semibold text-slate-900 dark:text-white hover:text-[#2563EB] truncate">{selectedClient.email}</a>
+                          <h4 className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest mb-2.5">
+                            Client Details & Location
+                          </h4>
+                          <div className="p-4 rounded-2xl bg-[#060608] border border-white/10 space-y-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div>
+                                <span className="text-[10px] font-mono text-secondary uppercase block">Email Address</span>
+                                <span className="text-xs font-mono text-white font-medium break-all">
+                                  {selectedClient.email || 'Not provided'}
+                                </span>
                               </div>
-                            )}
-                            {(selectedClient.country || selectedClient.timezone) && (
-                              <div className="flex items-center gap-4 py-3">
-                                <div className="flex items-center gap-2 w-20 flex-shrink-0"><Globe size={13} className="text-[#94A3B8]" /><span className="text-[11px] font-bold text-[#94A3B8] uppercase tracking-widest">Location</span></div>
-                                <span className="flex-1 text-sm font-semibold text-slate-900 dark:text-white truncate">{selectedClient.country || 'Unknown'} {selectedClient.timezone && <span className="text-[#94A3B8] ml-1">({selectedClient.timezone})</span>}</span>
+                              <div>
+                                <span className="text-[10px] font-mono text-secondary uppercase block">Location & Country</span>
+                                <span className="text-xs text-white font-medium flex items-center gap-1 mt-0.5">
+                                  <Globe size={12} className="text-[#00E5FF]" /> {selectedClient.country || 'International'}
+                                </span>
                               </div>
-                            )}
-                            <div className="flex items-center gap-4 py-3">
-                              <div className="flex items-center gap-2 w-20 flex-shrink-0"><Calendar size={13} className="text-[#94A3B8]" /><span className="text-[11px] font-bold text-[#94A3B8] uppercase tracking-widest">Added</span></div>
-                              <span className="flex-1 text-sm font-semibold text-slate-900 dark:text-white">{fmtDate(selectedClient.createdAt)}</span>
+                              <div>
+                                <span className="text-[10px] font-mono text-secondary uppercase block">Timezone & Local Clock</span>
+                                <span className="text-xs font-mono text-[#00E5FF] font-bold mt-0.5 block">
+                                  {selectedClient.timezone ? `${selectedClient.timezone}` : 'UTC'}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-[10px] font-mono text-secondary uppercase block">Added to CRM</span>
+                                <span className="text-xs font-mono text-white font-medium mt-0.5 block">
+                                  {fmtDate(selectedClient.createdAt)}
+                                </span>
+                              </div>
                             </div>
+
+                            {selectedClient.profileLink && (
+                              <div className="pt-2 border-t border-white/5">
+                                <a
+                                  href={selectedClient.profileLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-heading font-bold text-[#00E5FF] border border-white/10 transition-colors"
+                                >
+                                  <span>View {selectedClient.platform} Profile</span>
+                                  <ExternalLink size={12} />
+                                </a>
+                              </div>
+                            )}
                           </div>
                         </div>
-                        {selectedClient.profileLink && (
-                          <a href={selectedClient.profileLink} target="_blank" rel="noopener noreferrer" 
-                            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-[#232734] dark:hover:bg-[#2a2e3d] border border-slate-200 dark:border-[#232734] text-slate-700 dark:text-white font-bold text-xs rounded-[10px] transition-colors">
-                            View {selectedClient.platform} Profile <ExternalLink size={13} />
-                          </a>
-                        )}
-                        <button onClick={() => openEditModal(selectedClient)} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold text-xs rounded-[10px] transition-all">
-                          <Edit2 size={13} /> Edit Client
-                        </button>
-                      </motion.div>
-                    )}
 
-                    {panelTab === 'notes' && (
-                      <motion.div key="notes" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="p-6">
-                        <div className="bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] rounded-[16px] overflow-hidden relative">
-                          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-[#232734]">
-                            <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">Notes</span>
-                          </div>
-                          <textarea
-                            value={notesDraft}
-                            onChange={e => setNotesDraft(e.target.value)}
-                            className="w-full bg-transparent px-4 py-4 text-sm text-slate-700 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500 resize-none focus:outline-none leading-relaxed min-h-[300px]"
-                            placeholder="Add client notes, meeting takeaways, or logs…"
-                          />
-                          {notesDraft !== (selectedClient.notes || '') && (
-                            <button onClick={handleSaveNotes} disabled={isSavingNotes}
-                              className="absolute bottom-4 right-4 px-4 py-2 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold text-xs rounded-[10px] transition-all disabled:opacity-50">
-                              {isSavingNotes ? 'Saving…' : 'Save Notes'}
+                        {/* Associated Projects List */}
+                        <div>
+                          <div className="flex items-center justify-between mb-2.5">
+                            <h4 className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">
+                              Associated Contracts ({selectedClient.projects?.length || 0})
+                            </h4>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCreateProjectPlatform(selectedClient.platform || 'Freelancer');
+                                setIsCreateProjectOpen(true);
+                              }}
+                              className="text-[10px] font-heading font-bold text-[#00E5FF] hover:underline flex items-center gap-1"
+                            >
+                              <Plus size={11} /> Create Project
                             </button>
+                          </div>
+
+                          {selectedClient.projects && selectedClient.projects.length > 0 ? (
+                            <div className="space-y-2">
+                              {selectedClient.projects.map((proj: any) => (
+                                <div
+                                  key={proj._id}
+                                  className="p-3.5 rounded-xl bg-[#060608] border border-white/10 hover:border-white/20 transition-all flex items-center justify-between gap-3 group"
+                                >
+                                  <div className="min-w-0">
+                                    <h5 className="text-xs font-heading font-bold text-white group-hover:text-[#00E5FF] transition-colors truncate">
+                                      {proj.title}
+                                    </h5>
+                                    <div className="flex items-center gap-2 mt-1 text-[10px] font-mono text-secondary">
+                                      <span className="px-1.5 py-0.5 rounded bg-white/5 text-white">
+                                        {proj.platform}
+                                      </span>
+                                      <span>·</span>
+                                      <span className={proj.status === 'Completed' ? 'text-emerald-400' : 'text-[#00E5FF]'}>
+                                        {proj.status}
+                                      </span>
+                                      <span>·</span>
+                                      <span>{fmtDate(proj.createdAt)}</span>
+                                    </div>
+                                  </div>
+
+                                  <div className="text-right shrink-0">
+                                    <span className="text-xs font-mono font-bold text-emerald-400 block">
+                                      {proj.budget || fmtCurrency(proj.earned)}
+                                    </span>
+                                    <Link
+                                      href={`/marketplace/${(proj.platform || 'freelancer').toLowerCase()}/${proj._id}`}
+                                      className="text-[10px] text-secondary hover:text-white font-mono inline-flex items-center gap-0.5 mt-0.5"
+                                    >
+                                      Details <ChevronRight size={11} />
+                                    </Link>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="p-5 rounded-2xl bg-[#060608] border border-white/5 text-center text-xs text-secondary">
+                              No active or past contracts linked to this client yet.
+                            </div>
                           )}
                         </div>
                       </motion.div>
                     )}
 
-                    {panelTab === 'timeline' && (
-                      <motion.div key="timeline" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="p-6">
-                        <h3 className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-5">Activity Timeline</h3>
-                        <div className="space-y-0">
-                          {[
-                            { icon: UserIcon, color: '#2563EB', title: 'Client Added', sub: 'To marketplace network', time: fmtDate(selectedClient.createdAt) },
-                            { icon: Clock, color: '#94A3B8', title: 'Last Updated', sub: 'Profile or notes changed', time: fmtDate(selectedClient.updatedAt) },
-                          ].map(({ icon: Icon, color, title, sub, time }, i, arr) => (
-                            <div key={title} className="flex gap-4 items-start">
-                              <div className="flex flex-col items-center flex-shrink-0">
-                                <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: `${color}15`, border: `1px solid ${color}30` }}>
-                                  <Icon size={13} style={{ color }} />
-                                </div>
-                                {i < arr.length - 1 && <div className="w-px flex-1 bg-slate-200 dark:bg-[#232734] mt-1" style={{ minHeight: 20 }} />}
-                              </div>
-                              <div className="pb-5 min-w-0">
-                                <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight mb-0.5">{title}</p>
-                                <p className="text-xs text-[#94A3B8]">{sub}</p>
-                                <p className="text-[10px] text-slate-500 dark:text-slate-500 font-bold mt-1">{time}</p>
-                              </div>
-                            </div>
-                          ))}
+                    {/* TAB 2: STRATEGIC NOTES */}
+                    {panelTab === 'notes' && (
+                      <motion.div
+                        key="tab-notes"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        className="space-y-3"
+                      >
+                        <div className="flex items-center justify-between">
+                          <label className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">
+                            Client Preferences, Meeting Logs & Brief
+                          </label>
+                          <span className="text-[10px] font-mono text-secondary">
+                            {notesDraft.length} characters
+                          </span>
+                        </div>
+                        <textarea
+                          rows={10}
+                          value={notesDraft}
+                          onChange={(e) => setNotesDraft(e.target.value)}
+                          placeholder="Record project briefs, negotiation notes, preferred communication channels, hourly rates, or delivery expectations..."
+                          className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-2xl p-4 text-xs text-white placeholder:text-secondary outline-none transition-colors resize-none leading-relaxed font-sans"
+                        />
+                        <div className="flex justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={handleSaveNotes}
+                            disabled={isSavingNotes || notesDraft === (selectedClient.notes || '')}
+                            className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#6324FC] to-[#8B5CF6] hover:brightness-110 disabled:opacity-40 text-xs font-heading font-bold text-white transition-all shadow-[0_0_15px_rgba(99,36,252,0.4)] flex items-center gap-1.5"
+                          >
+                            <Sparkles size={13} />
+                            <span>{isSavingNotes ? 'Saving...' : 'Save Notes'}</span>
+                          </button>
                         </div>
                       </motion.div>
                     )}
+
+                    {/* TAB 3: ACTIVITY TIMELINE */}
+                    {panelTab === 'timeline' && (
+                      <motion.div
+                        key="tab-timeline"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        className="space-y-4"
+                      >
+                        <h4 className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">
+                          Audit Trail & Events
+                        </h4>
+                        <div className="space-y-3">
+                          <div className="p-3.5 rounded-xl bg-[#060608] border border-white/5 flex items-start gap-3">
+                            <div className="w-7 h-7 rounded-lg bg-[#6324FC]/20 text-[#00E5FF] flex items-center justify-center shrink-0 mt-0.5">
+                              <UserIcon size={14} />
+                            </div>
+                            <div>
+                              <p className="text-xs font-heading font-bold text-white">Client Account Created</p>
+                              <p className="text-[10px] text-secondary font-mono mt-0.5">{fmtDate(selectedClient.createdAt)}</p>
+                            </div>
+                          </div>
+
+                          <div className="p-3.5 rounded-xl bg-[#060608] border border-white/5 flex items-start gap-3">
+                            <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                              <Clock size={14} />
+                            </div>
+                            <div>
+                              <p className="text-xs font-heading font-bold text-white">Last Modified</p>
+                              <p className="text-[10px] text-secondary font-mono mt-0.5">{fmtDate(selectedClient.updatedAt)}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+
                   </AnimatePresence>
                 </div>
-              </motion.div>
-              </div>
-            </>
-          )}
-        </AnimatePresence>
 
-        {/* ── Add/Edit Modal (preserved exactly but restyled) ───────────────── */}
-        <AnimatePresence>
-          {isAddModalOpen && (
-            <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-white/80 dark:bg-[#09090B]/80 backdrop-blur-md" onClick={closeModal} />
-              <motion.div initial={{ opacity: 0, scale: 0.92, y: 24 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92, y: 24 }}
-                transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-                className="relative w-full max-w-2xl bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#1a1a1a] rounded-[24px] flex flex-col overflow-hidden shadow-2xl"
-              >
-                <div className="flex justify-between items-start p-6 border-b border-[#E2E8F0] dark:border-[#1a1a1a] bg-white dark:bg-[#111111]">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-[14px] bg-slate-50/50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] flex items-center justify-center text-[#2563EB]">
-                      {editingClient ? <Edit2 size={20} /> : <UserIcon size={20} />}
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">{editingClient ? 'Edit Client' : 'Add New Client'}</h2>
-                      <p className="text-xs font-semibold text-[#94A3B8] mt-1">Manage details for your network.</p>
-                    </div>
-                  </div>
-                  <button onClick={closeModal} className="p-2.5 bg-slate-50/50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-xl text-[#94A3B8] hover:text-slate-900 dark:hover:text-white transition-all shadow-sm">
-                    <X size={20} />
+                {/* Dossier Footer Toolbar */}
+                <div className="p-4 md:px-6 md:py-4 border-t border-white/10 bg-white/[0.02] flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={(e) => handleDeleteClient(selectedClient._id, e)}
+                    className="px-3.5 py-2 rounded-xl text-xs font-heading font-bold text-rose-400 hover:bg-rose-500/15 transition-colors border border-transparent hover:border-rose-500/30 flex items-center gap-1.5"
+                  >
+                    <Trash2 size={13} /> Delete Client
                   </button>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => openEditModal(selectedClient)}
+                      className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-heading font-bold text-white border border-white/10 transition-colors flex items-center gap-1.5"
+                    >
+                      <Edit2 size={13} /> Edit Profile
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCreateProjectPlatform(selectedClient.platform || 'Freelancer');
+                        setIsCreateProjectOpen(true);
+                      }}
+                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#6324FC] to-[#8B5CF6] hover:brightness-110 text-xs font-heading font-bold text-white transition-all shadow-[0_0_15px_rgba(99,36,252,0.4)] flex items-center gap-1.5"
+                    >
+                      <Plus size={13} /> New Project
+                    </button>
+                  </div>
                 </div>
-                
-                <form onSubmit={handleSaveClient} className="p-6 space-y-6 overflow-y-auto max-h-[70vh] custom-scrollbar">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <InputField label="Client Name" icon={UserIcon} value={formData.name} onChange={(e:any) => setFormData({...formData, name: e.target.value})} required placeholder="e.g. John Doe" />
-                    <div className="group relative w-full">
-                      <label className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">
-                        <Globe size={12} className="text-[#94A3B8] group-focus-within:text-[#2563EB] transition-colors" /> Platform
-                      </label>
-                      <div className="relative">
-                        <select value={formData.platform} onChange={e => setFormData({...formData, platform: e.target.value})}
-                          className="w-full bg-white dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all appearance-none cursor-pointer shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
-                          {user?.role !== 'marketplace_team' && <option value="Direct">Direct</option>}
-                          <option value="Upwork">Upwork</option>
-                          <option value="Freelancer">Freelancer</option>
-                          <option value="Fiverr">Fiverr</option>
-                          <option value="Other">Other</option>
-                        </select>
-                        <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#94A3B8] pointer-events-none" />
-                      </div>
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <InputField label="Company (Optional)" icon={Building2} value={formData.company} onChange={(e:any) => setFormData({...formData, company: e.target.value})} placeholder="e.g. Acme Corp" />
-                    <InputField label="Email Address" icon={Mail} type="email" value={formData.email} onChange={(e:any) => setFormData({...formData, email: e.target.value})} placeholder="john@example.com" />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-[20px] shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
-                    <InputField label="Country" icon={Globe} value={formData.country} onChange={handleCountryChange} placeholder="e.g. United States" />
-                    <InputField label="Timezone" icon={Clock} value={formData.timezone} onChange={(e:any) => setFormData({...formData, timezone: e.target.value})} placeholder="e.g. EST" />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <InputField label="Profile Link" icon={LinkIcon} type="url" value={formData.profileLink} onChange={(e:any) => setFormData({...formData, profileLink: e.target.value})} placeholder="https://..." />
-                    <InputField label="Avatar Image URL" icon={ImageIcon} type="url" value={formData.profilePic} onChange={(e:any) => setFormData({...formData, profilePic: e.target.value})} placeholder="https://..." />
-                  </div>
-
-                  <div className="pt-6 mt-4 flex justify-end gap-3 border-t border-[#E2E8F0] dark:border-[#1a1a1a]">
-                    <button type="button" onClick={closeModal} className="px-6 py-2.5 rounded-xl text-xs font-bold text-[#94A3B8] bg-white dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#1a1a1a] transition-colors shadow-sm dark:shadow-none">
-                      Cancel
-                    </button>
-                    <button type="submit" disabled={isSubmitting || !formData.name} className="px-8 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold text-xs rounded-xl transition-all disabled:opacity-50 flex items-center gap-2">
-                      {isSubmitting ? <><Loader2 size={14} className="animate-spin" /> Saving…</> : <>{editingClient ? 'Update Client' : 'Save Client'} <ArrowRight size={14} /></>}
-                    </button>
-                  </div>
-                </form>
               </motion.div>
             </div>
           )}
         </AnimatePresence>
+
+        {/* ── Add / Edit Client Modal ───────────────────────────────────────── */}
+        <AnimatePresence>
+          {isAddModalOpen && (
+            <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+              {/* Backdrop */}
+              <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                exit={{ opacity: 0 }} 
+                className="fixed inset-0 bg-black/80 backdrop-blur-xl" 
+                onClick={closeModal} 
+              />
+
+              {/* Modal Box */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                transition={{ type: "spring", damping: 28, stiffness: 320 }}
+                className="relative w-full max-w-2xl my-auto bg-[#0a0a0d] border border-white/15 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.9),0_0_30px_rgba(99,36,252,0.25)] flex flex-col overflow-hidden z-10"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Top Glow Line */}
+                <div 
+                  className="absolute top-0 left-0 right-0 h-[2.5px] z-20"
+                  style={{ 
+                    backgroundImage: `linear-gradient(to right, transparent, ${getPlatformBadge(formData.platform).color}, transparent)`,
+                    boxShadow: `0 0 15px ${getPlatformBadge(formData.platform).color}`
+                  }}
+                />
+
+                {/* Header */}
+                <div className="p-5 md:p-6 border-b border-white/10 bg-white/[0.02] flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-11 h-11 rounded-xl flex items-center justify-center shadow-lg shrink-0"
+                      style={{
+                        backgroundColor: `${getPlatformBadge(formData.platform).color}15`,
+                        border: `1px solid ${getPlatformBadge(formData.platform).color}35`,
+                        color: getPlatformBadge(formData.platform).color,
+                      }}
+                    >
+                      {editingClient ? <Edit2 size={20} /> : <UserIcon size={20} />}
+                    </div>
+                    <div>
+                      <h2 className="text-lg md:text-xl font-heading font-extrabold text-white tracking-tight">
+                        {editingClient ? 'Edit Client Profile' : 'Add New Marketplace Client'}
+                      </h2>
+                      <p className="text-xs text-secondary mt-0.5">
+                        Configure client identity, platform origin, location and contact telemetry.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={closeModal} 
+                    className="p-2 rounded-xl bg-white/5 hover:bg-rose-500/20 text-secondary hover:text-rose-400 border border-white/5 hover:border-rose-500/30 transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                {/* Form */}
+                <form id="client-form" onSubmit={handleSaveClient} className="p-5 md:p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar">
+                  
+                  {/* Platform Selector */}
+                  <div>
+                    <label className="block text-[10px] font-heading font-bold text-secondary uppercase tracking-widest mb-1.5">
+                      Platform Channel
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {['Freelancer', 'Direct', 'Upwork', 'Fiverr'].map(p => {
+                        if (user?.role === 'marketplace_team' && p === 'Direct') return null;
+                        const pConf = PLATFORMS_CONFIG[p];
+                        const PIcon = pConf.icon;
+                        const isSelected = formData.platform.toLowerCase() === p.toLowerCase();
+                        return (
+                          <button
+                            key={p}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, platform: p })}
+                            className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-heading font-bold transition-all border ${
+                              isSelected 
+                                ? 'bg-white/10 text-white border-white/30 shadow-md' 
+                                : 'bg-[#060608] text-secondary hover:text-white border-white/5 hover:border-white/15'
+                            }`}
+                            style={{
+                              borderColor: isSelected ? pConf.color : undefined,
+                              boxShadow: isSelected ? `0 0 12px ${pConf.color}30` : undefined
+                            }}
+                          >
+                            <PIcon size={14} style={{ color: pConf.color }} />
+                            <span>{p === 'Direct' ? 'Direct Client' : p}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Name & Company */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-heading font-bold text-secondary uppercase tracking-widest mb-1.5">
+                        Client Name <span className="text-rose-400">*</span>
+                      </label>
+                      <div className="relative">
+                        <UserIcon size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary pointer-events-none" />
+                        <input
+                          type="text"
+                          required
+                          value={formData.name}
+                          onChange={e => setFormData({ ...formData, name: e.target.value })}
+                          placeholder="e.g. Sarah Jenkins"
+                          className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-secondary outline-none transition-colors"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-heading font-bold text-secondary uppercase tracking-widest mb-1.5">
+                        Company / Brand Name
+                      </label>
+                      <div className="relative">
+                        <Building2 size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary pointer-events-none" />
+                        <input
+                          type="text"
+                          value={formData.company}
+                          onChange={e => setFormData({ ...formData, company: e.target.value })}
+                          placeholder="e.g. Apex Digital Corp"
+                          className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-secondary outline-none transition-colors"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Email & Country */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-heading font-bold text-secondary uppercase tracking-widest mb-1.5">
+                        Email Address
+                      </label>
+                      <div className="relative">
+                        <Mail size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary pointer-events-none" />
+                        <input
+                          type="email"
+                          value={formData.email}
+                          onChange={e => setFormData({ ...formData, email: e.target.value })}
+                          placeholder="sarah@apexdigital.com"
+                          className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-secondary outline-none transition-colors"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-heading font-bold text-secondary uppercase tracking-widest mb-1.5">
+                        Country (Auto Timezone)
+                      </label>
+                      <div className="relative">
+                        <Globe size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary pointer-events-none" />
+                        <input
+                          type="text"
+                          value={formData.country}
+                          onChange={handleCountryChange}
+                          placeholder="e.g. United States, Germany, UAE"
+                          className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-secondary outline-none transition-colors"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Timezone */}
+                  <div>
+                    <label className="block text-[10px] font-heading font-bold text-secondary uppercase tracking-widest mb-1.5">
+                      Timezone Identifier
+                    </label>
+                    <div className="relative">
+                      <Clock size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary pointer-events-none" />
+                      <input
+                        type="text"
+                        value={formData.timezone}
+                        onChange={e => setFormData({ ...formData, timezone: e.target.value })}
+                        placeholder="e.g. America/New_York or EST (UTC-5)"
+                        className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-white font-mono placeholder:text-secondary outline-none transition-colors"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Profile URL & Avatar URL */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-heading font-bold text-secondary uppercase tracking-widest mb-1.5">
+                        Platform Profile URL
+                      </label>
+                      <div className="relative">
+                        <LinkIcon size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary pointer-events-none" />
+                        <input
+                          type="url"
+                          value={formData.profileLink}
+                          onChange={e => setFormData({ ...formData, profileLink: e.target.value })}
+                          placeholder="https://freelancer.com/u/clientname"
+                          className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-secondary outline-none transition-colors"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-heading font-bold text-secondary uppercase tracking-widest mb-1.5">
+                        Avatar Image URL (Optional)
+                      </label>
+                      <div className="relative">
+                        <ImageIcon size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary pointer-events-none" />
+                        <input
+                          type="url"
+                          value={formData.profilePic}
+                          onChange={e => setFormData({ ...formData, profilePic: e.target.value })}
+                          placeholder="https://..."
+                          className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-secondary outline-none transition-colors"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Notes */}
+                  <div>
+                    <label className="block text-[10px] font-heading font-bold text-secondary uppercase tracking-widest mb-1.5">
+                      Initial Notes / Scope Brief
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={formData.notes}
+                      onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                      placeholder="Brief notes about the client, project preferences, or contract details..."
+                      className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl p-3 text-xs text-white placeholder:text-secondary outline-none transition-colors resize-none leading-relaxed"
+                    />
+                  </div>
+
+                </form>
+
+                {/* Footer */}
+                <div className="p-4 md:px-6 md:py-4 border-t border-white/10 bg-white/[0.02] flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="px-4 py-2.5 rounded-xl text-xs font-heading font-bold text-secondary hover:text-white transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    form="client-form"
+                    disabled={isSubmitting || !formData.name.trim()}
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#6324FC] to-[#8B5CF6] hover:brightness-110 disabled:opacity-50 text-xs font-heading font-bold text-white transition-all shadow-[0_0_15px_rgba(99,36,252,0.4)] flex items-center gap-2"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 size={14} className="animate-spin" />
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles size={14} />
+                        <span>{editingClient ? 'Update Client' : 'Save Client'}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Create Project Modal (Launched from Client Dossier) ────────────── */}
+        <CreateMarketplaceProjectModal
+          isOpen={isCreateProjectOpen}
+          onClose={() => setIsCreateProjectOpen(false)}
+          defaultPlatform={createProjectPlatform}
+          onSave={async (projectData) => {
+            try {
+              const res = await createMarketplaceProject(projectData);
+              if (res.success && res.data) {
+                toast.success('Project launched successfully!');
+                setIsCreateProjectOpen(false);
+                router.refresh();
+              } else {
+                toast.error(res.error || 'Failed to create project');
+              }
+            } catch {
+              toast.error('Error launching project');
+            }
+          }}
+        />
 
       </div>
     </div>

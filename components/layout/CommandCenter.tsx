@@ -132,15 +132,15 @@ export default function CommandCenter() {
             onClick={() => setIsOpen(false)}
           />
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -20 }}
+            initial={{ opacity: 0, scale: 0.98, y: -10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -20 }}
+            exit={{ opacity: 0, scale: 0.98, y: -10 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
-            className="relative w-full max-w-2xl bg-white dark:bg-[#0E1017] border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden"
+            className="relative w-full max-w-2xl bg-surface/95 border border-primary/20 rounded-lg shadow-2xl overflow-hidden backdrop-blur-2xl"
           >
             {/* Search Input */}
-            <div className="flex items-center px-6 py-4 border-b border-slate-100 dark:border-white/[0.06]">
-              <Search size={22} className="text-primary-500 mr-3 shrink-0" />
+            <div className="flex items-center px-6 py-4 border-b border-primary/10 bg-primary/[0.02]">
+              <Search size={20} className="text-[#6324FC] mr-3 shrink-0" />
               <input
                 ref={inputRef}
                 type="text"
@@ -151,15 +151,15 @@ export default function CommandCenter() {
                   setSelectedIndex(0);
                 }}
                 onKeyDown={handleInputKeyDown}
-                className="w-full bg-transparent text-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none"
+                className="w-full bg-transparent text-base font-sans text-primary placeholder-secondary focus:outline-none"
               />
-              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-bold text-slate-400 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 px-2 py-1 rounded-lg">
+              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-heading font-bold text-secondary bg-primary/5 border border-primary/10 px-2 py-0.5 rounded">
                 ESC
               </span>
             </div>
 
             {/* Results List */}
-            <div className="max-h-[55vh] overflow-y-auto p-3 space-y-1 custom-scrollbar">
+            <div className="max-h-[55vh] overflow-y-auto p-2 space-y-1 custom-scrollbar">
               {filtered.length > 0 ? (
                 filtered.map((item, index) => {
                   const Icon = item.icon;
@@ -169,28 +169,28 @@ export default function CommandCenter() {
                       key={item.id}
                       onClick={() => handleSelect(item)}
                       onMouseEnter={() => setSelectedIndex(index)}
-                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl transition-all duration-150 group text-left ${
+                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg transition-all duration-150 group text-left ${
                         isSelected 
-                          ? 'bg-primary-500/10 text-primary-600 dark:bg-primary-500/20 dark:text-primary-400 font-semibold' 
-                          : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5'
+                          ? 'bg-[#6324FC]/10 text-[#6324FC] dark:text-[#edeae2] font-semibold border border-[#6324FC]/20 shadow-[0_0_15px_rgba(99,36,252,0.1)]' 
+                          : 'text-primary hover:bg-primary/5'
                       }`}
                     >
                       <div className="flex items-center gap-3.5 min-w-0">
-                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${item.color}`}>
-                          <Icon size={18} />
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${item.color}`}>
+                          <Icon size={16} />
                         </div>
                         <div className="flex flex-col truncate">
-                          <span className="text-sm font-semibold truncate">
+                          <span className="text-sm font-heading font-semibold truncate">
                             {item.name}
                           </span>
-                          <span className="text-[11px] text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                          <span className="text-[10px] font-heading text-secondary uppercase tracking-wider">
                             {item.category}
                           </span>
                         </div>
                       </div>
                       <ArrowRight 
-                        size={16} 
-                        className={`text-primary-500 transition-transform duration-200 ${
+                        size={15} 
+                        className={`text-[#6324FC] transition-transform duration-200 ${
                           isSelected ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'
                         }`} 
                       />
@@ -198,20 +198,20 @@ export default function CommandCenter() {
                   );
                 })
               ) : (
-                <div className="py-12 text-center text-slate-400">
-                  <Command size={40} className="mx-auto mb-3 opacity-30" />
-                  <p className="text-sm font-medium">No results found for "{query}"</p>
+                <div className="py-12 text-center text-secondary">
+                  <Command size={36} className="mx-auto mb-3 opacity-30" />
+                  <p className="text-sm font-sans">No results found for "{query}"</p>
                 </div>
               )}
             </div>
 
             {/* Footer hints */}
-            <div className="px-5 py-2.5 bg-slate-50 dark:bg-black/30 border-t border-slate-100 dark:border-white/[0.04] flex items-center justify-between text-xs text-slate-400 dark:text-slate-500">
+            <div className="px-5 py-2.5 bg-primary/[0.02] border-t border-primary/10 flex items-center justify-between text-xs text-secondary font-sans">
               <div className="flex items-center gap-3">
-                <span>Use <kbd className="font-semibold text-slate-600 dark:text-slate-300">↑↓</kbd> to navigate</span>
-                <span><kbd className="font-semibold text-slate-600 dark:text-slate-300">↵</kbd> to select</span>
+                <span>Use <kbd className="font-heading font-semibold text-primary">↑↓</kbd> to navigate</span>
+                <span><kbd className="font-heading font-semibold text-primary">↵</kbd> to select</span>
               </div>
-              <span className="font-medium text-primary-500">Injaazh Command Hub</span>
+              <span className="font-heading font-medium text-[#6324FC]">Injaazh Command Hub</span>
             </div>
           </motion.div>
         </div>

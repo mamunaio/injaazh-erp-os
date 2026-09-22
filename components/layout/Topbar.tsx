@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Bell, ChevronDown, User, Settings, LogOut, CheckCircle2, DollarSign, Users, Menu } from 'lucide-react';
+import { Search, Bell, ChevronDown, Settings, LogOut, CheckCircle2, DollarSign, Users, Menu, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 
 import { useRouter } from 'next/navigation';
 import { getRecentNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '@/app/actions/notificationActions';
@@ -48,9 +49,7 @@ export default function Topbar() {
       setNotifications(data);
       
       const currentUnread = data.filter((n: any) => !n.isRead).length;
-      // Play sound and show toast if there are new unread notifications compared to last check
       if (currentUnread > prevUnreadCountRef.current && prevUnreadCountRef.current !== 0) {
-        // Show Toast Popup using global system
         const newNotifs = data.filter((n: any) => !n.isRead);
         if (newNotifs.length > 0) {
           const newest = newNotifs[0];
@@ -62,11 +61,9 @@ export default function Topbar() {
     
     fetchNotifs();
     
-    // Listen for custom event to trigger instant fetch
     const handleInstantFetch = () => fetchNotifs();
     window.addEventListener('fetch-notifications', handleInstantFetch);
     
-    // Polling every 1 minute to prevent dev server sluggishness
     const interval = setInterval(fetchNotifs, 60000);
     return () => {
       clearInterval(interval);
@@ -119,12 +116,12 @@ export default function Topbar() {
   };
 
   return (
-    <header className={`h-20 fixed top-0 right-0 left-0 ${sidebarLayout === 'collapsed' ? 'lg:left-[84px]' : 'lg:left-[260px]'} z-40 bg-white/70 dark:bg-[#07080B]/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-white/[0.04] px-6 flex items-center justify-between transition-all duration-300`}>
+    <header className={`h-20 fixed top-0 right-0 left-0 ${sidebarLayout === 'collapsed' ? 'lg:left-[80px]' : 'lg:left-[260px]'} z-40 bg-[#f5f5f0]/80 dark:bg-[#060608]/80 backdrop-blur-xl border-b border-primary/10 px-6 flex items-center justify-between transition-all duration-300`}>
       {/* Left Area */}
       <div className="flex items-center gap-3">
         <button 
           onClick={toggleSidebar}
-          className="lg:hidden p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/10 rounded-xl transition-colors"
+          className="lg:hidden p-2 text-secondary hover:bg-primary/5 hover:text-primary rounded-lg transition-colors"
         >
           <Menu size={22} />
         </button>
@@ -134,15 +131,15 @@ export default function Topbar() {
       <div className="hidden md:flex flex-1 max-w-xl mx-6">
         <button 
           onClick={handleOpenCommandCenter}
-          className="w-full flex items-center justify-between px-4 py-2.5 rounded-2xl bg-slate-100/80 dark:bg-white/[0.04] border border-slate-200/60 dark:border-white/[0.08] hover:border-primary-500/50 dark:hover:border-primary-500/40 text-left transition-all duration-200 shadow-sm group"
+          className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg bg-primary/[0.03] hover:bg-primary/[0.06] border border-primary/10 hover:border-[#6324FC]/30 text-left transition-all duration-300 group"
         >
           <div className="flex items-center gap-3">
-            <Search size={17} className="text-slate-400 group-hover:text-primary-500 transition-colors" />
-            <span className="text-sm text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors font-medium">
-              Search actions, leads, projects or navigate...
+            <Search size={16} className="text-secondary group-hover:text-[#6324FC] transition-colors" />
+            <span className="text-xs font-sans text-secondary group-hover:text-primary transition-colors">
+              Search actions, tasks, invoices, or press <kbd className="text-[10px] font-heading font-bold text-primary px-1.5 py-0.5 rounded bg-primary/10 border border-primary/15 ml-1">⌘K</kbd>
             </span>
           </div>
-          <kbd className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-400 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-2 py-0.5 shadow-sm">
+          <kbd className="inline-flex items-center gap-1 text-[11px] font-heading font-bold text-secondary bg-primary/5 border border-primary/10 rounded px-2 py-0.5">
             <span>⌘</span>K
           </kbd>
         </button>
@@ -155,10 +152,13 @@ export default function Topbar() {
         <button
           onClick={handleOpenAiChat}
           title="Open AI Business Copilot"
-          className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-primary-500/10 to-indigo-500/10 hover:from-primary-500/20 hover:to-indigo-500/20 border border-primary-500/20 text-primary-600 dark:text-primary-400 font-semibold text-xs transition-all duration-200"
+          className="group relative p-[1px] rounded-lg overflow-hidden flex items-center justify-center cursor-pointer transition-all duration-300 active:scale-95 hover:shadow-[0_0_20px_rgba(99,36,252,0.3)]"
         >
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="hidden sm:inline">AI Copilot</span>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#6324FC] to-[#00E5FF] opacity-60 group-hover:opacity-100 transition-opacity" />
+          <div className="relative px-3 py-1.5 rounded-[7px] bg-[#f5f5f0] dark:bg-[#060608] flex items-center gap-2 text-xs font-heading font-semibold text-primary">
+            <Sparkles size={13} className="text-[#6324FC] animate-pulse" />
+            <span className="hidden sm:inline">AI Copilot</span>
+          </div>
         </button>
 
         {/* Notifications */}
@@ -168,17 +168,17 @@ export default function Topbar() {
         >
           <button 
             onClick={() => { setShowNotifications(!showNotifications); setShowProfile(false); }}
-            className={`relative p-2.5 rounded-xl border transition-all duration-200 ${
+            className={`relative p-2.5 rounded-lg border transition-all duration-300 ${
               showNotifications 
-                ? 'bg-primary-500/10 border-primary-500/30 text-primary-600 dark:text-primary-400' 
-                : 'bg-slate-100/80 dark:bg-white/[0.04] border-slate-200/60 dark:border-white/[0.06] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-[#6324FC]/10 border-[#6324FC]/30 text-[#6324FC]' 
+                : 'bg-primary/5 border-primary/10 text-secondary hover:text-primary hover:border-primary/20'
             }`}
           >
-            <Bell size={18} />
+            <Bell size={17} />
             {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500" />
+              <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#6324FC] opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#6324FC]" />
               </span>
             )}
           </button>
@@ -186,52 +186,52 @@ export default function Topbar() {
           <AnimatePresence>
             {showNotifications && (
               <motion.div
-                initial={{ opacity: 0, y: 10, scale: 0.96 }}
+                initial={{ opacity: 0, y: 8, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 10, scale: 0.96 }}
+                exit={{ opacity: 0, y: 8, scale: 0.98 }}
                 transition={{ duration: 0.15 }}
-                className="absolute right-0 mt-3 w-[calc(100vw-32px)] sm:w-88 bg-white dark:bg-[#0E1017] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50"
+                className="absolute right-0 mt-3 w-[calc(100vw-32px)] sm:w-88 bg-surface border border-primary/15 rounded-lg shadow-2xl overflow-hidden z-50 backdrop-blur-2xl"
               >
-                <div className="px-5 py-3.5 border-b border-slate-100 dark:border-white/[0.06] flex justify-between items-center bg-slate-50/50 dark:bg-black/20">
+                <div className="px-5 py-3.5 border-b border-primary/10 flex justify-between items-center bg-primary/[0.02]">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-sm text-slate-900 dark:text-white">Notifications</h3>
+                    <h3 className="font-heading font-bold text-sm text-primary">Notifications</h3>
                     {unreadCount > 0 && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-500 border border-rose-500/20">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-heading font-bold bg-[#6324FC]/10 text-[#6324FC] border border-[#6324FC]/20">
                         {unreadCount} new
                       </span>
                     )}
                   </div>
                   {unreadCount > 0 && (
-                    <button onClick={handleMarkAllRead} className="text-xs font-bold text-primary-500 hover:text-primary-600 transition-colors">
+                    <button onClick={handleMarkAllRead} className="text-xs font-heading font-bold text-[#6324FC] hover:underline transition-colors">
                       Mark all read
                     </button>
                   )}
                 </div>
-                <div className="max-h-[350px] overflow-y-auto divide-y divide-slate-100 dark:divide-white/[0.04] custom-scrollbar">
+                <div className="max-h-[350px] overflow-y-auto divide-y divide-primary/5 custom-scrollbar">
                   {notifications.length === 0 ? (
-                    <div className="p-8 text-center text-slate-400">
+                    <div className="p-8 text-center text-secondary">
                       <Bell className="mx-auto mb-2 opacity-30" size={24} />
-                      <p className="text-sm font-medium">No new notifications</p>
+                      <p className="text-sm font-sans">No new notifications</p>
                     </div>
                   ) : (
                     notifications.map(notif => (
                       <div 
                         key={notif._id} 
                         onClick={() => !notif.isRead && handleMarkAsRead(notif._id)}
-                        className={`p-4 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors flex gap-3.5 ${!notif.isRead ? 'bg-primary-500/[0.03] cursor-pointer' : ''}`}
+                        className={`p-4 hover:bg-primary/5 transition-colors flex gap-3.5 ${!notif.isRead ? 'bg-[#6324FC]/[0.03] cursor-pointer' : ''}`}
                       >
-                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                           notif.type === 'payment' ? 'bg-emerald-500/10 text-emerald-500' :
-                          notif.type === 'lead' ? 'bg-purple-500/10 text-purple-500' :
-                          'bg-slate-100 dark:bg-white/5 text-slate-500'
+                          notif.type === 'lead' ? 'bg-[#6324FC]/10 text-[#6324FC]' :
+                          'bg-primary/5 text-secondary'
                         }`}>
-                          {notif.type === 'payment' ? <DollarSign size={16} /> : notif.type === 'lead' ? <Users size={16} /> : <CheckCircle2 size={16} />}
+                          {notif.type === 'payment' ? <DollarSign size={15} /> : notif.type === 'lead' ? <Users size={15} /> : <CheckCircle2 size={15} />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className={`text-xs ${!notif.isRead ? 'font-bold text-slate-900 dark:text-white' : 'font-medium text-slate-600 dark:text-slate-400'}`}>
+                          <p className={`text-xs ${!notif.isRead ? 'font-bold text-primary' : 'font-medium text-secondary'}`}>
                             {notif.message}
                           </p>
-                          <p className="text-[11px] text-slate-400 mt-1">
+                          <p className="text-[10px] text-secondary/70 mt-1">
                             {getRelativeTime(notif.createdAt)}
                           </p>
                         </div>
@@ -248,52 +248,66 @@ export default function Topbar() {
         <div className="relative pl-1" ref={profileRef}>
           <button 
             onClick={() => { setShowProfile(!showProfile); setShowNotifications(false); }}
-            className="flex items-center gap-2.5 p-1 rounded-xl hover:bg-slate-100/80 dark:hover:bg-white/[0.04] transition-colors"
+            className="flex items-center gap-2.5 p-1 rounded-lg hover:bg-primary/5 transition-colors"
           >
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary-500 to-indigo-600 p-[2px] shadow-sm">
-              <div className="w-full h-full rounded-[10px] bg-slate-900 flex items-center justify-center overflow-hidden">
-                <img src={user?.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.name || 'Felix'}&backgroundColor=transparent`} alt="User Avatar" className="w-full h-full object-cover" />
+            <div className="w-9 h-9 rounded-lg bg-[#6324FC]/20 border border-[#6324FC]/40 p-[2px] shadow-sm relative">
+              <div className="w-full h-full rounded-[6px] bg-[#060608] flex items-center justify-center overflow-hidden">
+                <Image 
+                  src={user?.image || `/assets/mamun.ceo.webp`} 
+                  alt="User Avatar" 
+                  width={36}
+                  height={36}
+                  className="w-full h-full object-cover" 
+                  unoptimized
+                />
               </div>
             </div>
             <div className="hidden md:block text-left">
-              <p className="text-xs font-bold text-slate-900 dark:text-white leading-tight">{user?.name || 'Admin'}</p>
-              <p className="text-[10px] font-semibold text-primary-500 uppercase tracking-wider">
-                {user?.role === 'owner' ? 'Owner' : user?.role === 'admin' ? 'Admin' : user?.role === 'editor' ? 'Editor' : 'Team'}
+              <p className="text-xs font-heading font-bold text-primary leading-tight">{user?.name || 'Mamun'}</p>
+              <p className="text-[10px] font-heading font-semibold text-[#6324FC] uppercase tracking-wider">
+                {user?.role === 'owner' ? 'Founder / CEO' : user?.role === 'admin' ? 'Admin' : user?.role === 'editor' ? 'Editor' : 'Team Member'}
               </p>
             </div>
-            <ChevronDown size={14} className={`text-slate-400 transition-transform duration-200 ${showProfile ? 'rotate-180' : ''}`} />
+            <ChevronDown size={14} className={`text-secondary transition-transform duration-200 ${showProfile ? 'rotate-180' : ''}`} />
           </button>
 
           <AnimatePresence>
             {showProfile && (
               <motion.div
-                initial={{ opacity: 0, y: 10, scale: 0.96 }}
+                initial={{ opacity: 0, y: 8, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 10, scale: 0.96 }}
+                exit={{ opacity: 0, y: 8, scale: 0.98 }}
                 transition={{ duration: 0.15 }}
-                className="absolute right-0 mt-3 w-64 bg-white dark:bg-[#0E1017] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 p-2"
+                className="absolute right-0 mt-3 w-64 bg-surface border border-primary/15 rounded-lg shadow-2xl overflow-hidden z-50 p-2 backdrop-blur-2xl"
               >
-                <div className="px-3 py-2.5 mb-1 border-b border-slate-100 dark:border-white/[0.06] flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary-500 to-indigo-600 p-[1.5px] shrink-0">
-                    <div className="w-full h-full rounded-[10px] bg-slate-900 flex items-center justify-center overflow-hidden">
-                      <img src={user?.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.name || 'Felix'}&backgroundColor=transparent`} alt="User Avatar" className="w-full h-full object-cover" />
+                <div className="px-3 py-2.5 mb-1 border-b border-primary/10 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-[#6324FC]/20 border border-[#6324FC]/40 p-[1.5px] shrink-0">
+                    <div className="w-full h-full rounded-[6px] bg-[#060608] flex items-center justify-center overflow-hidden">
+                      <Image 
+                        src={user?.image || `/assets/mamun.ceo.webp`} 
+                        alt="User Avatar" 
+                        width={40}
+                        height={40}
+                        className="w-full h-full object-cover" 
+                        unoptimized
+                      />
                     </div>
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{user?.name || 'Admin'}</p>
-                    <p className="text-xs text-slate-400 truncate">{user?.email || ''}</p>
+                    <p className="text-sm font-heading font-bold text-primary truncate">{user?.name || 'Mamun'}</p>
+                    <p className="text-xs font-sans text-secondary truncate">{user?.email || ''}</p>
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <button onClick={() => { setShowProfile(false); router.push('/settings'); }} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors text-xs font-semibold">
-                    <Settings size={15} className="text-slate-400" />
+                  <button onClick={() => { setShowProfile(false); router.push('/settings'); }} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-primary hover:bg-primary/5 transition-colors text-xs font-heading font-semibold">
+                    <Settings size={15} className="text-secondary" />
                     System Settings
                   </button>
                 </div>
 
-                <div className="mt-1 pt-1 border-t border-slate-100 dark:border-white/[0.06]">
-                  <button onClick={handleSignOut} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors text-xs font-semibold">
+                <div className="mt-1 pt-1 border-t border-primary/10">
+                  <button onClick={handleSignOut} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-rose-500 hover:bg-rose-500/10 transition-colors text-xs font-heading font-semibold">
                     <LogOut size={15} />
                     Sign Out
                   </button>

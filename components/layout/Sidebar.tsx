@@ -2,9 +2,10 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { 
-  LayoutDashboard, Users, Briefcase, DollarSign, Settings, X, Wallet, Map, Clock, Hexagon, Sparkles, Globe 
+  LayoutDashboard, Users, Briefcase, DollarSign, Settings, X, Wallet, Map, Clock, Globe, Sparkles, CheckSquare 
 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import { useSidebar } from './SidebarContext';
@@ -12,12 +13,13 @@ import { useAppearance } from './AppearanceContext';
 import { useUser } from './UserContext';
 
 const navItems = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, category: 'Home' },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, category: 'Overview' },
   { name: 'Marketplace', href: '/marketplace', icon: Globe, category: 'Marketplace' },
   { name: 'Clients', href: '/marketplace/clients', icon: Users, category: 'Marketplace' },
-  { name: 'Projects', href: '/projects', icon: Briefcase, category: 'Work' },
-  { name: 'Roadmap', href: '/roadmap', icon: Map, category: 'Work' },
-  { name: 'Timesheets', href: '/timesheets', icon: Clock, category: 'Work' },
+  { name: 'Projects', href: '/projects', icon: Briefcase, category: 'Operations' },
+  { name: 'Work Log & Tasks', href: '/tasks', icon: CheckSquare, category: 'Operations' },
+  { name: 'Roadmap', href: '/roadmap', icon: Map, category: 'Operations' },
+  { name: 'Timesheets', href: '/timesheets', icon: Clock, category: 'Operations' },
   { name: 'Finance', href: '/finance', icon: DollarSign, category: 'Finance' },
   { name: 'Expenses', href: '/daily-expenses', icon: Wallet, category: 'Finance' },
   { name: 'Settings', href: '/settings', icon: Settings, category: 'System' },
@@ -40,12 +42,12 @@ export default function Sidebar() {
     }
     
     if (user.role === 'editor') {
-      const allowed = ['/dashboard', '/marketplace', '/marketplace/clients', '/projects', '/roadmap', '/timesheets', '/team-logs'];
+      const allowed = ['/dashboard', '/marketplace', '/marketplace/clients', '/projects', '/tasks', '/roadmap', '/timesheets', '/team-logs'];
       return allowed.includes(item.href);
     }
 
     if (user.role === 'marketplace_team') {
-      const allowed = ['/dashboard', '/marketplace', '/marketplace/clients', '/team-logs'];
+      const allowed = ['/dashboard', '/marketplace', '/marketplace/clients', '/tasks', '/team-logs'];
       return allowed.includes(item.href);
     }
     
@@ -53,9 +55,9 @@ export default function Sidebar() {
   });
 
   const categories = [
-    { name: 'Home', items: filteredNavItems.filter(i => i.category === 'Home') },
+    { name: 'Overview', items: filteredNavItems.filter(i => i.category === 'Overview') },
     { name: 'Marketplace', items: filteredNavItems.filter(i => i.category === 'Marketplace') },
-    { name: 'Work', items: filteredNavItems.filter(i => i.category === 'Work') },
+    { name: 'Operations', items: filteredNavItems.filter(i => i.category === 'Operations') },
     { name: 'Finance', items: filteredNavItems.filter(i => i.category === 'Finance') },
     { name: 'System', items: filteredNavItems.filter(i => i.category === 'System') },
   ].filter(cat => cat.items.length > 0);
@@ -65,33 +67,40 @@ export default function Sidebar() {
       {/* Mobile Backdrop */}
       {isMobileSidebarOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-md lg:hidden"
+          className="fixed inset-0 z-40 bg-black/70 backdrop-blur-md lg:hidden"
           onClick={() => setIsMobileSidebarOpen(false)}
         />
       )}
       
-      <aside className={`${isCollapsed ? 'w-[84px]' : 'w-[260px]'} fixed top-0 bottom-0 left-0 z-50 bg-white/90 dark:bg-[#07080B]/95 backdrop-blur-2xl border-r border-slate-200/80 dark:border-white/5 flex flex-col transition-all duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-[120%] lg:translate-x-0'}`}>
+      <aside className={`${isCollapsed ? 'w-[80px]' : 'w-[260px]'} fixed top-0 bottom-0 left-0 z-50 bg-[#f5f5f0]/95 dark:bg-[#060608]/95 backdrop-blur-2xl border-r border-primary/10 flex flex-col transition-all duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-[120%] lg:translate-x-0'}`}>
         
         {/* Logo Section */}
-        <div className={`h-[72px] flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-5'} border-b border-slate-200/50 dark:border-white/[0.04]`}>
+        <div className={`h-[72px] flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-5'} border-b border-primary/10`}>
           <Link href="/dashboard" className="flex items-center gap-3 group" onClick={() => setIsMobileSidebarOpen(false)}>
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-primary-500/20 group-hover:scale-105 transition-transform duration-300">
-              <Hexagon size={20} fill="currentColor" />
-            </div>
-            {!isCollapsed && (
-              <div className="flex flex-col">
-                <span className="font-bold text-[15px] tracking-tight text-slate-900 dark:text-white leading-tight">
-                  Injaazh ERP
-                </span>
-                <span className="text-[10px] font-semibold text-primary-500 tracking-wider uppercase flex items-center gap-1">
-                  <Sparkles size={10} /> AI Operating OS
+            {isCollapsed ? (
+              <div className="w-10 h-10 rounded-lg bg-[#6324FC]/10 border border-[#6324FC]/30 flex items-center justify-center text-[#6324FC] group-hover:scale-105 transition-transform duration-300 shadow-[0_0_15px_rgba(99,36,252,0.2)]">
+                <span className="font-heading font-bold text-lg text-[#6324FC]">I</span>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-0.5">
+                <div className="relative h-7 w-28">
+                  <Image 
+                    src="/assets/logo.webp" 
+                    alt="INJAAZH" 
+                    fill 
+                    className="object-contain object-left dark:brightness-0 dark:invert transition-all duration-300" 
+                    priority
+                  />
+                </div>
+                <span className="text-[10px] font-heading font-semibold text-[#6324FC] tracking-wider uppercase flex items-center gap-1">
+                  <Sparkles size={10} /> Business OS
                 </span>
               </div>
             )}
           </Link>
           <button 
             onClick={() => setIsMobileSidebarOpen(false)}
-            className="lg:hidden p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors"
+            className="lg:hidden p-2 text-secondary hover:text-primary rounded-lg transition-colors"
           >
             <X size={18} />
           </button>
@@ -102,18 +111,18 @@ export default function Sidebar() {
           {loading ? (
             <div className="space-y-2 p-2">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 animate-pulse">
-                  <div className="w-4 h-4 rounded bg-slate-200 dark:bg-white/10" />
-                  <div className="h-3 bg-slate-200 dark:bg-white/10 rounded w-24" />
+                <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/5 animate-pulse">
+                  <div className="w-4 h-4 rounded bg-primary/10" />
+                  <div className="h-3 bg-primary/10 rounded w-24" />
                 </div>
               ))}
             </div>
           ) : (
-            categories.map((cat, idx) => (
+            categories.map((cat) => (
               <div key={cat.name} className="space-y-1">
                 {!isCollapsed && (
-                  <div className="flex items-center justify-between px-3 pt-1 pb-1">
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                  <div className="flex items-center justify-between px-3 pt-2 pb-1">
+                    <span className="text-[11px] font-heading font-bold text-secondary/70 uppercase tracking-widest">
                       {cat.name}
                     </span>
                   </div>
@@ -125,7 +134,7 @@ export default function Sidebar() {
         </nav>
 
         {/* Bottom Theme & User Info */}
-        <div className="p-3 border-t border-slate-200/60 dark:border-white/[0.04] bg-slate-50/50 dark:bg-black/20 flex flex-col gap-2">
+        <div className="p-3 border-t border-primary/10 bg-primary/[0.02] flex flex-col gap-2">
           <div className="flex items-center justify-center">
             <ThemeToggle />
           </div>
@@ -150,26 +159,26 @@ export default function Sidebar() {
         href={item.href}
         title={isCollapsed ? item.name : undefined}
         onClick={() => setIsMobileSidebarOpen(false)}
-        className={`group relative flex items-center ${isCollapsed ? 'justify-center w-11 h-11 mx-auto' : 'gap-3 px-3 py-2.5'} rounded-xl text-sm font-medium transition-all duration-200 ${
+        className={`group relative flex items-center ${isCollapsed ? 'justify-center w-11 h-11 mx-auto' : 'gap-3 px-3 py-2.5'} rounded-lg text-sm font-sans font-medium transition-all duration-300 ${
           isActive 
-            ? 'bg-primary-500/10 text-primary-600 dark:bg-primary-500/15 dark:text-primary-400 font-semibold shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]' 
-            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-white/[0.04]'
+            ? 'bg-[#6324FC]/10 text-[#6324FC] dark:text-[#edeae2] font-semibold border border-[#6324FC]/20 shadow-[0_0_15px_rgba(99,36,252,0.1)]' 
+            : 'text-secondary hover:text-primary hover:bg-primary/5 hover:border-primary/5'
         }`}
       >
-        {/* Active Pill Indicator */}
+        {/* Active Indicator Bar */}
         {isActive && (
-          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary-500 rounded-r-full shadow-[0_0_8px_rgba(var(--color-primary-500),0.8)]" />
+          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-[#6324FC] rounded-r shadow-[0_0_10px_rgba(99,36,252,0.8)]" />
         )}
         
         <Icon 
           size={isCollapsed ? 20 : 18} 
           className={`shrink-0 transition-transform duration-200 group-hover:scale-110 ${
-            isActive ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white'
+            isActive ? 'text-[#6324FC]' : 'text-secondary group-hover:text-primary'
           }`} 
         />
         
         {!isCollapsed && (
-          <span className="truncate">
+          <span className="truncate font-heading tracking-wide">
             {item.name}
           </span>
         )}

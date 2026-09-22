@@ -1,335 +1,224 @@
 @import "tailwindcss";
 
-@theme inline {
-  /* Custom Font Families */
-  --font-family-outfit: var(--font-outfit);
-  --font-family-mono: var(--font-mono);
-  
-  /* Colors */
-  --color-glass-border: rgba(255, 255, 255, 0.05);
-  --shadow-glow: 0 0 40px -10px rgba(99, 102, 241, 0.3);
-  --blur-3xl: 64px;
-  --blur-4xl: 100px;
-  
-  --color-primary-50: var(--accent-50);
-  --color-primary-100: var(--accent-100);
-  --color-primary-400: var(--accent-400);
-  --color-primary-500: var(--accent-500);
-  --color-primary-600: var(--accent-600);
-  --color-primary-700: var(--accent-700);
-  
-  /* Typography Scale - Perfect Ratios */
-  --font-size-xs: 0.75rem;      /* 12px */
-  --font-size-sm: 0.875rem;     /* 14px */
-  --font-size-base: 1rem;       /* 16px */
-  --font-size-lg: 1.125rem;     /* 18px */
-  --font-size-xl: 1.25rem;      /* 20px */
-  --font-size-2xl: 1.5rem;      /* 24px */
-  --font-size-3xl: 1.875rem;    /* 30px */
-  --font-size-4xl: 2.25rem;     /* 36px */
-  --font-size-5xl: 3rem;        /* 48px */
-  --font-size-6xl: 3.75rem;     /* 60px */
-  
-  /* Line Heights */
-  --line-height-tight: 1.25;
-  --line-height-snug: 1.375;
-  --line-height-normal: 1.5;
-  --line-height-relaxed: 1.625;
-  --line-height-loose: 2;
-  
-  /* Letter Spacing */
-  --letter-spacing-tighter: -0.05em;
-  --letter-spacing-tight: -0.025em;
-  --letter-spacing-normal: 0;
-  --letter-spacing-wide: 0.025em;
-  --letter-spacing-wider: 0.05em;
-  --letter-spacing-widest: 0.1em;
-}
-
 @custom-variant dark (&:where(.dark, .dark *));
 
+@theme {
+  --color-background: var(--bg);
+  --color-surface: var(--surface);
+  --color-primary: var(--text-primary);
+  --color-secondary: var(--text-secondary);
+  --color-accent: #6324fc;
+
+  --font-sans: var(--font-dm-sans);
+  --font-heading: var(--font-cabin);
+  --font-mono: var(--font-mono);
+
+  --color-primary-50: #f5f3ff;
+  --color-primary-100: #ede9fe;
+  --color-primary-400: #a78bfa;
+  --color-primary-500: #6324fc;
+  --color-primary-600: #521bd9;
+  --color-primary-700: #4214b3;
+}
+
 @layer base {
-  /* SSR Safe Defaults (Electric Violet / Neon Purple) */
   :root {
-    --accent-50: #faf5ff;
-    --accent-100: #f3e8ff;
-    --accent-400: #c084fc;
-    --accent-500: #a855f7;
-    --accent-600: #9333ea;
-    --accent-700: #7e22ce;
-  }
-  
-  /* Neon Blue / Cyan */
-  [data-accent="blue"] {
-    --accent-50: #ecfeff;
-    --accent-100: #cffafe;
-    --accent-400: #22d3ee;
-    --accent-500: #06b6d4;
-    --accent-600: #0891b2;
-    --accent-700: #0e7490;
+    color-scheme: light;
+    --bg: #f5f5f0;
+    --surface: #ffffff;
+    --text-primary: #060608;
+    --text-secondary: #555555;
+    --bg-opacity-80: rgba(245, 245, 240, 0.95);
+    --border-opacity-10: rgba(6, 6, 8, 0.1);
   }
 
-  /* Vibrant Emerald / Neon Green */
-  [data-accent="emerald"] {
-    --accent-50: #ecfdf5;
-    --accent-100: #d1fae5;
-    --accent-400: #10b981;
-    --accent-500: #00fa9a; /* Spring Green */
-    --accent-600: #059669;
-    --accent-700: #047857;
+  html {
+    overflow-x: hidden;
   }
 
-  /* Neon Rose / Pink */
-  [data-accent="rose"] {
-    --accent-50: #fdf2f8;
-    --accent-100: #fce7f3;
-    --accent-400: #f472b6;
-    --accent-500: #ec4899;
-    --accent-600: #db2777;
-    --accent-700: #be185d;
-  }
-
-  [data-accent="amber"] {
-    --accent-50: #fffbeb;
-    --accent-100: #fef3c7;
-    --accent-400: #fbbf24;
-    --accent-500: #f59e0b;
-    --accent-600: #d97706;
-    --accent-700: #b45309;
+  html.dark {
+    color-scheme: dark;
+    --bg: #060608;
+    --surface: #0a0a0d;
+    --text-primary: #edeae2;
+    --text-secondary: #888888;
+    --bg-opacity-80: rgba(6, 6, 8, 0.95);
+    --border-opacity-10: rgba(237, 234, 226, 0.1);
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 dark:bg-[#000000] dark:text-slate-200 antialiased transition-colors duration-300;
+    background-color: var(--bg);
+    color: var(--text-primary);
+    overflow-x: hidden;
+    transition: background-color 0.5s ease, color 0.5s ease;
+    font-family: var(--font-sans);
   }
-  
-  h1 {
-    @apply text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight;
-  }
-  
-  h2 {
-    @apply text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white leading-snug;
-  }
-  
-  h3 {
-    @apply text-2xl md:text-3xl font-semibold text-slate-800 dark:text-slate-100 leading-snug;
-  }
-  
-  h4 {
-    @apply text-xl md:text-2xl font-semibold text-slate-800 dark:text-slate-100 leading-normal;
-  }
-  
-  p, span, div {
-    @apply leading-relaxed;
-  }
-  
-  p {
-    @apply text-base text-slate-600 dark:text-slate-400;
-  }
-  
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  button,
   a {
-    @apply transition-colors duration-200;
+    font-family: var(--font-heading);
+    text-transform: capitalize;
+  }
+
+  p, span, div {
+    line-height: 1.6;
   }
 }
 
-/* Custom Ultra-thin Scrollbars */
-::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+/* Custom Scrollbar */
+.custom-scrollbar, ::-webkit-scrollbar {
+  scrollbar-width: thin;
 }
+
+html.dark .custom-scrollbar, html.dark ::-webkit-scrollbar {
+  color-scheme: dark;
+  scrollbar-color: rgba(99, 36, 252, 0.4) transparent;
+}
+
+html:not(.dark) .custom-scrollbar, html:not(.dark) ::-webkit-scrollbar {
+  color-scheme: light;
+  scrollbar-color: rgba(99, 36, 252, 0.4) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+  transition: background 0.3s ease;
 }
+
+html:not(.dark) ::-webkit-scrollbar-thumb {
+  background: rgba(6, 6, 8, 0.15);
+  border-radius: 9999px;
+  transition: background 0.3s ease;
+}
+
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: #6324fc !important;
 }
 
 @layer utilities {
-  .neu-base-bg {
-    background-color: #f8fafc;
+  .stroke-text {
+    color: transparent;
+    -webkit-text-stroke: 1px var(--text-primary);
   }
-  .dark .neu-base-bg {
-    background-color: #08090C;
+
+  .stroke-white {
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.7);
   }
-  
+
+  .glass-card {
+    @apply backdrop-blur-xl bg-primary/5 border border-primary/10 transition-colors duration-500;
+  }
+
+  .glass-panel {
+    background: var(--surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-opacity-10);
+  }
+
   .neu-flat {
-    background-color: #ffffff;
-    border: 1px solid rgba(226, 232, 240, 0.8);
-    border-radius: 1.25rem;
+    background-color: var(--surface);
+    border: 1px solid var(--border-opacity-10);
+    border-radius: 0.75rem;
     box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
   }
 
   .dark .neu-flat {
-    background-color: #0E1017;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 1.25rem;
-    box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.5);
-  }
-
-  .glass-card {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04);
-  }
-
-  .dark .glass-card {
-    background: rgba(14, 16, 23, 0.75);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.6);
-  }
-
-  .glass-panel {
-    background: rgba(248, 250, 252, 0.8);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(226, 232, 240, 0.6);
-  }
-
-  .dark .glass-panel {
-    background: rgba(10, 11, 16, 0.8);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background-color: #0a0a0d;
     border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.6);
   }
 
-  .neu-pressed {
-    background-color: #f1f5f9;
-    border: 1px solid rgba(226, 232, 240, 0.5);
-    border-radius: 1rem;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.04);
-  }
-  .dark .neu-pressed {
-    background-color: #07080B;
-    border: 1px solid rgba(255, 255, 255, 0.03);
-    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.9);
-  }
-  
   .neu-button {
-    background-color: #ffffff;
-    border: 1px solid rgba(226, 232, 240, 0.8);
+    background-color: var(--surface);
+    border: 1px solid var(--border-opacity-10);
     box-shadow: 0 2px 6px -1px rgba(0, 0, 0, 0.04);
-    border-radius: 0.75rem;
+    border-radius: 0.5rem;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    color: #0f172a;
+    color: var(--text-primary);
+    font-family: var(--font-heading);
   }
+
   .neu-button:hover {
-    background-color: #f8fafc;
-    border-color: rgba(203, 213, 225, 0.9);
-    box-shadow: 0 6px 16px -3px rgba(0, 0, 0, 0.08);
-  }
-  .dark .neu-button {
-    background-color: #121520;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.4);
-    color: #f1f5f9;
-  }
-  .dark .neu-button:hover {
-    background-color: #181C2B;
-    border-color: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 6px 20px -3px rgba(0, 0, 0, 0.6);
-  }
-  
-  .neu-button:active, .neu-button-active {
-    background-color: #e2e8f0;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-  }
-  .dark .neu-button:active, .dark .neu-button-active {
-    background-color: #07080C;
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+    border-color: rgba(99, 36, 252, 0.4);
+    box-shadow: 0 0 15px rgba(99, 36, 252, 0.15);
   }
 
-  /* Shimmer effect for skeleton loading */
-  .shimmer {
-    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0) 100%);
-    background-size: 200% 100%;
-    animation: shimmer 1.8s infinite;
-  }
-
-  @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-  }
-
-  /* Glow helpers */
   .glow-primary {
-    box-shadow: 0 0 25px -5px rgba(168, 85, 247, 0.35);
-  }
-  .glow-cyan {
-    box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.35);
-  }
-  .glow-emerald {
-    box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.35);
+    box-shadow: 0 0 25px -5px rgba(99, 36, 252, 0.4);
   }
 
-  /* React Datepicker Custom Styles for Dark Minimal Look */
-  .react-datepicker-wrapper {
-    width: 100%;
+  .glow-cyan {
+    box-shadow: 0 0 25px -5px rgba(0, 229, 255, 0.4);
   }
-  .react-datepicker {
-    font-family: inherit !important;
-    border: 1px solid rgba(226, 232, 240, 0.8) !important;
+
+  .clip-cta {
+    clip-path: polygon(
+      0 0,
+      100% 0,
+      100% calc(100% - 15px),
+      calc(100% - 15px) 100%,
+      0 100%
+    );
+  }
+}
+
+/* Gradient Text Shift Animation */
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient-shift {
+  background-size: 200% auto;
+  animation: gradient-shift 6s linear infinite;
+}
+
+/* Light mode overrides for high contrast and elegance */
+html:not(.dark) {
+  .bg-\[\#060608\],
+  .bg-\[\#0a0a0d\],
+  .bg-\[\#08080A\] {
+    background-color: var(--surface) !important;
+  }
+
+  .text-white {
+    color: var(--text-primary) !important;
+  }
+
+  .border-white\/5,
+  .border-white\/10 {
+    border-color: rgba(6, 6, 8, 0.1) !important;
+  }
+
+  .bg-white\/5,
+  .bg-white\/10,
+  .bg-white\/\[0\.02\] {
     background-color: #ffffff !important;
-    border-radius: 1rem !important;
-    padding: 0.5rem;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-  }
-  .dark .react-datepicker {
-    background-color: #0E1017 !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    box-shadow: 0 10px 40px -5px rgba(0, 0, 0, 0.6);
-  }
-  .react-datepicker__header {
-    background-color: transparent !important;
-    border-bottom: none !important;
-  }
-  .dark .react-datepicker__header {
-    border-bottom: none !important;
-  }
-  .react-datepicker__current-month, .react-datepicker-time__header, .react-datepicker-year-header {
-    color: #0f172a !important;
-    font-weight: 600 !important;
-    font-size: 0.875rem !important;
-  }
-  .dark .react-datepicker__current-month, .dark .react-datepicker-time__header, .dark .react-datepicker-year-header {
-    color: #fff !important;
-  }
-  .react-datepicker__day-name, .react-datepicker__day, .react-datepicker__time-name {
-    color: #64748b !important;
-    width: 2rem !important;
-    height: 2rem !important;
-    line-height: 2rem !important;
-    margin: 0.25rem !important;
-    border-radius: 0.5rem !important;
-    transition: all 0.2s !important;
-  }
-  .dark .react-datepicker__day-name, .dark .react-datepicker__day, .dark .react-datepicker__time-name {
-    color: #94a3b8 !important;
-  }
-  .react-datepicker__day:hover {
-    background-color: #f1f5f9 !important;
-    color: #0f172a !important;
-  }
-  .dark .react-datepicker__day:hover {
-    background-color: rgba(255, 255, 255, 0.08) !important;
-    color: #fff !important;
-  }
-  .react-datepicker__day--selected, .react-datepicker__day--keyboard-selected {
-    background-color: #6366f1 !important;
-    color: #fff !important;
-    font-weight: 600 !important;
-  }
-  .react-datepicker__triangle {
-    display: none !important;
-  }
-  .react-datepicker-popper {
-    padding-top: 10px !important;
-    z-index: 60 !important;
+    border-color: rgba(6, 6, 8, 0.08) !important;
   }
 }

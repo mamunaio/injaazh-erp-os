@@ -5,18 +5,20 @@ import { Project } from '@/models/Project';
 import { Transaction } from '@/models/Transaction';
 import MarketplaceProject from '@/models/MarketplaceProject';
 import SeoProject from '@/models/SeoProject';
+import DailyTask from '@/models/DailyTask';
 
 export async function getDashboardData() {
   try {
     await connectToDatabase();
 
     // Fetch all data in parallel
-    const [projects, transactions, marketplaceProjects, seoProjects, clients] = await Promise.all([
+    const [projects, transactions, marketplaceProjects, seoProjects, clients, userDailyTasks] = await Promise.all([
       Project.find({}).lean(),
       Transaction.find({}).sort({ date: -1 }).lean(),
       MarketplaceProject.find({}).lean(),
       SeoProject.find({}).sort({ lastAudited: -1 }).limit(3).lean(),
       connectToDatabase().then(() => require('@/models/MarketplaceClient').default.find({}).lean()),
+      DailyTask.find({}).sort({ completed: 1, priority: -1, createdAt: -1 }).lean(),
     ]);
 
     const totalLeads = 0;
@@ -330,7 +332,19 @@ export async function getDashboardData() {
       }
     });
 
-    const todayTasks = [...todayProjectTasks];
+    // Map custom user daily tasks
+    const formattedUserTasks = (userDailyTasks || []).map((t: any) => ({
+      id: t._id?.toString() || '',
+      title: t.title || '',
+      description: t.description || '',
+      category: t.category || 'General',
+      priority: t.priority || 'Medium',
+      completed: !!t.completed,
+      due_date: t.dueDate ? new Date(t.dueDate).toISOString() : '',
+      type: 'Todo',
+    }));
+
+    const todayTasks = [...formattedUserTasks, ...todayProjectTasks];
 
     // Upcoming Meetings
     const upcomingMeetings: any[] = [];

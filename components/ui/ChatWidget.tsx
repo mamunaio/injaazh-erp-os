@@ -141,15 +141,15 @@ export default function ChatWidget() {
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.08 }}
+            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 z-[999] w-13 h-13 rounded-2xl bg-gradient-to-tr from-primary-600 via-indigo-600 to-purple-600 shadow-xl shadow-primary-500/25 flex items-center justify-center text-white border border-white/20 group"
+            className="fixed bottom-6 right-6 z-[999] w-12 h-12 rounded-lg bg-[#6324FC] shadow-[0_0_25px_rgba(99,36,252,0.5)] flex items-center justify-center text-white border border-[#6324FC]/40 group"
           >
             <Bot size={22} className="group-hover:rotate-12 transition-transform duration-300" />
             <span className="absolute -top-1 -right-1 flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border-2 border-[#09090B]" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00E5FF] opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00E5FF] border border-[#060608]" />
             </span>
           </motion.button>
         )}
@@ -159,31 +159,31 @@ export default function ChatWidget() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            initial={{ opacity: 0, y: 15, scale: 0.98 }}
             animate={{ 
               opacity: 1, 
               y: 0, 
               scale: 1,
-              height: isMinimized ? 'auto' : '620px',
+              height: isMinimized ? 'auto' : '600px',
             }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            exit={{ opacity: 0, y: 15, scale: 0.98 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
-            className={`fixed bottom-6 right-6 z-[999] w-[400px] max-w-[calc(100vw-2rem)] flex flex-col rounded-3xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-2xl backdrop-blur-2xl bg-white/95 dark:bg-[#0E1017]/95 ${isMinimized ? '' : 'max-h-[calc(100vh-5rem)]'}`}
+            className={`fixed bottom-6 right-6 z-[999] w-[400px] max-w-[calc(100vw-2rem)] flex flex-col rounded-lg overflow-hidden border border-primary/20 shadow-2xl backdrop-blur-2xl bg-surface/95 ${isMinimized ? '' : 'max-h-[calc(100vh-5rem)]'}`}
           >
             {/* Header */}
             <div 
-              className="flex items-center justify-between px-4 py-3.5 bg-gradient-to-r from-primary-500/15 via-indigo-500/10 to-transparent border-b border-slate-100 dark:border-white/[0.06] cursor-pointer select-none" 
+              className="flex items-center justify-between px-4 py-3.5 bg-primary/[0.03] border-b border-primary/10 cursor-pointer select-none" 
               onClick={() => setIsMinimized(!isMinimized)}
             >
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-primary-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-primary-500/20">
+                <div className="w-8 h-8 rounded-lg bg-[#6324FC]/20 border border-[#6324FC]/30 flex items-center justify-center text-[#6324FC] shadow-[0_0_10px_rgba(99,36,252,0.2)]">
                   <Sparkles size={16} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-slate-900 dark:text-white leading-tight">AI Business Copilot</h3>
+                  <h3 className="font-heading font-bold text-sm text-primary leading-tight">AI Business Copilot</h3>
                   <div className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[10px] text-emerald-500 font-semibold tracking-wide">Gemini 2.5 Active</span>
+                    <span className="text-[10px] font-heading text-emerald-500 font-semibold tracking-wide">Gemini AI Active</span>
                   </div>
                 </div>
               </div>
@@ -191,21 +191,21 @@ export default function ChatWidget() {
                 <button 
                   onClick={(e) => { e.stopPropagation(); clearChat(); }}
                   title="Clear conversation"
-                  className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg transition-colors"
+                  className="p-1.5 text-secondary hover:text-primary hover:bg-primary/5 rounded transition-colors"
                 >
-                  <Trash2 size={15} />
+                  <Trash2 size={14} />
                 </button>
                 <button 
                   onClick={(e) => { e.stopPropagation(); setIsMinimized(!isMinimized); }}
-                  className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg transition-colors"
+                  className="p-1.5 text-secondary hover:text-primary hover:bg-primary/5 rounded transition-colors"
                 >
-                  <Minus size={15} />
+                  <Minus size={14} />
                 </button>
                 <button 
                   onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}
-                  className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors"
+                  className="p-1.5 text-secondary hover:text-rose-500 hover:bg-rose-500/10 rounded transition-colors"
                 >
-                  <X size={15} />
+                  <X size={14} />
                 </button>
               </div>
             </div>
@@ -213,7 +213,7 @@ export default function ChatWidget() {
             {/* Chat Area */}
             {!isMinimized && (
               <>
-                <div className="flex-1 overflow-y-auto p-4 space-y-3.5 custom-scrollbar bg-slate-50/50 dark:bg-black/20">
+                <div className="flex-1 overflow-y-auto p-4 space-y-3.5 custom-scrollbar bg-primary/[0.01]">
                   {messages.map((msg) => (
                     <div 
                       key={msg.id} 
