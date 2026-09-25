@@ -253,10 +253,10 @@ export default function DatePicker({
         ref={triggerRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-[#060608] border transition-all duration-200 text-xs text-left group ${
+        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-black/[0.02] dark:bg-[#07080b] border transition-all duration-200 text-xs text-left group ${
           isOpen 
-            ? 'border-[#6324FC] shadow-[0_0_12px_rgba(99,36,252,0.3)]' 
-            : 'border-white/10 hover:border-white/25'
+            ? 'border-[#6324FC] dark:border-[#6324FC] shadow-[0_0_15px_rgba(99,36,252,0.3)]' 
+            : 'border-black/10 dark:border-white/10 hover:border-[#6324FC]/40'
         }`}
       >
         <div className="flex items-center gap-2.5 min-w-0">
@@ -265,12 +265,12 @@ export default function DatePicker({
             className="shrink-0 transition-colors" 
             style={{ color: value ? color : '#94A3B8' }} 
           />
-          <span className={`font-mono truncate ${value ? 'text-white font-medium' : 'text-secondary/70'}`}>
+          <span className={`font-mono truncate ${value ? 'text-black dark:text-white font-medium' : 'text-slate-400'}`}>
             {displayValue}
           </span>
         </div>
 
-        <CalendarIcon size={13} className="text-secondary group-hover:text-white transition-colors shrink-0 ml-1.5 opacity-60" />
+        <CalendarIcon size={13} className="text-slate-400 group-hover:text-black dark:group-hover:text-white transition-colors shrink-0 ml-1.5 opacity-60" />
       </button>
 
       {/* Luxury Dropdown Calendar Popup - Rendered via React Portal */}
@@ -302,7 +302,7 @@ export default function DatePicker({
                 left: `${popupStyles.left}px`,
                 zIndex: 99999,
               }}
-              className="p-3.5 sm:p-4 bg-[#0a0a0d] border border-white/15 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.95),0_0_30px_rgba(99,36,252,0.25)] w-[285px] max-w-[calc(100vw-24px)] backdrop-blur-3xl select-none"
+              className="p-3.5 sm:p-4 bg-white dark:bg-[#0d0f17] border border-black/10 dark:border-white/15 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.8),0_0_25px_rgba(99,36,252,0.2)] w-[285px] max-w-[calc(100vw-24px)] backdrop-blur-3xl select-none"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Top / Bottom Accent Gradient Line */}
@@ -321,21 +321,21 @@ export default function DatePicker({
                 <button 
                   type="button" 
                   onClick={handlePrevMonth}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/15 text-secondary hover:text-white transition-all"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/15 text-slate-500 dark:text-slate-300 hover:text-black dark:hover:text-white transition-all"
                   title="Previous Month"
                 >
                   <ChevronLeft size={14} />
                 </button>
 
-                <div className="font-heading font-extrabold text-xs text-white tracking-wide flex items-center gap-1.5">
+                <div className="font-heading font-extrabold text-xs text-black dark:text-white tracking-wide flex items-center gap-1.5">
                   <span>{monthNames[currentMonth]}</span>
-                  <span className="text-secondary font-mono">{currentYear}</span>
+                  <span className="text-slate-400 font-mono">{currentYear}</span>
                 </div>
 
                 <button 
                   type="button" 
                   onClick={handleNextMonth}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/15 text-secondary hover:text-white transition-all"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/15 text-slate-500 dark:text-slate-300 hover:text-black dark:hover:text-white transition-all"
                   title="Next Month"
                 >
                   <ChevronRight size={14} />
@@ -345,7 +345,7 @@ export default function DatePicker({
               {/* Day of Week Headers */}
               <div className="grid grid-cols-7 gap-1 mb-2 text-center">
                 {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
-                  <div key={day} className="text-[10px] font-mono font-bold text-secondary uppercase">
+                  <div key={day} className="text-[10px] font-mono font-bold text-slate-400 uppercase">
                     {day}
                   </div>
                 ))}
@@ -357,7 +357,7 @@ export default function DatePicker({
               </div>
               
               {/* Quick Action Buttons */}
-              <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center gap-2">
+              <div className="mt-3 pt-2.5 border-t border-black/5 dark:border-white/10 flex items-center gap-2">
                 <button 
                   type="button"
                   onClick={(e) => {
@@ -369,7 +369,7 @@ export default function DatePicker({
                     onChange(`${yy}-${mm}-${dd}`);
                     setIsOpen(false);
                   }}
-                  className="flex-1 py-1.5 rounded-lg bg-[#6324FC]/20 hover:bg-[#6324FC]/30 border border-[#6324FC]/40 text-xs font-heading font-bold text-[#00E5FF] transition-all flex items-center justify-center gap-1"
+                  className="flex-1 py-1.5 rounded-lg bg-[#6324FC]/15 hover:bg-[#6324FC]/25 border border-[#6324FC]/40 text-xs font-heading font-bold text-[#6324FC] dark:text-[#00E5FF] transition-all flex items-center justify-center gap-1 shadow-sm"
                 >
                   <Sparkles size={11} /> Today
                 </button>
@@ -381,7 +381,7 @@ export default function DatePicker({
                     onChange('');
                     setIsOpen(false);
                   }}
-                  className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-rose-500/20 text-xs font-heading font-bold text-secondary hover:text-rose-400 transition-all"
+                  className="px-2.5 py-1.5 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-rose-500/20 text-xs font-heading font-bold text-slate-400 hover:text-rose-500 transition-all"
                 >
                   Clear
                 </button>

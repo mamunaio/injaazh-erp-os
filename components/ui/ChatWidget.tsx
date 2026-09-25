@@ -141,15 +141,15 @@ export default function ChatWidget() {
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.06 }}
+            whileTap={{ scale: 0.94 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 z-[999] w-12 h-12 rounded-lg bg-[#6324FC] shadow-[0_0_25px_rgba(99,36,252,0.5)] flex items-center justify-center text-white border border-[#6324FC]/40 group"
+            className="fixed bottom-6 right-6 z-[999] w-13 h-13 rounded-2xl bg-gradient-to-br from-[#6324FC] to-[#8B5CF6] shadow-[0_0_30px_rgba(99,36,252,0.6)] flex items-center justify-center text-white border border-white/20 group cursor-pointer"
           >
             <Bot size={22} className="group-hover:rotate-12 transition-transform duration-300" />
             <span className="absolute -top-1 -right-1 flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00E5FF] opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00E5FF] border border-[#060608]" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00E5FF] border border-[#07080b]" />
             </span>
           </motion.button>
         )}
@@ -168,22 +168,22 @@ export default function ChatWidget() {
             }}
             exit={{ opacity: 0, y: 15, scale: 0.98 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
-            className={`fixed bottom-6 right-6 z-[999] w-[400px] max-w-[calc(100vw-2rem)] flex flex-col rounded-lg overflow-hidden border border-primary/20 shadow-2xl backdrop-blur-2xl bg-surface/95 ${isMinimized ? '' : 'max-h-[calc(100vh-5rem)]'}`}
+            className={`fixed bottom-6 right-6 z-[999] w-[410px] max-w-[calc(100vw-2rem)] flex flex-col rounded-2xl overflow-hidden border border-black/10 dark:border-white/15 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),0_0_30px_rgba(99,36,252,0.18)] backdrop-blur-2xl bg-white dark:bg-[#0d0f17] ${isMinimized ? '' : 'max-h-[calc(100vh-5rem)]'}`}
           >
             {/* Header */}
             <div 
-              className="flex items-center justify-between px-4 py-3.5 bg-primary/[0.03] border-b border-primary/10 cursor-pointer select-none" 
+              className="flex items-center justify-between px-4 py-3.5 bg-black/[0.02] dark:bg-white/[0.02] border-b border-black/5 dark:border-white/10 cursor-pointer select-none" 
               onClick={() => setIsMinimized(!isMinimized)}
             >
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#6324FC]/20 border border-[#6324FC]/30 flex items-center justify-center text-[#6324FC] shadow-[0_0_10px_rgba(99,36,252,0.2)]">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#6324FC]/30 to-[#00E5FF]/20 border border-[#6324FC]/40 flex items-center justify-center text-[#6324FC] dark:text-[#00E5FF] shadow-[0_0_12px_rgba(99,36,252,0.25)]">
                   <Sparkles size={16} />
                 </div>
                 <div>
-                  <h3 className="font-heading font-bold text-sm text-primary leading-tight">AI Business Copilot</h3>
+                  <h3 className="font-heading font-bold text-xs uppercase tracking-wider text-black dark:text-white leading-tight">AI Business Copilot</h3>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[10px] font-heading text-emerald-500 font-semibold tracking-wide">Gemini AI Active</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.8)]" />
+                    <span className="text-[10px] font-mono text-emerald-500 font-bold tracking-wider">GEMINI AI ACTIVE</span>
                   </div>
                 </div>
               </div>
@@ -191,19 +191,19 @@ export default function ChatWidget() {
                 <button 
                   onClick={(e) => { e.stopPropagation(); clearChat(); }}
                   title="Clear conversation"
-                  className="p-1.5 text-secondary hover:text-primary hover:bg-primary/5 rounded transition-colors"
+                  className="p-1.5 text-slate-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors"
                 >
                   <Trash2 size={14} />
                 </button>
                 <button 
                   onClick={(e) => { e.stopPropagation(); setIsMinimized(!isMinimized); }}
-                  className="p-1.5 text-secondary hover:text-primary hover:bg-primary/5 rounded transition-colors"
+                  className="p-1.5 text-slate-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors"
                 >
                   <Minus size={14} />
                 </button>
                 <button 
                   onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}
-                  className="p-1.5 text-secondary hover:text-rose-500 hover:bg-rose-500/10 rounded transition-colors"
+                  className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors"
                 >
                   <X size={14} />
                 </button>
@@ -213,28 +213,28 @@ export default function ChatWidget() {
             {/* Chat Area */}
             {!isMinimized && (
               <>
-                <div className="flex-1 overflow-y-auto p-4 space-y-3.5 custom-scrollbar bg-primary/[0.01]">
+                <div className="flex-1 overflow-y-auto p-4 space-y-3.5 custom-scrollbar bg-black/[0.01] dark:bg-black/20">
                   {messages.map((msg) => (
                     <div 
                       key={msg.id} 
                       className={`flex gap-3 max-w-[94%] ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
                     >
                       <div className={`shrink-0 w-7 h-7 rounded-xl flex items-center justify-center text-xs shadow-sm ${
-                        msg.role === 'user' ? 'bg-primary-500 text-white' : 'bg-slate-200 dark:bg-white/10 text-slate-800 dark:text-white'
+                        msg.role === 'user' ? 'bg-[#6324FC] text-white shadow-[0_0_10px_rgba(99,36,252,0.4)]' : 'bg-black/5 dark:bg-white/10 text-slate-700 dark:text-white'
                       }`}>
                         {msg.role === 'user' ? <User size={13} /> : <Bot size={13} />}
                       </div>
                       <div className={`group relative p-3.5 rounded-2xl text-xs leading-relaxed ${
                         msg.role === 'user' 
-                          ? 'bg-primary-600 text-white rounded-tr-xs shadow-sm' 
-                          : 'bg-white dark:bg-[#151824] text-slate-800 dark:text-slate-200 rounded-tl-xs border border-slate-200/80 dark:border-white/[0.06] shadow-sm'
+                          ? 'bg-gradient-to-r from-[#6324FC] to-[#7C3AED] text-white rounded-tr-xs shadow-md' 
+                          : 'bg-slate-100 dark:bg-[#141824] text-slate-800 dark:text-slate-200 rounded-tl-xs border border-black/5 dark:border-white/[0.08] shadow-sm'
                       }`}>
                         <div className="prose prose-xs dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-slate-100 dark:prose-pre:bg-black/40 prose-pre:border prose-pre:border-slate-200 dark:prose-pre:border-white/10">
                           <ReactMarkdown remarkPlugins={[remarkGfm]}>
                             {msg.content}
                           </ReactMarkdown>
                         </div>
-                        <div className={`flex items-center justify-between mt-2 pt-1 border-t border-slate-100/50 dark:border-white/[0.04] text-[9px] opacity-60 ${msg.role === 'user' ? 'justify-end' : ''}`}>
+                        <div className={`flex items-center justify-between mt-2 pt-1 border-t border-black/5 dark:border-white/[0.06] text-[9px] font-mono text-slate-400 ${msg.role === 'user' ? 'justify-end text-white/70' : ''}`}>
                           <span>{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                           {msg.role === 'ai' && (
                             <button
@@ -242,7 +242,7 @@ export default function ChatWidget() {
                                 navigator.clipboard.writeText(msg.content);
                                 toast.success('Copied to clipboard');
                               }}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-slate-100 dark:hover:bg-white/10 rounded text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center gap-1"
+                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded text-slate-500 hover:text-black dark:hover:text-white flex items-center gap-1"
                               title="Copy response"
                             >
                               <Copy size={11} /> Copy
@@ -255,13 +255,13 @@ export default function ChatWidget() {
                   
                   {isLoading && (
                     <div className="flex gap-3 max-w-[90%]">
-                      <div className="shrink-0 w-7 h-7 rounded-xl bg-slate-200 dark:bg-white/10 flex items-center justify-center text-slate-700 dark:text-white">
+                      <div className="shrink-0 w-7 h-7 rounded-xl bg-black/5 dark:bg-white/10 flex items-center justify-center text-slate-700 dark:text-white">
                         <Bot size={13} />
                       </div>
-                      <div className="p-3 rounded-2xl bg-white dark:bg-[#151824] text-slate-500 rounded-tl-xs border border-slate-200/80 dark:border-white/[0.06] flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                        <span className="w-1.5 h-1.5 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                        <span className="w-1.5 h-1.5 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      <div className="p-3 rounded-2xl bg-slate-100 dark:bg-[#141824] text-slate-500 rounded-tl-xs border border-black/5 dark:border-white/[0.08] flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 bg-[#6324FC] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-1.5 h-1.5 bg-[#6324FC] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-1.5 h-1.5 bg-[#6324FC] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                       </div>
                     </div>
                   )}
@@ -270,13 +270,13 @@ export default function ChatWidget() {
 
                 {/* Quick Prompts Chips */}
                 {messages.length <= 3 && (
-                  <div className="px-3 py-2 bg-slate-100/60 dark:bg-black/40 border-t border-slate-200/60 dark:border-white/[0.04] flex flex-wrap gap-1.5">
+                  <div className="px-3 py-2 bg-black/[0.02] dark:bg-black/40 border-t border-black/5 dark:border-white/[0.06] flex flex-wrap gap-1.5">
                     {quickPromptCategories.map((item, idx) => (
                       <button
                         key={idx}
                         onClick={() => handleSendMessage(item.prompt)}
                         disabled={isLoading}
-                        className="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 hover:border-primary-500 hover:text-primary-500 text-slate-700 dark:text-slate-300 transition-all flex items-center gap-1"
+                        className="text-[10px] font-heading font-bold px-2.5 py-1 rounded-lg bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 hover:border-[#6324FC] text-slate-700 dark:text-slate-300 hover:text-[#6324FC] dark:hover:text-[#00E5FF] transition-all flex items-center gap-1"
                       >
                         {item.label}
                         <ArrowUpRight size={10} className="opacity-50" />
@@ -286,21 +286,21 @@ export default function ChatWidget() {
                 )}
 
                 {/* Input Area */}
-                <div className="p-3 bg-white dark:bg-[#0E1017] border-t border-slate-100 dark:border-white/[0.06]">
-                  <div className="relative flex items-end gap-2 bg-slate-50 dark:bg-black/30 rounded-2xl border border-slate-200 dark:border-white/10 focus-within:border-primary-500/50 transition-all p-1.5">
+                <div className="p-3 bg-white dark:bg-[#0d0f17] border-t border-black/5 dark:border-white/[0.08]">
+                  <div className="relative flex items-end gap-2 bg-black/[0.02] dark:bg-[#07080b] rounded-2xl border border-black/10 dark:border-white/10 focus-within:border-[#6324FC] transition-all p-1.5">
                     <textarea
                       ref={inputRef}
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyDown}
                       placeholder="Ask copilot about leads, stats, or email drafts..."
-                      className="flex-1 max-h-28 min-h-[36px] bg-transparent resize-none py-1 px-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none custom-scrollbar"
+                      className="flex-1 max-h-28 min-h-[36px] bg-transparent resize-none py-1 px-2.5 text-xs text-black dark:text-white placeholder:text-slate-400 focus:outline-none custom-scrollbar"
                       rows={1}
                     />
                     <button
                       onClick={() => handleSendMessage()}
                       disabled={!input.trim() || isLoading}
-                      className="p-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-40 disabled:hover:bg-primary-600 transition-all shrink-0"
+                      className="p-2 rounded-xl bg-gradient-to-r from-[#6324FC] to-[#8B5CF6] text-white hover:brightness-110 disabled:opacity-40 transition-all shrink-0 shadow-md cursor-pointer"
                     >
                       {isLoading ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
                     </button>
