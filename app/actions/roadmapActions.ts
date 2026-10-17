@@ -3,6 +3,7 @@
 import connectToDatabase from '@/lib/mongodb';
 import { RoadmapProject } from '@/models/RoadmapProject';
 import { revalidatePath } from 'next/cache';
+import { requireWriteAuth } from '@/lib/auth';
 
 export async function getRoadmapProjects() {
   try {
@@ -17,6 +18,7 @@ export async function getRoadmapProjects() {
 
 export async function createRoadmapProject(data: { title: string; category: string; status: 'Planning' | 'In Progress' | 'On Hold' | 'Completed' }) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     const count = await RoadmapProject.countDocuments({ category: data.category });
     await RoadmapProject.create({
@@ -35,6 +37,7 @@ export async function createRoadmapProject(data: { title: string; category: stri
 
 export async function updateProjectStatus(id: string, status: string) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     await RoadmapProject.findByIdAndUpdate(id, { status });
     revalidatePath('/roadmap');
@@ -46,6 +49,7 @@ export async function updateProjectStatus(id: string, status: string) {
 
 export async function addProjectLog(id: string, text: string) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     await RoadmapProject.findByIdAndUpdate(id, {
       $push: { logs: { text, completed: true, date: new Date() } }
@@ -59,6 +63,7 @@ export async function addProjectLog(id: string, text: string) {
 
 export async function toggleLogCompletion(projectId: string, logId: string, completed: boolean) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     await RoadmapProject.updateOne(
       { _id: projectId, 'logs._id': logId },
@@ -73,6 +78,7 @@ export async function toggleLogCompletion(projectId: string, logId: string, comp
 
 export async function deleteProjectLog(projectId: string, logId: string) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     await RoadmapProject.findByIdAndUpdate(projectId, {
       $pull: { logs: { _id: logId } }

@@ -82,7 +82,7 @@ const PLATFORMS_CONFIG: Record<string, {
     color: '#00E5FF', 
     glowColor: 'rgba(0,229,255,0.25)',
     borderColor: 'hover:border-[#00E5FF]/60',
-    badgeClass: 'bg-[#00E5FF]/10 text-[#00E5FF] border-[#00E5FF]/30',
+    badgeClass: 'bg-[#00E5FF]/10 text-cyan-600 dark:text-[#00E5FF] border-[#00E5FF]/30',
     bg: 'bg-[#00E5FF]/10', 
     dot: 'bg-[#00E5FF]' 
   },
@@ -92,7 +92,7 @@ const PLATFORMS_CONFIG: Record<string, {
     color: '#6324FC', 
     glowColor: 'rgba(99,36,252,0.25)',
     borderColor: 'hover:border-[#6324FC]/60',
-    badgeClass: 'bg-[#6324FC]/10 text-purple-300 border-[#6324FC]/30',
+    badgeClass: 'bg-[#6324FC]/10 text-indigo-600 dark:text-purple-300 border-[#6324FC]/30',
     bg: 'bg-[#6324FC]/10', 
     dot: 'bg-[#6324FC]' 
   },
@@ -102,7 +102,7 @@ const PLATFORMS_CONFIG: Record<string, {
     color: '#10B981', 
     glowColor: 'rgba(16,185,129,0.25)',
     borderColor: 'hover:border-[#10B981]/60',
-    badgeClass: 'bg-[#10B981]/10 text-emerald-400 border-[#10B981]/30',
+    badgeClass: 'bg-[#10B981]/10 text-emerald-600 dark:text-emerald-400 border-[#10B981]/30',
     bg: 'bg-[#10B981]/10', 
     dot: 'bg-[#10B981]' 
   },
@@ -112,7 +112,7 @@ const PLATFORMS_CONFIG: Record<string, {
     color: '#EC4899', 
     glowColor: 'rgba(236,72,153,0.25)',
     borderColor: 'hover:border-[#EC4899]/60',
-    badgeClass: 'bg-[#EC4899]/10 text-pink-400 border-[#EC4899]/30',
+    badgeClass: 'bg-[#EC4899]/10 text-pink-600 dark:text-pink-400 border-[#EC4899]/30',
     bg: 'bg-[#EC4899]/10', 
     dot: 'bg-[#EC4899]' 
   },
@@ -122,7 +122,7 @@ const PLATFORMS_CONFIG: Record<string, {
     color: '#F59E0B', 
     glowColor: 'rgba(245,158,11,0.25)',
     borderColor: 'hover:border-[#F59E0B]/60',
-    badgeClass: 'bg-[#F59E0B]/10 text-amber-400 border-[#F59E0B]/30',
+    badgeClass: 'bg-[#F59E0B]/10 text-amber-600 dark:text-amber-400 border-[#F59E0B]/30',
     bg: 'bg-[#F59E0B]/10', 
     dot: 'bg-[#F59E0B]' 
   }
@@ -350,12 +350,12 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
       return;
     }
 
-    const headers = ['Client Name', 'Company', 'Platform', 'Email', 'Country', 'Timezone', 'Total Spent (USD)', 'Associated Projects', 'Created Date'];
-    const rows = filteredClients.map(c => [
-      `"${(c.name || '').replace(/"/g, '""')}"`,
-      `"${(c.company || '').replace(/"/g, '""')}"`,
-      `"${c.platform || 'Direct'}"`,
+    const headers = ['Name', 'Company', 'Email', 'Platform', 'Country', 'Timezone', 'Total Spent', 'Projects', 'Created At'];
+    const rows = clients.map(c => [
+      `"${c.name || ''}"`,
+      `"${c.company || ''}"`,
       `"${c.email || ''}"`,
+      `"${c.platform || ''}"`,
       `"${c.country || ''}"`,
       `"${c.timezone || ''}"`,
       c.totalSpent || 0,
@@ -433,8 +433,8 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
   }, [clients]);
 
   return (
-    <div className="min-h-screen bg-[#060608] text-white p-4 md:p-8 pt-6 pb-24 font-sans selection:bg-[#6324FC] selection:text-white">
-      <Toaster position="top-right" toastOptions={{ style: { background: '#0a0a0d', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' } }} />
+    <div className="min-h-screen bg-slate-50 dark:bg-[#060608] text-slate-900 dark:text-white p-4 md:p-8 pt-6 pb-24 font-sans selection:bg-[#6324FC] selection:text-white">
+      <Toaster position="top-right" />
       
       {/* Ambient background glows */}
       <div className="fixed inset-0 pointer-events-none z-0">
@@ -450,30 +450,30 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
           {/* Breadcrumb & Subtitle */}
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-xs font-mono text-secondary">
-              <Link href="/marketplace" className="hover:text-[#00E5FF] transition-colors flex items-center gap-1">
+              <Link href="/marketplace" className="hover:text-indigo-600 dark:hover:text-[#00E5FF] transition-colors flex items-center gap-1 font-semibold">
                 <ArrowLeft size={13} /> Marketplace Hub
               </Link>
               <span>/</span>
-              <span className="text-white font-semibold">CRM Clients</span>
+              <span className="text-slate-900 dark:text-white font-semibold">CRM Clients</span>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-[#6324FC]/15 text-[#00E5FF] border border-[#6324FC]/30 shadow-[0_0_12px_rgba(99,36,252,0.2)]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-pulse shadow-[0_0_8px_#00E5FF]" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-[#6324FC]/10 text-indigo-600 dark:text-[#00E5FF] border border-[#6324FC]/20 dark:border-[#6324FC]/30 shadow-sm">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-[#00E5FF] animate-pulse shadow-[0_0_8px_#00E5FF]" />
                 Live Client Telemetry
               </span>
             </div>
           </div>
 
           {/* Title & Primary Toolbar */}
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-5 pb-2 border-b border-white/5">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-5 pb-2 border-b border-black/5 dark:border-white/5">
             <div>
               <div className="flex items-center gap-3 mb-1.5">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6324FC]/20 to-[#00E5FF]/20 border border-white/15 flex items-center justify-center text-[#00E5FF] shadow-[0_0_20px_rgba(99,36,252,0.3)]">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6324FC]/15 to-[#00E5FF]/15 border border-black/10 dark:border-white/15 flex items-center justify-center text-indigo-600 dark:text-[#00E5FF] shadow-sm dark:shadow-[0_0_20px_rgba(99,36,252,0.3)]">
                   <Users size={20} />
                 </div>
                 <div>
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-extrabold text-white tracking-tight">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-extrabold text-slate-900 dark:text-white tracking-tight">
                     Client Network & CRM
                   </h1>
                 </div>
@@ -487,7 +487,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
               {/* Export Button */}
               <button 
                 onClick={handleExportCSV}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-heading font-bold bg-[#0a0a0d] hover:bg-[#121218] text-secondary hover:text-white border border-white/10 hover:border-white/25 transition-all shadow-sm"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-heading font-bold bg-white dark:bg-[#0a0a0d] hover:bg-slate-100 dark:hover:bg-[#121218] text-slate-700 dark:text-secondary hover:text-slate-900 dark:hover:text-white border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/25 transition-all shadow-sm"
                 title="Export Clients to CSV"
               >
                 <DownloadCloud size={15} />
@@ -495,14 +495,14 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
               </button>
 
               {/* View Mode Toggle */}
-              <div className="flex items-center p-1 rounded-xl bg-[#0a0a0d] border border-white/10">
+              <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10">
                 <button
                   type="button"
                   onClick={() => setViewMode('grid')}
                   className={`p-2 rounded-lg text-xs font-bold transition-all ${
                     viewMode === 'grid' 
                       ? 'bg-[#6324FC] text-white shadow-[0_0_10px_rgba(99,36,252,0.5)]' 
-                      : 'text-secondary hover:text-white'
+                      : 'text-slate-600 dark:text-secondary hover:text-slate-900 dark:hover:text-white'
                   }`}
                   title="Grid Cards View"
                 >
@@ -514,7 +514,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                   className={`p-2 rounded-lg text-xs font-bold transition-all ${
                     viewMode === 'table' 
                       ? 'bg-[#6324FC] text-white shadow-[0_0_10px_rgba(99,36,252,0.5)]' 
-                      : 'text-secondary hover:text-white'
+                      : 'text-slate-600 dark:text-secondary hover:text-slate-900 dark:hover:text-white'
                   }`}
                   title="Table View"
                 >
@@ -525,7 +525,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
               {/* Add Client Button */}
               <button
                 onClick={() => setIsAddModalOpen(true)}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-heading font-bold text-xs bg-gradient-to-r from-[#6324FC] to-[#8B5CF6] hover:brightness-110 text-white shadow-[0_0_20px_rgba(99,36,252,0.4)] hover:shadow-[0_0_30px_rgba(99,36,252,0.6)] transition-all border border-purple-400/30"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-heading font-bold text-xs bg-gradient-to-r from-[#6324FC] to-[#8B5CF6] hover:brightness-110 text-white shadow-[0_0_20px_rgba(99,36,252,0.3)] hover:shadow-[0_0_30px_rgba(99,36,252,0.5)] transition-all border border-purple-400/30"
               >
                 <Plus size={16} strokeWidth={2.5} />
                 <span>Add Client</span>
@@ -533,13 +533,13 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
             </div>
           </div>
 
-          {/* ── Executive KPI Telemetry Cards (Aligned with Standard Design & Hover) ── */}
+          {/* ── Executive KPI Telemetry Cards ── */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
             
             {/* KPI 1: Total Clients */}
             <motion.div
               variants={itemVariants}
-              className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#6324FC]/60 hover:shadow-[0_12px_30px_rgba(99,36,252,0.25)] bg-[#0a0a0d] border border-white/10"
+              className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#6324FC]/60 hover:shadow-[0_12px_30px_rgba(99,36,252,0.15)] dark:hover:shadow-[0_12px_30px_rgba(99,36,252,0.25)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-sm"
             >
               {/* Radial Hover Spotlight */}
               <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#6324FC]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
@@ -549,26 +549,26 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
               <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
               <div className="flex justify-between items-start mb-3 relative z-10">
-                <div className="w-9 h-9 rounded-xl bg-[#6324FC]/15 border border-[#6324FC]/30 flex items-center justify-center text-[#6324FC] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(99,36,252,0.6)] group-hover:border-[#6324FC] transition-all duration-300">
+                <div className="w-9 h-9 rounded-xl bg-[#6324FC]/15 border border-[#6324FC]/30 flex items-center justify-center text-indigo-600 dark:text-[#6324FC] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(99,36,252,0.6)] group-hover:border-[#6324FC] transition-all duration-300">
                   <Users size={17} />
                 </div>
-                <span className="text-[10px] font-heading font-bold text-[#00E5FF] bg-[#6324FC]/15 px-2 py-0.5 rounded-md border border-[#6324FC]/30 group-hover:border-[#6324FC]/50 transition-colors">
+                <span className="text-[10px] font-heading font-bold text-indigo-600 dark:text-[#00E5FF] bg-[#6324FC]/10 dark:bg-[#6324FC]/15 px-2 py-0.5 rounded-md border border-[#6324FC]/20 dark:border-[#6324FC]/30 group-hover:border-[#6324FC]/50 transition-colors">
                   Live Network
                 </span>
               </div>
               <div className="relative z-10">
                 <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">Total Client Accounts</p>
-                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-white font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#00E5FF] transition-all">
+                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-slate-900 group-hover:to-indigo-600 dark:group-hover:from-white dark:group-hover:to-[#00E5FF] transition-all">
                   {clients.length}
                 </p>
                 <div className="mt-2 flex items-center gap-1.5 flex-wrap text-[10px] font-mono">
-                  <span className="text-[#00E5FF] font-bold">{platformCounts.Freelancer} FL</span>
+                  <span className="text-cyan-600 dark:text-[#00E5FF] font-bold">{platformCounts.Freelancer} FL</span>
                   <span className="text-secondary">·</span>
-                  <span className="text-[#A78BFA] font-bold">{platformCounts.Direct} Direct</span>
+                  <span className="text-indigo-600 dark:text-[#A78BFA] font-bold">{platformCounts.Direct} Direct</span>
                   <span className="text-secondary">·</span>
-                  <span className="text-emerald-400 font-bold">{platformCounts.Upwork} Up</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">{platformCounts.Upwork} Up</span>
                   <span className="text-secondary">·</span>
-                  <span className="text-pink-400 font-bold">{platformCounts.Fiverr} Fiv</span>
+                  <span className="text-pink-600 dark:text-pink-400 font-bold">{platformCounts.Fiverr} Fiv</span>
                 </div>
               </div>
             </motion.div>
@@ -576,101 +576,101 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
             {/* KPI 2: Lifetime Revenue (LTV) */}
             <motion.div
               variants={itemVariants}
-              className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#10B981]/60 hover:shadow-[0_12px_30px_rgba(16,185,129,0.25)] bg-[#0a0a0d] border border-white/10"
+              className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#10B981]/60 hover:shadow-[0_12px_30px_rgba(16,185,129,0.15)] dark:hover:shadow-[0_12px_30px_rgba(16,185,129,0.25)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-sm"
             >
               <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#10B981]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#10B981] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#10B981]" />
               <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
               <div className="flex justify-between items-start mb-3 relative z-10">
-                <div className="w-9 h-9 rounded-xl bg-[#10B981]/15 border border-[#10B981]/30 flex items-center justify-center text-[#10B981] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(16,185,129,0.6)] group-hover:border-[#10B981] transition-all duration-300">
+                <div className="w-9 h-9 rounded-xl bg-[#10B981]/15 border border-[#10B981]/30 flex items-center justify-center text-emerald-600 dark:text-[#10B981] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(16,185,129,0.6)] group-hover:border-[#10B981] transition-all duration-300">
                   <DollarSign size={17} />
                 </div>
-                <span className="text-[10px] font-heading font-bold text-emerald-400 flex items-center gap-0.5 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 group-hover:border-emerald-500/40 transition-colors">
+                <span className="text-[10px] font-heading font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 group-hover:border-emerald-500/40 transition-colors">
                   <Flame size={11} /> Realized Inflow
                 </span>
               </div>
               <div className="relative z-10">
                 <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">Lifetime Client Spend</p>
-                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-emerald-400 font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-emerald-300 group-hover:to-[#00E5FF] transition-all">
+                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-emerald-600 dark:text-emerald-400 font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-emerald-500 group-hover:to-cyan-500 dark:group-hover:from-emerald-300 dark:group-hover:to-[#00E5FF] transition-all">
                   {fmtCurrency(totalRevenue)}
                 </p>
-                <p className="text-[10px] font-sans text-secondary/70 mt-1 truncate">Average LTV: {fmtCurrency(avgSpent)} / client</p>
+                <p className="text-[10px] font-sans text-secondary/80 mt-1 truncate">Average LTV: {fmtCurrency(avgSpent)} / client</p>
               </div>
             </motion.div>
 
             {/* KPI 3: VIP Enterprise Clients */}
             <motion.div
               variants={itemVariants}
-              className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#F59E0B]/60 hover:shadow-[0_12px_30px_rgba(245,158,11,0.25)] bg-[#0a0a0d] border border-white/10"
+              className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#F59E0B]/60 hover:shadow-[0_12px_30px_rgba(245,158,11,0.15)] dark:hover:shadow-[0_12px_30px_rgba(245,158,11,0.25)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-sm"
             >
               <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#F59E0B]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#F59E0B] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#F59E0B]" />
               <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
               <div className="flex justify-between items-start mb-3 relative z-10">
-                <div className="w-9 h-9 rounded-xl bg-[#F59E0B]/15 border border-[#F59E0B]/30 flex items-center justify-center text-[#F59E0B] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(245,158,11,0.6)] group-hover:border-[#F59E0B] transition-all duration-300">
+                <div className="w-9 h-9 rounded-xl bg-[#F59E0B]/15 border border-[#F59E0B]/30 flex items-center justify-center text-amber-600 dark:text-[#F59E0B] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(245,158,11,0.6)] group-hover:border-[#F59E0B] transition-all duration-300">
                   <Sparkles size={17} />
                 </div>
-                <span className="text-[10px] font-heading font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 group-hover:border-amber-500/40 transition-colors">
+                <span className="text-[10px] font-heading font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 group-hover:border-amber-500/40 transition-colors">
                   &gt;$5,000+
                 </span>
               </div>
               <div className="relative z-10">
                 <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">VIP Enterprise Tier</p>
-                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-amber-400 font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-amber-300 group-hover:to-[#00E5FF] transition-all">
+                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-amber-600 dark:text-amber-400 font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-amber-500 group-hover:to-cyan-500 dark:group-hover:from-amber-300 dark:group-hover:to-[#00E5FF] transition-all">
                   {vipCount}
                 </p>
-                <p className="text-[10px] font-sans text-secondary/70 mt-1 truncate">High-value enterprise partnerships</p>
+                <p className="text-[10px] font-sans text-secondary/80 mt-1 truncate">High-value enterprise partnerships</p>
               </div>
             </motion.div>
 
             {/* KPI 4: Global Reach & Timezones */}
             <motion.div
               variants={itemVariants}
-              className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#00E5FF]/60 hover:shadow-[0_12px_30px_rgba(0,229,255,0.25)] bg-[#0a0a0d] border border-white/10"
+              className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#00E5FF]/60 hover:shadow-[0_12px_30px_rgba(0,229,255,0.15)] dark:hover:shadow-[0_12px_30px_rgba(0,229,255,0.25)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-sm"
             >
               <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#00E5FF]/20 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#00E5FF] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#00E5FF]" />
               <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
               <div className="flex justify-between items-start mb-3 relative z-10">
-                <div className="w-9 h-9 rounded-xl bg-[#00E5FF]/15 border border-[#00E5FF]/30 flex items-center justify-center text-[#00E5FF] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(0,229,255,0.6)] group-hover:border-[#00E5FF] transition-all duration-300">
+                <div className="w-9 h-9 rounded-xl bg-[#00E5FF]/15 border border-[#00E5FF]/30 flex items-center justify-center text-cyan-600 dark:text-[#00E5FF] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(0,229,255,0.6)] group-hover:border-[#00E5FF] transition-all duration-300">
                   <Globe size={17} />
                 </div>
-                <span className="text-[10px] font-heading font-bold text-[#00E5FF] bg-[#00E5FF]/10 px-2 py-0.5 rounded-md border border-[#00E5FF]/20 group-hover:border-[#00E5FF]/40 transition-colors">
+                <span className="text-[10px] font-heading font-bold text-cyan-600 dark:text-[#00E5FF] bg-[#00E5FF]/10 px-2 py-0.5 rounded-md border border-[#00E5FF]/20 group-hover:border-[#00E5FF]/40 transition-colors">
                   Global Reach
                 </span>
               </div>
               <div className="relative z-10">
                 <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">Country Footprint</p>
-                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-white font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#00E5FF] transition-all">
+                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-slate-900 group-hover:to-cyan-600 dark:group-hover:from-white dark:group-hover:to-[#00E5FF] transition-all">
                   {uniqueCountries}
                 </p>
-                <p className="text-[10px] font-sans text-secondary/70 mt-1 truncate">Covering US, Europe, Asia & Middle East</p>
+                <p className="text-[10px] font-sans text-secondary/80 mt-1 truncate">Covering US, Europe, Asia & Middle East</p>
               </div>
             </motion.div>
 
           </div>
 
           {/* ── Filter, Search & Command Bar ──────────────────────────────────── */}
-          <div className="p-4 bg-[#0a0a0d] border border-white/10 rounded-2xl space-y-3.5 shadow-lg">
+          <div className="p-4 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl space-y-3.5 shadow-sm dark:shadow-lg">
             <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
               
               {/* Search Box */}
               <div className="relative flex-1 max-w-md group">
-                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary group-focus-within:text-[#00E5FF] transition-colors pointer-events-none" />
+                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary group-focus-within:text-indigo-600 dark:group-focus-within:text-[#00E5FF] transition-colors pointer-events-none" />
                 <input
                   type="text"
                   placeholder="Search by client name, company, email, country, notes..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-9 py-2.5 text-xs text-white placeholder:text-secondary outline-none transition-all shadow-inner"
+                  className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-9 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-all shadow-inner"
                 />
                 {searchQuery && (
                   <button 
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md text-secondary hover:text-white hover:bg-white/10 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                   >
                     <X size={12} />
                   </button>
@@ -681,7 +681,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
               <div className="flex flex-wrap items-center gap-2">
                 
                 {/* Platform Pills */}
-                <div className="flex items-center gap-1 p-1 bg-[#060608] border border-white/10 rounded-xl overflow-x-auto scrollbar-none">
+                <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl overflow-x-auto scrollbar-none">
                   {['All', 'Freelancer', 'Direct', 'Upwork', 'Fiverr'].map(p => {
                     if (user?.role === 'marketplace_team' && p === 'Direct') return null;
                     const isSelected = platformFilter.toLowerCase() === p.toLowerCase();
@@ -692,8 +692,8 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                         onClick={() => setPlatformFilter(p)}
                         className={`px-3 py-1.5 rounded-lg text-xs font-heading font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
                           isSelected 
-                            ? 'bg-white/15 text-white border border-white/20 shadow-sm' 
-                            : 'text-secondary hover:text-white hover:bg-white/5'
+                            ? 'bg-white dark:bg-white/15 text-slate-900 dark:text-white border border-black/10 dark:border-white/20 shadow-sm' 
+                            : 'text-slate-600 dark:text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
                         }`}
                         style={{
                           borderColor: isSelected && pConf ? pConf.color : undefined,
@@ -711,7 +711,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                 <select
                   value={tierFilter}
                   onChange={(e: any) => setTierFilter(e.target.value)}
-                  className="bg-[#060608] border border-white/10 rounded-xl px-3 py-2 text-xs font-heading font-bold text-secondary focus:text-white outline-none cursor-pointer hover:border-white/20 transition-all"
+                  className="bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-heading font-bold text-slate-700 dark:text-secondary focus:text-slate-900 dark:focus:text-white outline-none cursor-pointer hover:border-black/20 dark:hover:border-white/20 transition-all"
                 >
                   <option value="All">All Tiers</option>
                   <option value="VIP">VIP (&gt;$5,000)</option>
@@ -723,7 +723,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                 <select
                   value={sortBy}
                   onChange={(e: any) => setSortBy(e.target.value)}
-                  className="bg-[#060608] border border-white/10 rounded-xl px-3 py-2 text-xs font-heading font-bold text-secondary focus:text-white outline-none cursor-pointer hover:border-white/20 transition-all"
+                  className="bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-heading font-bold text-slate-700 dark:text-secondary focus:text-slate-900 dark:focus:text-white outline-none cursor-pointer hover:border-black/20 dark:hover:border-white/20 transition-all"
                 >
                   <option value="revenue-desc">Highest Revenue</option>
                   <option value="revenue-asc">Lowest Revenue</option>
@@ -736,9 +736,9 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
             </div>
 
             {/* Active Filters Summary */}
-            <div className="flex items-center justify-between text-[11px] font-mono text-secondary pt-1 border-t border-white/5">
+            <div className="flex items-center justify-between text-[11px] font-mono text-secondary pt-1 border-t border-black/5 dark:border-white/5">
               <div>
-                Showing <span className="text-white font-bold">{filteredClients.length}</span> of <span className="text-white font-bold">{clients.length}</span> total clients
+                Showing <span className="text-slate-900 dark:text-white font-bold">{filteredClients.length}</span> of <span className="text-slate-900 dark:text-white font-bold">{clients.length}</span> total clients
               </div>
               {(searchQuery || platformFilter !== 'All' || tierFilter !== 'All') && (
                 <button
@@ -747,7 +747,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                     setPlatformFilter('All');
                     setTierFilter('All');
                   }}
-                  className="text-[#00E5FF] hover:underline font-bold"
+                  className="text-indigo-600 dark:text-[#00E5FF] hover:underline font-bold"
                 >
                   Reset Filters
                 </button>
@@ -762,12 +762,12 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-12 md:p-16 rounded-3xl bg-[#0a0a0d] border border-white/10 text-center flex flex-col items-center justify-center shadow-xl"
+            className="p-12 md:p-16 rounded-3xl bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 text-center flex flex-col items-center justify-center shadow-sm dark:shadow-xl"
           >
-            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-secondary mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-center text-secondary mb-4">
               <Users size={28} />
             </div>
-            <h3 className="text-base sm:text-lg font-heading font-bold text-white mb-1">
+            <h3 className="text-base sm:text-lg font-heading font-bold text-slate-900 dark:text-white mb-1">
               No clients matched your criteria
             </h3>
             <p className="text-xs text-secondary max-w-sm mb-6">
@@ -798,10 +798,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                   key={client._id}
                   variants={itemVariants}
                   onClick={() => setSelectedClient(client)}
-                  className={`group glass-card rounded-2xl p-5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 bg-[#0a0a0d] border border-white/10 ${pBadge.borderColor}`}
-                  style={{
-                    boxShadow: undefined,
-                  }}
+                  className={`group glass-card rounded-2xl p-5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 shadow-sm dark:shadow-none ${pBadge.borderColor}`}
                 >
                   {/* Radial Hover Spotlight */}
                   <div 
@@ -829,11 +826,11 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                           <img 
                             src={client.profilePic} 
                             alt={client.name} 
-                            className="w-10 h-10 rounded-xl object-cover border border-white/15 shrink-0 shadow-md group-hover:scale-110 group-hover:border-white/30 transition-all duration-300"
+                            className="w-10 h-10 rounded-xl object-cover border border-black/10 dark:border-white/15 shrink-0 shadow-sm group-hover:scale-110 group-hover:border-black/20 dark:group-hover:border-white/30 transition-all duration-300"
                           />
                         ) : (
                           <div 
-                            className="w-10 h-10 rounded-xl flex items-center justify-center font-heading font-extrabold text-xs shrink-0 shadow-md transition-all duration-300 group-hover:scale-110"
+                            className="w-10 h-10 rounded-xl flex items-center justify-center font-heading font-extrabold text-xs shrink-0 shadow-sm transition-all duration-300 group-hover:scale-110"
                             style={{
                               backgroundColor: `${pBadge.color}15`,
                               border: `1px solid ${pBadge.color}35`,
@@ -845,13 +842,8 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                           </div>
                         )}
                         <div className="min-w-0">
-                          <h3 
-                            className="text-sm font-heading font-extrabold text-white truncate transition-all duration-300"
-                            style={{
-                              color: undefined
-                            }}
-                          >
-                            <span className="group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#00E5FF] transition-all">
+                          <h3 className="text-sm font-heading font-extrabold text-slate-900 dark:text-white truncate transition-all duration-300">
+                            <span className="group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-slate-900 group-hover:to-indigo-600 dark:group-hover:from-white dark:group-hover:to-[#00E5FF] transition-all">
                               {client.name}
                             </span>
                           </h3>
@@ -862,7 +854,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                                 <span className="truncate">{client.company}</span>
                               </>
                             ) : (
-                              <span className="text-[9px] uppercase tracking-wider font-mono font-bold text-secondary/60">Individual Client</span>
+                              <span className="text-[9px] uppercase tracking-wider font-mono font-bold text-secondary/70">Individual Client</span>
                             )}
                           </p>
                         </div>
@@ -878,7 +870,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                     </div>
 
                     {/* Metadata & Location / Local Time */}
-                    <div className="space-y-1.5 py-2.5 border-y border-white/5 text-xs text-secondary">
+                    <div className="space-y-1.5 py-2.5 border-y border-black/5 dark:border-white/5 text-xs text-secondary">
                       {/* Location & Time */}
                       <div className="flex items-center justify-between text-[11px]">
                         <span className="flex items-center gap-1.5 truncate">
@@ -886,7 +878,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                           <span className="truncate">{client.country || 'International'}</span>
                         </span>
                         {localTime ? (
-                          <span className="font-mono text-[#00E5FF] text-[10px] font-bold">
+                          <span className="font-mono text-cyan-600 dark:text-[#00E5FF] text-[10px] font-bold">
                             {localTime}
                           </span>
                         ) : client.timezone ? (
@@ -899,17 +891,17 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                       {/* Email */}
                       {client.email && (
                         <div className="flex items-center justify-between text-[11px]">
-                          <span className="flex items-center gap-1.5 truncate text-secondary hover:text-white">
+                          <span className="flex items-center gap-1.5 truncate text-secondary hover:text-slate-900 dark:hover:text-white">
                             <Mail size={12} className="text-secondary/70 shrink-0" />
                             <span className="truncate">{client.email}</span>
                           </span>
                           <button
                             type="button"
                             onClick={(e) => handleCopyEmail(client.email, e)}
-                            className="p-1 text-secondary hover:text-[#00E5FF] transition-colors"
+                            className="p-1 text-secondary hover:text-indigo-600 dark:hover:text-[#00E5FF] transition-colors"
                             title="Copy Email"
                           >
-                            {copiedEmail === client.email ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
+                            {copiedEmail === client.email ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
                           </button>
                         </div>
                       )}
@@ -923,7 +915,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                         <div className="text-[9px] font-heading font-bold text-secondary uppercase tracking-widest">
                           Lifetime Revenue
                         </div>
-                        <div className="text-base font-mono font-extrabold text-emerald-400">
+                        <div className="text-base font-mono font-extrabold text-emerald-600 dark:text-emerald-400">
                           {fmtCurrency(client.totalSpent)}
                         </div>
                       </div>
@@ -932,21 +924,21 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                         <div className="text-[9px] font-heading font-bold text-secondary uppercase tracking-widest">
                           Contracts
                         </div>
-                        <div className="text-xs font-mono font-bold text-white">
+                        <div className="text-xs font-mono font-bold text-slate-900 dark:text-white">
                           {projectCount} Project{projectCount === 1 ? '' : 's'}
                         </div>
                       </div>
                     </div>
 
                     {/* Quick Button Toolbar */}
-                    <div className="flex items-center gap-1.5 pt-2 border-t border-white/5">
+                    <div className="flex items-center gap-1.5 pt-2 border-t border-black/5 dark:border-white/5">
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedClient(client);
                         }}
-                        className="flex-1 py-1.5 rounded-lg bg-white/5 hover:bg-[#6324FC]/20 text-secondary hover:text-[#00E5FF] text-[11px] font-heading font-bold transition-all flex items-center justify-center gap-1 border border-white/5 hover:border-[#6324FC]/40"
+                        className="flex-1 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-indigo-50 dark:hover:bg-[#6324FC]/20 text-slate-700 dark:text-secondary hover:text-indigo-600 dark:hover:text-[#00E5FF] text-[11px] font-heading font-bold transition-all flex items-center justify-center gap-1 border border-black/5 dark:border-white/5 hover:border-indigo-300 dark:hover:border-[#6324FC]/40"
                       >
                         <FileText size={12} /> Dossier
                       </button>
@@ -957,7 +949,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-secondary hover:text-white transition-colors border border-white/5"
+                          className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-secondary hover:text-slate-900 dark:hover:text-white transition-colors border border-black/5 dark:border-white/5"
                           title="Open Platform Profile"
                         >
                           <ExternalLink size={13} />
@@ -967,7 +959,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                       <button
                         type="button"
                         onClick={(e) => openEditModal(client, e)}
-                        className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-secondary hover:text-white transition-colors border border-white/5"
+                        className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-secondary hover:text-slate-900 dark:hover:text-white transition-colors border border-black/5 dark:border-white/5"
                         title="Edit Client"
                       >
                         <Edit2 size={13} />
@@ -976,7 +968,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                       <button
                         type="button"
                         onClick={(e) => handleDeleteClient(client._id, e)}
-                        className="p-1.5 rounded-lg bg-white/5 hover:bg-rose-500/20 text-secondary hover:text-rose-400 transition-colors border border-white/5 hover:border-rose-500/30"
+                        className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-rose-50 dark:hover:bg-rose-500/20 text-slate-600 dark:text-secondary hover:text-rose-600 dark:hover:text-rose-400 transition-colors border border-black/5 dark:border-white/5 hover:border-rose-200 dark:hover:border-rose-500/30"
                         title="Delete Client"
                       >
                         <Trash2 size={13} />
@@ -990,10 +982,10 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
           </motion.div>
         ) : (
           /* ── TABLE VIEW (TELEMETRY TABLE) ── */
-          <div className="overflow-hidden bg-[#0a0a0d] border border-white/10 rounded-2xl shadow-xl">
+          <div className="overflow-hidden bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl shadow-sm dark:shadow-xl">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-left text-xs">
-                <thead className="sticky top-0 z-10 bg-[#060608] border-b border-white/10">
+                <thead className="sticky top-0 z-10 bg-slate-100 dark:bg-[#060608] border-b border-black/10 dark:border-white/10">
                   <tr>
                     <th className="pl-5 pr-4 py-3.5 text-[10px] font-heading font-bold text-secondary uppercase tracking-widest min-w-[220px]">
                       Client & Company
@@ -1018,7 +1010,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-black/5 dark:divide-white/5">
                   <AnimatePresence>
                     {filteredClients.map((client: any) => {
                       const pBadge = getPlatformBadge(client.platform);
@@ -1032,7 +1024,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
                           onClick={() => setSelectedClient(client)}
-                          className="hover:bg-white/[0.02] transition-colors cursor-pointer group"
+                          className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors cursor-pointer group"
                         >
                           {/* Client & Avatar */}
                           <td className="pl-5 pr-4 py-3.5">
@@ -1041,11 +1033,11 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                                 <img 
                                   src={client.profilePic} 
                                   alt="" 
-                                  className="w-9 h-9 rounded-xl object-cover border border-white/10 shrink-0" 
+                                  className="w-9 h-9 rounded-xl object-cover border border-black/10 dark:border-white/10 shrink-0 shadow-sm" 
                                 />
                               ) : (
                                 <div 
-                                  className="w-9 h-9 rounded-xl flex items-center justify-center font-heading font-bold text-xs shrink-0"
+                                  className="w-9 h-9 rounded-xl flex items-center justify-center font-heading font-bold text-xs shrink-0 shadow-sm"
                                   style={{
                                     backgroundColor: `${pBadge.color}15`,
                                     border: `1px solid ${pBadge.color}35`,
@@ -1056,7 +1048,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                                 </div>
                               )}
                               <div className="min-w-0">
-                                <p className="font-heading font-bold text-white truncate group-hover:text-[#00E5FF] transition-colors text-xs">
+                                <p className="font-heading font-bold text-slate-900 dark:text-white truncate group-hover:text-indigo-600 dark:group-hover:text-[#00E5FF] transition-colors text-xs">
                                   {client.name}
                                 </p>
                                 <p className="text-[10px] text-secondary truncate flex items-center gap-1 mt-0.5">
@@ -1065,7 +1057,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                                       <Building2 size={10} className="shrink-0" /> {client.company}
                                     </>
                                   ) : (
-                                    <span className="uppercase tracking-wider font-mono text-[9px] text-secondary/60">Individual</span>
+                                    <span className="uppercase tracking-wider font-mono text-[9px] text-secondary/70">Individual</span>
                                   )}
                                 </p>
                               </div>
@@ -1083,12 +1075,12 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                           {/* Location & Time */}
                           <td className="pr-4 py-3.5">
                             <div className="flex flex-col">
-                              <span className="text-xs text-white flex items-center gap-1.5 truncate">
+                              <span className="text-xs text-slate-800 dark:text-white flex items-center gap-1.5 truncate">
                                 <Globe size={12} className="text-secondary shrink-0" />
                                 <span className="truncate">{client.country || '—'}</span>
                               </span>
                               {localTime && (
-                                <span className="text-[10px] font-mono font-bold text-[#00E5FF] pl-4 mt-0.5">
+                                <span className="text-[10px] font-mono font-bold text-cyan-600 dark:text-[#00E5FF] pl-4 mt-0.5">
                                   🕙 {localTime}
                                 </span>
                               )}
@@ -1098,7 +1090,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                           {/* Contact */}
                           <td className="pr-4 py-3.5 hidden md:table-cell">
                             {client.email ? (
-                              <div className="flex items-center gap-1.5 text-xs text-secondary hover:text-white">
+                              <div className="flex items-center gap-1.5 text-xs text-secondary hover:text-slate-900 dark:hover:text-white">
                                 <Mail size={12} className="shrink-0" />
                                 <span className="truncate">{client.email}</span>
                               </div>
@@ -1109,13 +1101,13 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
 
                           {/* Contracts Count */}
                           <td className="pr-4 py-3.5 text-center">
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-white/5 border border-white/10 text-xs font-mono font-bold text-white">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-slate-100 dark:bg-white/5 border border-black/10 dark:border-white/10 text-xs font-mono font-bold text-slate-900 dark:text-white">
                               <FolderKanban size={11} className="text-secondary" /> {projectCount}
                             </span>
                           </td>
 
                           {/* Lifetime Spend */}
-                          <td className="pr-4 py-3.5 text-right font-mono font-extrabold text-emerald-400 text-xs">
+                          <td className="pr-4 py-3.5 text-right font-mono font-extrabold text-emerald-600 dark:text-emerald-400 text-xs">
                             {fmtCurrency(client.totalSpent)}
                           </td>
 
@@ -1125,7 +1117,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                               <button
                                 type="button"
                                 onClick={() => setSelectedClient(client)}
-                                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-secondary hover:text-white transition-colors"
+                                className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-secondary hover:text-slate-900 dark:hover:text-white transition-colors"
                                 title="Open Dossier"
                               >
                                 <FileText size={13} />
@@ -1133,7 +1125,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                               <button
                                 type="button"
                                 onClick={(e) => openEditModal(client, e)}
-                                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-secondary hover:text-white transition-colors"
+                                className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-secondary hover:text-slate-900 dark:hover:text-white transition-colors"
                                 title="Edit"
                               >
                                 <Edit2 size={13} />
@@ -1141,7 +1133,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                               <button
                                 type="button"
                                 onClick={(e) => handleDeleteClient(client._id, e)}
-                                className="p-1.5 rounded-lg bg-white/5 hover:bg-rose-500/20 text-secondary hover:text-rose-400 transition-colors"
+                                className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-rose-50 dark:hover:bg-rose-500/20 text-slate-600 dark:text-secondary hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
                                 title="Delete"
                               >
                                 <Trash2 size={13} />
@@ -1167,7 +1159,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                 initial={{ opacity: 0 }} 
                 animate={{ opacity: 1 }} 
                 exit={{ opacity: 0 }} 
-                className="fixed inset-0 bg-black/80 backdrop-blur-xl" 
+                className="fixed inset-0 bg-black/70 dark:bg-black/80 backdrop-blur-xl" 
                 onClick={() => setSelectedClient(null)} 
               />
 
@@ -1177,7 +1169,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                 transition={{ type: "spring", damping: 28, stiffness: 320 }}
-                className="relative w-full max-w-2xl my-auto bg-[#0a0a0d] border border-white/15 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.9),0_0_30px_rgba(99,36,252,0.25)] flex flex-col overflow-hidden z-10 max-h-[92vh]"
+                className="relative w-full max-w-2xl my-auto bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/15 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.25),0_0_30px_rgba(99,36,252,0.1)] dark:shadow-[0_25px_70px_rgba(0,0,0,0.9),0_0_30px_rgba(99,36,252,0.25)] flex flex-col overflow-hidden z-10 max-h-[92vh]"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Top Platform Line */}
@@ -1190,18 +1182,18 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                 />
 
                 {/* Dossier Header */}
-                <div className="p-5 md:p-6 border-b border-white/10 bg-white/[0.02]">
+                <div className="p-5 md:p-6 border-b border-black/10 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02]">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-4 min-w-0">
                       {selectedClient.profilePic ? (
                         <img 
                           src={selectedClient.profilePic} 
                           alt="" 
-                          className="w-14 h-14 rounded-2xl object-cover border border-white/15 shadow-xl shrink-0" 
+                          className="w-14 h-14 rounded-2xl object-cover border border-black/10 dark:border-white/15 shadow-md shrink-0" 
                         />
                       ) : (
                         <div 
-                          className="w-14 h-14 rounded-2xl flex items-center justify-center font-heading font-extrabold text-xl shadow-xl shrink-0"
+                          className="w-14 h-14 rounded-2xl flex items-center justify-center font-heading font-extrabold text-xl shadow-md shrink-0"
                           style={{
                             backgroundColor: `${getPlatformBadge(selectedClient.platform).color}15`,
                             border: `1px solid ${getPlatformBadge(selectedClient.platform).color}35`,
@@ -1213,7 +1205,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                       )}
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h2 className="text-lg md:text-xl font-heading font-extrabold text-white tracking-tight truncate">
+                          <h2 className="text-lg md:text-xl font-heading font-extrabold text-slate-900 dark:text-white tracking-tight truncate">
                             {selectedClient.name}
                           </h2>
                           <span 
@@ -1236,27 +1228,27 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
 
                     <button 
                       onClick={() => setSelectedClient(null)} 
-                      className="p-2 rounded-xl bg-white/5 hover:bg-rose-500/20 text-secondary hover:text-rose-400 border border-white/5 hover:border-rose-500/30 transition-colors shrink-0"
+                      className="p-2 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-rose-50 dark:hover:bg-rose-500/20 text-slate-600 dark:text-secondary hover:text-rose-600 dark:hover:text-rose-400 border border-black/5 dark:border-white/5 hover:border-rose-200 dark:hover:border-rose-500/30 transition-colors shrink-0"
                     >
                       <X size={16} />
                     </button>
                   </div>
 
                   {/* Top Metric Callouts */}
-                  <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-white/5">
-                    <div className="p-3 rounded-xl bg-[#060608] border border-white/5">
+                  <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-black/5 dark:border-white/5">
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#060608] border border-black/5 dark:border-white/5">
                       <div className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">
                         Lifetime Value (LTV)
                       </div>
-                      <div className="text-lg font-mono font-extrabold text-emerald-400 mt-0.5">
+                      <div className="text-lg font-mono font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">
                         {fmtCurrency(selectedClient.totalSpent)}
                       </div>
                     </div>
-                    <div className="p-3 rounded-xl bg-[#060608] border border-white/5">
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#060608] border border-black/5 dark:border-white/5">
                       <div className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">
                         Associated Projects
                       </div>
-                      <div className="text-lg font-mono font-extrabold text-white mt-0.5">
+                      <div className="text-lg font-mono font-extrabold text-slate-900 dark:text-white mt-0.5">
                         {selectedClient.projectCount || selectedClient.projects?.length || 0} Contracts
                       </div>
                     </div>
@@ -1264,7 +1256,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                 </div>
 
                 {/* Tabs Selector */}
-                <div className="flex items-center border-b border-white/10 px-5 md:px-6 bg-[#060608]">
+                <div className="flex items-center border-b border-black/10 dark:border-white/10 px-5 md:px-6 bg-slate-50/80 dark:bg-[#060608]">
                   {[
                     { key: 'profile' as const, label: 'Overview & Contracts', icon: UserIcon },
                     { key: 'notes' as const, label: 'Strategic CRM Notes', icon: StickyNote },
@@ -1275,8 +1267,8 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                       onClick={() => setPanelTab(tab.key)}
                       className={`relative flex items-center gap-2 px-4 py-3 text-xs font-heading font-bold transition-all ${
                         panelTab === tab.key 
-                          ? 'text-white' 
-                          : 'text-secondary hover:text-white'
+                          ? 'text-slate-900 dark:text-white' 
+                          : 'text-slate-600 dark:text-secondary hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
                       <tab.icon size={13} />
@@ -1309,41 +1301,41 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                           <h4 className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest mb-2.5">
                             Client Details & Location
                           </h4>
-                          <div className="p-4 rounded-2xl bg-[#060608] border border-white/10 space-y-3">
+                          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 space-y-3">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                               <div>
                                 <span className="text-[10px] font-mono text-secondary uppercase block">Email Address</span>
-                                <span className="text-xs font-mono text-white font-medium break-all">
+                                <span className="text-xs font-mono text-slate-900 dark:text-white font-medium break-all">
                                   {selectedClient.email || 'Not provided'}
                                 </span>
                               </div>
                               <div>
                                 <span className="text-[10px] font-mono text-secondary uppercase block">Location & Country</span>
-                                <span className="text-xs text-white font-medium flex items-center gap-1 mt-0.5">
-                                  <Globe size={12} className="text-[#00E5FF]" /> {selectedClient.country || 'International'}
+                                <span className="text-xs text-slate-900 dark:text-white font-medium flex items-center gap-1 mt-0.5">
+                                  <Globe size={12} className="text-indigo-600 dark:text-[#00E5FF]" /> {selectedClient.country || 'International'}
                                 </span>
                               </div>
                               <div>
                                 <span className="text-[10px] font-mono text-secondary uppercase block">Timezone & Local Clock</span>
-                                <span className="text-xs font-mono text-[#00E5FF] font-bold mt-0.5 block">
+                                <span className="text-xs font-mono text-indigo-600 dark:text-[#00E5FF] font-bold mt-0.5 block">
                                   {selectedClient.timezone ? `${selectedClient.timezone}` : 'UTC'}
                                 </span>
                               </div>
                               <div>
                                 <span className="text-[10px] font-mono text-secondary uppercase block">Added to CRM</span>
-                                <span className="text-xs font-mono text-white font-medium mt-0.5 block">
+                                <span className="text-xs font-mono text-slate-900 dark:text-white font-medium mt-0.5 block">
                                   {fmtDate(selectedClient.createdAt)}
                                 </span>
                               </div>
                             </div>
 
                             {selectedClient.profileLink && (
-                              <div className="pt-2 border-t border-white/5">
+                              <div className="pt-2 border-t border-black/5 dark:border-white/5">
                                 <a
                                   href={selectedClient.profileLink}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-heading font-bold text-[#00E5FF] border border-white/10 transition-colors"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-xs font-heading font-bold text-indigo-600 dark:text-[#00E5FF] border border-black/10 dark:border-white/10 transition-colors"
                                 >
                                   <span>View {selectedClient.platform} Profile</span>
                                   <ExternalLink size={12} />
@@ -1365,7 +1357,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                                 setCreateProjectPlatform(selectedClient.platform || 'Freelancer');
                                 setIsCreateProjectOpen(true);
                               }}
-                              className="text-[10px] font-heading font-bold text-[#00E5FF] hover:underline flex items-center gap-1"
+                              className="text-[10px] font-heading font-bold text-indigo-600 dark:text-[#00E5FF] hover:underline flex items-center gap-1"
                             >
                               <Plus size={11} /> Create Project
                             </button>
@@ -1376,18 +1368,18 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                               {selectedClient.projects.map((proj: any) => (
                                 <div
                                   key={proj._id}
-                                  className="p-3.5 rounded-xl bg-[#060608] border border-white/10 hover:border-white/20 transition-all flex items-center justify-between gap-3 group"
+                                  className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 transition-all flex items-center justify-between gap-3 group"
                                 >
                                   <div className="min-w-0">
-                                    <h5 className="text-xs font-heading font-bold text-white group-hover:text-[#00E5FF] transition-colors truncate">
+                                    <h5 className="text-xs font-heading font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-[#00E5FF] transition-colors truncate">
                                       {proj.title}
                                     </h5>
                                     <div className="flex items-center gap-2 mt-1 text-[10px] font-mono text-secondary">
-                                      <span className="px-1.5 py-0.5 rounded bg-white/5 text-white">
+                                      <span className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/5 text-slate-900 dark:text-white">
                                         {proj.platform}
                                       </span>
                                       <span>·</span>
-                                      <span className={proj.status === 'Completed' ? 'text-emerald-400' : 'text-[#00E5FF]'}>
+                                      <span className={proj.status === 'Completed' ? 'text-emerald-600 dark:text-emerald-400' : 'text-indigo-600 dark:text-[#00E5FF]'}>
                                         {proj.status}
                                       </span>
                                       <span>·</span>
@@ -1396,12 +1388,12 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                                   </div>
 
                                   <div className="text-right shrink-0">
-                                    <span className="text-xs font-mono font-bold text-emerald-400 block">
+                                    <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 block">
                                       {proj.budget || fmtCurrency(proj.earned)}
                                     </span>
                                     <Link
                                       href={`/marketplace/${(proj.platform || 'freelancer').toLowerCase()}/${proj._id}`}
-                                      className="text-[10px] text-secondary hover:text-white font-mono inline-flex items-center gap-0.5 mt-0.5"
+                                      className="text-[10px] text-secondary hover:text-slate-900 dark:hover:text-white font-mono inline-flex items-center gap-0.5 mt-0.5"
                                     >
                                       Details <ChevronRight size={11} />
                                     </Link>
@@ -1410,7 +1402,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                               ))}
                             </div>
                           ) : (
-                            <div className="p-5 rounded-2xl bg-[#060608] border border-white/5 text-center text-xs text-secondary">
+                            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#060608] border border-black/5 dark:border-white/5 text-center text-xs text-secondary">
                               No active or past contracts linked to this client yet.
                             </div>
                           )}
@@ -1440,7 +1432,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                           value={notesDraft}
                           onChange={(e) => setNotesDraft(e.target.value)}
                           placeholder="Record project briefs, negotiation notes, preferred communication channels, hourly rates, or delivery expectations..."
-                          className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-2xl p-4 text-xs text-white placeholder:text-secondary outline-none transition-colors resize-none leading-relaxed font-sans"
+                          className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-2xl p-4 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-colors resize-none leading-relaxed font-sans"
                         />
                         <div className="flex justify-end gap-2">
                           <button
@@ -1469,22 +1461,22 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                           Audit Trail & Events
                         </h4>
                         <div className="space-y-3">
-                          <div className="p-3.5 rounded-xl bg-[#060608] border border-white/5 flex items-start gap-3">
-                            <div className="w-7 h-7 rounded-lg bg-[#6324FC]/20 text-[#00E5FF] flex items-center justify-center shrink-0 mt-0.5">
+                          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#060608] border border-black/5 dark:border-white/5 flex items-start gap-3">
+                            <div className="w-7 h-7 rounded-lg bg-[#6324FC]/15 text-indigo-600 dark:text-[#00E5FF] flex items-center justify-center shrink-0 mt-0.5">
                               <UserIcon size={14} />
                             </div>
                             <div>
-                              <p className="text-xs font-heading font-bold text-white">Client Account Created</p>
+                              <p className="text-xs font-heading font-bold text-slate-900 dark:text-white">Client Account Created</p>
                               <p className="text-[10px] text-secondary font-mono mt-0.5">{fmtDate(selectedClient.createdAt)}</p>
                             </div>
                           </div>
 
-                          <div className="p-3.5 rounded-xl bg-[#060608] border border-white/5 flex items-start gap-3">
-                            <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#060608] border border-black/5 dark:border-white/5 flex items-start gap-3">
+                            <div className="w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
                               <Clock size={14} />
                             </div>
                             <div>
-                              <p className="text-xs font-heading font-bold text-white">Last Modified</p>
+                              <p className="text-xs font-heading font-bold text-slate-900 dark:text-white">Last Modified</p>
                               <p className="text-[10px] text-secondary font-mono mt-0.5">{fmtDate(selectedClient.updatedAt)}</p>
                             </div>
                           </div>
@@ -1496,11 +1488,11 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                 </div>
 
                 {/* Dossier Footer Toolbar */}
-                <div className="p-4 md:px-6 md:py-4 border-t border-white/10 bg-white/[0.02] flex items-center justify-between gap-3">
+                <div className="p-4 md:px-6 md:py-4 border-t border-black/10 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] flex items-center justify-between gap-3">
                   <button
                     type="button"
                     onClick={(e) => handleDeleteClient(selectedClient._id, e)}
-                    className="px-3.5 py-2 rounded-xl text-xs font-heading font-bold text-rose-400 hover:bg-rose-500/15 transition-colors border border-transparent hover:border-rose-500/30 flex items-center gap-1.5"
+                    className="px-3.5 py-2 rounded-xl text-xs font-heading font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/15 transition-colors border border-transparent hover:border-rose-200 dark:hover:border-rose-500/30 flex items-center gap-1.5"
                   >
                     <Trash2 size={13} /> Delete Client
                   </button>
@@ -1509,7 +1501,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                     <button
                       type="button"
                       onClick={() => openEditModal(selectedClient)}
-                      className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-heading font-bold text-white border border-white/10 transition-colors flex items-center gap-1.5"
+                      className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-xs font-heading font-bold text-slate-800 dark:text-white border border-black/10 dark:border-white/10 transition-colors flex items-center gap-1.5"
                     >
                       <Edit2 size={13} /> Edit Profile
                     </button>
@@ -1540,7 +1532,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                 initial={{ opacity: 0 }} 
                 animate={{ opacity: 1 }} 
                 exit={{ opacity: 0 }} 
-                className="fixed inset-0 bg-black/80 backdrop-blur-xl" 
+                className="fixed inset-0 bg-black/70 dark:bg-black/80 backdrop-blur-xl" 
                 onClick={closeModal} 
               />
 
@@ -1550,7 +1542,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 15 }}
                 transition={{ type: "spring", damping: 28, stiffness: 320 }}
-                className="relative w-full max-w-2xl my-auto bg-[#0a0a0d] border border-white/15 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.9),0_0_30px_rgba(99,36,252,0.25)] flex flex-col overflow-hidden z-10"
+                className="relative w-full max-w-2xl my-auto bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/15 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.25),0_0_30px_rgba(99,36,252,0.15)] dark:shadow-[0_25px_70px_rgba(0,0,0,0.9),0_0_30px_rgba(99,36,252,0.25)] flex flex-col overflow-hidden z-10"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Top Glow Line */}
@@ -1563,10 +1555,10 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                 />
 
                 {/* Header */}
-                <div className="p-5 md:p-6 border-b border-white/10 bg-white/[0.02] flex items-center justify-between">
+                <div className="p-5 md:p-6 border-b border-black/10 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div 
-                      className="w-11 h-11 rounded-xl flex items-center justify-center shadow-lg shrink-0"
+                      className="w-11 h-11 rounded-xl flex items-center justify-center shadow-sm shrink-0"
                       style={{
                         backgroundColor: `${getPlatformBadge(formData.platform).color}15`,
                         border: `1px solid ${getPlatformBadge(formData.platform).color}35`,
@@ -1576,7 +1568,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                       {editingClient ? <Edit2 size={20} /> : <UserIcon size={20} />}
                     </div>
                     <div>
-                      <h2 className="text-lg md:text-xl font-heading font-extrabold text-white tracking-tight">
+                      <h2 className="text-lg md:text-xl font-heading font-extrabold text-slate-900 dark:text-white tracking-tight">
                         {editingClient ? 'Edit Client Profile' : 'Add New Marketplace Client'}
                       </h2>
                       <p className="text-xs text-secondary mt-0.5">
@@ -1587,7 +1579,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
 
                   <button 
                     onClick={closeModal} 
-                    className="p-2 rounded-xl bg-white/5 hover:bg-rose-500/20 text-secondary hover:text-rose-400 border border-white/5 hover:border-rose-500/30 transition-colors"
+                    className="p-2 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-rose-50 dark:hover:bg-rose-500/20 text-slate-600 dark:text-secondary hover:text-rose-600 dark:hover:text-rose-400 border border-black/5 dark:border-white/5 hover:border-rose-200 dark:hover:border-rose-500/30 transition-colors"
                   >
                     <X size={16} />
                   </button>
@@ -1614,8 +1606,8 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                             onClick={() => setFormData({ ...formData, platform: p })}
                             className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-heading font-bold transition-all border ${
                               isSelected 
-                                ? 'bg-white/10 text-white border-white/30 shadow-md' 
-                                : 'bg-[#060608] text-secondary hover:text-white border-white/5 hover:border-white/15'
+                                ? 'bg-indigo-50 dark:bg-white/10 text-indigo-600 dark:text-white border-indigo-200 dark:border-white/30 shadow-sm' 
+                                : 'bg-slate-50 dark:bg-[#060608] text-slate-700 dark:text-secondary hover:text-slate-900 dark:hover:text-white border-black/10 dark:border-white/5 hover:border-black/20 dark:hover:border-white/15'
                             }`}
                             style={{
                               borderColor: isSelected ? pConf.color : undefined,
@@ -1634,7 +1626,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[10px] font-heading font-bold text-secondary uppercase tracking-widest mb-1.5">
-                        Client Name <span className="text-rose-400">*</span>
+                        Client Name <span className="text-rose-500">*</span>
                       </label>
                       <div className="relative">
                         <UserIcon size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary pointer-events-none" />
@@ -1644,7 +1636,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                           value={formData.name}
                           onChange={e => setFormData({ ...formData, name: e.target.value })}
                           placeholder="e.g. Sarah Jenkins"
-                          className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-secondary outline-none transition-colors"
+                          className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-colors"
                         />
                       </div>
                     </div>
@@ -1660,7 +1652,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                           value={formData.company}
                           onChange={e => setFormData({ ...formData, company: e.target.value })}
                           placeholder="e.g. Apex Digital Corp"
-                          className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-secondary outline-none transition-colors"
+                          className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-colors"
                         />
                       </div>
                     </div>
@@ -1679,7 +1671,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                           value={formData.email}
                           onChange={e => setFormData({ ...formData, email: e.target.value })}
                           placeholder="sarah@apexdigital.com"
-                          className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-secondary outline-none transition-colors"
+                          className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-colors"
                         />
                       </div>
                     </div>
@@ -1695,7 +1687,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                           value={formData.country}
                           onChange={handleCountryChange}
                           placeholder="e.g. United States, Germany, UAE"
-                          className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-secondary outline-none transition-colors"
+                          className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-colors"
                         />
                       </div>
                     </div>
@@ -1713,7 +1705,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                         value={formData.timezone}
                         onChange={e => setFormData({ ...formData, timezone: e.target.value })}
                         placeholder="e.g. America/New_York or EST (UTC-5)"
-                        className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-white font-mono placeholder:text-secondary outline-none transition-colors"
+                        className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 dark:text-white font-mono placeholder:text-secondary outline-none transition-colors"
                       />
                     </div>
                   </div>
@@ -1731,7 +1723,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                           value={formData.profileLink}
                           onChange={e => setFormData({ ...formData, profileLink: e.target.value })}
                           placeholder="https://freelancer.com/u/clientname"
-                          className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-secondary outline-none transition-colors"
+                          className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-colors"
                         />
                       </div>
                     </div>
@@ -1747,7 +1739,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                           value={formData.profilePic}
                           onChange={e => setFormData({ ...formData, profilePic: e.target.value })}
                           placeholder="https://..."
-                          className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-secondary outline-none transition-colors"
+                          className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-colors"
                         />
                       </div>
                     </div>
@@ -1763,18 +1755,18 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                       value={formData.notes}
                       onChange={e => setFormData({ ...formData, notes: e.target.value })}
                       placeholder="Brief notes about the client, project preferences, or contract details..."
-                      className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl p-3 text-xs text-white placeholder:text-secondary outline-none transition-colors resize-none leading-relaxed"
+                      className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl p-3 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-colors resize-none leading-relaxed"
                     />
                   </div>
 
                 </form>
 
                 {/* Footer */}
-                <div className="p-4 md:px-6 md:py-4 border-t border-white/10 bg-white/[0.02] flex items-center justify-end gap-3">
+                <div className="p-4 md:px-6 md:py-4 border-t border-black/10 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] flex items-center justify-end gap-3">
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="px-4 py-2.5 rounded-xl text-xs font-heading font-bold text-secondary hover:text-white transition-colors"
+                    className="px-4 py-2.5 rounded-xl text-xs font-heading font-bold text-slate-600 dark:text-secondary hover:text-slate-900 dark:hover:text-white transition-colors"
                   >
                     Cancel
                   </button>

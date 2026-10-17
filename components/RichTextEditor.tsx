@@ -41,20 +41,20 @@ const MenuBar = ({ editor }: { editor: any }) => {
   const getButtonClass = (isActive: boolean) => {
     return `p-2 rounded-lg transition-all flex items-center justify-center ${
       isActive
-        ? 'bg-[#2563EB]/10 text-[#2563EB]'
-        : 'text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734]'
+        ? 'bg-[#6324FC]/15 text-[#6324FC] dark:text-[#00E5FF] shadow-xs'
+        : 'text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
     }`;
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-1 p-3 border-b border-slate-200 dark:border-[#232734] bg-white dark:bg-[#11131A] z-10 sticky top-0">
+    <div className="flex flex-wrap items-center gap-1 p-2.5 border-b border-black/10 dark:border-white/10 bg-slate-50 dark:bg-[#060608] z-10 sticky top-0">
       <button
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
         className={getButtonClass(editor.isActive('heading', { level: 1 }))}
         type="button"
         title="Heading 1"
       >
-        <Heading1 size={18} />
+        <Heading1 size={16} />
       </button>
       <button
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
@@ -62,10 +62,10 @@ const MenuBar = ({ editor }: { editor: any }) => {
         type="button"
         title="Heading 2"
       >
-        <Heading2 size={18} />
+        <Heading2 size={16} />
       </button>
 
-      <div className="w-px h-6 bg-slate-200 dark:bg-[#232734] mx-1" />
+      <div className="w-px h-5 bg-black/10 dark:border-white/10 mx-1" />
 
       <button
         onClick={() => editor.chain().focus().toggleBold().run()}
@@ -74,7 +74,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
         type="button"
         title="Bold"
       >
-        <Bold size={18} />
+        <Bold size={16} />
       </button>
       <button
         onClick={() => editor.chain().focus().toggleItalic().run()}
@@ -83,7 +83,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
         type="button"
         title="Italic"
       >
-        <Italic size={18} />
+        <Italic size={16} />
       </button>
       <button
         onClick={() => editor.chain().focus().toggleStrike().run()}
@@ -92,7 +92,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
         type="button"
         title="Strikethrough"
       >
-        <Strikethrough size={18} />
+        <Strikethrough size={16} />
       </button>
       <button
         onClick={() => editor.chain().focus().toggleUnderline().run()}
@@ -101,10 +101,10 @@ const MenuBar = ({ editor }: { editor: any }) => {
         type="button"
         title="Underline"
       >
-        <UnderlineIcon size={18} />
+        <UnderlineIcon size={16} />
       </button>
 
-      <div className="w-px h-6 bg-slate-200 dark:bg-[#232734] mx-1" />
+      <div className="w-px h-5 bg-black/10 dark:border-white/10 mx-1" />
 
       <button
         onClick={() => editor.chain().focus().setTextAlign('left').run()}
@@ -112,7 +112,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
         type="button"
         title="Align Left"
       >
-        <AlignLeft size={18} />
+        <AlignLeft size={16} />
       </button>
       <button
         onClick={() => editor.chain().focus().setTextAlign('center').run()}
@@ -120,7 +120,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
         type="button"
         title="Align Center"
       >
-        <AlignCenter size={18} />
+        <AlignCenter size={16} />
       </button>
       <button
         onClick={() => editor.chain().focus().setTextAlign('right').run()}
@@ -128,10 +128,10 @@ const MenuBar = ({ editor }: { editor: any }) => {
         type="button"
         title="Align Right"
       >
-        <AlignRight size={18} />
+        <AlignRight size={16} />
       </button>
 
-      <div className="w-px h-6 bg-slate-200 dark:bg-[#232734] mx-1" />
+      <div className="w-px h-5 bg-black/10 dark:border-white/10 mx-1" />
 
       <button
         onClick={() => editor.chain().focus().toggleBulletList().run()}
@@ -139,7 +139,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
         type="button"
         title="Bullet List"
       >
-        <List size={18} />
+        <List size={16} />
       </button>
       <button
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
@@ -147,7 +147,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
         type="button"
         title="Ordered List"
       >
-        <ListOrdered size={18} />
+        <ListOrdered size={16} />
       </button>
       <button
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
@@ -155,10 +155,10 @@ const MenuBar = ({ editor }: { editor: any }) => {
         type="button"
         title="Blockquote"
       >
-        <Quote size={18} />
+        <Quote size={16} />
       </button>
 
-      <div className="w-px h-6 bg-slate-200 dark:bg-[#232734] mx-1" />
+      <div className="w-px h-5 bg-black/10 dark:border-white/10 mx-1" />
 
       <button
         onClick={() => {
@@ -174,7 +174,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
         type="button"
         title="Link"
       >
-        <LinkIcon size={18} />
+        <LinkIcon size={16} />
       </button>
 
       <button
@@ -183,7 +183,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
         type="button"
         title="Highlight"
       >
-        <Highlighter size={18} />
+        <Highlighter size={16} />
       </button>
 
       <div className="flex-1" />
@@ -191,20 +191,20 @@ const MenuBar = ({ editor }: { editor: any }) => {
       <button
         onClick={() => editor.chain().focus().undo().run()}
         disabled={!editor.can().chain().focus().undo().run()}
-        className="p-2 flex items-center justify-center rounded-lg text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+        className="p-2 flex items-center justify-center rounded-lg text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
         type="button"
         title="Undo"
       >
-        <Undo size={18} />
+        <Undo size={16} />
       </button>
       <button
         onClick={() => editor.chain().focus().redo().run()}
         disabled={!editor.can().chain().focus().redo().run()}
-        className="p-2 flex items-center justify-center rounded-lg text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-[#232734] disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+        className="p-2 flex items-center justify-center rounded-lg text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
         type="button"
         title="Redo"
       >
-        <Redo size={18} />
+        <Redo size={16} />
       </button>
     </div>
   );
@@ -225,7 +225,7 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Write s
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-indigo-500 underline cursor-pointer',
+          class: 'text-[#6324FC] dark:text-[#00E5FF] underline cursor-pointer',
         },
       }),
       Underline,
@@ -237,7 +237,7 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Write s
     content: value,
     editorProps: {
       attributes: {
-        className: 'prose prose-invert focus:outline-none min-h-[250px] max-w-none p-6 text-slate-900 dark:text-white leading-relaxed',
+        className: 'prose dark:prose-invert focus:outline-none min-h-[250px] max-w-none p-5 text-slate-900 dark:text-white leading-relaxed text-xs',
       },
     },
     onUpdate: ({ editor }) => {
@@ -252,14 +252,14 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Write s
   }, [value, editor]);
 
   return (
-    <div className="bg-transparent rounded-xl overflow-hidden transition-all flex flex-col h-full">
+    <div className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl overflow-hidden transition-all flex flex-col h-full">
       <MenuBar editor={editor} />
       <div className="relative">
         <EditorContent editor={editor} />
         {/* Custom CSS for Tiptap Placeholder */}
         <style jsx global>{`
           .tiptap p.is-editor-empty:first-child::before {
-            color: rgba(148, 163, 184, 0.5);
+            color: rgba(148, 163, 184, 0.6);
             content: attr(data-placeholder);
             float: left;
             height: 0;

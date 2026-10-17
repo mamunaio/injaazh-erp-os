@@ -2,7 +2,7 @@
 
 import connectToDatabase from '@/lib/mongodb';
 import DailyTask from '@/models/DailyTask';
-import { getAuthUser } from '@/lib/auth';
+import { getAuthUser, requireWriteAuth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import mongoose from 'mongoose';
 
@@ -21,11 +21,14 @@ export async function getTodayTasks() {
     const todayEnd = new Date();
     todayEnd.setHours(23, 59, 59, 999);
 
+    const isViewer = user.role === 'viewer';
+    const baseQuery: any = isViewer ? {} : { userId: new mongoose.Types.ObjectId(user.id) };
+
     // Fetch tasks that are either:
     // 1) Not completed yet, OR
     // 2) Completed today
     const tasks = await DailyTask.find({
-      userId: new mongoose.Types.ObjectId(user.id),
+      ...baseQuery,
       $or: [
         { completed: false },
         { completed: true, completedAt: { $gte: todayStart, $lte: todayEnd } },
@@ -55,9 +58,8 @@ export async function createDailyTask(params: {
   dueDate?: string;
 }) {
   try {
+    const user = await requireWriteAuth();
     await connectToDatabase();
-    const user = await getAuthUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
 
     if (!params.title || !params.title.trim()) {
       return { success: false, error: 'Task title is required' };
@@ -91,9 +93,8 @@ export async function createDailyTask(params: {
  */
 export async function toggleTaskComplete(taskId: string, completed: boolean) {
   try {
+    const user = await requireWriteAuth();
     await connectToDatabase();
-    const user = await getAuthUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
 
     const updateData: any = {
       completed,
@@ -131,9 +132,8 @@ export async function toggleTaskComplete(taskId: string, completed: boolean) {
  */
 export async function deleteDailyTask(taskId: string) {
   try {
+    const user = await requireWriteAuth();
     await connectToDatabase();
-    const user = await getAuthUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
 
     await DailyTask.findOneAndDelete({
       _id: new mongoose.Types.ObjectId(taskId),
@@ -164,7 +164,8 @@ export async function getAllTaskHistory(params?: {
     const user = await getAuthUser();
     if (!user) return { success: false, error: 'Unauthorized', data: [], stats: null };
 
-    const filter: any = {
+    const isViewer = user.role === 'viewer';
+    const filter: any = isViewer ? {} : {
       userId: new mongoose.Types.ObjectId(user.id),
     };
 
@@ -191,15 +192,16 @@ export async function getAllTaskHistory(params?: {
       .lean();
 
     // Calculate summary statistics
-    const totalAll = await DailyTask.countDocuments({ userId: new mongoose.Types.ObjectId(user.id) });
-    const totalCompleted = await DailyTask.countDocuments({ userId: new mongoose.Types.ObjectId(user.id), completed: true });
-    const totalPending = await DailyTask.countDocuments({ userId: new mongoose.Types.ObjectId(user.id), completed: false });
+    const countQuery: any = isViewer ? {} : { userId: new mongoose.Types.ObjectId(user.id) };
+    const totalAll = await DailyTask.countDocuments(countQuery);
+    const totalCompleted = await DailyTask.countDocuments({ ...countQuery, completed: true });
+    const totalPending = await DailyTask.countDocuments({ ...countQuery, completed: false });
 
     // Completed today
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     const completedToday = await DailyTask.countDocuments({
-      userId: new mongoose.Types.ObjectId(user.id),
+      ...countQuery,
       completed: true,
       completedAt: { $gte: todayStart },
     });

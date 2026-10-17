@@ -177,7 +177,7 @@ export default function CreateMarketplaceProjectModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ type: "spring", damping: 28, stiffness: 320 }}
-          className="relative w-full max-w-2xl my-auto bg-[#0a0a0d] border border-white/15 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.9),0_0_30px_rgba(99,36,252,0.2)] flex flex-col overflow-hidden z-10"
+          className="relative w-full max-w-2xl my-auto bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/15 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.2),0_0_30px_rgba(99,36,252,0.15)] dark:shadow-[0_25px_70px_rgba(0,0,0,0.9),0_0_30px_rgba(99,36,252,0.2)] flex flex-col overflow-hidden z-10"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Top Neon Accent Glow Line */}
@@ -190,10 +190,10 @@ export default function CreateMarketplaceProjectModal({
           />
 
           {/* Modal Header */}
-          <div className="relative flex justify-between items-center p-5 md:p-6 border-b border-white/10 bg-white/[0.02]">
+          <div className="relative flex justify-between items-center p-5 md:p-6 border-b border-black/5 dark:border-white/10 bg-black/[0.01] dark:bg-white/[0.02]">
             <div className="flex items-center gap-3.5">
               <div 
-                className="w-11 h-11 rounded-xl flex items-center justify-center shadow-lg shrink-0 transition-colors"
+                className="w-11 h-11 rounded-xl flex items-center justify-center shadow-md shrink-0 transition-colors"
                 style={{
                   backgroundColor: `${currentPlatformObj.color}15`,
                   border: `1px solid ${currentPlatformObj.color}35`,
@@ -205,7 +205,7 @@ export default function CreateMarketplaceProjectModal({
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-lg md:text-xl font-heading font-extrabold text-white tracking-tight">
+                  <h2 className="text-lg md:text-xl font-heading font-extrabold text-slate-900 dark:text-white tracking-tight">
                     New {currentPlatformObj.name} Project
                   </h2>
                   <span 
@@ -227,7 +227,7 @@ export default function CreateMarketplaceProjectModal({
 
             <button 
               onClick={onClose} 
-              className="p-2 rounded-xl bg-white/5 hover:bg-rose-500/20 text-secondary hover:text-rose-400 border border-white/5 hover:border-rose-500/30 transition-colors"
+              className="p-2 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-rose-500/20 text-secondary hover:text-rose-500 dark:hover:text-rose-400 border border-black/5 dark:border-white/5 hover:border-rose-500/30 transition-colors"
               title="Close modal"
             >
               <X size={16} />
@@ -253,8 +253,8 @@ export default function CreateMarketplaceProjectModal({
                       onClick={() => setSelectedPlatform(plat.id)}
                       className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-heading font-bold transition-all border ${
                         isSelected 
-                          ? 'bg-white/10 text-white border-white/30 shadow-md' 
-                          : 'bg-[#060608] text-secondary hover:text-white border-white/5 hover:border-white/15'
+                          ? 'bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white border-black/20 dark:border-white/30 shadow-md' 
+                          : 'bg-slate-50 dark:bg-[#060608] text-secondary hover:text-slate-900 dark:hover:text-white border-black/5 dark:border-white/5 hover:border-black/15 dark:hover:border-white/15'
                       }`}
                       style={{
                         borderColor: isSelected ? plat.color : undefined,
@@ -272,7 +272,7 @@ export default function CreateMarketplaceProjectModal({
             {/* Row: Project Title */}
             <div>
               <label className="block text-[10px] font-heading font-bold text-secondary uppercase tracking-widest mb-1.5">
-                Project Title <span className="text-rose-400">*</span>
+                Project Title <span className="text-rose-500 dark:text-rose-400">*</span>
               </label>
               <div className="relative">
                 <Briefcase size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary pointer-events-none" />
@@ -282,7 +282,7 @@ export default function CreateMarketplaceProjectModal({
                   value={formData.title}
                   onChange={e => setFormData({ ...formData, title: e.target.value })}
                   placeholder="e.g. Fullstack Next.js ERP & API Integration..."
-                  className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-secondary outline-none transition-colors"
+                  className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-colors"
                 />
               </div>
             </div>
@@ -304,13 +304,13 @@ export default function CreateMarketplaceProjectModal({
                   }}
                   onFocus={() => setShowClientDropdown(true)}
                   placeholder="Search existing client or type new name..."
-                  className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-8 py-2.5 text-xs text-white placeholder:text-secondary outline-none transition-colors"
+                  className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-8 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-colors"
                 />
                 <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary pointer-events-none opacity-60" />
 
                 {/* Dropdown Menu */}
                 {showClientDropdown && (
-                  <div className="absolute top-full left-0 w-full mt-1.5 bg-[#0e0e13] border border-white/15 rounded-xl shadow-2xl overflow-hidden z-30 max-h-52 overflow-y-auto custom-scrollbar">
+                  <div className="absolute top-full left-0 w-full mt-1.5 bg-white dark:bg-[#0e0e13] border border-black/10 dark:border-white/15 rounded-xl shadow-2xl overflow-hidden z-30 max-h-52 overflow-y-auto custom-scrollbar">
                     {filteredClients.length > 0 ? (
                       filteredClients.map(c => (
                         <button
@@ -321,13 +321,13 @@ export default function CreateMarketplaceProjectModal({
                             setClientSearch(c.name);
                             setShowClientDropdown(false);
                           }}
-                          className="w-full text-left px-4 py-2.5 hover:bg-white/5 flex items-center justify-between border-b border-white/5 last:border-0 transition-colors group"
+                          className="w-full text-left px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-white/5 flex items-center justify-between border-b border-black/5 dark:border-white/5 last:border-0 transition-colors group"
                         >
                           <div>
-                            <div className="font-heading font-bold text-white text-xs group-hover:text-[#00E5FF] transition-colors">{c.name}</div>
+                            <div className="font-heading font-bold text-slate-900 dark:text-white text-xs group-hover:text-[#6324FC] dark:group-hover:text-[#00E5FF] transition-colors">{c.name}</div>
                             {c.company && <div className="text-[10px] text-secondary">{c.company}</div>}
                           </div>
-                          <span className="text-[9px] uppercase font-mono px-2 py-0.5 rounded bg-white/5 text-secondary">{c.platform || selectedPlatform}</span>
+                          <span className="text-[9px] uppercase font-mono px-2 py-0.5 rounded bg-black/5 dark:bg-white/5 text-secondary">{c.platform || selectedPlatform}</span>
                         </button>
                       ))
                     ) : (
@@ -358,7 +358,7 @@ export default function CreateMarketplaceProjectModal({
                   Budget (USD)
                 </label>
                 <div className="relative">
-                  <DollarSign size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-400 pointer-events-none" />
+                  <DollarSign size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-500 dark:text-emerald-400 pointer-events-none" />
                   <input 
                     type="number" 
                     min="0"
@@ -366,7 +366,7 @@ export default function CreateMarketplaceProjectModal({
                     value={formData.budget}
                     onChange={e => setFormData({ ...formData, budget: e.target.value })}
                     placeholder="1500"
-                    className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-white font-mono placeholder:text-secondary outline-none transition-colors"
+                    className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-slate-900 dark:text-white font-mono placeholder:text-secondary outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -414,7 +414,7 @@ export default function CreateMarketplaceProjectModal({
                 value={formData.scope}
                 onChange={e => setFormData({ ...formData, scope: e.target.value })}
                 placeholder="Overview of requirements, milestones, client specifications or contract terms..."
-                className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl p-3 text-xs text-white placeholder:text-secondary outline-none transition-colors resize-none leading-relaxed"
+                className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl p-3 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-colors resize-none leading-relaxed"
               />
             </div>
 
@@ -431,18 +431,18 @@ export default function CreateMarketplaceProjectModal({
                 value={formData.tasks}
                 onChange={e => setFormData({ ...formData, tasks: e.target.value })}
                 placeholder="1. Setup Github repository & architecture&#10;2. Complete Milestone 1 frontend sprint&#10;3. API testing & deployment"
-                className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl p-3 text-xs text-white placeholder:text-secondary/60 outline-none font-mono transition-colors resize-none leading-relaxed"
+                className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl p-3 text-xs text-slate-900 dark:text-white placeholder:text-secondary/60 outline-none font-mono transition-colors resize-none leading-relaxed"
               />
             </div>
 
           </form>
 
           {/* Modal Footer */}
-          <div className="p-4 md:px-6 md:py-4 border-t border-white/10 bg-white/[0.02] flex items-center justify-end gap-3">
+          <div className="p-4 md:px-6 md:py-4 border-t border-black/5 dark:border-white/10 bg-black/[0.01] dark:bg-white/[0.02] flex items-center justify-end gap-3">
             <button 
               type="button" 
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl text-xs font-heading font-bold text-secondary hover:text-white transition-colors"
+              className="px-4 py-2.5 rounded-xl text-xs font-heading font-bold text-secondary hover:text-slate-900 dark:hover:text-white transition-colors"
             >
               Cancel
             </button>

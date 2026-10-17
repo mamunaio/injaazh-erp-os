@@ -19,7 +19,8 @@ import {
   Activity,
   Layers,
   Bot,
-  Globe
+  Globe,
+  Flame
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -47,6 +48,15 @@ export default function CommandCenter() {
 
     // Navigation
     { id: 'nav-dashboard', name: 'Go to Dashboard & Insights', category: 'Navigation', icon: Layers, path: '/dashboard', color: 'text-cyan-500 bg-cyan-500/10' },
+    { id: 'nav-lead-gen', name: 'Lead Gen Engine (Main)', category: 'Navigation', icon: Flame, path: '/lead-gen/dashboard', color: 'text-amber-500 bg-amber-500/10' },
+    { id: 'nav-lead-gen-prospects', name: 'Lead Gen: HVAC Prospects Pipeline', category: 'Navigation', icon: Users, path: '/lead-gen/prospects', color: 'text-amber-500 bg-amber-500/10' },
+    { id: 'nav-lead-gen-daily', name: 'Lead Gen: Daily Outreach Logs', category: 'Navigation', icon: Mail, path: '/lead-gen/daily-outreach', color: 'text-indigo-500 bg-indigo-500/10' },
+    { id: 'nav-lead-gen-clients', name: 'Lead Gen: Retainer Clients & MRR', category: 'Navigation', icon: Briefcase, path: '/lead-gen/clients', color: 'text-emerald-500 bg-emerald-500/10' },
+    { id: 'nav-lead-gen-time', name: 'Lead Gen: Time Tracking & Hours', category: 'Navigation', icon: Clock, path: '/lead-gen/time-tracking', color: 'text-blue-500 bg-blue-500/10' },
+    { id: 'nav-lead-gen-tasks', name: 'Lead Gen: Team Tasks & Delegation', category: 'Navigation', icon: Activity, path: '/lead-gen/team-tasks', color: 'text-purple-500 bg-purple-500/10' },
+    { id: 'nav-lead-gen-sops', name: 'Lead Gen: Delivery SOPs & Cadence', category: 'Navigation', icon: Map, path: '/lead-gen/delivery-sops', color: 'text-teal-500 bg-teal-500/10' },
+    { id: 'nav-lead-gen-finance', name: 'Lead Gen: Financials, Invoices & PnL', category: 'Navigation', icon: DollarSign, path: '/lead-gen/financials', color: 'text-emerald-500 bg-emerald-500/10' },
+    { id: 'nav-lead-gen-settings', name: 'Lead Gen: Settings & SOP Guide', category: 'Navigation', icon: Settings, path: '/lead-gen/settings', color: 'text-slate-400 bg-slate-500/10' },
     { id: 'nav-marketplace', name: 'Marketplace Operations', category: 'Navigation', icon: Globe, path: '/marketplace', color: 'text-indigo-500 bg-indigo-500/10' },
     { id: 'nav-clients', name: 'Marketplace Clients', category: 'Navigation', icon: Users, path: '/marketplace/clients', color: 'text-purple-500 bg-purple-500/10' },
     { id: 'nav-projects', name: 'Projects Kanban Board', category: 'Navigation', icon: Briefcase, path: '/projects', color: 'text-blue-500 bg-blue-500/10' },
@@ -136,7 +146,7 @@ export default function CommandCenter() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.98, y: -10 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
-            className="relative w-full max-w-2xl bg-white dark:bg-[#0d0f17] border border-black/10 dark:border-white/15 rounded-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),0_0_30px_rgba(99,36,252,0.15)] overflow-hidden backdrop-blur-2xl"
+            className="relative w-full max-w-2xl bg-white dark:bg-[#0d0f17] border border-black/10 dark:border-white/15 rounded-2xl shadow-[0_20px_50px_-10px_rgba(15,23,42,0.15),0_0_30px_rgba(99,36,252,0.1)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),0_0_30px_rgba(99,36,252,0.15)] overflow-hidden backdrop-blur-2xl"
           >
             {/* Search Input */}
             <div className="flex items-center px-5 py-3.5 border-b border-black/5 dark:border-white/10 bg-black/[0.01] dark:bg-white/[0.02]">

@@ -2,6 +2,7 @@
 
 import dbConnect from '@/lib/mongodb';
 import { Invoice } from '@/models/Invoice';
+import { requireWriteAuth } from '@/lib/auth';
 
 export async function getInvoices() {
   try {
@@ -37,6 +38,7 @@ export async function getInvoice(id: string) {
 
 export async function createInvoice(data: any) {
   try {
+    await requireWriteAuth();
     await dbConnect();
 
     // Auto generate invoice number if not provided
@@ -61,6 +63,7 @@ export async function createInvoice(data: any) {
 
 export async function updateInvoice(id: string, data: any) {
   try {
+    await requireWriteAuth();
     await dbConnect();
     const updated = await Invoice.findByIdAndUpdate(id, data, { new: true }).lean();
     
@@ -79,6 +82,7 @@ export async function updateInvoice(id: string, data: any) {
 
 export async function deleteInvoice(id: string) {
   try {
+    await requireWriteAuth();
     await dbConnect();
     const deleted = await Invoice.findByIdAndDelete(id);
     

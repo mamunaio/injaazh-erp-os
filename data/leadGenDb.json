@@ -1,0 +1,427 @@
+{
+  "settings": {
+    "agencyName": "Injaazh US HVAC Growth",
+    "niche": "US HVAC Contractors & Services",
+    "maxBounceRate": 0.02,
+    "minPositiveReplyRate": 0.01,
+    "targetColdEmails30DaysLow": 300,
+    "targetColdEmails30DaysHigh": 500,
+    "targetMrrMonth6": 3000,
+    "targetMrrMonth12": 6000,
+    "hourlyFloorRate": 25,
+    "reportMonth": "2026-10",
+    "mongoConnected": false
+  },
+  "prospects": [
+    {
+      "id": "P001",
+      "company": "Acme Heating & Air",
+      "city": "Austin",
+      "state": "TX",
+      "website": "https://acmehvac.example.com",
+      "businessEmail": "info@acmehvac.example.com",
+      "emailVerified": "Yes",
+      "mapsRank": "#6 'hvac repair austin tx'",
+      "reviewCount": 18,
+      "rating": 4.1,
+      "gap": "No service list on Google Business Profile & missing 24/7 emergency badge",
+      "screenshotLink": "https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800",
+      "status": "Won",
+      "replyTag": "Positive",
+      "lastContact": "2026-10-10",
+      "nextFollowUp": "2026-10-18",
+      "notes": "Closed on $1,000/mo retainer for GBP optimization and AI local visibility."
+    },
+    {
+      "id": "P002",
+      "company": "Lone Star Climate Control",
+      "city": "Dallas",
+      "state": "TX",
+      "website": "https://lonestarclimate.example.com",
+      "businessEmail": "contact@lonestarclimate.example.com",
+      "emailVerified": "Yes",
+      "mapsRank": "#9 'ac replacement dallas'",
+      "reviewCount": 34,
+      "rating": 4.6,
+      "gap": "Missing heat pump rebate service pages and schema markup",
+      "screenshotLink": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800",
+      "status": "Call booked",
+      "replyTag": "Positive",
+      "lastContact": "2026-10-12",
+      "nextFollowUp": "2026-10-14",
+      "notes": "Call scheduled for Thursday 2 PM CST. Interested in commercial lead flow."
+    },
+    {
+      "id": "P003",
+      "company": "Apex Airflow Solutions",
+      "city": "Houston",
+      "state": "TX",
+      "website": "https://apexairflow.example.com",
+      "businessEmail": "support@apexairflow.example.com",
+      "emailVerified": "Yes",
+      "mapsRank": "#12 'emergency ac repair houston'",
+      "reviewCount": 9,
+      "rating": 3.9,
+      "gap": "Only 9 reviews, profile suspended in neighboring sub-market",
+      "screenshotLink": "",
+      "status": "Email 1 sent",
+      "replyTag": "None",
+      "lastContact": "2026-10-11",
+      "nextFollowUp": "2026-10-15",
+      "notes": "Sent cold audit breakdown on Google Maps ranking drop."
+    },
+    {
+      "id": "P004",
+      "company": "Summit Valley HVAC",
+      "city": "Denver",
+      "state": "CO",
+      "website": "https://summitvalleyhvac.example.com",
+      "businessEmail": "office@summitvalleyhvac.example.com",
+      "emailVerified": "Yes",
+      "mapsRank": "#4 'furnace install denver'",
+      "reviewCount": 52,
+      "rating": 4.8,
+      "gap": "Competitor outranking on winter ductless mini-split queries",
+      "screenshotLink": "",
+      "status": "Follow-up 1",
+      "replyTag": "Neutral",
+      "lastContact": "2026-10-09",
+      "nextFollowUp": "2026-10-13",
+      "notes": "Said 'Send more info about ductless campaigns'."
+    },
+    {
+      "id": "P005",
+      "company": "SunCoast Cooling & Heating",
+      "city": "Tampa",
+      "state": "FL",
+      "website": "https://suncoastcooling.example.com",
+      "businessEmail": "mike@suncoastcooling.example.com",
+      "emailVerified": "No",
+      "mapsRank": "#15 'ac maintenance tampa'",
+      "reviewCount": 14,
+      "rating": 4.2,
+      "gap": "No Google booking button or online quote intake form",
+      "screenshotLink": "",
+      "status": "New",
+      "replyTag": "None",
+      "lastContact": "",
+      "nextFollowUp": "2026-10-16",
+      "notes": "Needs secondary email verification before cold batch."
+    },
+    {
+      "id": "P006",
+      "company": "Precision Thermal Pros",
+      "city": "Phoenix",
+      "state": "AZ",
+      "website": "https://precisionthermal.example.com",
+      "businessEmail": "service@precisionthermal.example.com",
+      "emailVerified": "Yes",
+      "mapsRank": "#8 'hvac replacement phoenix'",
+      "reviewCount": 77,
+      "rating": 4.5,
+      "gap": "GBP photos haven't been updated in 8 months, zero geo-tagged posts",
+      "screenshotLink": "",
+      "status": "Email 1 sent",
+      "replyTag": "None",
+      "lastContact": "2026-10-12",
+      "nextFollowUp": "2026-10-16",
+      "notes": "Audited local pack competitor keywords."
+    },
+    {
+      "id": "P007",
+      "company": "BlueRidge Mechanical",
+      "city": "Atlanta",
+      "state": "GA",
+      "website": "https://blueridgemechanical.example.com",
+      "businessEmail": "dispatch@blueridgehvac.example.com",
+      "emailVerified": "Yes",
+      "mapsRank": "#11 'air conditioning repair atlanta'",
+      "reviewCount": 23,
+      "rating": 4,
+      "gap": "No mention of commercial refrigeration or heat pumps in GBP description",
+      "screenshotLink": "",
+      "status": "Suppressed",
+      "replyTag": "Unsubscribe",
+      "lastContact": "2026-10-08",
+      "nextFollowUp": "",
+      "notes": "Requested unsubscribe. Immediately marked suppressed as per compliance rules."
+    }
+  ],
+  "dailyLogs": [
+    {
+      "id": "DL001",
+      "date": "2026-10-08",
+      "emailsSent": 35,
+      "bounced": 0,
+      "replies": 2,
+      "positiveReplies": 1,
+      "auditsSent": 1,
+      "callsBooked": 0,
+      "note": "Domain warmup complete. Batch 1 sent to Austin/Dallas HVACs."
+    },
+    {
+      "id": "DL002",
+      "date": "2026-10-09",
+      "emailsSent": 45,
+      "bounced": 0,
+      "replies": 3,
+      "positiveReplies": 1,
+      "auditsSent": 2,
+      "callsBooked": 1,
+      "note": "Follow-ups sent. Lone Star requested scheduling link."
+    },
+    {
+      "id": "DL003",
+      "date": "2026-10-10",
+      "emailsSent": 40,
+      "bounced": 1,
+      "replies": 1,
+      "positiveReplies": 0,
+      "auditsSent": 1,
+      "callsBooked": 0,
+      "note": "1 soft bounce (catch-all). Re-verifying email batch with BounceZero."
+    },
+    {
+      "id": "DL004",
+      "date": "2026-10-11",
+      "emailsSent": 50,
+      "bounced": 0,
+      "replies": 4,
+      "positiveReplies": 2,
+      "auditsSent": 2,
+      "callsBooked": 1,
+      "note": "Great response to our customized Maps Rank gap audit."
+    },
+    {
+      "id": "DL005",
+      "date": "2026-10-12",
+      "emailsSent": 48,
+      "bounced": 0,
+      "replies": 2,
+      "positiveReplies": 1,
+      "auditsSent": 1,
+      "callsBooked": 0,
+      "note": "Denver & Houston campaign active. Acme agreed to contract!"
+    }
+  ],
+  "clients": [
+    {
+      "id": "C001",
+      "name": "Acme Heating & Air",
+      "startDate": "2026-10-10",
+      "monthlyRetainer": 1000,
+      "services": "GBP Optimization, City Service Pages, Monthly AI Visibility Report",
+      "hoursReportMonth": 14,
+      "status": "Active",
+      "notes": "Key focus: rank top 3 for Austin emergency AC and heat pump installs."
+    },
+    {
+      "id": "C002",
+      "name": "Texas Comfort Pros",
+      "startDate": "2026-09-15",
+      "monthlyRetainer": 1200,
+      "services": "Local SEO, Review Funnel, Weekly GBP Posts & Geo-tagged Job Photos",
+      "hoursReportMonth": 18,
+      "status": "Active",
+      "notes": "Very satisfied with incoming calls. Considering upsell to Google Local Services Ads."
+    }
+  ],
+  "timeLogs": [
+    {
+      "id": "TL001",
+      "date": "2026-10-09",
+      "person": "Lead Gen Specialist",
+      "client": "Internal",
+      "lane": "Outreach",
+      "hours": 3.5,
+      "task": "Scrape & verify 150 US HVAC contractor emails with Google Maps API",
+      "note": "Filtered out non-owner and residential generic inboxes."
+    },
+    {
+      "id": "TL002",
+      "date": "2026-10-10",
+      "person": "SEO Strategist",
+      "client": "Acme Heating & Air",
+      "lane": "Fulfillment",
+      "hours": 5,
+      "task": "Audit GBP primary category, set up 15 service offerings & UTM links",
+      "note": "Configured call tracking and analytics."
+    },
+    {
+      "id": "TL003",
+      "date": "2026-10-11",
+      "person": "Content Creator",
+      "client": "Texas Comfort Pros",
+      "lane": "Fulfillment",
+      "hours": 4,
+      "task": "Created 4 geo-tagged showcase posts with install photography",
+      "note": "Scheduled weekly release."
+    },
+    {
+      "id": "TL004",
+      "date": "2026-10-12",
+      "person": "Lead Gen Specialist",
+      "client": "Internal",
+      "lane": "Outreach",
+      "hours": 2.5,
+      "task": "Reviewed positive replies and sent personalized Loom video audits",
+      "note": "Handled Lone Star and Summit queries."
+    }
+  ],
+  "teamTasks": [
+    {
+      "id": "T001",
+      "task": "Extract 50 HVAC prospect snapshot audits in Phoenix & Tampa",
+      "lane": "Outreach",
+      "owner": "Teammate / VA",
+      "created": "2026-10-11",
+      "deadline": "2026-10-14",
+      "status": "In Progress",
+      "reviewedByMe": false,
+      "briefLink": "https://docs.google.com/document/d/example-brief-1",
+      "flag": "Normal",
+      "notes": "Ensure rating < 4.5 and missing service catalog are noted."
+    },
+    {
+      "id": "T002",
+      "task": "Publish October AI visibility report for Acme Heating & Air",
+      "lane": "Fulfillment",
+      "owner": "Account Lead",
+      "created": "2026-10-10",
+      "deadline": "2026-10-15",
+      "status": "Todo",
+      "reviewedByMe": false,
+      "briefLink": "https://docs.google.com/document/d/example-brief-2",
+      "flag": "Urgent",
+      "notes": "Include ChatGPT Search and Perplexity prompt ranking comparisons."
+    },
+    {
+      "id": "T003",
+      "task": "Setup secondary cold outreach domains with SPF/DKIM/DMARC",
+      "lane": "Tech",
+      "owner": "Tech Ops",
+      "created": "2026-10-08",
+      "deadline": "2026-10-10",
+      "status": "Done",
+      "reviewedByMe": true,
+      "briefLink": "",
+      "flag": "Normal",
+      "notes": "3 domains warming up in Instantly."
+    }
+  ],
+  "deliveryCalendar": [
+    {
+      "id": "DC001",
+      "client": "Acme Heating & Air",
+      "task": "Weekly GBP Update Post (Offer & Service Highlight)",
+      "frequency": "Weekly",
+      "lastDone": "2026-10-07",
+      "nextDue": "2026-10-14",
+      "status": "Due soon",
+      "notes": "Promoting fall furnace pre-season tune-up discount."
+    },
+    {
+      "id": "DC002",
+      "client": "Acme Heating & Air",
+      "task": "Upload 5 Completed Job Photos with Geo-metadata",
+      "frequency": "Weekly",
+      "lastDone": "2026-10-06",
+      "nextDue": "2026-10-13",
+      "status": "Overdue",
+      "notes": "Waiting for technician install photos via Telegram group."
+    },
+    {
+      "id": "DC003",
+      "client": "Texas Comfort Pros",
+      "task": "Monthly Local Visibility & Call Conversion Report",
+      "frequency": "Monthly",
+      "lastDone": "2026-09-30",
+      "nextDue": "2026-10-30",
+      "status": "Good",
+      "notes": "Google Maps views increased 42% last month."
+    },
+    {
+      "id": "DC004",
+      "client": "Texas Comfort Pros",
+      "task": "Service Area Coverage & Secondary Category Review",
+      "frequency": "Bi-annual",
+      "lastDone": "2026-09-15",
+      "nextDue": "2027-03-15",
+      "status": "Good",
+      "notes": "Next audit in Spring before summer cooling surge."
+    }
+  ],
+  "invoices": [
+    {
+      "id": "INV-001",
+      "invoiceNumber": "INV-2026-001",
+      "issueDate": "2026-09-15",
+      "client": "Texas Comfort Pros",
+      "amount": 1200,
+      "status": "Paid",
+      "dueDate": "2026-09-25",
+      "paidDate": "2026-09-18",
+      "note": "Month 1 retainer onboarding."
+    },
+    {
+      "id": "INV-002",
+      "invoiceNumber": "INV-2026-002",
+      "issueDate": "2026-10-10",
+      "client": "Acme Heating & Air",
+      "amount": 1000,
+      "status": "Paid",
+      "dueDate": "2026-10-20",
+      "paidDate": "2026-10-11",
+      "note": "Month 1 upfront retainer."
+    },
+    {
+      "id": "INV-003",
+      "invoiceNumber": "INV-2026-003",
+      "issueDate": "2026-10-15",
+      "client": "Texas Comfort Pros",
+      "amount": 1200,
+      "status": "Sent",
+      "dueDate": "2026-10-25",
+      "paidDate": null,
+      "note": "Month 2 retainer renewal."
+    }
+  ],
+  "expenses": [
+    {
+      "id": "EXP001",
+      "date": "2026-10-02",
+      "category": "Domains & Inboxes",
+      "vendor": "Namecheap & Google Workspace",
+      "amount": 48,
+      "isRecurring": true,
+      "note": "3 secondary sending domains + 6 inboxes."
+    },
+    {
+      "id": "EXP002",
+      "date": "2026-10-04",
+      "category": "Email Warmup & Sending",
+      "vendor": "Instantly.ai",
+      "amount": 97,
+      "isRecurring": true,
+      "note": "Growth plan with unlimited warmups."
+    },
+    {
+      "id": "EXP003",
+      "date": "2026-10-05",
+      "category": "Lead Verification & Scraping",
+      "vendor": "BounceZero & Outscraper",
+      "amount": 45,
+      "isRecurring": false,
+      "note": "Credits for 2,000 verified US HVAC contractor contacts."
+    },
+    {
+      "id": "EXP004",
+      "date": "2026-10-10",
+      "category": "Team & Freelancers",
+      "vendor": "Upwork VA",
+      "amount": 120,
+      "isRecurring": false,
+      "note": "Custom Google Maps profile screenshot and gap audits."
+    }
+  ]
+}

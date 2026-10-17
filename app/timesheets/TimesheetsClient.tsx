@@ -135,8 +135,8 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis }: { u
   };
 
   const kpiCards = [
-    { label: 'Hours Today', value: formatTimeSeconds(kpis.today), color: '#2563EB', icon: Clock },
-    { label: 'This Week', value: formatTimeSeconds(kpis.week), color: '#7C3AED', icon: Calendar },
+    { label: 'Hours Today', value: formatTimeSeconds(kpis.today), color: '#6324FC', icon: Clock },
+    { label: 'This Week', value: formatTimeSeconds(kpis.week), color: '#00E5FF', icon: Calendar },
     { label: 'This Month', value: formatTimeSeconds(kpis.month), color: '#10B981', icon: Activity },
     { label: 'Billable Value', value: `$${kpis.billableValue.toFixed(2)}`, color: '#F59E0B', icon: DollarSign },
   ];
@@ -146,23 +146,23 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis }: { u
   const totalSevenDaySeconds = chartData.reduce((s: number, d: any) => s + (d.hours * 3600), 0);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#09090B] p-4 md:p-8 selection:bg-[#2563EB]/30">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#060608] p-4 md:p-8 selection:bg-[#6324FC]/30">
       <div className="max-w-[1400px] mx-auto space-y-6">
 
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-5">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-9 h-9 rounded-[10px] bg-[#2563EB]/10 border border-[#2563EB]/20 flex items-center justify-center text-[#2563EB]">
-                <Clock size={17} />
+            <div className="flex items-center gap-2.5 mb-2">
+              <div className="w-8 h-8 rounded-xl bg-[#6324FC]/10 border border-[#6324FC]/20 flex items-center justify-center text-[#6324FC] dark:text-[#00E5FF]">
+                <Clock size={16} />
               </div>
-              <span className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Time Tracking</span>
+              <span className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">Time Tracking</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tracking-tight font-jakarta mb-1.5">Timesheets</h1>
-            <p className="text-sm font-medium text-[#94A3B8]">Track, review, and manage your logged hours.</p>
+            <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-slate-900 dark:text-white tracking-tight mb-1">Timesheets</h1>
+            <p className="text-xs text-secondary font-medium">Track, review, and manage your logged work hours.</p>
           </div>
-          <button onClick={openModalForNew} className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
-            <Plus size={16} strokeWidth={2.5} /> Log Time Manually
+          <button onClick={openModalForNew} className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl font-heading font-bold text-xs bg-gradient-to-r from-[#6324FC] to-[#8B5CF6] hover:brightness-110 text-white shadow-[0_0_20px_rgba(99,36,252,0.4)] transition-all">
+            <Plus size={15} strokeWidth={2.5} /> Log Time Manually
           </button>
         </div>
 
@@ -175,12 +175,8 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis }: { u
                 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05, type: 'spring', stiffness: 280, damping: 26 }}
                 key={i}
-                  className="relative bg-white dark:bg-[#11131A] border border-slate-100 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 flex flex-col justify-center overflow-hidden transition-all duration-300 shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgba(37,99,235,0.08)] group"
+                className="relative bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-3xl p-5 lg:p-6 flex flex-col justify-center overflow-hidden transition-all duration-200 shadow-sm group hover:border-[#6324FC]/40"
               >
-                {/* Subtle Radial Gradient */}
-                <div className="absolute inset-0 opacity-0 dark:opacity-20 transition-opacity duration-300 pointer-events-none"
-                     style={{ background: `radial-gradient(circle at top right, ${kpi.color}33 0%, transparent 60%)` }} />
-                
                 {/* Recharts Area Wave */}
                 <div className="absolute inset-0 opacity-10 pointer-events-none">
                   <ResponsiveContainer width="100%" height="100%">
@@ -196,16 +192,13 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis }: { u
                   style={{ backgroundColor: kpi.color, boxShadow: `0 4px 15px ${kpi.color}` }}
                 />
 
-                <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                  <kpi.icon size={100} style={{ color: kpi.color }} />
-                </div>
-                <div className="flex items-start justify-between mb-4 relative z-10">
-                  <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">{kpi.label}</p>
-                  <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] flex items-center justify-center" style={{ color: kpi.color }}>
-                    <kpi.icon size={14} />
+                <div className="flex items-start justify-between mb-3 relative z-10">
+                  <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">{kpi.label}</p>
+                  <div className="w-7 h-7 rounded-xl bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 flex items-center justify-center" style={{ color: kpi.color }}>
+                    <kpi.icon size={13} />
                   </div>
                 </div>
-                <p className="text-3xl font-bold font-mono text-slate-900 dark:text-white relative z-10">{kpi.value}</p>
+                <p className="text-2xl font-heading font-extrabold font-mono text-slate-900 dark:text-white relative z-10">{kpi.value}</p>
               </motion.div>
             );
           })}
@@ -214,40 +207,40 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis }: { u
         {/* Last 7 Days Chart */}
         <motion.div
           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}
-          className="bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-[24px] p-6 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none"
+          className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-3xl p-5 sm:p-6 shadow-sm"
         >
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2">
-              <Activity size={14} className="text-[#94A3B8]" />
-              <h2 className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Last 7 Days Activity</h2>
+              <Activity size={14} className="text-[#6324FC] dark:text-[#00E5FF]" />
+              <h2 className="text-xs font-heading font-extrabold text-secondary uppercase tracking-widest">Last 7 Days Activity</h2>
             </div>
-            <span className="text-xs text-[#94A3B8]">
+            <span className="text-xs text-secondary">
               7-day total: <span className="text-slate-900 dark:text-white font-bold font-mono">{formatTimeSeconds(totalSevenDaySeconds)}</span>
             </span>
           </div>
-          <div className="flex items-end gap-3" style={{ height: 140 }}>
+          <div className="flex items-end gap-3" style={{ height: 130 }}>
             {chartData.map((d: any, i: number) => {
               const heightPercent = d.hours > 0 ? Math.max((d.hours / globalMax) * 100, 6) : 0;
               return (
                 <div key={i} className="flex flex-col items-center gap-1.5 flex-1 group cursor-default h-full">
-                  <div className="h-5 flex items-end justify-center shrink-0">
+                  <div className="h-4 flex items-end justify-center shrink-0">
                     {d.hours > 0 && (
-                      <span className="text-[10px] font-bold text-[#94A3B8] group-hover:text-[#7C3AED] transition-colors leading-none">
+                      <span className="text-[10px] font-mono font-bold text-secondary group-hover:text-[#6324FC] dark:group-hover:text-[#00E5FF] transition-colors leading-none">
                         {d.hours}h
                       </span>
                     )}
                   </div>
-                  <div className="w-full flex-1 relative flex items-end bg-slate-50 dark:bg-[#09090B] rounded-lg border border-[#E2E8F0] dark:border-[#1a1a1a] overflow-hidden">
+                  <div className="w-full flex-1 relative flex items-end bg-slate-50 dark:bg-[#060608] rounded-xl border border-black/5 dark:border-white/5 overflow-hidden">
                     {d.hours > 0 && (
                       <motion.div
                         initial={{ height: 0 }}
                         animate={{ height: `${heightPercent}%` }}
                         transition={{ duration: 0.8, delay: i * 0.07 + 0.2, ease: 'easeOut' }}
-                        className="w-full bg-gradient-to-t from-[#2563EB] to-[#7C3AED] group-hover:brightness-110 transition-all"
+                        className="w-full bg-gradient-to-t from-[#6324FC] to-[#00E5FF] group-hover:brightness-110 transition-all rounded-t-lg"
                       />
                     )}
                   </div>
-                  <span className="text-[11px] font-bold text-[#94A3B8] group-hover:text-slate-900 dark:group-hover:text-white transition-colors shrink-0">{d.day}</span>
+                  <span className="text-[10px] font-heading font-bold text-secondary group-hover:text-slate-900 dark:group-hover:text-white transition-colors shrink-0">{d.day}</span>
                 </div>
               );
             })}
@@ -257,36 +250,36 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis }: { u
         {/* Detailed Log Panel */}
         <motion.div
           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
-          className="bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-[24px] overflow-hidden shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none"
+          className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-3xl overflow-hidden shadow-sm"
         >
           {/* Panel Header */}
-          <div className="px-6 py-4 border-b border-[#E2E8F0] dark:border-[#1a1a1a]">
+          <div className="px-5 py-4 border-b border-black/5 dark:border-white/5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest">Detailed Log</h2>
-              <div className="flex items-center gap-3 flex-wrap">
+              <h2 className="text-xs font-heading font-extrabold text-slate-900 dark:text-white uppercase tracking-widest">Detailed Log</h2>
+              <div className="flex items-center gap-2.5 flex-wrap">
                 {/* Month Filter */}
-                <div className="flex items-center gap-2 bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-lg px-3 py-2 hover:border-[#2563EB]/40 transition-colors">
-                  <Filter size={11} className="text-[#94A3B8] shrink-0" />
+                <div className="flex items-center gap-2 bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl px-3 py-1.5 hover:border-[#6324FC]/40 transition-colors">
+                  <Filter size={12} className="text-secondary shrink-0" />
                   <select
                     value={selectedMonth}
                     onChange={e => setSelectedMonth(e.target.value)}
-                    className="bg-transparent text-xs font-bold text-slate-900 dark:text-white focus:outline-none cursor-pointer"
+                    className="bg-transparent text-xs font-heading font-bold text-slate-900 dark:text-white focus:outline-none cursor-pointer"
                   >
                     {availableMonths.map(m => (
-                      <option key={m} value={m} className="bg-slate-50 dark:bg-[#111111] text-slate-900 dark:text-white">{formatMonthLabel(m)}</option>
+                      <option key={m} value={m} className="bg-white dark:bg-[#0a0a0d] text-slate-900 dark:text-white">{formatMonthLabel(m)}</option>
                     ))}
                   </select>
                 </div>
                 {/* Search */}
                 <div className="relative">
-                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary" />
                   <input
-                    type="text" placeholder="Search..." value={searchQuery}
+                    type="text" placeholder="Search logs..." value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    className="w-44 bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white text-xs font-medium rounded-lg pl-9 pr-8 py-2 focus:outline-none focus:border-[#2563EB]/50 transition-colors"
+                    className="w-44 bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 text-slate-900 dark:text-white text-xs rounded-xl pl-8 pr-7 py-1.5 focus:outline-none focus:border-[#6324FC] transition-colors placeholder:text-secondary"
                   />
                   {searchQuery && (
-                    <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-white">
+                    <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-secondary hover:text-slate-900 dark:hover:text-white">
                       <X size={11} />
                     </button>
                   )}
@@ -298,38 +291,38 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis }: { u
           {filteredLogs.length > 0 ? (
             <>
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-left text-sm">
+                <table className="w-full border-collapse text-left text-xs">
                   <thead>
-                    <tr className="bg-slate-50 dark:bg-[#09090B] border-b border-[#E2E8F0] dark:border-[#1a1a1a]">
-                      <th className="px-6 py-3.5 text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">Date</th>
-                      <th className="px-6 py-3.5 text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">Project/Client</th>
-                      <th className="px-6 py-3.5 text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">Task Description</th>
-                      <th className="px-6 py-3.5 text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">Time</th>
-                      <th className="px-6 py-3.5 text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest text-right">Duration</th>
-                      <th className="px-6 py-3.5 w-20"></th>
+                    <tr className="bg-slate-50/50 dark:bg-[#060608]/50 border-b border-black/5 dark:border-white/5">
+                      <th className="px-5 py-3 text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">Date</th>
+                      <th className="px-5 py-3 text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">Project/Client</th>
+                      <th className="px-5 py-3 text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">Task Description</th>
+                      <th className="px-5 py-3 text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">Time</th>
+                      <th className="px-5 py-3 text-[10px] font-heading font-bold text-secondary uppercase tracking-widest text-right">Duration</th>
+                      <th className="px-5 py-3 w-16"></th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {filteredLogs.map((log, idx) => (
+                  <tbody className="divide-y divide-black/5 dark:divide-white/5">
+                    {filteredLogs.map((log) => (
                       <tr
                         key={log._id}
-                        className={`border-b border-[#E2E8F0]/50 dark:border-[#1a1a1a]/40 transition-colors group hover:bg-slate-50 dark:hover:bg-[#141414] ${idx % 2 !== 0 ? 'bg-slate-50/30 dark:bg-[#09090B]/20' : ''}`}
+                        className="hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors group"
                       >
-                        <td className="px-6 py-4 text-xs font-medium text-[#94A3B8] whitespace-nowrap">{format(new Date(log.date), 'MMM dd, yyyy')}</td>
-                        <td className="px-6 py-4">
-                          <span className="inline-flex items-center px-2 py-1 rounded bg-[#2563EB]/10 text-[#2563EB] text-[11px] font-bold border border-[#2563EB]/20 whitespace-nowrap">
+                        <td className="px-5 py-3.5 text-xs font-mono text-secondary whitespace-nowrap">{format(new Date(log.date), 'MMM dd, yyyy')}</td>
+                        <td className="px-5 py-3.5">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-[#6324FC]/10 text-[#6324FC] dark:text-[#00E5FF] text-[11px] font-heading font-bold border border-[#6324FC]/20 whitespace-nowrap">
                             {log.project}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-xs text-slate-900 dark:text-white max-w-[220px] truncate">{log.task}</td>
-                        <td className="px-6 py-4 text-[11px] font-mono text-[#94A3B8] whitespace-nowrap">{log.startTime} – {log.endTime}</td>
-                        <td className="px-6 py-4 text-right">
-                          <span className="text-sm font-bold font-mono text-slate-900 dark:text-white">{formatTimeSeconds(log.durationSeconds)}</span>
+                        <td className="px-5 py-3.5 text-xs text-slate-800 dark:text-slate-200 max-w-[220px] truncate">{log.task}</td>
+                        <td className="px-5 py-3.5 text-xs font-mono text-secondary whitespace-nowrap">{log.startTime} – {log.endTime}</td>
+                        <td className="px-5 py-3.5 text-right">
+                          <span className="text-xs font-heading font-bold font-mono text-slate-900 dark:text-white">{formatTimeSeconds(log.durationSeconds)}</span>
                         </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onClick={() => openModalForEdit(log)} className="p-1.5 text-[#94A3B8] hover:text-white hover:bg-[#1a1a1a] rounded-md transition-colors"><Edit3 size={13} /></button>
-                            <button onClick={() => handleDelete(log._id)} className="p-1.5 text-[#94A3B8] hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors"><Trash2 size={13} /></button>
+                        <td className="px-5 py-3.5 text-right">
+                          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onClick={() => openModalForEdit(log)} className="p-1.5 text-secondary hover:text-[#6324FC] dark:hover:text-[#00E5FF] rounded-lg transition-colors"><Edit3 size={13} /></button>
+                            <button onClick={() => handleDelete(log._id)} className="p-1.5 text-secondary hover:text-rose-500 rounded-lg transition-colors"><Trash2 size={13} /></button>
                           </div>
                         </td>
                       </tr>
@@ -339,48 +332,47 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis }: { u
               </div>
 
               {/* Monthly Summary Footer */}
-              <div className="px-6 py-4 border-t border-[#E2E8F0] dark:border-[#1a1a1a] bg-slate-50 dark:bg-[#09090B]">
+              <div className="px-5 py-3.5 border-t border-black/5 dark:border-white/5 bg-slate-50/50 dark:bg-[#060608]/50">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <Calendar size={13} className="text-[#94A3B8]" />
-                    <span className="text-xs font-bold text-slate-500 dark:text-[#94A3B8] uppercase tracking-widest">
+                    <Calendar size={13} className="text-secondary" />
+                    <span className="text-xs font-heading font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                       {formatMonthLabel(selectedMonth)}
                     </span>
-                    <span className="text-xs text-slate-400 dark:text-[#94A3B8]/60">— {filteredLogs.length} {filteredLogs.length === 1 ? 'entry' : 'entries'}</span>
+                    <span className="text-xs text-secondary">— {filteredLogs.length} {filteredLogs.length === 1 ? 'entry' : 'entries'}</span>
                   </div>
-                  <div className="flex items-center gap-5 flex-wrap">
+                  <div className="flex items-center gap-4 flex-wrap">
                     <div className="flex items-center gap-2">
-                      <Clock size={12} className="text-[#7C3AED]" />
-                      <span className="text-[11px] text-[#94A3B8]">Total Time</span>
-                      <span className="text-sm font-bold font-mono text-slate-900 dark:text-white">{formatTimeSeconds(monthlyTotalSeconds)}</span>
+                      <Clock size={12} className="text-[#6324FC] dark:text-[#00E5FF]" />
+                      <span className="text-[11px] text-secondary">Total Time:</span>
+                      <span className="text-xs font-heading font-bold font-mono text-slate-900 dark:text-white">{formatTimeSeconds(monthlyTotalSeconds)}</span>
                     </div>
-                    <div className="w-px h-4 bg-slate-300 dark:bg-[#232734]" />
+                    <div className="w-px h-3.5 bg-black/10 dark:bg-white/10" />
                     <div className="flex items-center gap-2">
-                      <DollarSign size={12} className="text-[#F59E0B]" />
-                      <span className="text-[11px] text-slate-500 dark:text-[#94A3B8]">Billable</span>
-                      <span className="text-sm font-bold font-mono text-amber-600 dark:text-[#F59E0B]">${monthlyBillable.toFixed(2)}</span>
+                      <DollarSign size={12} className="text-amber-500" />
+                      <span className="text-[11px] text-secondary">Billable:</span>
+                      <span className="text-xs font-heading font-bold font-mono text-amber-600 dark:text-amber-400">${monthlyBillable.toFixed(2)}</span>
                     </div>
-                    <div className="w-px h-4 bg-slate-300 dark:bg-[#232734]" />
-                    <span className="text-[10px] text-slate-400 dark:text-[#94A3B8]/70">@ ${BILLABLE_RATE}/hr</span>
+                    <div className="w-px h-3.5 bg-black/10 dark:bg-white/10" />
+                    <span className="text-[10px] text-secondary">@ ${BILLABLE_RATE}/hr</span>
                   </div>
                 </div>
               </div>
             </>
           ) : (
             <div className="flex flex-col items-center justify-center p-12 text-center">
-              <div className="w-16 h-16 rounded-[20px] bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] flex items-center justify-center mb-4 relative">
-                <div className="absolute inset-0 bg-[#2563EB]/10 blur-xl rounded-[20px]"></div>
-                <Clock size={24} className="text-[#2563EB] relative z-10" />
+              <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-white/5 border border-black/5 dark:border-white/5 flex items-center justify-center mb-3">
+                <Clock size={20} className="text-[#6324FC] dark:text-[#00E5FF]" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+              <h3 className="text-sm font-heading font-bold text-slate-900 dark:text-white mb-1">
                 {searchQuery ? 'No matching logs' : `No logs for ${formatMonthLabel(selectedMonth)}`}
               </h3>
-              <p className="text-sm text-[#94A3B8] max-w-sm mb-6">
-                {searchQuery ? 'Try a different search term or clear the filter.' : 'Log time manually or use the global timer to track hours.'}
+              <p className="text-xs text-secondary max-w-sm mb-4">
+                {searchQuery ? 'Try a different search term or clear the filter.' : 'Log time manually or use the tracker to record hours.'}
               </p>
               {!searchQuery && (
-                <button onClick={openModalForNew} className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-900 dark:text-white border border-[#E2E8F0] dark:border-white/10 transition-all">
-                  <Plus size={14} /> Log Time Manually
+                <button onClick={openModalForNew} className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl font-heading font-bold text-xs bg-slate-100 dark:bg-white/5 hover:bg-black/5 dark:hover:bg-white/10 text-slate-900 dark:text-white border border-black/10 dark:border-white/10 transition-all">
+                  <Plus size={13} /> Log Time Manually
                 </button>
               )}
             </div>
@@ -395,70 +387,70 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis }: { u
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60 backdrop-blur-md"
               onClick={() => setIsModalOpen(false)}
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-[24px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+              initial={{ opacity: 0, scale: 0.95, y: 15 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="relative w-full max-w-md bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/15 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
             >
-              <div className="p-6 border-b border-[#E2E8F0] dark:border-[#1a1a1a] flex items-center justify-between">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{editingLogId ? 'Edit Time Log' : 'Log Time Manually'}</h3>
-                <button type="button" onClick={() => setIsModalOpen(false)} className="p-2 text-[#94A3B8] hover:text-slate-900 dark:hover:text-white bg-slate-50 dark:bg-[#09090B] rounded-xl border border-[#E2E8F0] dark:border-[#1a1a1a] transition-colors">
-                  <X size={16} />
+              <div className="p-5 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
+                <h3 className="text-sm font-heading font-extrabold text-slate-900 dark:text-white">{editingLogId ? 'Edit Time Log' : 'Log Time Manually'}</h3>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="p-1.5 text-secondary hover:text-slate-900 dark:hover:text-white bg-slate-50 dark:bg-white/5 rounded-xl border border-black/5 dark:border-white/5 transition-colors">
+                  <X size={14} />
                 </button>
               </div>
-              <form onSubmit={handleSubmit} className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-6 space-y-4">
+              <form onSubmit={handleSubmit} className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-5 space-y-3.5">
                 <div>
-                  <label className="block text-xs font-bold text-[#94A3B8] mb-1.5 uppercase tracking-widest">Project/Client</label>
-                  <input type="text" value={formData.project} onChange={e => setFormData({...formData, project: e.target.value})} className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/50 transition-colors" placeholder="e.g. Acme Corp Redesign" required />
+                  <label className="block text-[10px] font-heading font-bold text-secondary mb-1.5 uppercase tracking-widest">Project/Client</label>
+                  <input type="text" value={formData.project} onChange={e => setFormData({...formData, project: e.target.value})} className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#6324FC] transition-colors placeholder:text-secondary" placeholder="e.g. Acme Corp Redesign" required />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-[#94A3B8] mb-1.5 uppercase tracking-widest">Task Description</label>
-                  <input type="text" value={formData.task} onChange={e => setFormData({...formData, task: e.target.value})} className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/50 transition-colors" placeholder="e.g. API Integration" required />
+                  <label className="block text-[10px] font-heading font-bold text-secondary mb-1.5 uppercase tracking-widest">Task Description</label>
+                  <input type="text" value={formData.task} onChange={e => setFormData({...formData, task: e.target.value})} className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#6324FC] transition-colors placeholder:text-secondary" placeholder="e.g. API Integration" required />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-[#94A3B8] mb-1.5 uppercase tracking-widest">Date</label>
+                  <label className="block text-[10px] font-heading font-bold text-secondary mb-1.5 uppercase tracking-widest">Date</label>
                   <DatePicker
                     selected={new Date(formData.date + 'T00:00:00')}
                     onChange={(date: Date | null) => setFormData({...formData, date: date ? format(date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')})}
-                    className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/50 transition-colors"
+                    className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#6324FC] transition-colors"
                     dateFormat="MMMM d, yyyy" required popperPlacement="bottom-start" popperClassName="z-[60]"
                     renderCustomHeader={({ date, decreaseMonth, increaseMonth, prevMonthButtonDisabled, nextMonthButtonDisabled }) => (
-                      <div className="flex justify-between items-center mb-4 px-2">
-                        <button type="button" onClick={decreaseMonth} disabled={prevMonthButtonDisabled} className="text-slate-600 hover:bg-slate-100 p-1.5 rounded-md transition-colors dark:text-slate-400 dark:hover:bg-slate-800"><ChevronLeft size={16} /></button>
-                        <div className="text-slate-900 dark:text-slate-100 font-semibold text-sm">{format(date, 'MMMM yyyy')}</div>
-                        <button type="button" onClick={increaseMonth} disabled={nextMonthButtonDisabled} className="text-slate-600 hover:bg-slate-100 p-1.5 rounded-md transition-colors dark:text-slate-400 dark:hover:bg-slate-800"><ChevronRight size={16} /></button>
+                      <div className="flex justify-between items-center mb-3 px-2">
+                        <button type="button" onClick={decreaseMonth} disabled={prevMonthButtonDisabled} className="text-secondary hover:bg-black/5 dark:hover:bg-white/5 p-1 rounded-md transition-colors"><ChevronLeft size={14} /></button>
+                        <div className="text-slate-900 dark:text-white font-heading font-bold text-xs">{format(date, 'MMMM yyyy')}</div>
+                        <button type="button" onClick={increaseMonth} disabled={nextMonthButtonDisabled} className="text-secondary hover:bg-black/5 dark:hover:bg-white/5 p-1 rounded-md transition-colors"><ChevronRight size={14} /></button>
                       </div>
                     )}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-[#94A3B8] mb-1.5 uppercase tracking-widest">Start Time</label>
+                    <label className="block text-[10px] font-heading font-bold text-secondary mb-1.5 uppercase tracking-widest">Start Time</label>
                     <DatePicker
                       selected={new Date(`${formData.date}T${formData.startTime}:00`)}
                       onChange={(date: Date | null) => setFormData({...formData, startTime: date ? format(date, 'HH:mm') : formData.startTime})}
                       showTimeSelect showTimeSelectOnly timeIntervals={15} timeCaption="Time" dateFormat="h:mm aa"
-                      className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/50 transition-colors"
+                      className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#6324FC] transition-colors"
                       required popperPlacement="bottom-start" popperClassName="z-[60]"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-[#94A3B8] mb-1.5 uppercase tracking-widest">End Time</label>
+                    <label className="block text-[10px] font-heading font-bold text-secondary mb-1.5 uppercase tracking-widest">End Time</label>
                     <DatePicker
                       selected={new Date(`${formData.date}T${formData.endTime}:00`)}
                       onChange={(date: Date | null) => setFormData({...formData, endTime: date ? format(date, 'HH:mm') : formData.endTime})}
                       showTimeSelect showTimeSelectOnly timeIntervals={15} timeCaption="Time" dateFormat="h:mm aa"
-                      className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[#2563EB]/50 transition-colors"
+                      className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#6324FC] transition-colors"
                       required popperPlacement="bottom-start" popperClassName="z-[60]"
                     />
                   </div>
                 </div>
-                <div className="pt-4 mt-6 border-t border-[#E2E8F0] dark:border-[#1a1a1a] flex justify-end gap-3">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-50 dark:bg-[#09090B] text-slate-900 dark:text-white border border-[#E2E8F0] dark:border-[#1a1a1a] hover:bg-slate-100 dark:hover:bg-[#1a1a1a] transition-all">Cancel</button>
-                  <button type="submit" disabled={isSubmitting} className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white border border-[#2563EB]/80 shadow-[0_0_20px_rgba(37,99,235,0.2)] disabled:opacity-50 transition-all">
-                    {isSubmitting && <Loader2 size={16} className="animate-spin" />}
+                <div className="pt-3 mt-4 border-t border-black/5 dark:border-white/5 flex justify-end gap-2">
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-xl font-heading font-bold text-xs bg-slate-100 dark:bg-white/5 text-secondary hover:text-slate-900 dark:hover:text-white transition-all">Cancel</button>
+                  <button type="submit" disabled={isSubmitting} className="flex items-center gap-1.5 px-5 py-2 rounded-xl font-heading font-bold text-xs bg-gradient-to-r from-[#6324FC] to-[#8B5CF6] text-white hover:brightness-110 shadow-[0_0_15px_rgba(99,36,252,0.4)] disabled:opacity-50 transition-all">
+                    {isSubmitting && <Loader2 size={13} className="animate-spin" />}
                     {editingLogId ? 'Save Changes' : 'Save Log'}
                   </button>
                 </div>

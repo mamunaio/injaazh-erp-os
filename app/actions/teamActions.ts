@@ -2,7 +2,7 @@
 
 import connectToDatabase from '@/lib/mongodb';
 import User from '@/models/User';
-import { getAuthUser } from '@/lib/auth';
+import { getAuthUser, requireWriteAuth } from '@/lib/auth';
 
 // Middleware helper to check if logged in user is admin
 async function requireAdmin() {
@@ -32,7 +32,7 @@ export async function getTeamMembers() {
     await requireAdmin();
     await connectToDatabase();
     
-    const members = await User.find({ role: { $in: ['admin', 'editor', 'marketplace_team', 'team_member'] } }).select('-password').sort({ createdAt: -1 }).lean();
+    const members = await User.find({}).select('-password').sort({ createdAt: -1 }).lean();
     return {
       success: true,
       data: JSON.parse(JSON.stringify(members))
@@ -137,7 +137,7 @@ export async function updateUserProfile(data: {
   image?: string;
 }) {
   try {
-    const authUser = await requireAuth();
+    const authUser = await requireWriteAuth();
     await connectToDatabase();
 
     const { name, email, currentPassword, newPassword, image } = data;

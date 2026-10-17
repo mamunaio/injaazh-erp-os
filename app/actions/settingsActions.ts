@@ -4,6 +4,7 @@ import nodemailer from 'nodemailer';
 import connectToDatabase from '@/lib/mongodb';
 import { SystemSettings } from '@/models/SystemSettings';
 import { encrypt, decrypt } from '@/lib/encryption';
+import { requireWriteAuth } from '@/lib/auth';
 
 export async function getSystemSettings(key: string) {
   try {
@@ -28,6 +29,7 @@ export async function getSystemSettings(key: string) {
 
 export async function saveSystemSettings(key: string, value: any) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     
     const valueToSave = { ...value };

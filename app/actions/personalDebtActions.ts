@@ -3,6 +3,7 @@
 import connectToDatabase from '@/lib/mongodb';
 import { PersonalDebt } from '@/models/PersonalDebt';
 import { revalidatePath } from 'next/cache';
+import { requireWriteAuth } from '@/lib/auth';
 
 /**
  * Get all personal debts
@@ -38,6 +39,7 @@ export async function createPersonalDebt(data: {
   description?: string;
 }) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     
     const newDebt = new PersonalDebt({
@@ -70,6 +72,7 @@ export async function createPersonalDebt(data: {
  */
 export async function updatePersonalDebt(id: string, data: any) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     
     if (data.date) {
@@ -106,6 +109,7 @@ export async function updatePersonalDebt(id: string, data: any) {
  */
 export async function deletePersonalDebt(id: string) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     
     const deletedDebt = await PersonalDebt.findByIdAndDelete(id);
@@ -134,6 +138,7 @@ export async function deletePersonalDebt(id: string) {
  */
 export async function settlePersonalDebt(id: string) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     
     const updatedDebt = await PersonalDebt.findByIdAndUpdate(
@@ -170,6 +175,7 @@ export async function makePartialPayment(
   paymentNote?: string
 ) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     
     const debt = await PersonalDebt.findById(id);

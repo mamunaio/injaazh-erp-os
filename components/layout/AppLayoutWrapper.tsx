@@ -4,11 +4,14 @@ import React from 'react';
 import { usePathname } from 'next/navigation';
 import Sidebar from '@/components/layout/Sidebar';
 import Topbar from '@/components/layout/Topbar';
+import AppleDock from '@/components/layout/AppleDock';
 import { SidebarProvider } from '@/components/layout/SidebarContext';
 import { AppearanceProvider, useAppearance } from '@/components/layout/AppearanceContext';
 import { UserProvider } from '@/components/layout/UserContext';
 import { ConfirmDialogProvider } from '@/components/layout/ConfirmDialogProvider';
 import { logoutUser } from '@/app/actions/authActions';
+
+import { motion } from 'framer-motion';
 
 export default function AppLayoutWrapper({ children, initialUser }: { children: React.ReactNode, initialUser?: any }) {
   const pathname = usePathname();
@@ -49,15 +52,32 @@ export default function AppLayoutWrapper({ children, initialUser }: { children: 
 }
 
 function AppContent({ children, initialUser }: { children: React.ReactNode, initialUser?: any }) {
-  const { sidebarLayout } = useAppearance();
+  const { sidebarLayout, mounted } = useAppearance();
+  const isDock = mounted && sidebarLayout === 'dock';
+  const pathname = usePathname();
   
   return (
     <>
       <Sidebar />
       <Topbar />
-      <main className={`pt-[100px] pr-4 pb-4 min-h-screen transition-all duration-300 relative ${sidebarLayout === 'collapsed' ? 'pl-4 lg:pl-[88px]' : 'pl-4 lg:pl-[288px]'}`}>
-        {children}
+      <main className={`pt-[100px] pr-4 transition-all duration-300 relative ${
+        isDock 
+          ? 'pl-4 lg:pl-6 pb-28 max-w-[1600px] mx-auto' 
+          : sidebarLayout === 'collapsed' 
+            ? 'pl-4 lg:pl-[88px] pb-6' 
+            : 'pl-4 lg:pl-[288px] pb-6'
+      }`}>
+        <motion.div
+          key={pathname}
+          initial={{ opacity: 0, y: 16, scale: 0.985 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full"
+        >
+          {children}
+        </motion.div>
       </main>
+      {isDock && <AppleDock />}
     </>
   );
 }

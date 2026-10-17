@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, Outfit, JetBrains_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import AppLayoutWrapper from "@/components/layout/AppLayoutWrapper";
@@ -9,28 +9,18 @@ import { Toaster } from "react-hot-toast";
 import { getCurrentUser } from "@/app/actions/authActions";
 import ChatWidget from "@/components/ui/ChatWidget";
 
-// Primary Body & UI font - Plus Jakarta Sans (Modern, ultra-crisp Swiss/SaaS typography)
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
+// Primary UI & Headings font - Geist (Vercel's crisp, modern SaaS typography)
+const geistSans = Geist({
   variable: "--font-sans",
-  weight: ["300", "400", "500", "600", "700", "800"],
-  display: "swap",
-});
-
-// Headings & Brand font - Outfit (Futuristic, geometric, bold luxury brutalist typography)
-const outfit = Outfit({
   subsets: ["latin"],
-  variable: "--font-heading",
-  weight: ["400", "500", "600", "700", "800", "900"],
   display: "swap",
 });
 
-// Monospace font - JetBrains Mono (precision numbers, KPI tickers, IDs)
-const jetbrainsMono = JetBrains_Mono({
+// Monospace font - Geist Mono (code, IDs, precision numbers, KPI tickers)
+const geistMono = Geist_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
   display: "swap",
-  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -60,7 +50,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${plusJakartaSans.variable} ${outfit.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full overflow-x-hidden relative font-sans antialiased transition-colors duration-500 selection:bg-[#6324FC]/30 selection:text-white" suppressHydrationWarning>

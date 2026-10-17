@@ -98,7 +98,7 @@ export async function loginUser(formData: FormData) {
   try {
     await connectToDatabase();
     
-    const email = formData.get('email') as string;
+    const email = (formData.get('email') as string)?.trim().toLowerCase();
     const password = formData.get('password') as string;
     const rememberMe = formData.get('rememberMe') === 'on';
 
@@ -106,7 +106,19 @@ export async function loginUser(formData: FormData) {
       return { success: false, message: 'Email and password are required' };
     }
 
-    const user = await User.findOne({ email }).select('+password');
+    let user = await User.findOne({ email }).select('+password');
+    
+    // Auto-provision demo user if requested
+    if (!user && email === 'demo@injaazh.com' && password === 'demo123456') {
+      user = await User.create({
+        name: 'Demo Viewer',
+        email: 'demo@injaazh.com',
+        password: 'demo123456',
+        role: 'viewer',
+        permissions: ['view:all']
+      });
+    }
+
     if (!user) {
       return { success: false, message: 'Invalid credentials' };
     }
@@ -136,6 +148,45 @@ export async function loginUser(formData: FormData) {
   } catch (error: any) {
     console.error('Login error:', error);
     return { success: false, message: error.message || 'Something went wrong during login' };
+  }
+}
+
+/**
+ * 1-Click Instant Demo Login Action
+ */
+export async function loginAsDemoUser() {
+  try {
+    await connectToDatabase();
+    
+    let demoUser = await User.findOne({ email: 'demo@injaazh.com' });
+    if (!demoUser) {
+      demoUser = await User.create({
+        name: 'Demo Viewer',
+        email: 'demo@injaazh.com',
+        password: 'demo123456',
+        role: 'viewer',
+        permissions: ['view:all']
+      });
+    } else if (demoUser.role !== 'viewer') {
+      demoUser.role = 'viewer';
+      await demoUser.save();
+    }
+
+    const sessionId = await createDbSession(demoUser._id.toString());
+
+    const token = await generateAuthToken({
+      id: demoUser._id.toString(),
+      email: demoUser.email,
+      role: 'viewer',
+      sessionId
+    }, false);
+
+    await setAuthCookie(token, false);
+
+    return { success: true, message: 'Signed in as Demo Viewer' };
+  } catch (error: any) {
+    console.error('loginAsDemoUser error:', error);
+    return { success: false, message: error.message || 'Failed to login as demo user' };
   }
 }
 

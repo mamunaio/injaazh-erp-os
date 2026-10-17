@@ -116,3 +116,18 @@ export const getAuthUser = async (): Promise<UserJwtPayload | null> => {
     return null;
   }
 };
+
+export const requireWriteAuth = async (): Promise<UserJwtPayload> => {
+  const user = await getAuthUser();
+  if (!user) {
+    throw new Error('Not authenticated.');
+  }
+  if (user.role === 'viewer') {
+    throw new Error('Demo / View-Only Mode: Data modifications are disabled for demo accounts.');
+  }
+  return user;
+};
+
+export const isViewerRole = (user: UserJwtPayload | null | undefined): boolean => {
+  return user?.role === 'viewer';
+};

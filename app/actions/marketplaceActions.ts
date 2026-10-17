@@ -18,7 +18,7 @@ import connectToDatabase from '@/lib/mongodb';
 import MarketplaceProject from '@/models/MarketplaceProject';
 import { Project } from '@/models/Project';
 import { Transaction } from '@/models/Transaction';
-import { getAuthUser } from '@/lib/auth';
+import { getAuthUser, requireWriteAuth } from '@/lib/auth';
 import type { IMarketplaceProject } from '@/models/MarketplaceProject';
 
 /**
@@ -148,6 +148,7 @@ export async function getMarketplaceProjects(platform?: string) {
 
 export async function createMarketplaceProject(data: any) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     
     const newProject = await MarketplaceProject.create(data);
@@ -197,6 +198,7 @@ export async function getMarketplaceProjectById(id: string) {
 
 export async function updateMarketplaceProject(id: string, data: any) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     
     // Fetch existing project to get current status before update
@@ -290,6 +292,7 @@ export async function updateMarketplaceProject(id: string, data: any) {
 
 export async function deleteMarketplaceProject(id: string) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     
     const project = await MarketplaceProject.findById(id).lean().exec();
@@ -412,6 +415,7 @@ export async function createTransactionFromProject(
   }
 ) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     
     // Error Handling Strategy: Validation before creation

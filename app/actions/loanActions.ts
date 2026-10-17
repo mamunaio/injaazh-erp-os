@@ -1,8 +1,9 @@
-﻿'use server';
+'use server';
 
 import { getCurrentUser } from './authActions';
 import connectToDatabase from '@/lib/mongodb';
 import { PersonalLoan } from '@/models/PersonalLoan';
+import { requireWriteAuth } from '@/lib/auth';
 
 export async function getPersonalLoans() {
   try {
@@ -11,7 +12,10 @@ export async function getPersonalLoans() {
     
     await connectToDatabase();
     
-    const loans = await PersonalLoan.find({ userId: authRes.data._id })
+    const isViewer = authRes.data.role === 'viewer';
+    const filter = isViewer ? {} : { userId: authRes.data._id };
+
+    const loans = await PersonalLoan.find(filter)
       .sort({ date: -1, createdAt: -1 })
       .lean();
       
@@ -31,6 +35,7 @@ export async function createPersonalLoan(data: {
   description?: string;
 }) {
   try {
+    await requireWriteAuth();
     const authRes = await getCurrentUser();
     if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
     
@@ -59,6 +64,7 @@ export async function updatePersonalLoan(id: string, data: {
   description?: string;
 }) {
   try {
+    await requireWriteAuth();
     const authRes = await getCurrentUser();
     if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
     
@@ -84,6 +90,7 @@ export async function updatePersonalLoan(id: string, data: {
 
 export async function deletePersonalLoan(id: string) {
   try {
+    await requireWriteAuth();
     const authRes = await getCurrentUser();
     if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
     
@@ -100,6 +107,7 @@ export async function deletePersonalLoan(id: string) {
 
 export async function toggleLoanStatus(id: string, currentStatus: string) {
   try {
+    await requireWriteAuth();
     const authRes = await getCurrentUser();
     if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
     

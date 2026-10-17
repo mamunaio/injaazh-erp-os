@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 type AccentColor = 'violet' | 'blue' | 'emerald' | 'rose' | 'amber';
-type SidebarLayout = 'expanded' | 'collapsed';
+type SidebarLayout = 'expanded' | 'collapsed' | 'dock';
 
 interface AppearanceContextType {
   accentColor: AccentColor;

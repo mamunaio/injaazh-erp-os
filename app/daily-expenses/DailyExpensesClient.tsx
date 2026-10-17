@@ -3,9 +3,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  TrendingUp, TrendingDown, DollarSign, Search, Filter, Plus, FileText, Download,
-  MoreHorizontal, Calendar, X, Loader2, ArrowUpRight, ArrowDownRight, CreditCard,
-  Briefcase, Trash2, Tag, UploadCloud, CheckCircle2, AlertCircle, PieChart as PieChartIcon, Paperclip
+  DollarSign, Search, Plus, FileText, Download,
+  Calendar, X, Loader2, CreditCard,
+  Trash2, UploadCloud, CheckCircle2, AlertCircle, Paperclip, TrendingDown
 } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
+import { notify } from '@/lib/notify';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -72,6 +73,7 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -103,66 +105,48 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
       result = result.filter(e => e.category === categoryFilter);
     }
 
-    // Search Filter
-    if (searchQuery.trim() !== '') {
-      const lower = searchQuery.toLowerCase();
+    // Search Query
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
       result = result.filter(e => 
-        e.description.toLowerCase().includes(lower) || 
-        e.category.toLowerCase().includes(lower) ||
-        e.paymentMethod.toLowerCase().includes(lower)
+        e.description.toLowerCase().includes(q) || 
+        e.category.toLowerCase().includes(q) ||
+        e.paymentMethod.toLowerCase().includes(q)
       );
     }
 
-    // Sort descending by date
     return result.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [expenses, dateFilter, categoryFilter, searchQuery]);
 
-  // ── KPIs ────────────────────────────────────────────────────────────────────
-  const totalExpenses = filteredExpenses.reduce((acc, e) => acc + e.amount, 0);
-  
-  const thisMonthExpenses = useMemo(() => {
-    const now = new Date();
-    return expenses
-      .filter(e => {
-        const d = new Date(e.date);
-        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-      })
-      .reduce((acc, e) => acc + e.amount, 0);
-  }, [expenses]);
+  // Metrics
+  const totalExpenses = useMemo(() => filteredExpenses.reduce((sum, e) => sum + e.amount, 0), [filteredExpenses]);
+  const avgExpense = useMemo(() => filteredExpenses.length ? Math.round(totalExpenses / filteredExpenses.length) : 0, [filteredExpenses, totalExpenses]);
 
-  const avgExpense = filteredExpenses.length > 0 ? totalExpenses / filteredExpenses.length : 0;
-
-  // ── Chart Data ──────────────────────────────────────────────────────────────
-  const trendData = useMemo(() => {
-    const map = new Map<string, number>();
-    
-    // Group by month
-    filteredExpenses.forEach(e => {
-      const d = new Date(e.date);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      if (!map.has(key)) map.set(key, 0);
-      map.set(key, map.get(key)! + e.amount);
-    });
-
-    return Array.from(map.entries())
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([dateStr, amount]) => ({
-        dateStr: format(new Date(`${dateStr}-01`), 'MMM yyyy'),
-        Amount: amount
-      }));
-  }, [filteredExpenses]);
-
+  // Charts
   const categoryData = useMemo(() => {
     const map = new Map<string, number>();
     filteredExpenses.forEach(e => {
-      if (!map.has(e.category)) map.set(e.category, 0);
-      map.set(e.category, map.get(e.category)! + e.amount);
+      map.set(e.category, (map.get(e.category) || 0) + e.amount);
     });
-    return Array.from(map.entries()).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
+    return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
   }, [filteredExpenses]);
 
-  // ── Actions ─────────────────────────────────────────────────────────────────
+  const trendData = useMemo(() => {
+    const map = new Map<string, number>();
+    filteredExpenses.forEach(e => {
+      const d = new Date(e.date);
+      const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      map.set(k, (map.get(k) || 0) + e.amount);
+    });
+    return Array.from(map.entries())
+      .sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
+      .slice(-14)
+      .map(([dateStr, Amount]) => ({ dateStr: formatDate(dateStr), Amount }));
+  }, [filteredExpenses]);
+
+  // ── Handlers ────────────────────────────────────────────────────────────────
   const openAddPanel = () => {
+    setEditingExpense(null);
     setFormData({
       amount: '',
       category: 'Miscellaneous',
@@ -170,11 +154,11 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
       date: new Date().toISOString().split('T')[0],
       paymentMethod: 'Credit Card'
     });
-    setEditingExpense(null);
     setIsSlidePanelOpen(true);
   };
 
   const openEditPanel = (e: Expense) => {
+    setEditingExpense(e);
     setFormData({
       amount: e.amount.toString(),
       category: e.category,
@@ -182,135 +166,142 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
       date: new Date(e.date).toISOString().split('T')[0],
       paymentMethod: e.paymentMethod
     });
-    setEditingExpense(e);
     setIsSlidePanelOpen(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    const data = { ...formData, amount: parseFloat(formData.amount) || 0 };
+
+    const payload = {
+      amount: parseFloat(formData.amount),
+      category: formData.category,
+      description: formData.description,
+      date: new Date(formData.date).toISOString(),
+      paymentMethod: formData.paymentMethod
+    };
 
     if (editingExpense) {
-      const res = await updateDailyExpense(editingExpense._id, data);
+      notify.edit('Expense updated');
+      setIsSlidePanelOpen(false);
+      const res = await updateDailyExpense(editingExpense._id, payload);
       if (res.success) {
-        toast.success('Expense updated');
-        setIsSlidePanelOpen(false);
-        window.location.reload();
+        setExpenses(expenses.map(x => x._id === editingExpense._id ? { ...x, ...payload } : x));
       } else {
-        toast.error('Failed to update');
+        notify.error(res.error || 'Failed to update');
       }
     } else {
-      const res = await createDailyExpense(data);
-      if (res.success) {
-        toast.success('Expense recorded');
-        setIsSlidePanelOpen(false);
-        window.location.reload();
+      // 🚀 0ms ZERO-DELAY INSTANT FEEDBACK (Sound + Toast + Topbar Badge)
+      notify.instant({
+        type: 'system',
+        sound: 'expense',
+        message: `A new expense of $${payload.amount} has been added under ${payload.category}.`,
+        link: '/daily-expenses'
+      });
+      setIsSlidePanelOpen(false);
+
+      const res = await createDailyExpense(payload);
+      if (res.success && res.data) {
+        setExpenses(prev => [res.data, ...prev]);
       } else {
-        toast.error('Failed to create');
+        notify.error(res.error || 'Failed to create');
       }
     }
     setIsSubmitting(false);
   };
 
   const handleDelete = async (id: string) => {
-    const isConfirmed = await confirm({ message: 'Delete this expense?', danger: true });
+    const isConfirmed = await confirm({
+      title: 'Delete Expense',
+      message: 'Are you sure you want to delete this expense record? This action cannot be undone.',
+      confirmText: 'Delete',
+      variant: 'danger',
+    });
+
     if (!isConfirmed) return;
-    
+
+    notify.delete('Expense deleted');
     const res = await deleteDailyExpense(id);
     if (res.success) {
-      toast.success('Deleted');
-      window.location.reload();
+      setExpenses(expenses.filter(e => e._id !== id));
     } else {
-      toast.error('Failed to delete');
+      notify.error('Failed to delete expense');
     }
   };
 
-  const [isExporting, setIsExporting] = useState(false);
   const handleExport = () => {
     setIsExporting(true);
-    setTimeout(() => {
-      try {
-        const headers = ['Title', 'Category', 'Employee', 'Amount', 'Status', 'Date'];
-        const rows = filteredExpenses.map(e => {
-          return [
-            `"${e.description.replace(/"/g, '""')}"`,
-            `"${e.category}"`,
-            `"Admin"`, // default since there's no employee field yet
-            e.amount,
-            `"Approved"`,
-            `"${formatDate(e.date)}"`
-          ].join(',');
-        });
-
-        const csvContent = [headers.join(','), ...rows].join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', 'expenses-export.csv');
-        document.body.appendChild(link);
-        link.click();
-        
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        
-        toast.success('Exported successfully!');
-      } catch (error) {
-        toast.error('Failed to export CSV');
-      } finally {
-        setIsExporting(false);
-      }
-    }, 100);
+    try {
+      const headers = ['Date', 'Description', 'Category', 'Payment Method', 'Amount'];
+      const rows = filteredExpenses.map(e => [
+        `"${formatDate(e.date)}"`,
+        `"${e.description.replace(/"/g, '""')}"`,
+        `"${e.category}"`,
+        `"${e.paymentMethod}"`,
+        e.amount
+      ]);
+      const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `daily-expenses-${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success('Expenses exported successfully');
+    } catch {
+      toast.error('Failed to export');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const containerVariants = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
-  const itemVariants = { hidden: { opacity: 0, y: 15 }, show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 26 } } };
+  const itemVariants = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 26 } } };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#09090B] p-4 md:p-8 selection:bg-[#2563EB]/30">
-      <div className="max-w-[1600px] mx-auto space-y-8 pb-20">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#060608] p-4 md:p-8 selection:bg-[#6324FC]/30">
+      <div className="max-w-[1600px] mx-auto space-y-6">
         
         {/* ── Page Header ──────────────────────────────────────────────────── */}
         <motion.div variants={containerVariants} initial="hidden" animate="show">
           <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-end gap-5 mb-6">
             <div>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-9 h-9 rounded-[10px] bg-[#2563EB]/10 border border-[#2563EB]/20 flex items-center justify-center text-[#2563EB]">
-                  <CreditCard size={17} />
+              <div className="flex items-center gap-2.5 mb-2">
+                <div className="w-8 h-8 rounded-xl bg-[#6324FC]/10 border border-[#6324FC]/20 flex items-center justify-center text-[#6324FC] dark:text-[#00E5FF]">
+                  <DollarSign size={16} />
                 </div>
-                <span className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Expense Management</span>
+                <span className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">Financial Operations</span>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tracking-tight font-jakarta mb-1.5">Finance</h1>
-              <p className="text-sm font-medium text-[#94A3B8]">Track expenses and manage your personal loans.</p>
+              <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-slate-900 dark:text-white tracking-tight mb-1">Daily Expenses</h1>
+              <p className="text-xs text-secondary font-medium">Track operational costs, company expenditures, and loans.</p>
             </div>
             
-            <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-              <div className="flex bg-slate-50 dark:bg-[#111111] p-1 rounded-xl border border-[#E2E8F0] dark:border-[#1a1a1a] w-full sm:w-auto">
-                <button 
+            <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+              <div className="flex items-center bg-slate-100 dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl p-1">
+                <button
                   onClick={() => setActiveTab('expenses')}
-                  className={`flex-1 sm:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'expenses' ? 'bg-white dark:bg-[#1a1a1a] text-slate-900 dark:text-white shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)]' : 'text-slate-500 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white'}`}
+                  className={`px-3.5 py-1.5 rounded-xl font-heading font-bold text-xs transition-all ${activeTab === 'expenses' ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-xs' : 'text-secondary hover:text-slate-900 dark:hover:text-white'}`}
                 >
-                  Daily Expenses
+                  Expenses
                 </button>
-                <button 
+                <button
                   onClick={() => setActiveTab('loans')}
-                  className={`flex-1 sm:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'loans' ? 'bg-white dark:bg-[#1a1a1a] text-slate-900 dark:text-white shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)]' : 'text-slate-500 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white'}`}
+                  className={`px-3.5 py-1.5 rounded-xl font-heading font-bold text-xs transition-all ${activeTab === 'loans' ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-xs' : 'text-secondary hover:text-slate-900 dark:hover:text-white'}`}
                 >
                   Borrow & Lend
                 </button>
               </div>
-              <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-white dark:bg-[#111111] hover:bg-slate-100 dark:hover:bg-[#1a1a1a] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white transition-all">
-                <UploadCloud size={16} /> Upload Receipt
+              <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-heading font-bold text-xs bg-white dark:bg-[#0a0a0d] hover:bg-slate-100 dark:hover:bg-white/5 border border-black/10 dark:border-white/10 text-slate-900 dark:text-white transition-all shadow-xs">
+                <UploadCloud size={14} /> Upload Receipt
               </button>
-              <button onClick={handleExport} disabled={isExporting} className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-white dark:bg-[#111111] hover:bg-slate-100 dark:hover:bg-[#1a1a1a] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white transition-all disabled:opacity-50">
-                {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} 
+              <button onClick={handleExport} disabled={isExporting} className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-heading font-bold text-xs bg-white dark:bg-[#0a0a0d] hover:bg-slate-100 dark:hover:bg-white/5 border border-black/10 dark:border-white/10 text-slate-900 dark:text-white transition-all disabled:opacity-50 shadow-xs">
+                {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />} 
                 {isExporting ? 'Exporting...' : 'Export'}
               </button>
               {activeTab === 'expenses' && (
-                <button onClick={openAddPanel} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-[#2563EB] hover:bg-[#2563EB]/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all border border-[#2563EB]/80">
-                  <Plus size={16} strokeWidth={2.5} /> Add Expense
+                <button onClick={openAddPanel} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-heading font-bold text-xs bg-gradient-to-r from-[#6324FC] to-[#8B5CF6] hover:brightness-110 text-white shadow-[0_0_20px_rgba(99,36,252,0.4)] transition-all">
+                  <Plus size={15} strokeWidth={2.5} /> Add Expense
                 </button>
               )}
             </div>
@@ -322,60 +313,60 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
           <motion.div variants={containerVariants} initial="hidden" animate="show">
             {/* ── KPI Cards ─────────────────────────────────────────────────── */}
           <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-[#11131A] border border-slate-100 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 flex flex-col justify-center relative overflow-hidden group shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgba(37,99,235,0.08)] transition-all">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Total Expenses</p>
-                <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 flex items-center justify-center text-[#2563EB]"><DollarSign size={16} /></div>
+            <div className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-3xl p-5 flex flex-col justify-center relative overflow-hidden group shadow-sm hover:border-[#6324FC]/40 transition-all">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">Total Expenses</p>
+                <div className="w-8 h-8 rounded-xl bg-[#6324FC]/10 flex items-center justify-center text-[#6324FC] dark:text-[#00E5FF]"><DollarSign size={15} /></div>
               </div>
-              <p className="text-3xl font-bold font-mono text-slate-900 dark:text-white tracking-tight">{formatCurrency(totalExpenses)}</p>
+              <p className="text-2xl font-heading font-extrabold font-mono text-slate-900 dark:text-white tracking-tight">{formatCurrency(totalExpenses)}</p>
             </div>
 
-            <div className="bg-white dark:bg-[#11131A] border border-slate-100 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 flex flex-col justify-center relative overflow-hidden group shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgba(37,99,235,0.08)] transition-all">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Approved</p>
-                <div className="w-8 h-8 rounded-lg bg-[#10B981]/10 flex items-center justify-center text-[#10B981]"><CheckCircle2 size={16} /></div>
+            <div className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-3xl p-5 flex flex-col justify-center relative overflow-hidden group shadow-sm hover:border-[#6324FC]/40 transition-all">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">Approved</p>
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500"><CheckCircle2 size={15} /></div>
               </div>
-              <p className="text-3xl font-bold font-mono text-slate-900 dark:text-white tracking-tight">{formatCurrency(totalExpenses * 1)}</p>
+              <p className="text-2xl font-heading font-extrabold font-mono text-slate-900 dark:text-white tracking-tight">{formatCurrency(totalExpenses)}</p>
             </div>
 
-            <div className="bg-white dark:bg-[#11131A] border border-slate-100 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 flex flex-col justify-center relative overflow-hidden group shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgba(37,99,235,0.08)] transition-all">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Pending</p>
-                <div className="w-8 h-8 rounded-lg bg-slate-200 dark:bg-[#232734] flex items-center justify-center text-[#94A3B8]"><AlertCircle size={16} /></div>
+            <div className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-3xl p-5 flex flex-col justify-center relative overflow-hidden group shadow-sm hover:border-[#6324FC]/40 transition-all">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">Pending</p>
+                <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-secondary"><AlertCircle size={15} /></div>
               </div>
-              <p className="text-3xl font-bold font-mono text-[#94A3B8] tracking-tight">৳0</p>
+              <p className="text-2xl font-heading font-extrabold font-mono text-secondary tracking-tight">৳0</p>
             </div>
 
-            <div className="bg-white dark:bg-[#11131A] border border-slate-100 dark:border-[#232734] rounded-[24px] p-6 lg:p-8 flex flex-col justify-center relative overflow-hidden group shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgba(37,99,235,0.08)] transition-all">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">Avg Expense</p>
-                <div className="w-8 h-8 rounded-lg bg-[#7C3AED]/10 flex items-center justify-center text-[#7C3AED]"><TrendingDown size={16} /></div>
+            <div className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-3xl p-5 flex flex-col justify-center relative overflow-hidden group shadow-sm hover:border-[#6324FC]/40 transition-all">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">Avg Expense</p>
+                <div className="w-8 h-8 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500"><TrendingDown size={15} /></div>
               </div>
-              <p className="text-3xl font-bold font-mono text-slate-900 dark:text-white tracking-tight">{formatCurrency(avgExpense)}</p>
+              <p className="text-2xl font-heading font-extrabold font-mono text-slate-900 dark:text-white tracking-tight">{formatCurrency(avgExpense)}</p>
             </div>
           </motion.div>
         </motion.div>
 
         {/* ── Charts ───────────────────────────────────────────────────────── */}
-        <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <motion.div variants={itemVariants} className="lg:col-span-2 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-[24px] p-6 flex flex-col shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-6">Expense Trend</h3>
-            <div className="flex-1 min-h-[300px]">
+        <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <motion.div variants={itemVariants} className="lg:col-span-2 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-3xl p-5 flex flex-col shadow-sm">
+            <h3 className="text-xs font-heading font-extrabold uppercase tracking-wider text-slate-900 dark:text-white mb-4">Expense Trend</h3>
+            <div className="flex-1 min-h-[260px]">
               <ResponsiveContainer width="100%" height="100%">
                 {trendData.length <= 2 ? (
                   <BarChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-slate-200 dark:text-[#232734]" vertical={false} />
-                    <XAxis dataKey="dateStr" stroke="currentColor" className="text-slate-600 dark:text-slate-400" fontSize={11} tickLine={false} axisLine={false} />
-                    <YAxis stroke="currentColor" className="text-slate-600 dark:text-slate-400" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `৳${v/1000}k`} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-black/5 dark:text-white/5" vertical={false} />
+                    <XAxis dataKey="dateStr" stroke="currentColor" className="text-secondary" fontSize={10} tickLine={false} axisLine={false} />
+                    <YAxis stroke="currentColor" className="text-secondary" fontSize={10} tickLine={false} axisLine={false} tickFormatter={v => `৳${v/1000}k`} />
                     <Tooltip 
                       cursor={{ fill: 'currentColor', opacity: 0.05 }}
                       contentStyle={{ backgroundColor: 'transparent', border: 'none' }}
                       content={({ active, payload, label }) => {
                         if (active && payload && payload.length) {
                           return (
-                            <div className="bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-xl p-3 shadow-lg">
-                              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">{label}</p>
-                              <p className="text-sm font-bold text-slate-900 dark:text-white">
+                            <div className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-xl p-2.5 shadow-lg">
+                              <p className="text-[10px] font-heading font-bold text-secondary mb-0.5">{label}</p>
+                              <p className="text-xs font-heading font-extrabold font-mono text-slate-900 dark:text-white">
                                 {formatCurrency(payload[0].value as number)}
                               </p>
                             </div>
@@ -384,27 +375,27 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
                         return null;
                       }}
                     />
-                    <Bar dataKey="Amount" fill="#2563EB" radius={[4, 4, 0, 0]} maxBarSize={60} />
+                    <Bar dataKey="Amount" fill="#6324FC" radius={[6, 6, 0, 0]} maxBarSize={45} />
                   </BarChart>
                 ) : (
                   <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorTrend" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#2563EB" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#2563EB" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#6324FC" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#6324FC" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-slate-200 dark:text-[#232734]" vertical={false} />
-                    <XAxis dataKey="dateStr" stroke="currentColor" className="text-slate-600 dark:text-slate-400" fontSize={11} tickLine={false} axisLine={false} />
-                    <YAxis stroke="currentColor" className="text-slate-600 dark:text-slate-400" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `৳${v/1000}k`} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-black/5 dark:text-white/5" vertical={false} />
+                    <XAxis dataKey="dateStr" stroke="currentColor" className="text-secondary" fontSize={10} tickLine={false} axisLine={false} />
+                    <YAxis stroke="currentColor" className="text-secondary" fontSize={10} tickLine={false} axisLine={false} tickFormatter={v => `৳${v/1000}k`} />
                     <Tooltip 
                       contentStyle={{ backgroundColor: 'transparent', border: 'none' }}
                       content={({ active, payload, label }) => {
                         if (active && payload && payload.length) {
                           return (
-                            <div className="bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-xl p-3 shadow-lg">
-                              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">{label}</p>
-                              <p className="text-sm font-bold text-slate-900 dark:text-white">
+                            <div className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-xl p-2.5 shadow-lg">
+                              <p className="text-[10px] font-heading font-bold text-secondary mb-0.5">{label}</p>
+                              <p className="text-xs font-heading font-extrabold font-mono text-slate-900 dark:text-white">
                                 {formatCurrency(payload[0].value as number)}
                               </p>
                             </div>
@@ -413,25 +404,25 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
                         return null;
                       }}
                     />
-                    <Area type="monotone" dataKey="Amount" stroke="#2563EB" strokeWidth={3} fillOpacity={1} fill="url(#colorTrend)" />
+                    <Area type="monotone" dataKey="Amount" stroke="#6324FC" strokeWidth={2.5} fillOpacity={1} fill="url(#colorTrend)" />
                   </AreaChart>
                 )}
               </ResponsiveContainer>
             </div>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-[24px] p-6 flex flex-col shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-6">Categories</h3>
-            <div className="flex-1 min-h-[300px]">
+          <motion.div variants={itemVariants} className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-3xl p-5 flex flex-col shadow-sm">
+            <h3 className="text-xs font-heading font-extrabold uppercase tracking-wider text-slate-900 dark:text-white mb-4">Categories</h3>
+            <div className="flex-1 min-h-[260px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={categoryData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={90}
-                    paddingAngle={5}
+                    innerRadius={55}
+                    outerRadius={80}
+                    paddingAngle={4}
                     dataKey="value"
                     stroke="none"
                   >
@@ -440,10 +431,10 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
                     ))}
                   </Pie>
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#09090B', border: '1px solid #232734', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', color: '#fff' }}
+                    contentStyle={{ backgroundColor: '#0a0a0d', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold', color: '#fff' }}
                     formatter={(val: any) => formatCurrency(val as number)}
                   />
-                  <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', color: '#94A3B8' }} />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', color: '#94A3B8' }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -451,27 +442,26 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
         </motion.div>
 
         {/* ── Filters & Table ──────────────────────────────────────────────── */}
-        <motion.div variants={containerVariants} initial="hidden" animate="show" className="bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-[24px] overflow-hidden shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
+        <motion.div variants={containerVariants} initial="hidden" animate="show" className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-3xl overflow-hidden shadow-sm">
           {/* Table Toolbar */}
-          {/* Table Toolbar */}
-          <div className="p-6 border-b border-[#E2E8F0] dark:border-[#1a1a1a] flex flex-col md:flex-row gap-4 justify-between items-center bg-white dark:bg-[#111111] shadow-sm dark:shadow-none">
-            <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="p-4 border-b border-black/5 dark:border-white/5 flex flex-col md:flex-row gap-3 justify-between items-center bg-white dark:bg-[#0a0a0d]">
+            <div className="flex items-center gap-2.5 w-full md:w-auto">
               <div className="relative flex-1 md:w-64 group">
-                <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8] group-focus-within:text-[#2563EB] transition-colors" />
+                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary group-focus-within:text-[#6324FC] transition-colors" />
                 <input type="text" placeholder="Search expenses..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-800 dark:text-white text-sm font-medium rounded-xl pl-11 pr-4 py-2.5 focus:outline-none focus:border-[#2563EB]/60 focus:ring-2 focus:ring-[#2563EB]/10 transition-all" />
+                  className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 text-slate-800 dark:text-white text-xs rounded-xl pl-9 pr-3.5 py-2 focus:outline-none focus:border-[#6324FC] transition-all placeholder:text-secondary" />
               </div>
             </div>
 
-            <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="flex items-center gap-2.5 w-full md:w-auto">
               <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}
-                className="bg-white hover:bg-slate-50 dark:bg-[#111111] hover:dark:bg-[#141414] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-700 dark:text-slate-300 text-sm font-medium rounded-xl pl-4 pr-8 py-2.5 appearance-none focus:outline-none focus:border-[#2563EB]/60 cursor-pointer w-full md:w-auto">
+                className="bg-white dark:bg-[#060608] border border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-300 text-xs font-heading font-bold rounded-xl pl-3.5 pr-8 py-2 appearance-none focus:outline-none focus:border-[#6324FC] cursor-pointer w-full md:w-auto">
                 <option value="All">All Categories</option>
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
               
               <select value={dateFilter} onChange={e => setDateFilter(e.target.value as any)}
-                className="bg-white hover:bg-slate-50 dark:bg-[#111111] hover:dark:bg-[#141414] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-700 dark:text-slate-300 text-sm font-medium rounded-xl pl-4 pr-8 py-2.5 appearance-none focus:outline-none focus:border-[#2563EB]/60 cursor-pointer w-full md:w-auto">
+                className="bg-white dark:bg-[#060608] border border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-300 text-xs font-heading font-bold rounded-xl pl-3.5 pr-8 py-2 appearance-none focus:outline-none focus:border-[#6324FC] cursor-pointer w-full md:w-auto">
                 <option value="All">All Time</option>
                 <option value="ThisMonth">This Month</option>
                 <option value="Last3Months">Last 3 Months</option>
@@ -482,73 +472,73 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
 
           {/* Table */}
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-slate-50 dark:bg-[#09090B]">
-                <tr className="border-b border-[#E2E8F0] dark:border-[#1a1a1a]">
-                  <th className="pl-6 pr-4 py-4 text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest whitespace-nowrap">Expense Title</th>
-                  <th className="px-4 py-4 text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest whitespace-nowrap">Category</th>
-                  <th className="px-4 py-4 text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest whitespace-nowrap">Amount</th>
-                  <th className="px-4 py-4 text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest whitespace-nowrap">Status</th>
-                  <th className="px-4 py-4 text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest whitespace-nowrap">Date</th>
-                  <th className="pr-6 pl-4 py-4 text-right"></th>
+            <table className="w-full text-left border-collapse text-xs">
+              <thead className="bg-slate-50/50 dark:bg-[#060608]/50 border-b border-black/5 dark:border-white/5">
+                <tr>
+                  <th className="pl-5 pr-4 py-3 text-[10px] font-heading font-bold text-secondary uppercase tracking-widest whitespace-nowrap">Expense Title</th>
+                  <th className="px-4 py-3 text-[10px] font-heading font-bold text-secondary uppercase tracking-widest whitespace-nowrap">Category</th>
+                  <th className="px-4 py-3 text-[10px] font-heading font-bold text-secondary uppercase tracking-widest whitespace-nowrap">Amount</th>
+                  <th className="px-4 py-3 text-[10px] font-heading font-bold text-secondary uppercase tracking-widest whitespace-nowrap">Status</th>
+                  <th className="px-4 py-3 text-[10px] font-heading font-bold text-secondary uppercase tracking-widest whitespace-nowrap">Date</th>
+                  <th className="pr-5 pl-4 py-3 text-right"></th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-black/5 dark:divide-white/5">
                 {filteredExpenses.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-20 text-center">
-                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] mb-4">
-                        <Search size={24} className="text-[#94A3B8]" />
+                    <td colSpan={6} className="py-16 text-center">
+                      <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-50 dark:bg-white/5 border border-black/5 dark:border-white/5 mb-3">
+                        <Search size={20} className="text-secondary" />
                       </div>
-                      <p className="text-sm font-bold text-slate-900 dark:text-white">No expenses found</p>
-                      <p className="text-xs text-[#94A3B8] mt-1">Try adjusting your filters or search.</p>
+                      <p className="text-xs font-heading font-bold text-slate-900 dark:text-white">No expenses found</p>
+                      <p className="text-[11px] text-secondary mt-0.5">Try adjusting your filters or search.</p>
                     </td>
                   </tr>
                 ) : (
                   filteredExpenses.map((e, i) => {
                     const catColor = CATEGORY_COLORS[e.category] || '#64748B';
                     return (
-                      <motion.tr key={e._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.01 }}
-                        className="border-b border-[#E2E8F0] dark:border-[#1a1a1a] hover:bg-slate-50 dark:hover:bg-[#141414] dark:bg-transparent transition-colors group cursor-pointer"
+                      <motion.tr key={e._id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.01 }}
+                        className="hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors group cursor-pointer"
                         onClick={() => openEditPanel(e)}>
-                        <td className="pl-6 pr-4 py-4 w-[40%]">
+                        <td className="pl-5 pr-4 py-3.5 w-[40%]">
                           <div className="flex items-center gap-3">
                             <div className="relative">
-                              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border border-[#E2E8F0] dark:border-[#1a1a1a] bg-slate-50 dark:bg-[#09090B] text-[#94A3B8]">
-                                <FileText size={14} />
+                              <div className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0 border border-black/5 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-secondary">
+                                <FileText size={13} />
                               </div>
                               {e.amount > 100 && (
-                                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#2563EB] text-white flex items-center justify-center border border-[#09090B]">
-                                  <Paperclip size={8} />
+                                <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-[#6324FC] text-white flex items-center justify-center border border-white dark:border-[#0a0a0d]">
+                                  <Paperclip size={7} />
                                 </div>
                               )}
                             </div>
-                            <div className="overflow-hidden pr-4">
-                              <span className="block text-sm font-bold text-slate-900 dark:text-white truncate">{e.description}</span>
-                              <span className="text-[10px] text-[#94A3B8] font-bold tracking-widest uppercase">{e.paymentMethod}</span>
+                            <div className="overflow-hidden pr-3">
+                              <span className="block font-heading font-bold text-slate-900 dark:text-white truncate group-hover:text-[#6324FC] dark:group-hover:text-[#00E5FF] transition-colors">{e.description}</span>
+                              <span className="text-[9px] text-secondary font-mono uppercase">{e.paymentMethod}</span>
                             </div>
                           </div>
                         </td>
-                        <td className="px-4 py-4">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-200 dark:bg-[#1a1a1a] text-xs font-bold" style={{ color: catColor }}>
+                        <td className="px-4 py-3.5">
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/5 text-[10px] font-heading font-bold border border-black/5 dark:border-white/5" style={{ color: catColor }}>
                             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: catColor }} />
                             {e.category}
                           </span>
                         </td>
-                        <td className="px-4 py-4">
-                          <span className="text-sm font-bold font-mono tracking-tight text-slate-900 dark:text-white">
+                        <td className="px-4 py-3.5">
+                          <span className="font-heading font-bold font-mono tracking-tight text-slate-900 dark:text-white">
                             {formatCurrency(e.amount)}
                           </span>
                         </td>
-                        <td className="px-4 py-4">
-                          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-[#10B981]/10 border border-[#10B981]/20 text-[#10B981] text-[10px] font-bold uppercase tracking-widest">
+                        <td className="px-4 py-3.5">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[9px] font-heading font-bold uppercase tracking-widest">
                             <CheckCircle2 size={10} /> Approved
                           </span>
                         </td>
-                        <td className="px-4 py-4 text-xs font-bold text-[#94A3B8]">{formatDate(e.date)}</td>
-                        <td className="pr-6 pl-4 py-4 text-right">
-                          <button onClick={(ev) => { ev.stopPropagation(); handleDelete(e._id); }} className="p-2 opacity-0 group-hover:opacity-100 hover:text-[#EF4444] text-[#94A3B8] transition-all">
-                            <Trash2 size={14} />
+                        <td className="px-4 py-3.5 text-secondary font-mono text-[11px]">{formatDate(e.date)}</td>
+                        <td className="pr-5 pl-4 py-3.5 text-right">
+                          <button onClick={(ev) => { ev.stopPropagation(); handleDelete(e._id); }} className="p-1.5 opacity-0 group-hover:opacity-100 hover:text-rose-500 text-secondary transition-all">
+                            <Trash2 size={13} />
                           </button>
                         </td>
                       </motion.tr>
@@ -565,52 +555,52 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
           {isSlidePanelOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
-                onClick={() => setIsSlidePanelOpen(false)} className="absolute inset-0 bg-black/30 dark:bg-[#09090B]/70 backdrop-blur-sm" />
+                onClick={() => setIsSlidePanelOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
               <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                className="relative w-full max-w-[500px] bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-2xl z-50 flex flex-col shadow-2xl overflow-hidden max-h-[90vh]"
+                className="relative w-full max-w-lg bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/15 rounded-3xl z-50 flex flex-col shadow-2xl overflow-hidden max-h-[90vh]"
               >
                 {/* Header */}
-                <div className="flex-shrink-0 p-6 border-b border-[#E2E8F0] dark:border-[#1a1a1a] bg-white dark:bg-[#111111]">
-                  <div className="flex items-center justify-between mb-5">
-                    <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">{editingExpense ? 'Edit Expense' : 'New Expense'}</span>
-                    <button type="button" onClick={() => setIsSlidePanelOpen(false)} className="p-2 rounded-[10px] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1a1a1a] border border-[#E2E8F0] dark:border-[#1a1a1a] transition-all">
+                <div className="flex-shrink-0 p-5 border-b border-black/5 dark:border-white/5 bg-white dark:bg-[#0a0a0d]">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">{editingExpense ? 'Edit Expense' : 'New Expense'}</span>
+                    <button type="button" onClick={() => setIsSlidePanelOpen(false)} className="p-1.5 rounded-xl text-secondary hover:text-slate-900 dark:hover:text-white bg-slate-50 dark:bg-white/5 border border-black/5 dark:border-white/5 transition-all">
                       <X size={14} />
                     </button>
                   </div>
                   
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-[14px] bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] flex items-center justify-center text-[#2563EB] flex-shrink-0">
-                      <CreditCard size={20} />
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-[#6324FC]/10 border border-[#6324FC]/20 flex items-center justify-center text-[#6324FC] dark:text-[#00E5FF] flex-shrink-0">
+                      <CreditCard size={18} />
                     </div>
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight mt-1">
+                    <h2 className="text-base font-heading font-extrabold text-slate-900 dark:text-white tracking-tight mt-0.5">
                       {editingExpense ? 'Expense Details' : 'Record Expense'}
                     </h2>
                   </div>
                 </div>
 
                 {/* Body Form */}
-                <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+                <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-4">
                   
                   <div>
-                    <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Amount (৳)</label>
+                    <label className="block text-[10px] font-heading font-bold tracking-widest text-secondary uppercase mb-1.5">Amount (৳)</label>
                     <input required type="number" step="0.01" min="0" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})}
-                      className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-lg font-mono focus:border-[#2563EB]/60 focus:outline-none" placeholder="0.00" />
+                      className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 text-slate-900 dark:text-white rounded-xl px-3.5 py-2.5 text-base font-mono focus:border-[#6324FC] focus:outline-none" placeholder="0.00" />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Expense Title</label>
+                    <label className="block text-[10px] font-heading font-bold tracking-widest text-secondary uppercase mb-1.5">Expense Title</label>
                     <input required type="text" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
-                      className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none" placeholder="e.g. Client Dinner" />
+                      className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 text-slate-900 dark:text-white rounded-xl px-3.5 py-2.5 text-xs focus:border-[#6324FC] focus:outline-none placeholder:text-secondary" placeholder="e.g. Client Dinner" />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Date</label>
+                      <label className="block text-[10px] font-heading font-bold tracking-widest text-secondary uppercase mb-1.5">Date</label>
                       <DatePicker 
                         selected={formData.date && !isNaN(new Date(formData.date).getTime()) ? new Date(formData.date) : null} 
                         onChange={(date: Date | null) => setFormData({...formData, date: date ? format(date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')})}
-                        className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none" 
+                        className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 text-slate-900 dark:text-white rounded-xl px-3.5 py-2.5 text-xs focus:border-[#6324FC] focus:outline-none" 
                         dateFormat="MMMM d, yyyy"
                         required
                         popperPlacement="bottom-start"
@@ -618,26 +608,26 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Category</label>
+                      <label className="block text-[10px] font-heading font-bold tracking-widest text-secondary uppercase mb-1.5">Category</label>
                       <select required value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}
-                        className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none cursor-pointer">
+                        className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 text-slate-900 dark:text-white rounded-xl px-3.5 py-2.5 text-xs font-heading font-bold focus:border-[#6324FC] focus:outline-none appearance-none cursor-pointer">
                         {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase mb-2 ml-1">Payment Method</label>
+                    <label className="block text-[10px] font-heading font-bold tracking-widest text-secondary uppercase mb-1.5">Payment Method</label>
                     <select required value={formData.paymentMethod} onChange={e => setFormData({...formData, paymentMethod: e.target.value})}
-                      className="w-full bg-slate-50 dark:bg-[#09090B] border border-[#E2E8F0] dark:border-[#1a1a1a] text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:border-[#2563EB]/60 focus:outline-none appearance-none cursor-pointer">
+                      className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 text-slate-900 dark:text-white rounded-xl px-3.5 py-2.5 text-xs font-heading font-bold focus:border-[#6324FC] focus:outline-none appearance-none cursor-pointer">
                       {PAYMENT_METHODS.map(m => <option key={m} value={m}>{m}</option>)}
                     </select>
                   </div>
 
-                  <div className="pt-6 mt-6 border-t border-[#E2E8F0] dark:border-[#1a1a1a]">
+                  <div className="pt-4 border-t border-black/5 dark:border-white/5">
                     <button type="submit" disabled={isSubmitting || !formData.amount || !formData.description}
-                      className="w-full py-3.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold text-sm rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.25)]">
-                      {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : 'Save Expense'}
+                      className="w-full py-2.5 bg-gradient-to-r from-[#6324FC] to-[#8B5CF6] hover:brightness-110 text-white font-heading font-bold text-xs rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(99,36,252,0.4)]">
+                      {isSubmitting ? <><Loader2 size={14} className="animate-spin" /> Saving...</> : 'Save Expense'}
                     </button>
                   </div>
                 </form>
@@ -658,49 +648,49 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
           {isUploadModalOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
-                onClick={() => setIsUploadModalOpen(false)} className="absolute inset-0 bg-black/30 dark:bg-[#09090B]/70 backdrop-blur-sm" />
+                onClick={() => setIsUploadModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
               <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                className="relative w-full max-w-[450px] bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#1a1a1a] rounded-2xl z-50 flex flex-col shadow-2xl overflow-hidden"
+                className="relative w-full max-w-md bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/15 rounded-3xl z-50 flex flex-col shadow-2xl overflow-hidden"
               >
                 {/* Header */}
-                <div className="p-6 border-b border-[#E2E8F0] dark:border-[#1a1a1a] bg-white dark:bg-[#111111] flex items-center justify-between">
+                <div className="p-5 border-b border-black/5 dark:border-white/5 bg-white dark:bg-[#0a0a0d] flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-[12px] bg-[#10B981]/10 border border-[#10B981]/20 flex items-center justify-center text-[#10B981]">
-                      <UploadCloud size={18} />
+                    <div className="w-9 h-9 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500">
+                      <UploadCloud size={16} />
                     </div>
                     <div>
-                      <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">Upload Receipt</h2>
-                      <p className="text-[10px] text-[#94A3B8] font-bold uppercase tracking-widest">AI Auto-Extraction</p>
+                      <h2 className="text-sm font-heading font-extrabold text-slate-900 dark:text-white tracking-tight">Upload Receipt</h2>
+                      <p className="text-[9px] text-secondary font-heading font-bold uppercase tracking-widest">AI Auto-Extraction</p>
                     </div>
                   </div>
-                  <button type="button" onClick={() => setIsUploadModalOpen(false)} className="p-2 rounded-[10px] text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1a1a1a] border border-[#E2E8F0] dark:border-[#1a1a1a] transition-all">
+                  <button type="button" onClick={() => setIsUploadModalOpen(false)} className="p-1.5 rounded-xl text-secondary hover:text-slate-900 dark:hover:text-white bg-slate-50 dark:bg-white/5 border border-black/5 dark:border-white/5 transition-all">
                     <X size={14} />
                   </button>
                 </div>
 
                 {/* Body */}
-                <div className="p-6 space-y-6">
-                  <div className="w-full h-40 border-2 border-dashed border-[#E2E8F0] dark:border-[#1a1a1a] rounded-xl flex flex-col items-center justify-center gap-3 hover:border-[#2563EB]/50 hover:bg-[#2563EB]/5 transition-colors cursor-pointer group">
-                    <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-[#111111] group-hover:bg-[#2563EB]/10 flex items-center justify-center text-[#94A3B8] group-hover:text-[#2563EB] transition-colors">
-                      <UploadCloud size={20} />
+                <div className="p-5 space-y-4">
+                  <div className="w-full h-36 border-2 border-dashed border-black/10 dark:border-white/10 rounded-2xl flex flex-col items-center justify-center gap-2 hover:border-[#6324FC]/50 hover:bg-[#6324FC]/5 transition-colors cursor-pointer group">
+                    <div className="w-10 h-10 rounded-2xl bg-slate-50 dark:bg-white/5 group-hover:bg-[#6324FC]/10 flex items-center justify-center text-secondary group-hover:text-[#6324FC] dark:group-hover:text-[#00E5FF] transition-colors">
+                      <UploadCloud size={18} />
                     </div>
                     <div className="text-center">
-                      <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">Click to upload or drag & drop</p>
-                      <p className="text-xs text-[#94A3B8]">SVG, PNG, JPG or PDF (max. 5MB)</p>
+                      <p className="text-xs font-heading font-bold text-slate-900 dark:text-white mb-0.5">Click to upload or drag & drop</p>
+                      <p className="text-[10px] text-secondary font-mono">SVG, PNG, JPG or PDF (max. 5MB)</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-6 border-t border-[#E2E8F0] dark:border-[#1a1a1a] bg-slate-50 dark:bg-[#09090B] flex gap-3 rounded-b-2xl">
-                  <button type="button" onClick={() => setIsUploadModalOpen(false)} className="flex-1 py-2.5 bg-white dark:bg-transparent border border-[#E2E8F0] dark:border-[#1a1a1a] hover:bg-slate-100 dark:hover:bg-[#1a1a1a] text-slate-900 dark:text-white font-bold text-sm rounded-xl transition-all shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] dark:shadow-none">
+                <div className="p-4 border-t border-black/5 dark:border-white/5 bg-slate-50/50 dark:bg-[#060608]/50 flex gap-2.5 rounded-b-3xl">
+                  <button type="button" onClick={() => setIsUploadModalOpen(false)} className="flex-1 py-2 bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-900 dark:text-white font-heading font-bold text-xs rounded-xl transition-all shadow-xs">
                     Cancel
                   </button>
                   <button type="button" onClick={() => {
                     toast.success("Receipt uploaded successfully!");
                     setIsUploadModalOpen(false);
-                  }} className="flex-1 py-2.5 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold text-sm rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.25)] flex items-center justify-center gap-2">
-                    <CheckCircle2 size={16} /> Extract Data
+                  }} className="flex-1 py-2 bg-gradient-to-r from-[#6324FC] to-[#8B5CF6] hover:brightness-110 text-white font-heading font-bold text-xs rounded-xl transition-all shadow-[0_0_15px_rgba(99,36,252,0.4)] flex items-center justify-center gap-1.5">
+                    <CheckCircle2 size={14} /> Extract Data
                   </button>
                 </div>
               </motion.div>

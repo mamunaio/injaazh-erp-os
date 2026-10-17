@@ -197,13 +197,13 @@ export default function PlatformClient({ platform }: { platform: string }) {
   }, [projects, statusFilter, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-[#060608] text-white p-4 md:p-8 pt-6 pb-24 font-sans selection:bg-[#6324FC] selection:text-white relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#060608] text-slate-900 dark:text-white p-4 md:p-8 pt-6 pb-24 font-sans selection:bg-[#6324FC] selection:text-white relative overflow-hidden">
       <Toaster position="top-right" />
 
       {/* Ambient background glows */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div 
-          className="absolute top-1/6 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] blur-[140px] rounded-full opacity-20"
+          className="absolute top-1/6 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] blur-[140px] rounded-full opacity-15 dark:opacity-20"
           style={{ backgroundColor: pConf.color }}
         />
         <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-[#6324FC]/5 rounded-full blur-[120px]" />
@@ -214,14 +214,14 @@ export default function PlatformClient({ platform }: { platform: string }) {
         {/* Navigation Breadcrumb */}
         <Link 
           href="/marketplace"
-          className="inline-flex items-center gap-2 text-xs font-heading font-semibold text-secondary hover:text-white transition-colors group px-1"
+          className="inline-flex items-center gap-2 text-xs font-heading font-semibold text-secondary hover:text-slate-900 dark:hover:text-white transition-colors group px-1"
         >
           <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
           <span>Back to Marketplace Directory</span>
         </Link>
 
         {/* Dynamic Channel Header Banner */}
-        <div className="p-6 md:p-8 rounded-3xl bg-[#0a0a0d] border border-white/10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 relative overflow-hidden shadow-2xl">
+        <div className="p-6 md:p-8 rounded-3xl bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 relative overflow-hidden shadow-lg dark:shadow-2xl">
           {/* Top Neon Glow line */}
           <div 
             className="absolute top-0 left-0 right-0 h-[2.5px]"
@@ -233,7 +233,7 @@ export default function PlatformClient({ platform }: { platform: string }) {
 
           <div className="flex items-center gap-5">
             <div 
-              className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-xl shrink-0 transition-transform duration-300 group-hover:scale-105"
+              className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-md shrink-0 transition-transform duration-300 group-hover:scale-105"
               style={{
                 backgroundColor: `${pConf.color}15`,
                 border: `1px solid ${pConf.color}35`,
@@ -255,7 +255,7 @@ export default function PlatformClient({ platform }: { platform: string }) {
                   {telemetry.totalProjects} Total Deliverables Logged
                 </span>
               </div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-extrabold text-white">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-extrabold text-slate-900 dark:text-white">
                 {pConf.name} Deliverables
               </h1>
               <p className="text-xs md:text-sm font-sans text-secondary mt-0.5">
@@ -274,16 +274,16 @@ export default function PlatformClient({ platform }: { platform: string }) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search projects or clients..." 
-                className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-9 pr-4 py-2.5 text-xs text-white placeholder:text-secondary outline-none transition-colors"
+                className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl pl-9 pr-4 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-colors"
               />
             </div>
 
             {/* View Mode Toggle */}
-            <div className="flex items-center gap-1 p-1 bg-[#060608] border border-white/10 rounded-xl">
+            <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl">
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-1.5 rounded-lg transition-all ${
-                  viewMode === 'grid' ? 'bg-[#6324FC] text-white' : 'text-secondary hover:text-white'
+                  viewMode === 'grid' ? 'bg-[#6324FC] text-white' : 'text-secondary hover:text-slate-900 dark:hover:text-white'
                 }`}
                 title="Grid Cards View"
               >
@@ -292,7 +292,7 @@ export default function PlatformClient({ platform }: { platform: string }) {
               <button
                 onClick={() => setViewMode('table')}
                 className={`p-1.5 rounded-lg transition-all ${
-                  viewMode === 'table' ? 'bg-[#6324FC] text-white' : 'text-secondary hover:text-white'
+                  viewMode === 'table' ? 'bg-[#6324FC] text-white' : 'text-secondary hover:text-slate-900 dark:hover:text-white'
                 }`}
                 title="Data Table View"
               >
@@ -308,8 +308,8 @@ export default function PlatformClient({ platform }: { platform: string }) {
               <span className="absolute -inset-[180%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0deg,transparent_60deg,#6324FC_130deg,#00E5FF_180deg,#6324FC_230deg,transparent_300deg)] blur-[4px] opacity-75" />
               <span className="absolute -inset-[180%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0deg,transparent_60deg,#6324FC_130deg,#00E5FF_180deg,#6324FC_230deg,transparent_300deg)] opacity-100" />
               
-              <div className="relative z-10 px-4 py-2.5 rounded-[10px] bg-[#0a0a0d] group-hover:bg-[#121218] text-white font-heading font-bold text-xs flex items-center gap-2 transition-colors">
-                <Plus size={15} className="text-[#00E5FF] group-hover:rotate-90 transition-transform duration-300" />
+              <div className="relative z-10 px-4 py-2.5 rounded-[10px] bg-white dark:bg-[#0a0a0d] group-hover:bg-slate-100 dark:group-hover:bg-[#121218] text-slate-900 dark:text-white font-heading font-bold text-xs flex items-center gap-2 transition-colors">
+                <Plus size={15} className="text-[#6324FC] dark:text-[#00E5FF] group-hover:rotate-90 transition-transform duration-300" />
                 <span className="tracking-wide">+ New {pConf.name} Project</span>
               </div>
             </button>
@@ -328,104 +328,104 @@ export default function PlatformClient({ platform }: { platform: string }) {
           {/* Card 1: Realized Channel Revenue */}
           <motion.div 
             variants={itemVariants} 
-            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#10B981]/60 hover:shadow-[0_12px_30px_rgba(16,185,129,0.25)] bg-[#0a0a0d]"
+            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#10B981]/60 hover:shadow-[0_12px_30px_rgba(16,185,129,0.25)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-sm"
           >
             <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#10B981]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#10B981] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#10B981]" />
-            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/[0.02] dark:from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
             <div className="flex justify-between items-start mb-3 relative z-10">
               <div className="w-9 h-9 rounded-xl bg-[#10B981]/15 border border-[#10B981]/30 flex items-center justify-center text-[#10B981] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(16,185,129,0.6)] group-hover:border-[#10B981] transition-all duration-300">
                 <Flame size={17} />
               </div>
-              <span className="text-[10px] font-heading font-bold text-emerald-400 flex items-center gap-0.5 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 group-hover:border-emerald-500/40 transition-colors">
+              <span className="text-[10px] font-heading font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 group-hover:border-emerald-500/40 transition-colors">
                 <DollarSign size={11} /> Realized Inflow
               </span>
             </div>
             <div className="relative z-10">
               <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">{pConf.name} Revenue</p>
-              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-white font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#00E5FF] transition-all">
+              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-[#10B981] transition-all">
                 ${telemetry.totalEarned.toLocaleString('en-US', { minimumFractionDigits: 0 })}
               </p>
-              <p className="text-[10px] font-sans text-secondary/70 mt-1 truncate">Released milestones & completed contracts</p>
+              <p className="text-[10px] font-sans text-secondary mt-1 truncate">Released milestones & completed contracts</p>
             </div>
           </motion.div>
 
           {/* Card 2: Active Contracts in Flight */}
           <motion.div 
             variants={itemVariants} 
-            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#00E5FF]/60 hover:shadow-[0_12px_30px_rgba(0,229,255,0.25)] bg-[#0a0a0d]"
+            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#00E5FF]/60 hover:shadow-[0_12px_30px_rgba(0,229,255,0.25)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-sm"
           >
             <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#00E5FF]/20 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#00E5FF] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#00E5FF]" />
-            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/[0.02] dark:from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
             <div className="flex justify-between items-start mb-3 relative z-10">
-              <div className="w-9 h-9 rounded-xl bg-[#00E5FF]/15 border border-[#00E5FF]/30 flex items-center justify-center text-[#00E5FF] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(0,229,255,0.6)] group-hover:border-[#00E5FF] transition-all duration-300">
+              <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-600 dark:text-[#00E5FF] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(0,229,255,0.6)] group-hover:border-[#00E5FF] transition-all duration-300">
                 <Clock size={17} />
               </div>
-              <span className="text-[10px] font-heading font-bold text-[#00E5FF] bg-[#00E5FF]/10 px-2 py-0.5 rounded-md border border-[#00E5FF]/20 group-hover:border-[#00E5FF]/40 transition-colors">
+              <span className="text-[10px] font-heading font-bold text-cyan-600 dark:text-[#00E5FF] bg-cyan-500/10 px-2 py-0.5 rounded-md border border-cyan-500/20 group-hover:border-cyan-500/40 transition-colors">
                 In Production
               </span>
             </div>
             <div className="relative z-10">
               <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">Active Operations</p>
-              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-white font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#00E5FF] transition-all">
+              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-cyan-600 dark:group-hover:text-[#00E5FF] transition-all">
                 {telemetry.activeCount}
               </p>
-              <p className="text-[10px] font-sans text-secondary/70 mt-1 truncate">In-Progress & In-Review deliverables</p>
+              <p className="text-[10px] font-sans text-secondary mt-1 truncate">In-Progress & In-Review deliverables</p>
             </div>
           </motion.div>
 
           {/* Card 3: Escrow Pipeline Buffer */}
           <motion.div 
             variants={itemVariants} 
-            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#6324FC]/60 hover:shadow-[0_12px_30px_rgba(99,36,252,0.25)] bg-[#0a0a0d]"
+            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#6324FC]/60 hover:shadow-[0_12px_30px_rgba(99,36,252,0.25)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-sm"
           >
             <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#6324FC]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#6324FC] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#6324FC]" />
-            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/[0.02] dark:from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
             <div className="flex justify-between items-start mb-3 relative z-10">
               <div className="w-9 h-9 rounded-xl bg-[#6324FC]/15 border border-[#6324FC]/30 flex items-center justify-center text-[#6324FC] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(99,36,252,0.6)] group-hover:border-[#6324FC] transition-all duration-300">
                 <Briefcase size={17} />
               </div>
-              <span className="text-[10px] font-heading font-bold text-purple-300 bg-[#6324FC]/15 px-2 py-0.5 rounded-md border border-[#6324FC]/30 group-hover:border-[#6324FC]/50 transition-colors">
+              <span className="text-[10px] font-heading font-bold text-purple-600 dark:text-purple-300 bg-[#6324FC]/15 px-2 py-0.5 rounded-md border border-[#6324FC]/30 group-hover:border-[#6324FC]/50 transition-colors">
                 Escrow Pipeline
               </span>
             </div>
             <div className="relative z-10">
               <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">Unreleased Pipeline</p>
-              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-white font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#00E5FF] transition-all">
+              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-[#6324FC] transition-all">
                 ${telemetry.totalPipeline.toLocaleString('en-US', { minimumFractionDigits: 0 })}
               </p>
-              <p className="text-[10px] font-sans text-secondary/70 mt-1 truncate">Unreleased milestone escrow balances</p>
+              <p className="text-[10px] font-sans text-secondary mt-1 truncate">Unreleased milestone escrow balances</p>
             </div>
           </motion.div>
 
           {/* Card 4: Fulfillments & Delivery Rate */}
           <motion.div 
             variants={itemVariants} 
-            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#F59E0B]/60 hover:shadow-[0_12px_30px_rgba(245,158,11,0.25)] bg-[#0a0a0d]"
+            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#F59E0B]/60 hover:shadow-[0_12px_30px_rgba(245,158,11,0.25)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-sm"
           >
             <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#F59E0B]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#F59E0B] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#F59E0B]" />
-            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/[0.02] dark:from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
             <div className="flex justify-between items-start mb-3 relative z-10">
               <div className="w-9 h-9 rounded-xl bg-[#F59E0B]/15 border border-[#F59E0B]/30 flex items-center justify-center text-[#F59E0B] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(245,158,11,0.6)] group-hover:border-[#F59E0B] transition-all duration-300">
                 <CheckCircle2 size={17} />
               </div>
-              <span className="text-[10px] font-heading font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 group-hover:border-amber-500/40 transition-colors">
+              <span className="text-[10px] font-heading font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 group-hover:border-amber-500/40 transition-colors">
                 {telemetry.completionRate}% Rate
               </span>
             </div>
             <div className="relative z-10">
               <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">Completed Projects</p>
-              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-white font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#00E5FF] transition-all">
+              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-[#F59E0B] transition-all">
                 {telemetry.completedCount}
               </p>
-              <p className="text-[10px] font-sans text-secondary/70 mt-1 truncate">Out of {telemetry.totalProjects} total engagements</p>
+              <p className="text-[10px] font-sans text-secondary mt-1 truncate">Out of {telemetry.totalProjects} total engagements</p>
             </div>
           </motion.div>
         </motion.div>
@@ -445,13 +445,13 @@ export default function PlatformClient({ platform }: { platform: string }) {
                 onClick={() => setStatusFilter(tab.id)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-heading font-bold whitespace-nowrap transition-all flex items-center gap-2 ${
                   statusFilter === tab.id
-                    ? 'bg-white text-black shadow-md'
-                    : 'bg-[#0a0a0d] text-secondary hover:text-white border border-white/10 hover:border-white/20'
+                    ? 'bg-[#6324FC] text-white shadow-md'
+                    : 'bg-white dark:bg-[#0a0a0d] text-secondary hover:text-slate-900 dark:hover:text-white border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20'
                 }`}
               >
                 <span>{tab.label}</span>
                 <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
-                  statusFilter === tab.id ? 'bg-black/15 text-black' : 'bg-white/5 text-secondary'
+                  statusFilter === tab.id ? 'bg-white/20 text-white' : 'bg-black/5 dark:bg-white/5 text-secondary'
                 }`}>
                   {tab.count}
                 </span>
@@ -469,9 +469,9 @@ export default function PlatformClient({ platform }: { platform: string }) {
             <p className="text-xs font-mono text-secondary">Loading {pConf.name} deliverables...</p>
           </div>
         ) : filteredProjects.length === 0 ? (
-          <div className="text-center py-20 bg-[#0a0a0d] rounded-3xl border border-white/10 p-6 shadow-xl">
+          <div className="text-center py-20 bg-white dark:bg-[#0a0a0d] rounded-3xl border border-black/10 dark:border-white/10 p-6 shadow-md dark:shadow-xl">
             <AlertCircle size={32} className="text-secondary mx-auto mb-2" />
-            <h3 className="text-base font-heading font-bold text-white mb-1">No {pConf.name} Projects Found</h3>
+            <h3 className="text-base font-heading font-bold text-slate-900 dark:text-white mb-1">No {pConf.name} Projects Found</h3>
             <p className="text-xs font-sans text-secondary max-w-sm mx-auto mb-4">
               {searchQuery || statusFilter !== 'All' 
                 ? 'No projects match your active search query or status filter.' 
@@ -515,7 +515,7 @@ export default function PlatformClient({ platform }: { platform: string }) {
                     href={`/marketplace/${platform.toLowerCase()}/${project._id}`}
                     className="block group h-full outline-none focus:outline-none"
                   >
-                    <div className="glass-card rounded-3xl p-6 bg-[#0a0a0d] border border-white/10 hover:border-white/25 hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between h-full shadow-lg relative overflow-hidden group-hover:shadow-[0_12px_30px_rgba(0,0,0,0.6)]">
+                    <div className="glass-card rounded-3xl p-6 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 hover:border-[#6324FC]/50 dark:hover:border-white/25 hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between h-full shadow-sm dark:shadow-lg relative overflow-hidden group-hover:shadow-[0_12px_30px_rgba(0,0,0,0.1)] dark:group-hover:shadow-[0_12px_30px_rgba(0,0,0,0.6)]">
                       
                       {/* Top Accent Neon Line on Hover */}
                       <div 
@@ -530,7 +530,7 @@ export default function PlatformClient({ platform }: { platform: string }) {
                       <div>
                         <div className="flex items-start justify-between gap-3 mb-3">
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-xs font-heading font-bold text-white shrink-0">
+                            <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-center text-xs font-heading font-bold text-slate-900 dark:text-white shrink-0">
                               {clientName.substring(0, 2).toUpperCase()}
                             </div>
                             <div className="min-w-0">
@@ -546,7 +546,7 @@ export default function PlatformClient({ platform }: { platform: string }) {
                         </div>
 
                         {/* Title */}
-                        <h3 className="text-base font-heading font-bold text-white group-hover:text-[#00E5FF] transition-colors line-clamp-2 mb-2 leading-snug">
+                        <h3 className="text-base font-heading font-bold text-slate-900 dark:text-white group-hover:text-[#6324FC] dark:group-hover:text-[#00E5FF] transition-colors line-clamp-2 mb-2 leading-snug">
                           {project.title}
                         </h3>
 
@@ -559,13 +559,13 @@ export default function PlatformClient({ platform }: { platform: string }) {
                       </div>
 
                       {/* Middle: Progress Rate */}
-                      <div className="space-y-3 my-3 pt-3 border-t border-white/5">
+                      <div className="space-y-3 my-3 pt-3 border-t border-black/5 dark:border-white/5">
                         <div className="space-y-1.5">
                           <div className="flex justify-between items-center text-[10px] font-mono text-secondary">
                             <span>Fulfillment Progress</span>
-                            <span className="font-bold text-white">{project.progress || 0}%</span>
+                            <span className="font-bold text-slate-900 dark:text-white">{project.progress || 0}%</span>
                           </div>
-                          <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                          <div className="h-1.5 w-full bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden">
                             <div 
                               className="h-full rounded-full transition-all duration-700"
                               style={{ 
@@ -579,14 +579,14 @@ export default function PlatformClient({ platform }: { platform: string }) {
                         {/* Task & Milestone Mini Pills */}
                         <div className="flex flex-wrap items-center gap-2 pt-1 text-[10px] font-mono text-secondary">
                           {tasksCount > 0 && (
-                            <span className="px-2 py-0.5 rounded bg-white/5 border border-white/5 flex items-center gap-1">
-                              <CheckSquare size={10} className="text-[#00E5FF]" />
+                            <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5 border border-black/5 dark:border-white/5 flex items-center gap-1 text-slate-700 dark:text-secondary">
+                              <CheckSquare size={10} className="text-[#6324FC] dark:text-[#00E5FF]" />
                               {completedTasksCount}/{tasksCount} Tasks
                             </span>
                           )}
                           {milestonesCount > 0 && (
-                            <span className="px-2 py-0.5 rounded bg-white/5 border border-white/5 flex items-center gap-1">
-                              <DollarSign size={10} className="text-emerald-400" />
+                            <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5 border border-black/5 dark:border-white/5 flex items-center gap-1 text-slate-700 dark:text-secondary">
+                              <DollarSign size={10} className="text-emerald-600 dark:text-emerald-400" />
                               {paidMilestones.length}/{milestonesCount} Milestones
                             </span>
                           )}
@@ -594,10 +594,10 @@ export default function PlatformClient({ platform }: { platform: string }) {
                       </div>
 
                       {/* Footer: Budget & Deadline */}
-                      <div className="pt-3 border-t border-white/5 flex items-center justify-between mt-auto">
+                      <div className="pt-3 border-t border-black/5 dark:border-white/5 flex items-center justify-between mt-auto">
                         <div>
                           <span className="text-[9px] font-heading font-bold text-secondary uppercase block">Contract Budget</span>
-                          <span className="text-sm font-mono font-bold text-white">{project.budget || '$0'}</span>
+                          <span className="text-sm font-mono font-bold text-slate-900 dark:text-white">{project.budget || '$0'}</span>
                         </div>
 
                         <div className="flex items-center gap-3">
@@ -610,7 +610,7 @@ export default function PlatformClient({ platform }: { platform: string }) {
                             </span>
                           </div>
                           
-                          <div className="w-8 h-8 rounded-xl bg-white/5 group-hover:bg-[#6324FC] text-secondary group-hover:text-white flex items-center justify-center transition-all">
+                          <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-white/5 group-hover:bg-[#6324FC] text-secondary group-hover:text-white flex items-center justify-center transition-all">
                             <ChevronRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
                           </div>
                         </div>
@@ -649,13 +649,13 @@ export default function PlatformClient({ platform }: { platform: string }) {
                 >
                   <Link 
                     href={`/marketplace/${platform.toLowerCase()}/${project._id}`} 
-                    className="block rounded-2xl p-5 md:p-6 bg-[#0a0a0d] border border-white/10 hover:border-white/25 hover:-translate-y-1 transition-all duration-300 shadow-md group"
+                    className="block rounded-2xl p-5 md:p-6 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 hover:border-[#6324FC]/50 dark:hover:border-white/25 hover:-translate-y-1 transition-all duration-300 shadow-sm group"
                   >
                     <div className="flex flex-col md:grid md:grid-cols-12 gap-4 md:items-center relative z-10">
                       
                       {/* Project Title & Client */}
                       <div className="col-span-4 min-w-0">
-                        <h3 className="text-sm font-heading font-bold text-white group-hover:text-[#00E5FF] transition-colors truncate">
+                        <h3 className="text-sm font-heading font-bold text-slate-900 dark:text-white group-hover:text-[#6324FC] dark:group-hover:text-[#00E5FF] transition-colors truncate">
                           {project.title}
                         </h3>
                         <p className="text-xs font-sans text-secondary mt-0.5 flex items-center gap-1.5 truncate">
@@ -676,9 +676,9 @@ export default function PlatformClient({ platform }: { platform: string }) {
                         <div className="flex flex-col w-full max-w-[200px] gap-1.5">
                           <div className="flex justify-between items-center text-[10px] font-mono text-secondary">
                             <span>Completion</span>
-                            <span>{project.progress || 0}%</span>
+                            <span className="text-slate-900 dark:text-white font-bold">{project.progress || 0}%</span>
                           </div>
-                          <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                          <div className="h-1.5 w-full bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden">
                             <div 
                               className="h-full rounded-full transition-all duration-700"
                               style={{ 
@@ -692,7 +692,7 @@ export default function PlatformClient({ platform }: { platform: string }) {
 
                       {/* Budget */}
                       <div className="col-span-1 flex items-center">
-                        <span className="font-mono font-bold text-sm text-white bg-[#060608] border border-white/5 px-2.5 py-1 rounded-lg">
+                        <span className="font-mono font-bold text-sm text-slate-900 dark:text-white bg-slate-100 dark:bg-[#060608] border border-black/5 dark:border-white/5 px-2.5 py-1 rounded-lg">
                           {project.budget || '$0'}
                         </span>
                       </div>
@@ -700,14 +700,14 @@ export default function PlatformClient({ platform }: { platform: string }) {
                       {/* Deadline */}
                       <div className="col-span-2 flex items-center justify-between md:justify-end gap-3">
                         <div className="flex items-center gap-1.5 text-xs font-mono text-secondary">
-                          <Clock size={13} className="text-[#00E5FF]" />
+                          <Clock size={13} className="text-[#6324FC] dark:text-[#00E5FF]" />
                           <span>
                             {project.deadline 
                               ? new Date(project.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                               : 'Flexible'}
                           </span>
                         </div>
-                        <ChevronRight size={16} className="text-secondary group-hover:text-white group-hover:translate-x-1 transition-all" />
+                        <ChevronRight size={16} className="text-secondary group-hover:text-slate-900 dark:group-hover:text-white group-hover:translate-x-1 transition-all" />
                       </div>
                       
                     </div>

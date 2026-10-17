@@ -60,11 +60,12 @@ export const config = {
     /*
      * Match all request paths except for the ones starting with:
      * - api/mobile (mobile API endpoints)
+     * - api/lead-gen (independent lead gen module endpoints)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - static assets with extensions (e.g. logo.png, styles.css, etc.)
      */
-    '/((?!api/mobile|_next/static|_next/image|favicon.ico|[^?]*\\.(?:html|css|js|json|jpe?g|png|gif|svg|ico|woff2?|webmanifest)).*)',
+    '/((?!api/mobile|api/lead-gen|_next/static|_next/image|favicon.ico|[^?]*\\.(?:html|css|js|json|jpe?g|png|gif|svg|ico|woff2?|webmanifest)).*)',
   ],
 };

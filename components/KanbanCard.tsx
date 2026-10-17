@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Clock, Calendar, MessageSquare, Paperclip, MoreVertical, Trash2, Edit, RotateCcw } from 'lucide-react';
@@ -13,12 +13,12 @@ interface KanbanCardProps {
 }
 
 const TECH_COLORS: Record<string, string> = {
-  'Next.js': 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800/50 dark:text-slate-300 dark:border-slate-700',
-  'Laravel': 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-300 dark:border-red-500/20',
-  'SEO': 'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-300 dark:border-green-500/20',
+  'Next.js': 'bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-800/50 dark:text-slate-300 dark:border-slate-700',
+  'Laravel': 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/20',
+  'SEO': 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20',
   'UI/UX': 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-300 dark:border-purple-500/20',
-  'WordPress': 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20',
-  'Technical SEO': 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20',
+  'WordPress': 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:border-sky-500/20',
+  'Technical SEO': 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-500/10 dark:text-teal-300 dark:border-teal-500/20',
   'Glassmorphism': 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:border-indigo-500/20',
   'High-end Dev': 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20',
 };
@@ -27,7 +27,6 @@ export default function KanbanCard({ project, onEdit, onDelete, onResetToLead }:
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDragStarted, setIsDragStarted] = useState(false);
-  const [clickStartTime, setClickStartTime] = useState(0);
   
   const {
     attributes,
@@ -44,11 +43,7 @@ export default function KanbanCard({ project, onEdit, onDelete, onResetToLead }:
     opacity: isDragging ? 0.5 : 1,
   };
 
-  // Handle card click - open edit modal only if not dragging
   const handleCardClick = (e: React.MouseEvent) => {
-    // Don't open modal if:
-    // 1. Currently dragging
-    // 2. Clicking on menu, buttons, or interactive elements
     if (
       isDragStarted ||
       (e.target as HTMLElement).closest('[data-no-click]') ||
@@ -58,7 +53,6 @@ export default function KanbanCard({ project, onEdit, onDelete, onResetToLead }:
       return;
     }
     
-    // If menu is open, just close it, don't open edit modal
     if (showMenu) {
       setShowMenu(false);
       return;
@@ -67,23 +61,19 @@ export default function KanbanCard({ project, onEdit, onDelete, onResetToLead }:
     onEdit?.(project);
   };
 
-  // Track drag start with timestamp
   const handlePointerDown = (e: React.PointerEvent) => {
-    setClickStartTime(Date.now());
     setIsDragStarted(false);
     if (listeners?.onPointerDown) {
       listeners.onPointerDown(e as any);
     }
   };
 
-  // Track if actually dragging
-  React.useEffect(() => {
+  useEffect(() => {
     if (isDragging) {
       setIsDragStarted(true);
     }
   }, [isDragging]);
 
-  // Calculate if deadline is urgent
   const isUrgent = project.deadline && (() => {
     const deadline = new Date(project.deadline);
     const now = new Date();
@@ -102,9 +92,9 @@ export default function KanbanCard({ project, onEdit, onDelete, onResetToLead }:
     if (diffDays < 0) return 'Overdue';
     if (diffDays === 0) return 'Today';
     if (diffDays === 1) return 'Tomorrow';
-    if (diffDays <= 7) return `In ${diffDays} days`;
-    if (diffDays <= 14) return 'In 2 weeks';
-    if (diffDays <= 21) return 'In 3 weeks';
+    if (diffDays <= 7) return `In ${diffDays}d`;
+    if (diffDays <= 14) return 'In 2w';
+    if (diffDays <= 21) return 'In 3w';
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
@@ -116,233 +106,205 @@ export default function KanbanCard({ project, onEdit, onDelete, onResetToLead }:
       onClick={handleCardClick}
       onPointerDown={handlePointerDown}
       suppressHydrationWarning
-      className="group p-6 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-2 border-purple-200/40 dark:border-purple-500/30 rounded-2xl shadow-lg hover:-translate-y-2 hover:shadow-2xl dark:hover:shadow-[0_0_40px_-5px_rgba(168,85,247,0.4)] hover:border-purple-400/60 dark:hover:border-purple-400/50 transition-all duration-300 cursor-pointer active:cursor-grabbing relative overflow-hidden"
+      className="group p-4 sm:p-5 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 hover:border-[#6324FC]/50 dark:hover:border-[#6324FC]/50 rounded-2xl shadow-sm hover:shadow-xl dark:hover:shadow-[0_0_30px_-5px_rgba(99,36,252,0.25)] transition-all duration-300 cursor-pointer active:cursor-grabbing relative overflow-hidden flex flex-col justify-between"
     >
-      {/* Animated gradient background on hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-pink-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      
-      <div className="relative z-10">{/* Tags & Options */}
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex flex-wrap gap-2">
-          {project.techStack?.slice(0, 3).map((tech: string, idx: number) => (
-            <span 
-              key={idx} 
-              className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg border-2 shadow-sm ${
-                TECH_COLORS[tech] || 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700'
-              }`}
-            >
-              {tech}
-            </span>
-          ))}
-          {project.tags?.includes('From Lead') && (
-            <span className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg border-2 bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-500/10 dark:text-cyan-300 dark:border-cyan-500/20 shadow-sm">
-              🔗 Lead
-            </span>
-          )}
-        </div>
-        <div 
-          role="button"
-          tabIndex={0}
-          data-no-click
-          className="text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 relative cursor-pointer"
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowMenu(!showMenu);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
+      <div className="relative z-10">
+        {/* Tags & Options Header */}
+        <div className="flex justify-between items-start mb-3 gap-2">
+          <div className="flex flex-wrap gap-1.5">
+            {project.techStack?.slice(0, 2).map((tech: string, idx: number) => (
+              <span 
+                key={idx} 
+                className={`px-2 py-0.5 text-[9px] font-heading font-bold uppercase tracking-wider rounded-md border ${
+                  TECH_COLORS[tech] || 'bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 border-black/10 dark:border-white/10'
+                }`}
+              >
+                {tech}
+              </span>
+            ))}
+            {project.tags?.includes('From Lead') && (
+              <span className="px-2 py-0.5 text-[9px] font-heading font-bold uppercase tracking-wider rounded-md border bg-[#00E5FF]/10 text-[#00E5FF] border-[#00E5FF]/30">
+                🔗 Lead
+              </span>
+            )}
+          </div>
+
+          <div 
+            role="button"
+            tabIndex={0}
+            data-no-click
+            className="text-secondary hover:text-slate-900 dark:hover:text-white transition-colors p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 relative cursor-pointer shrink-0"
+            onClick={(e) => {
               e.stopPropagation();
               setShowMenu(!showMenu);
-            }
-          }}
-        >
-          <MoreVertical size={16} />
-          
-          {/* Dropdown Menu */}
-          {showMenu && (
-            <>
-              <div 
-                className="fixed inset-0 z-[90]" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowMenu(false);
-                }}
-                onMouseDown={(e) => {
-                  // Prevent card click from triggering
-                  e.stopPropagation();
-                }}
-              />
-              <div className="absolute right-0 top-8 z-[100] w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden">
-                <button
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowMenu(!showMenu);
+              }
+            }}
+          >
+            <MoreVertical size={15} />
+            
+            {/* Dropdown Menu */}
+            {showMenu && (
+              <>
+                <div 
+                  className="fixed inset-0 z-[90]" 
                   onClick={(e) => {
                     e.stopPropagation();
                     setShowMenu(false);
-                    onEdit?.(project);
                   }}
-                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                >
-                  <Edit size={14} />
-                  Edit
-                </button>
-                
-                {/* Reset to Lead - Only show if project is linked to a lead */}
-                {project.leadId && (
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                  }}
+                />
+                <div className="absolute right-0 top-7 z-[100] w-44 bg-white dark:bg-[#0e0e13] border border-black/10 dark:border-white/15 rounded-xl shadow-2xl overflow-hidden py-1">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       setShowMenu(false);
-                      onResetToLead?.(project);
+                      onEdit?.(project);
                     }}
-                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-colors border-t border-slate-200 dark:border-slate-700"
+                    className="w-full flex items-center gap-2 px-3.5 py-2 text-xs font-heading font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#6324FC] dark:hover:text-[#00E5FF] transition-colors"
                   >
-                    <RotateCcw size={14} />
-                    Reset to Lead
+                    <Edit size={13} />
+                    Edit Project
                   </button>
-                )}
-                
+                  
+                  {project.leadId && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowMenu(false);
+                        onResetToLead?.(project);
+                      }}
+                      className="w-full flex items-center gap-2 px-3.5 py-2 text-xs font-heading font-bold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors border-t border-black/5 dark:border-white/5"
+                    >
+                      <RotateCcw size={13} />
+                      Reset to Lead
+                    </button>
+                  )}
+                  
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowMenu(false);
+                      setShowDeleteConfirm(true);
+                    }}
+                    className="w-full flex items-center gap-2 px-3.5 py-2 text-xs font-heading font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors border-t border-black/5 dark:border-white/5"
+                  >
+                    <Trash2 size={13} />
+                    Delete
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <div 
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowDeleteConfirm(false);
+            }}
+          >
+            <div 
+              className="bg-white dark:bg-[#0a0a0d] rounded-2xl p-5 max-w-sm w-full shadow-2xl border border-rose-500/30"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-base font-heading font-extrabold text-slate-900 dark:text-white mb-1.5">Delete Project?</h3>
+              <p className="text-xs text-secondary mb-4 leading-relaxed">
+                Are you sure you want to delete "<strong>{project.title}</strong>"? This action cannot be undone.
+              </p>
+              <div className="flex gap-2 justify-end">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setShowMenu(false);
-                    setShowDeleteConfirm(true);
+                    setShowDeleteConfirm(false);
                   }}
-                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors border-t border-slate-200 dark:border-slate-700"
+                  className="px-3 py-1.5 text-xs font-heading font-bold text-secondary hover:text-slate-900 dark:hover:text-white transition-colors"
                 >
-                  <Trash2 size={14} />
-                  Delete
+                  Cancel
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowDeleteConfirm(false);
+                    onDelete?.(project._id);
+                  }}
+                  className="px-4 py-1.5 text-xs font-heading font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition-all shadow-md"
+                >
+                  Delete Project
                 </button>
               </div>
-            </>
-          )}
-        </div>
+            </div>
+          </div>
+        )}
+
+        {/* Title */}
+        <h3 className="font-heading font-bold text-sm text-slate-900 dark:text-white mb-2 leading-snug group-hover:text-[#6324FC] dark:group-hover:text-[#00E5FF] transition-colors line-clamp-2">
+          {project.title}
+        </h3>
+
+        {/* Client Name */}
+        {project.clientName && (
+          <p className="text-xs text-secondary mb-3 font-medium flex items-center gap-1.5 truncate">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#6324FC] shrink-0" />
+            <span className="truncate">{project.clientName}</span>
+          </p>
+        )}
+
+        {/* Progress Bar */}
+        {project.progress > 0 && (
+          <div className="mb-3">
+            <div className="flex justify-between text-[10px] font-heading font-bold mb-1">
+              <span className="text-secondary">Progress</span>
+              <span className="text-slate-900 dark:text-white font-mono">{project.progress}%</span>
+            </div>
+            <div className="w-full h-1.5 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden border border-black/5 dark:border-white/5">
+              <div 
+                className="h-full bg-gradient-to-r from-[#6324FC] to-[#00E5FF] rounded-full transition-all duration-500"
+                style={{ width: `${project.progress}%` }}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div 
-          className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-white/50 dark:bg-black/50 backdrop-blur-sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowDeleteConfirm(false);
-          }}
-        >
-          <div 
-            className="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl border border-red-200 dark:border-red-500/30"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Delete Project?</h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
-              Are you sure you want to delete "<strong>{project.title}</strong>"? This action cannot be undone.
-            </p>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowDeleteConfirm(false);
-                }}
-                className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowDeleteConfirm(false);
-                  onDelete?.(project._id);
-                }}
-                className="px-4 py-2 text-sm font-bold text-slate-900 dark:text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-lg transition-all shadow-lg hover:shadow-red-500/30"
-              >
-                Delete Project
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Title */}
-      <h3 className="font-bold text-lg text-slate-800 dark:text-white mb-4 leading-tight group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors line-clamp-2">
-        {project.title}
-      </h3>
-
-      {/* Client Name */}
-      {project.clientName && (
-        <p className="text-sm text-slate-600 dark:text-gray-400 mb-4 font-medium flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-purple-400" />
-          {project.clientName}
-        </p>
-      )}
-
-      {/* Progress Bar */}
-      {project.progress > 0 && (
-        <div className="mb-5">
-          <div className="flex justify-between text-xs mb-2">
-            <span className="text-slate-600 dark:text-gray-400 font-semibold">Progress</span>
-            <span className="text-slate-800 dark:text-gray-200 font-bold">{project.progress}%</span>
-          </div>
-          <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
-            <div 
-              className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 rounded-full relative transition-all duration-500 shadow-lg"
-              style={{ width: `${project.progress}%` }}
-            >
-              <div className="absolute inset-0 bg-white/30 animate-pulse" />
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Footer Metrics */}
-      <div className="flex items-center justify-between mt-auto border-t-2 border-slate-100 dark:border-white/5 pt-4">
+      <div className="flex items-center justify-between border-t border-black/5 dark:border-white/10 pt-3 mt-2">
         {/* Deadline */}
-        <div className={`flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-lg transition-all ${
+        <div className={`flex items-center gap-1.5 text-[11px] font-heading font-bold px-2 py-1 rounded-lg transition-all ${
           isUrgent 
-            ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400 border-2 border-red-200 dark:border-red-500/30 shadow-md shadow-red-200/50 dark:shadow-red-500/20' 
-            : 'text-slate-600 dark:text-gray-400 bg-slate-50 dark:bg-slate-800/50 border-2 border-slate-200 dark:border-slate-700'
+            ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30' 
+            : 'text-secondary bg-slate-50 dark:bg-white/5 border border-black/5 dark:border-white/5'
         }`}>
-          {isUrgent ? <Clock size={14} className="animate-pulse" /> : <Calendar size={14} />}
-          {formatDeadline(project.deadline)}
+          {isUrgent ? <Clock size={12} className="animate-pulse text-rose-500" /> : <Calendar size={12} />}
+          <span>{formatDeadline(project.deadline)}</span>
         </div>
 
-        {/* Avatars & Meta */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 dark:text-gray-500 text-xs">
-            {project.comments > 0 && (
-              <span className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">
-                <MessageSquare size={12} /> {project.comments}
-              </span>
-            )}
-            {project.attachments > 0 && (
-              <span className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">
-                <Paperclip size={12} /> {project.attachments}
-              </span>
-            )}
-          </div>
-          
+        {/* Assignees & Meta */}
+        <div className="flex items-center gap-2">
           {project.assignees && project.assignees.length > 0 && (
-            <div className="flex -space-x-2">
+            <div className="flex -space-x-1.5">
               {project.assignees.slice(0, 3).map((assignee: string, idx: number) => (
                 <div
                   key={idx}
-                  className="w-8 h-8 rounded-full border-2 border-white dark:border-slate-900 bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-slate-900 dark:text-white text-xs font-bold shadow-md hover:scale-110 transition-transform"
+                  className="w-6 h-6 rounded-full border border-white dark:border-[#0a0a0d] bg-gradient-to-br from-[#6324FC] to-[#8B5CF6] flex items-center justify-center text-white text-[10px] font-bold shadow-sm"
                   title={assignee}
                 >
                   {assignee.charAt(0).toUpperCase()}
                 </div>
               ))}
-              {project.assignees.length > 3 && (
-                <div className="w-8 h-8 rounded-full border-2 border-white dark:border-slate-900 bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 text-xs font-bold shadow-md">
-                  +{project.assignees.length - 3}
-                </div>
-              )}
             </div>
           )}
         </div>
-      </div>
-      </div>
-      
-      {/* Accent line on hover - animated */}
-      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-b-2xl">
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent animate-shimmer" />
       </div>
     </div>
   );

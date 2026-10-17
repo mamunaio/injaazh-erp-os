@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import connectToDatabase from '@/lib/mongodb';
 import { Project } from '@/models/Project';
+import { requireWriteAuth } from '@/lib/auth';
 
 export async function getProjectsBoard() {
   try {
@@ -93,6 +94,7 @@ import { createNotification } from './notificationActions';
 
 export async function createProject(data: any) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     
     // Auto-calculate platform fee if applicable
@@ -111,7 +113,7 @@ export async function createProject(data: any) {
     const newProject = new Project(data);
     await newProject.save();
     
-    await createNotification('system', `Project "${newProject.title}" was created.`);
+    await createNotification('system', `Project "${newProject.title}" was created.`, '/projects');
     
     // Automatically log platform fee as a Finance Transaction if > 0
     if (newProject.platformFee && newProject.platformFee > 0) {
@@ -139,6 +141,7 @@ export async function createProject(data: any) {
 
 export async function updateProjectStatus(projectId: string, newStatus: string) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     
     const updatedProject = await Project.findByIdAndUpdate(
@@ -161,6 +164,7 @@ export async function updateProjectStatus(projectId: string, newStatus: string) 
 
 export async function updateProject(projectId: string, updateData: any) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     
     const oldProject = await Project.findById(projectId).lean();
@@ -237,7 +241,7 @@ export async function updateProject(projectId: string, updateData: any) {
       await handleProjectCompletionSync(updatedProject);
     }
     
-    await createNotification('system', `Project "${updatedProject?.title}" was updated.`);
+    await createNotification('system', `Project "${updatedProject?.title}" was updated.`, '/projects');
     
     revalidatePath('/projects');
     return { success: true, data: JSON.parse(JSON.stringify(updatedProject)) };
@@ -249,10 +253,11 @@ export async function updateProject(projectId: string, updateData: any) {
 
 export async function deleteProject(projectId: string) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     const project = await Project.findById(projectId);
     if (project) {
-      await createNotification('system', `Project "${project.title}" was deleted.`);
+      await createNotification('system', `Project "${project.title}" was deleted.`, '/projects');
     }
     await Project.findByIdAndDelete(projectId);
     revalidatePath('/projects');

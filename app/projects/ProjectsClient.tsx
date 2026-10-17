@@ -13,6 +13,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 import toast, { Toaster } from 'react-hot-toast';
+import { notify } from '@/lib/notify';
 import {
   DndContext, DragOverlay, closestCorners, PointerSensor, useSensor, useSensors,
   DragStartEvent, DragEndEvent, DragOverEvent, useDroppable
@@ -249,9 +250,9 @@ function DroppableColumn({ id, title, items }: { id: string, title: string, item
   const Icon = conf.icon;
   
   return (
-    <div className="flex flex-col w-[320px] shrink-0 bg-[#0a0a0d] border border-white/10 rounded-2xl overflow-hidden shadow-lg">
+    <div className="flex flex-col w-[320px] shrink-0 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl overflow-hidden shadow-md dark:shadow-lg">
       {/* Header */}
-      <div className={`p-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02] ${isOver ? 'bg-[#6324FC]/10' : ''} transition-colors relative`}>
+      <div className={`p-4 border-b border-black/10 dark:border-white/10 flex items-center justify-between bg-slate-50 dark:bg-white/[0.02] ${isOver ? 'bg-[#6324FC]/10' : ''} transition-colors relative`}>
         <div 
           className="absolute top-0 left-0 right-0 h-[2px]"
           style={{ 
@@ -270,9 +271,9 @@ function DroppableColumn({ id, title, items }: { id: string, title: string, item
           >
             <Icon size={14} />
           </div>
-          <h3 className="font-heading font-extrabold text-white text-xs tracking-wide">{title}</h3>
+          <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-xs tracking-wide">{title}</h3>
         </div>
-        <span className="px-2.5 py-0.5 bg-white/5 border border-white/10 rounded-lg text-xs font-mono font-bold text-white">
+        <span className="px-2.5 py-0.5 bg-slate-100 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-lg text-xs font-mono font-bold text-slate-900 dark:text-white">
           {items.length}
         </span>
       </div>
@@ -288,7 +289,7 @@ function DroppableColumn({ id, title, items }: { id: string, title: string, item
           {items.map(p => <SortableProjectCard key={p._id} project={p} />)}
         </SortableContext>
         {items.length === 0 && (
-          <div className="h-[120px] rounded-xl border border-dashed border-white/10 flex items-center justify-center text-xs font-heading font-bold text-secondary/60">
+          <div className="h-[120px] rounded-xl border border-dashed border-black/10 dark:border-white/10 flex items-center justify-center text-xs font-heading font-bold text-secondary">
             {isOver ? 'Drop project here' : 'Empty Stage'}
           </div>
         )}
@@ -312,11 +313,11 @@ function SortableProjectCard({ project }: { project: Project }) {
       style={style} 
       {...attributes} 
       {...listeners}
-      className="group glass-card rounded-2xl p-4 flex flex-col gap-3 cursor-grab active:cursor-grabbing relative overflow-hidden transition-all duration-300 hover:-translate-y-1 bg-[#0a0a0d] border border-white/10 hover:border-white/25 shadow-md select-none"
+      className="group glass-card rounded-2xl p-4 flex flex-col gap-3 cursor-grab active:cursor-grabbing relative overflow-hidden transition-all duration-300 hover:-translate-y-1 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/25 shadow-sm dark:shadow-md select-none"
     >
       {/* Radial Hover Spotlight */}
       <div 
-        className="absolute -top-10 -right-10 w-28 h-28 blur-[30px] rounded-full opacity-30 group-hover:opacity-90 group-hover:scale-150 transition-all duration-500 pointer-events-none"
+        className="absolute -top-10 -right-10 w-28 h-28 blur-[30px] rounded-full opacity-20 dark:opacity-30 group-hover:opacity-90 group-hover:scale-150 transition-all duration-500 pointer-events-none"
         style={{ backgroundColor: conf.hexColor }}
       />
 
@@ -330,11 +331,11 @@ function SortableProjectCard({ project }: { project: Project }) {
       />
 
       {/* Subtle Card Glass Sheen Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white/[0.04] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/[0.02] dark:from-white/[0.04] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
       {/* Card Header: Title & Health Badge */}
       <div className="relative z-10 flex justify-between items-start gap-2">
-        <h4 className="text-xs font-heading font-extrabold text-white leading-snug line-clamp-2 group-hover:text-[#00E5FF] transition-colors">
+        <h4 className="text-xs font-heading font-extrabold text-slate-900 dark:text-white leading-snug line-clamp-2 group-hover:text-[#6324FC] dark:group-hover:text-[#00E5FF] transition-colors">
           {cleanTitle}
         </h4>
         <span className={`px-2 py-0.5 rounded-md text-[9px] font-mono font-bold uppercase tracking-wider border shrink-0 ${health.bg} ${health.text} ${health.border}`}>
@@ -346,17 +347,17 @@ function SortableProjectCard({ project }: { project: Project }) {
       <div className="relative z-10 flex items-center justify-between text-[10px] font-mono text-secondary">
         {project.clientName ? (
           <div className="flex items-center gap-1.5 truncate">
-            <div className="w-4 h-4 rounded bg-[#6324FC]/20 text-[#00E5FF] flex items-center justify-center text-[7px] font-bold shrink-0">
+            <div className="w-4 h-4 rounded bg-[#6324FC]/20 text-[#6324FC] dark:text-[#00E5FF] flex items-center justify-center text-[7px] font-bold shrink-0">
               {getInitials(project.clientName)}
             </div>
-            <span className="truncate max-w-[110px] text-white font-medium">{project.clientName}</span>
+            <span className="truncate max-w-[110px] text-slate-900 dark:text-white font-medium">{project.clientName}</span>
           </div>
         ) : (
           <span className="text-secondary/60 italic">Internal</span>
         )}
         
         {project.deadline && (
-          <span className={`flex items-center gap-1 ${health.label === 'Overdue' ? 'text-rose-400 font-bold' : 'text-secondary'}`}>
+          <span className={`flex items-center gap-1 ${health.label === 'Overdue' ? 'text-rose-500 dark:text-rose-400 font-bold' : 'text-secondary'}`}>
             <Calendar size={10} /> {fmtShortDate(project.deadline)}
           </span>
         )}
@@ -366,9 +367,9 @@ function SortableProjectCard({ project }: { project: Project }) {
       <div className="relative z-10 space-y-1">
         <div className="flex items-center justify-between text-[10px] font-mono">
           <span className="text-secondary">Progress</span>
-          <span className="text-white font-bold">{project.progress || 0}%</span>
+          <span className="text-slate-900 dark:text-white font-bold">{project.progress || 0}%</span>
         </div>
-        <div className="h-1.5 w-full bg-[#060608] rounded-full overflow-hidden border border-white/5">
+        <div className="h-1.5 w-full bg-slate-100 dark:bg-[#060608] rounded-full overflow-hidden border border-black/5 dark:border-white/5">
           <div 
             className="h-full rounded-full transition-all duration-300"
             style={{ 
@@ -380,7 +381,7 @@ function SortableProjectCard({ project }: { project: Project }) {
       </div>
       
       {/* Footer: Timer & Assignees */}
-      <div className="relative z-10 flex items-center justify-between pt-2 border-t border-white/5">
+      <div className="relative z-10 flex items-center justify-between pt-2 border-t border-black/5 dark:border-white/5">
         <button
           type="button"
           onClick={(e) => {
@@ -388,7 +389,7 @@ function SortableProjectCard({ project }: { project: Project }) {
             window.dispatchEvent(new CustomEvent('start-project-timer', { detail: { projectName: project.title } }));
             toast.success(`Timer started for "${cleanTitle}"`);
           }}
-          className="px-2 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[10px] font-heading font-bold flex items-center gap-1 transition-colors border border-emerald-500/20"
+          className="px-2 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-heading font-bold flex items-center gap-1 transition-colors border border-emerald-500/20"
         >
           <Timer size={10} /> Timer
         </button>
@@ -398,7 +399,7 @@ function SortableProjectCard({ project }: { project: Project }) {
             {(project.assignees || []).slice(0, 3).map((a, i) => (
               <div 
                 key={i} 
-                className="w-5 h-5 rounded-full bg-[#6324FC]/20 text-[#00E5FF] border border-white/10 flex items-center justify-center text-[7px] font-bold shadow-sm" 
+                className="w-5 h-5 rounded-full bg-purple-500/15 dark:bg-[#6324FC]/20 text-[#6324FC] dark:text-[#00E5FF] border border-black/10 dark:border-white/10 flex items-center justify-center text-[7px] font-bold shadow-sm" 
                 title={a}
               >
                 {getInitials(a)}
@@ -406,7 +407,7 @@ function SortableProjectCard({ project }: { project: Project }) {
             ))}
           </div>
         ) : (
-          <span className="text-[9px] text-secondary/50 font-mono">No team</span>
+          <span className="text-[9px] text-secondary font-mono">No team</span>
         )}
       </div>
     </div>
@@ -627,22 +628,29 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
 
     try {
       if (selectedProject && !isAddOpen) {
+        notify.edit('Project updated successfully');
         const res = await updateProject(selectedProject._id, payload);
         if (res.success && res.data) {
           setProjects(prev => prev.map(p => p._id === selectedProject._id ? res.data : p));
           setSelectedProject(res.data);
-          toast.success('Project updated successfully');
         } else {
-          toast.error('Error updating project');
+          notify.error('Error updating project');
         }
       } else {
+        // 🚀 0ms Instant Feedback
+        notify.instant({
+          type: 'system',
+          sound: 'success',
+          message: `Project "${payload.title || 'New Project'}" was created.`,
+          link: '/projects'
+        });
+        setIsAddOpen(false);
+
         const res = await createProject(payload);
         if (res.success && res.data) {
           setProjects(prev => [res.data, ...prev]);
-          setIsAddOpen(false);
-          toast.success('Project created successfully');
         } else {
-          toast.error('Error creating project');
+          notify.error('Error creating project');
         }
       }
     } catch {
@@ -761,8 +769,8 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
   const currentPlatformObj = PLATFORM_CHANNELS.find(p => p.id.toLowerCase() === (formData.platform || 'Freelancer').toLowerCase()) || PLATFORM_CHANNELS[0];
 
   return (
-    <div className="min-h-screen bg-[#060608] text-white p-4 md:p-8 pt-6 pb-24 font-sans selection:bg-[#6324FC] selection:text-white">
-      <Toaster position="top-right" toastOptions={{ style: { background: '#0a0a0d', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' } }} />
+    <div className="min-h-screen bg-slate-50 dark:bg-[#060608] text-slate-900 dark:text-white p-4 md:p-8 pt-6 pb-24 font-sans selection:bg-[#6324FC] selection:text-white">
+      <Toaster position="top-right" />
       
       {/* Ambient background glows */}
       <div className="fixed inset-0 pointer-events-none z-0">
@@ -779,25 +787,25 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
             <div className="flex items-center gap-2 text-xs font-mono text-secondary">
               <span className="text-secondary">Workspace</span>
               <span>/</span>
-              <span className="text-white font-semibold">Projects Engine</span>
+              <span className="text-slate-900 dark:text-white font-semibold">Projects Engine</span>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-[#6324FC]/15 text-[#00E5FF] border border-[#6324FC]/30 shadow-[0_0_12px_rgba(99,36,252,0.2)]">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#10B981]" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-[#6324FC]/15 text-[#6324FC] dark:text-[#00E5FF] border border-[#6324FC]/30 shadow-[0_0_12px_rgba(99,36,252,0.2)]">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse shadow-[0_0_8px_#10B981]" />
                 Live Pipeline Active
               </span>
             </div>
           </div>
 
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-5 pb-2 border-b border-white/5">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-5 pb-2 border-b border-black/5 dark:border-white/5">
             <div>
               <div className="flex items-center gap-3 mb-1.5">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6324FC]/20 to-[#00E5FF]/20 border border-white/15 flex items-center justify-center text-[#00E5FF] shadow-[0_0_20px_rgba(99,36,252,0.3)]">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6324FC]/20 to-purple-500/20 border border-black/10 dark:border-white/15 flex items-center justify-center text-[#6324FC] dark:text-[#00E5FF] shadow-[0_0_20px_rgba(99,36,252,0.3)]">
                   <Briefcase size={20} />
                 </div>
                 <div>
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-extrabold text-white tracking-tight">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-extrabold text-slate-900 dark:text-white tracking-tight">
                     Projects & Operations Engine
                   </h1>
                 </div>
@@ -829,9 +837,9 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                   key={k.id}
                   variants={itemVariants}
                   onClick={() => setStatusFilter(k.id)}
-                  className={`group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 bg-[#0a0a0d] border ${
-                    isSelected ? 'border-white/40 ring-2' : 'border-white/10 hover:border-white/25'
-                  }`}
+                  className={`group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 bg-white dark:bg-[#0a0a0d] border ${
+                    isSelected ? 'border-purple-500 ring-2 ring-purple-500/30' : 'border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/25'
+                  } shadow-sm`}
                   style={{
                     borderColor: isSelected ? k.color : undefined,
                     boxShadow: isSelected ? `0 0 20px ${k.color}30` : undefined
@@ -839,7 +847,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                 >
                   {/* Radial Hover Spotlight */}
                   <div 
-                    className="absolute -top-10 -right-10 w-32 h-32 blur-[35px] rounded-full opacity-35 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none"
+                    className="absolute -top-10 -right-10 w-32 h-32 blur-[35px] rounded-full opacity-20 dark:opacity-35 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none"
                     style={{ backgroundColor: k.color }}
                   />
 
@@ -853,7 +861,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                   />
 
                   {/* Subtle Card Glass Sheen Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/[0.02] dark:from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
                   <div className="flex justify-between items-start mb-3 relative z-10">
                     <div 
@@ -880,12 +888,12 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                   <div className="relative z-10">
                     <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">{k.label}</p>
                     <p 
-                      className="text-2xl lg:text-3xl font-heading font-extrabold font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#00E5FF] transition-all"
+                      className="text-2xl lg:text-3xl font-heading font-extrabold font-mono tracking-tight mt-0.5 transition-all"
                       style={{ color: k.color }}
                     >
                       {k.value}
                     </p>
-                    <p className="text-[10px] font-sans text-secondary/70 mt-1 truncate">{k.subtitle}</p>
+                    <p className="text-[10px] font-sans text-secondary mt-1 truncate">{k.subtitle}</p>
                   </div>
                 </motion.div>
               );
@@ -893,11 +901,11 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
           </div>
 
           {/* ── Filter Bar & View Switcher ──────────────────────────────────── */}
-          <div className="p-4 bg-[#0a0a0d] border border-white/10 rounded-2xl space-y-3.5 shadow-lg">
+          <div className="p-4 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl space-y-3.5 shadow-sm dark:shadow-lg">
             <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
               
               {/* View Switcher Tabs */}
-              <div className="flex items-center bg-[#060608] border border-white/10 rounded-xl p-1 overflow-x-auto scrollbar-none">
+              <div className="flex items-center bg-slate-100 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl p-1 overflow-x-auto scrollbar-none">
                 {[
                   { id: 'grid', icon: LayoutGrid, label: 'Grid View' },
                   { id: 'list', icon: List, label: 'List Table' },
@@ -911,7 +919,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                     className={`relative flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-heading font-bold transition-all whitespace-nowrap ${
                       viewMode === v.id 
                         ? 'text-white bg-[#6324FC] shadow-[0_0_12px_rgba(99,36,252,0.5)]' 
-                        : 'text-secondary hover:text-white hover:bg-white/5'
+                        : 'text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/5'
                     }`}
                   >
                     <v.icon size={14} />
@@ -925,18 +933,18 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                 
                 {/* Search Box */}
                 <div className="relative flex-1 min-w-[200px] group">
-                  <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary group-focus-within:text-[#00E5FF] transition-colors pointer-events-none" />
+                  <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary group-focus-within:text-[#6324FC] dark:group-focus-within:text-[#00E5FF] transition-colors pointer-events-none" />
                   <input
                     type="text"
                     placeholder="Search projects, clients, tech stack..."
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-9 py-2 text-xs text-white placeholder:text-secondary outline-none transition-all shadow-inner"
+                    className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-9 py-2 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-all shadow-inner"
                   />
                   {searchQuery && (
                     <button 
                       onClick={() => setSearchQuery('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md text-secondary hover:text-white hover:bg-white/10 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                     >
                       <X size={12} />
                     </button>
@@ -947,7 +955,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                 <select
                   value={priorityFilter}
                   onChange={(e) => setPriorityFilter(e.target.value)}
-                  className="bg-[#060608] border border-white/10 rounded-xl px-3 py-2 text-xs font-heading font-bold text-secondary focus:text-white outline-none cursor-pointer hover:border-white/20 transition-all"
+                  className="bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-heading font-bold text-slate-800 dark:text-secondary focus:text-slate-900 dark:focus:text-white outline-none cursor-pointer hover:border-black/20 dark:hover:border-white/20 transition-all"
                 >
                   <option value="All">All Priorities</option>
                   <option value="Urgent">Urgent Priority</option>
@@ -960,7 +968,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="bg-[#060608] border border-white/10 rounded-xl px-3 py-2 text-xs font-heading font-bold text-secondary focus:text-white outline-none cursor-pointer hover:border-white/20 transition-all"
+                  className="bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-heading font-bold text-slate-800 dark:text-secondary focus:text-slate-900 dark:focus:text-white outline-none cursor-pointer hover:border-black/20 dark:hover:border-white/20 transition-all"
                 >
                   <option value="Active">Active Projects</option>
                   <option value="All">All Projects</option>
@@ -971,9 +979,9 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
             </div>
 
             {/* Active Filters Summary */}
-            <div className="flex items-center justify-between text-[11px] font-mono text-secondary pt-1 border-t border-white/5">
+            <div className="flex items-center justify-between text-[11px] font-mono text-secondary pt-1 border-t border-black/5 dark:border-white/5">
               <div>
-                Showing <span className="text-white font-bold">{filteredProjects.length}</span> of <span className="text-white font-bold">{projects.length}</span> total projects
+                Showing <span className="text-slate-900 dark:text-white font-bold">{filteredProjects.length}</span> of <span className="text-slate-900 dark:text-white font-bold">{projects.length}</span> total projects
               </div>
               {(searchQuery || statusFilter !== 'Active' || priorityFilter !== 'All') && (
                 <button
@@ -982,7 +990,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                     setStatusFilter('Active');
                     setPriorityFilter('All');
                   }}
-                  className="text-[#00E5FF] hover:underline font-bold"
+                  className="text-[#6324FC] dark:text-[#00E5FF] hover:underline font-bold"
                 >
                   Reset Filters
                 </button>
@@ -997,12 +1005,12 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-12 md:p-16 rounded-3xl bg-[#0a0a0d] border border-white/10 text-center flex flex-col items-center justify-center shadow-xl"
+            className="p-12 md:p-16 rounded-3xl bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 text-center flex flex-col items-center justify-center shadow-md dark:shadow-xl"
           >
-            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-secondary mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-center text-secondary mb-4">
               <Briefcase size={28} />
             </div>
-            <h3 className="text-base sm:text-lg font-heading font-bold text-white mb-1">
+            <h3 className="text-base sm:text-lg font-heading font-bold text-slate-900 dark:text-white mb-1">
               No projects matched your criteria
             </h3>
             <p className="text-xs text-secondary max-w-sm mb-6">
@@ -1040,11 +1048,11 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                       key={p._id}
                       variants={itemVariants}
                       onClick={() => openPanel(p)}
-                      className="group glass-card rounded-2xl p-5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 bg-[#0a0a0d] border border-white/10 hover:border-white/25 shadow-lg"
+                      className="group glass-card rounded-2xl p-5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/25 shadow-sm dark:shadow-lg"
                     >
                       {/* Radial Hover Spotlight */}
                       <div 
-                        className="absolute -top-10 -right-10 w-32 h-32 blur-[35px] rounded-full opacity-35 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none"
+                        className="absolute -top-10 -right-10 w-32 h-32 blur-[35px] rounded-full opacity-20 dark:opacity-35 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none"
                         style={{ backgroundColor: conf.hexColor }}
                       />
 
@@ -1058,14 +1066,14 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                       />
 
                       {/* Subtle Card Glass Sheen Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                      <div className="absolute inset-0 bg-gradient-to-b from-black/[0.02] dark:from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
                       {/* Card Header: Icon & Health Badge */}
                       <div className="relative z-10">
                         <div className="flex items-start justify-between gap-3 mb-3.5">
                           <div className="flex items-center gap-3 min-w-0">
                             <div 
-                              className="w-10 h-10 rounded-xl flex items-center justify-center font-heading font-extrabold text-xs shrink-0 shadow-md transition-all duration-300 group-hover:scale-110 border"
+                              className="w-10 h-10 rounded-xl flex items-center justify-center font-heading font-extrabold text-xs shrink-0 shadow-sm transition-all duration-300 group-hover:scale-110 border"
                               style={{
                                 backgroundColor: `${conf.hexColor}15`,
                                 borderColor: `${conf.hexColor}35`,
@@ -1082,8 +1090,8 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                               <p className="text-[10px] text-secondary truncate flex items-center gap-1 font-mono">
                                 {p.clientName ? (
                                   <>
-                                    <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF]" />
-                                    <span className="text-white font-medium truncate">{p.clientName}</span>
+                                    <span className="w-1.5 h-1.5 rounded-full bg-[#6324FC] dark:bg-[#00E5FF]" />
+                                    <span className="text-slate-900 dark:text-white font-medium truncate">{p.clientName}</span>
                                   </>
                                 ) : (
                                   <span className="text-secondary/60 uppercase">Internal Operation</span>
@@ -1098,8 +1106,8 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                         </div>
 
                         {/* Title */}
-                        <h3 className="text-sm font-heading font-extrabold text-white line-clamp-2 leading-snug mb-3">
-                          <span className="group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#00E5FF] transition-all">
+                        <h3 className="text-sm font-heading font-extrabold text-slate-900 dark:text-white line-clamp-2 leading-snug mb-3">
+                          <span className="group-hover:text-[#6324FC] dark:group-hover:text-[#00E5FF] transition-all">
                             {cleanTitle}
                           </span>
                         </h3>
@@ -1108,7 +1116,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                         {p.techStack && p.techStack.length > 0 && (
                           <div className="flex items-center gap-1 flex-wrap mb-4">
                             {p.techStack.slice(0, 3).map((tech, idx) => (
-                              <span key={idx} className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-mono text-secondary">
+                              <span key={idx} className="px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5 border border-black/5 dark:border-white/10 text-[9px] font-mono text-slate-700 dark:text-secondary">
                                 {tech}
                               </span>
                             ))}
@@ -1120,13 +1128,13 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                       </div>
 
                       {/* Card Footer: Progress, Deadline & Timer */}
-                      <div className="relative z-10 space-y-3 pt-3 border-t border-white/5">
+                      <div className="relative z-10 space-y-3 pt-3 border-t border-black/5 dark:border-white/5">
                         <div>
                           <div className="flex items-center justify-between mb-1 text-[10px] font-mono">
                             <span className="text-secondary uppercase">Progress</span>
-                            <span className="text-white font-bold">{p.progress || 0}%</span>
+                            <span className="text-slate-900 dark:text-white font-bold">{p.progress || 0}%</span>
                           </div>
-                          <div className="h-1.5 w-full bg-[#060608] rounded-full overflow-hidden border border-white/5">
+                          <div className="h-1.5 w-full bg-slate-100 dark:bg-[#060608] rounded-full overflow-hidden border border-black/5 dark:border-white/5">
                             <div 
                               className="h-full rounded-full transition-all duration-300"
                               style={{ 
@@ -1139,7 +1147,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
 
                         <div className="flex items-center justify-between pt-1 text-[10px] font-mono">
                           {p.deadline ? (
-                            <span className={`flex items-center gap-1 font-bold ${health.label === 'Overdue' ? 'text-rose-400' : 'text-secondary'}`}>
+                            <span className={`flex items-center gap-1 font-bold ${health.label === 'Overdue' ? 'text-rose-500 dark:text-rose-400' : 'text-secondary'}`}>
                               <Calendar size={11} /> {fmtShortDate(p.deadline)}
                             </span>
                           ) : (
@@ -1147,14 +1155,14 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                           )}
 
                           {p.budget ? (
-                            <span className="font-bold text-emerald-400 font-mono">
+                            <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">
                               {fmtCurrency(p.budget)}
                             </span>
                           ) : null}
                         </div>
 
                         {/* Button Action Bar */}
-                        <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                        <div className="flex items-center justify-between pt-2 border-t border-black/5 dark:border-white/5">
                           <button
                             type="button"
                             onClick={(e) => {
@@ -1162,7 +1170,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                               window.dispatchEvent(new CustomEvent('start-project-timer', { detail: { projectName: p.title } }));
                               toast.success(`Timer started for "${cleanTitle}"`);
                             }}
-                            className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-emerald-500/20 text-secondary hover:text-emerald-400 text-[10px] font-heading font-bold flex items-center gap-1 transition-all border border-white/5 hover:border-emerald-500/30"
+                            className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-emerald-500/20 text-secondary hover:text-emerald-600 dark:hover:text-emerald-400 text-[10px] font-heading font-bold flex items-center gap-1 transition-all border border-black/5 dark:border-white/5 hover:border-emerald-500/30"
                           >
                             <Timer size={11} /> Start Timer
                           </button>
@@ -1172,7 +1180,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                               {(p.assignees || []).slice(0, 3).map((a, j) => (
                                 <div 
                                   key={j} 
-                                  className="w-6 h-6 rounded-full bg-[#6324FC]/20 text-[#00E5FF] border border-white/10 flex items-center justify-center text-[8px] font-bold shadow-sm"
+                                  className="w-6 h-6 rounded-full bg-purple-500/15 dark:bg-[#6324FC]/20 text-[#6324FC] dark:text-[#00E5FF] border border-black/10 dark:border-white/10 flex items-center justify-center text-[8px] font-bold shadow-sm"
                                   title={a}
                                 >
                                   {getInitials(a)}
@@ -1180,7 +1188,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                               ))}
                             </div>
                           ) : (
-                            <span className="text-[9px] text-secondary/50 font-mono">No team</span>
+                            <span className="text-[9px] text-secondary font-mono">No team</span>
                           )}
                         </div>
                       </div>
@@ -1198,11 +1206,11 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                 initial={{ opacity: 0 }} 
                 animate={{ opacity: 1 }} 
                 exit={{ opacity: 0 }}
-                className="overflow-hidden bg-[#0a0a0d] border border-white/10 rounded-2xl shadow-xl"
+                className="overflow-hidden bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl shadow-sm dark:shadow-xl"
               >
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse text-left text-xs">
-                    <thead className="sticky top-0 z-10 bg-[#060608] border-b border-white/10">
+                    <thead className="sticky top-0 z-10 bg-slate-100 dark:bg-[#060608] border-b border-black/10 dark:border-white/10">
                       <tr>
                         <th className="pl-5 pr-4 py-3.5 text-[10px] font-heading font-bold text-secondary uppercase tracking-widest min-w-[240px]">
                           Project & Client
@@ -1224,14 +1232,14 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
+                    <tbody className="divide-y divide-black/5 dark:divide-white/5">
                       {filteredProjects.map((p) => {
                         const conf = getStatusConfig(p.status);
                         return (
                           <motion.tr
                             key={p._id}
                             onClick={() => openPanel(p)}
-                            className="hover:bg-white/[0.02] transition-colors cursor-pointer group"
+                            className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors cursor-pointer group"
                           >
                             <td className="pl-5 pr-4 py-3.5">
                               <div className="flex items-center gap-3">
@@ -1246,7 +1254,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                                   <conf.icon size={14} />
                                 </div>
                                 <div className="min-w-0">
-                                  <p className="font-heading font-bold text-white truncate group-hover:text-[#00E5FF] transition-colors">
+                                  <p className="font-heading font-bold text-slate-900 dark:text-white truncate group-hover:text-[#6324FC] dark:group-hover:text-[#00E5FF] transition-colors">
                                     {p.title}
                                   </p>
                                   <p className="text-[10px] text-secondary font-mono truncate mt-0.5">
@@ -1264,7 +1272,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
 
                             <td className="pr-4 py-3.5">
                               <div className="flex items-center gap-2.5 max-w-[120px]">
-                                <div className="flex-1 h-1.5 bg-[#060608] rounded-full overflow-hidden border border-white/5">
+                                <div className="flex-1 h-1.5 bg-slate-100 dark:bg-[#060608] rounded-full overflow-hidden border border-black/5 dark:border-white/5">
                                   <div 
                                     className="h-full rounded-full" 
                                     style={{ 
@@ -1273,24 +1281,24 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                                     }} 
                                   />
                                 </div>
-                                <span className="text-[10px] font-mono font-bold text-white">{p.progress || 0}%</span>
+                                <span className="text-[10px] font-mono font-bold text-slate-900 dark:text-white">{p.progress || 0}%</span>
                               </div>
                             </td>
 
                             <td className="pr-4 py-3.5">
                               <div className="flex items-center gap-1.5 text-xs">
                                 {checkOverdue(p.deadline, p.status) ? (
-                                  <AlertTriangle size={12} className="text-rose-400 shrink-0" />
+                                  <AlertTriangle size={12} className="text-rose-500 dark:text-rose-400 shrink-0" />
                                 ) : (
                                   <Calendar size={12} className="text-secondary shrink-0" />
                                 )}
-                                <span className={`font-mono text-xs font-medium ${checkOverdue(p.deadline, p.status) ? 'text-rose-400 font-bold' : 'text-white'}`}>
+                                <span className={`font-mono text-xs font-medium ${checkOverdue(p.deadline, p.status) ? 'text-rose-500 dark:text-rose-400 font-bold' : 'text-slate-900 dark:text-white'}`}>
                                   {fmtShortDate(p.deadline)}
                                 </span>
                               </div>
                             </td>
 
-                            <td className="pr-4 py-3.5 text-right font-mono font-bold text-emerald-400">
+                            <td className="pr-4 py-3.5 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
                               {p.budget ? fmtCurrency(p.budget) : '—'}
                             </td>
 
@@ -1299,7 +1307,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                                 {(p.assignees || []).length > 0 && (
                                   <div className="flex -space-x-1.5">
                                     {(p.assignees || []).slice(0, 2).map((a, j) => (
-                                      <div key={j} className="w-6 h-6 rounded-full bg-[#6324FC]/20 text-[#00E5FF] border border-white/10 flex items-center justify-center text-[7px] font-bold">
+                                      <div key={j} className="w-6 h-6 rounded-full bg-purple-500/15 dark:bg-[#6324FC]/20 text-[#6324FC] dark:text-[#00E5FF] border border-black/10 dark:border-white/10 flex items-center justify-center text-[7px] font-bold">
                                         {getInitials(a)}
                                       </div>
                                     ))}
@@ -1308,7 +1316,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                                 <button
                                   type="button"
                                   onClick={() => openPanel(p)}
-                                  className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-secondary hover:text-white transition-colors"
+                                  className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-secondary hover:text-slate-900 dark:hover:text-white transition-colors"
                                   title="Edit Project"
                                 >
                                   <Edit2 size={12} />
@@ -1316,7 +1324,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                                 <button
                                   type="button"
                                   onClick={(e) => handleDelete(p._id, e)}
-                                  className="p-1.5 rounded-lg bg-white/5 hover:bg-rose-500/20 text-secondary hover:text-rose-400 transition-colors"
+                                  className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-rose-500/20 text-secondary hover:text-rose-500 dark:hover:text-rose-400 transition-colors"
                                   title="Delete Project"
                                 >
                                   <Trash2 size={12} />
@@ -1348,7 +1356,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                   onDragOver={onDragOver} 
                   onDragEnd={onDragEnd}
                 >
-                  <div className="flex gap-4 overflow-x-auto scrollbar-thin scrollbar-thumb-white/10 pb-4">
+                  <div className="flex gap-4 overflow-x-auto scrollbar-thin scrollbar-thumb-black/10 dark:scrollbar-thumb-white/10 pb-4">
                     {columns.map(col => <DroppableColumn key={col.id} id={col.id} title={col.title} items={col.items} />)}
                   </div>
                   <DragOverlay dropAnimation={{ duration: 180, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)' }}>
@@ -1369,11 +1377,11 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                 initial={{ opacity: 0 }} 
                 animate={{ opacity: 1 }} 
                 exit={{ opacity: 0 }}
-                className="bg-[#0a0a0d] border border-white/10 rounded-2xl p-6 shadow-xl space-y-6"
+                className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl p-6 shadow-sm dark:shadow-xl space-y-6"
               >
-                <div className="flex items-center justify-between pb-3 border-b border-white/5">
-                  <h3 className="text-xs font-heading font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
-                    <GitMerge size={14} className="text-[#00E5FF]" /> Project Schedule & Milestone Nodes
+                <div className="flex items-center justify-between pb-3 border-b border-black/5 dark:border-white/5">
+                  <h3 className="text-xs font-heading font-extrabold text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
+                    <GitMerge size={14} className="text-[#6324FC] dark:text-[#00E5FF]" /> Project Schedule & Milestone Nodes
                   </h3>
                   <span className="text-[10px] font-mono text-secondary">Ordered by target deadline</span>
                 </div>
@@ -1395,17 +1403,17 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                               }`} 
                             />
                             {i !== arr.length - 1 && (
-                              <div className="w-px h-16 bg-white/10 mt-2 group-hover:bg-[#6324FC] transition-colors" />
+                              <div className="w-px h-16 bg-black/10 dark:bg-white/10 mt-2 group-hover:bg-[#6324FC] transition-colors" />
                             )}
                           </div>
                           
-                          <div className="flex-1 bg-[#060608] border border-white/10 group-hover:border-white/20 rounded-xl p-4 transition-all flex items-center justify-between gap-4">
+                          <div className="flex-1 bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 group-hover:border-black/20 dark:group-hover:border-white/20 rounded-xl p-4 transition-all flex items-center justify-between gap-4">
                             <div>
-                              <h4 className="text-xs font-heading font-extrabold text-white group-hover:text-[#00E5FF] transition-colors">
+                              <h4 className="text-xs font-heading font-extrabold text-slate-900 dark:text-white group-hover:text-[#6324FC] dark:group-hover:text-[#00E5FF] transition-colors">
                                 {p.title}
                               </h4>
                               <p className="text-[10px] font-mono text-secondary mt-1 flex items-center gap-2">
-                                <span className={overdue ? 'text-rose-400 font-bold' : ''}>
+                                <span className={overdue ? 'text-rose-500 dark:text-rose-400 font-bold' : ''}>
                                   {p.status === 'Completed' ? 'Completed ' : 'Target: '}{fmtDate(p.deadline)}
                                 </span>
                                 <span>·</span>
@@ -1413,12 +1421,12 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                                 {p.clientName && (
                                   <>
                                     <span>·</span>
-                                    <span className="text-white">{p.clientName}</span>
+                                    <span className="text-slate-900 dark:text-white">{p.clientName}</span>
                                   </>
                                 )}
                               </p>
                             </div>
-                            <span className="text-xs font-mono font-bold text-white bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">
+                            <span className="text-xs font-mono font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-lg border border-black/10 dark:border-white/10">
                               {p.progress || 0}%
                             </span>
                           </div>
@@ -1451,7 +1459,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 15 }}
                 transition={{ type: "spring", damping: 28, stiffness: 320 }}
-                className="relative w-full max-w-2xl my-auto bg-[#0a0a0d] border border-white/15 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.95),0_0_35px_rgba(99,36,252,0.3)] flex flex-col overflow-hidden z-10 max-h-[92vh]"
+                className="relative w-full max-w-2xl my-auto bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/15 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.3),0_0_35px_rgba(99,36,252,0.15)] dark:shadow-[0_25px_70px_rgba(0,0,0,0.95),0_0_35px_rgba(99,36,252,0.3)] flex flex-col overflow-hidden z-10 max-h-[92vh]"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Dynamic Top Glow Line matching chosen Platform */}
@@ -1464,10 +1472,10 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                 />
 
                 {/* Modal Header */}
-                <div className="p-5 md:p-6 border-b border-white/10 bg-white/[0.02] flex items-center justify-between shrink-0">
+                <div className="p-5 md:p-6 border-b border-black/10 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-3.5">
                     <div 
-                      className="w-11 h-11 rounded-xl flex items-center justify-center shadow-lg shrink-0 transition-all duration-300 border"
+                      className="w-11 h-11 rounded-xl flex items-center justify-center shadow-md shrink-0 transition-all duration-300 border"
                       style={{
                         backgroundColor: `${currentPlatformObj.color}15`,
                         borderColor: `${currentPlatformObj.color}35`,
@@ -1479,7 +1487,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h2 className="text-lg md:text-xl font-heading font-extrabold text-white tracking-tight">
+                        <h2 className="text-lg md:text-xl font-heading font-extrabold text-slate-900 dark:text-white tracking-tight">
                           {isAddOpen ? `New ${currentPlatformObj.name} Project` : 'Edit Project Pipeline'}
                         </h2>
                         <span 
@@ -1504,7 +1512,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                       <button
                         type="button"
                         onClick={(e) => handleDelete(selectedProject._id, e)}
-                        className="p-2 rounded-xl text-rose-400 hover:bg-rose-500/15 border border-transparent hover:border-rose-500/30 transition-all"
+                        className="p-2 rounded-xl text-rose-500 hover:bg-rose-500/15 border border-transparent hover:border-rose-500/30 transition-all"
                         title="Delete Project"
                       >
                         <Trash2 size={16} />
@@ -1512,7 +1520,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                     )}
                     <button 
                       onClick={() => { setIsAddOpen(false); setSelectedProject(null); }} 
-                      className="p-2 rounded-xl bg-white/5 hover:bg-rose-500/20 text-secondary hover:text-rose-400 border border-white/5 hover:border-rose-500/30 transition-colors"
+                      className="p-2 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-rose-500/20 text-secondary hover:text-rose-500 dark:hover:text-rose-400 border border-black/5 dark:border-white/5 hover:border-rose-500/30 transition-colors"
                     >
                       <X size={16} />
                     </button>
@@ -1538,13 +1546,13 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                             onClick={() => setFormData({ ...formData, platform: plat.id })}
                             className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-heading font-bold transition-all border ${
                               isSelected 
-                                ? 'bg-white/10 text-white border-white/30 shadow-md' 
-                                : 'bg-[#060608] text-secondary hover:text-white border-white/5 hover:border-white/15'
+                                ? 'bg-[#6324FC]/10 text-[#6324FC] dark:text-white dark:bg-white/10 border-purple-500/40 shadow-sm' 
+                                : 'bg-slate-50 dark:bg-[#060608] text-secondary hover:text-slate-900 dark:hover:text-white border-black/10 dark:border-white/5 hover:border-black/20 dark:hover:border-white/15'
                             }`}
                             style={{
                               borderColor: isSelected ? plat.color : undefined,
                               boxShadow: isSelected ? `0 0 12px ${plat.color}30` : undefined,
-                              color: isSelected ? '#FFFFFF' : undefined
+                              color: isSelected ? (plat.color) : undefined
                             }}
                           >
                             <PIcon size={13} style={{ color: plat.color }} />
@@ -1558,7 +1566,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                   {/* Project Title */}
                   <div>
                     <label className="block text-[10px] font-heading font-bold text-secondary uppercase tracking-widest mb-1.5">
-                      Project Title <span className="text-rose-400">*</span>
+                      Project Title <span className="text-rose-500 dark:text-rose-400">*</span>
                     </label>
                     <div className="relative">
                       <Briefcase size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary pointer-events-none" />
@@ -1568,7 +1576,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                         value={formData.title || ''}
                         onChange={e => setFormData({ ...formData, title: e.target.value })}
                         placeholder="e.g. Next.js ERP Platform & Payment Gateway Integration..."
-                        className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-secondary outline-none transition-colors"
+                        className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-colors"
                       />
                     </div>
                   </div>
@@ -1590,13 +1598,13 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                         }}
                         onFocus={() => setShowClientDropdown(true)}
                         placeholder="Search existing client or type new client name..."
-                        className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-8 py-2.5 text-xs text-white placeholder:text-secondary outline-none transition-colors"
+                        className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-8 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-colors"
                       />
                       <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary pointer-events-none opacity-60" />
 
                       {/* Dropdown Menu */}
                       {showClientDropdown && (
-                        <div className="absolute top-full left-0 w-full mt-1.5 bg-[#0e0e13] border border-white/15 rounded-xl shadow-2xl overflow-hidden z-30 max-h-52 overflow-y-auto custom-scrollbar">
+                        <div className="absolute top-full left-0 w-full mt-1.5 bg-white dark:bg-[#0e0e13] border border-black/10 dark:border-white/15 rounded-xl shadow-2xl overflow-hidden z-30 max-h-52 overflow-y-auto custom-scrollbar">
                           {filteredClientsList.length > 0 ? (
                             filteredClientsList.map(c => (
                               <button
@@ -1607,13 +1615,13 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                                   setClientSearch(c.name);
                                   setShowClientDropdown(false);
                                 }}
-                                className="w-full text-left px-4 py-2.5 hover:bg-white/5 flex items-center justify-between border-b border-white/5 last:border-0 transition-colors group"
+                                className="w-full text-left px-4 py-2.5 hover:bg-black/5 dark:hover:bg-white/5 flex items-center justify-between border-b border-black/5 dark:border-white/5 last:border-0 transition-colors group"
                               >
                                 <div>
-                                  <div className="font-heading font-bold text-white text-xs group-hover:text-[#00E5FF] transition-colors">{c.name}</div>
+                                  <div className="font-heading font-bold text-slate-900 dark:text-white text-xs group-hover:text-[#6324FC] dark:group-hover:text-[#00E5FF] transition-colors">{c.name}</div>
                                   {c.company && <div className="text-[10px] text-secondary">{c.company}</div>}
                                 </div>
-                                <span className="text-[9px] uppercase font-mono px-2 py-0.5 rounded bg-white/5 text-secondary">{c.platform || 'Direct'}</span>
+                                <span className="text-[9px] uppercase font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-secondary">{c.platform || 'Direct'}</span>
                               </button>
                             ))
                           ) : (
@@ -1655,8 +1663,8 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                               onClick={() => setFormData({ ...formData, status: st.id })}
                               className={`flex items-center justify-center gap-1 px-2 py-2 rounded-xl text-[11px] font-heading font-bold transition-all border ${
                                 isSelected 
-                                  ? `${st.bg} ${st.border} text-white shadow-md` 
-                                  : 'bg-[#060608] text-secondary hover:text-white border-white/5'
+                                  ? `${st.bg} ${st.border} text-slate-900 dark:text-white shadow-sm` 
+                                  : 'bg-slate-50 dark:bg-[#060608] text-secondary hover:text-slate-900 dark:hover:text-white border-black/10 dark:border-white/5'
                               }`}
                               style={{
                                 color: isSelected ? st.color : undefined,
@@ -1686,8 +1694,8 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                               onClick={() => setFormData({ ...formData, priority: pr.id })}
                               className={`flex items-center justify-center py-2 rounded-xl text-[11px] font-heading font-bold transition-all border ${
                                 isSelected 
-                                  ? `${pr.bg} ${pr.border} text-white shadow-md` 
-                                  : 'bg-[#060608] text-secondary hover:text-white border-white/5'
+                                  ? `${pr.bg} ${pr.border} text-slate-900 dark:text-white shadow-sm` 
+                                  : 'bg-slate-50 dark:bg-[#060608] text-secondary hover:text-slate-900 dark:hover:text-white border-black/10 dark:border-white/5'
                               }`}
                               style={{
                                 color: isSelected ? pr.color : undefined,
@@ -1710,7 +1718,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                         Budget (USD)
                       </label>
                       <div className="relative">
-                        <DollarSign size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-400 pointer-events-none" />
+                        <DollarSign size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-600 dark:text-emerald-400 pointer-events-none" />
                         <input
                           type="number"
                           step="0.01"
@@ -1718,7 +1726,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                           value={formData.budget || ''}
                           onChange={e => setFormData({ ...formData, budget: e.target.value })}
                           placeholder="2500"
-                          className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-white font-mono placeholder:text-secondary outline-none transition-colors"
+                          className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-slate-900 dark:text-white font-mono placeholder:text-secondary outline-none transition-colors"
                         />
                       </div>
                     </div>
@@ -1760,7 +1768,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                       <label className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">
                         Project Progress Completion
                       </label>
-                      <span className="text-xs font-mono font-bold text-[#00E5FF]">{formData.progress || 0}%</span>
+                      <span className="text-xs font-mono font-bold text-[#6324FC] dark:text-[#00E5FF]">{formData.progress || 0}%</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <input
@@ -1769,7 +1777,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                         max="100"
                         value={formData.progress || 0}
                         onChange={e => setFormData({ ...formData, progress: Number(e.target.value) })}
-                        className="w-full h-2 bg-[#060608] rounded-lg appearance-none cursor-pointer accent-[#6324FC]"
+                        className="w-full h-2 bg-slate-200 dark:bg-[#060608] rounded-lg appearance-none cursor-pointer accent-[#6324FC]"
                       />
                       <input
                         type="number"
@@ -1777,7 +1785,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                         max="100"
                         value={formData.progress || 0}
                         onChange={e => setFormData({ ...formData, progress: Number(e.target.value) })}
-                        className="w-16 bg-[#060608] border border-white/10 rounded-lg px-2 py-1 text-xs font-mono text-center text-white"
+                        className="w-16 bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-lg px-2 py-1 text-xs font-mono text-center text-slate-900 dark:text-white"
                       />
                     </div>
                   </div>
@@ -1786,7 +1794,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest flex items-center gap-1.5">
-                        <Layers size={13} className="text-[#00E5FF]" /> Tech Stack & Deliverable Tags
+                        <Layers size={13} className="text-[#6324FC] dark:text-[#00E5FF]" /> Tech Stack & Deliverable Tags
                       </label>
                       <span className="text-[9px] font-mono text-secondary">Click tags or type custom</span>
                     </div>
@@ -1805,8 +1813,8 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                             onClick={() => toggleTechStackTag(tech)}
                             className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold transition-all border ${
                               isSelected 
-                                ? 'bg-[#6324FC]/20 text-[#00E5FF] border-[#6324FC]/50 shadow-[0_0_8px_rgba(99,36,252,0.3)]' 
-                                : 'bg-[#060608] text-secondary hover:text-white border-white/5 hover:border-white/15'
+                                ? 'bg-[#6324FC]/10 text-[#6324FC] dark:bg-[#6324FC]/20 dark:text-[#00E5FF] border-[#6324FC]/40 dark:border-[#6324FC]/50 shadow-sm' 
+                                : 'bg-slate-50 dark:bg-[#060608] text-secondary hover:text-slate-900 dark:hover:text-white border-black/10 dark:border-white/5 hover:border-black/20 dark:hover:border-white/15'
                             }`}
                           >
                             {isSelected ? '✓ ' : '+ '}{tech}
@@ -1822,7 +1830,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                       onChange={e => setCustomTechInput(e.target.value)}
                       onKeyDown={handleCustomTechAdd}
                       placeholder="Type custom tech and press Enter (e.g. TailwindCSS, GraphQL, Redis)..."
-                      className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl px-3.5 py-2 text-xs text-white placeholder:text-secondary outline-none transition-colors"
+                      className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-colors"
                     />
 
                     {/* Selected Tech Stack Badges */}
@@ -1831,13 +1839,13 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                         {formData.techStack.map((t: string) => (
                           <span 
                             key={t}
-                            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-white/10 border border-white/15 text-[10px] font-mono text-white"
+                            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-slate-100 dark:bg-white/10 border border-black/10 dark:border-white/15 text-[10px] font-mono text-slate-900 dark:text-white"
                           >
                             <span>{t}</span>
                             <button 
                               type="button"
                               onClick={() => toggleTechStackTag(t)}
-                              className="text-secondary hover:text-rose-400 ml-0.5"
+                              className="text-secondary hover:text-rose-500 dark:hover:text-rose-400 ml-0.5"
                             >
                               ×
                             </button>
@@ -1851,7 +1859,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest flex items-center gap-1.5">
-                        <Users size={13} className="text-[#A78BFA]" /> Team Assignees & Roles
+                        <Users size={13} className="text-purple-600 dark:text-[#A78BFA]" /> Team Assignees & Roles
                       </label>
                       <span className="text-[9px] font-mono text-secondary">Assign team members</span>
                     </div>
@@ -1869,11 +1877,11 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                             onClick={() => toggleAssignee(name)}
                             className={`px-2.5 py-1 rounded-lg text-[10px] font-heading font-bold transition-all border flex items-center gap-1 ${
                               isSelected 
-                                ? 'bg-purple-500/20 text-purple-300 border-purple-500/50 shadow-[0_0_8px_rgba(168,85,247,0.3)]' 
-                                : 'bg-[#060608] text-secondary hover:text-white border-white/5 hover:border-white/15'
+                                ? 'bg-purple-500/15 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300 border-purple-500/40 dark:border-purple-500/50 shadow-sm' 
+                                : 'bg-slate-50 dark:bg-[#060608] text-secondary hover:text-slate-900 dark:hover:text-white border-black/10 dark:border-white/5 hover:border-black/20 dark:hover:border-white/15'
                             }`}
                           >
-                            <span className="w-4 h-4 rounded bg-white/10 flex items-center justify-center text-[8px]">{getInitials(name)}</span>
+                            <span className="w-4 h-4 rounded bg-black/10 dark:bg-white/10 flex items-center justify-center text-[8px]">{getInitials(name)}</span>
                             <span>{name}</span>
                           </button>
                         );
@@ -1885,7 +1893,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                       value={Array.isArray(formData.assignees) ? formData.assignees.join(', ') : (formData.assignees || '')}
                       onChange={e => setFormData({ ...formData, assignees: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
                       placeholder="Comma separated names or roles..."
-                      className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl px-3.5 py-2 text-xs text-white placeholder:text-secondary outline-none transition-colors"
+                      className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-colors"
                     />
                   </div>
 
@@ -1899,19 +1907,19 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                       value={formData.description || ''}
                       onChange={e => setFormData({ ...formData, description: e.target.value })}
                       placeholder="Overview of requirements, milestones, client specifications or contract terms..."
-                      className="w-full bg-[#060608] border border-white/10 focus:border-[#6324FC] rounded-xl p-3 text-xs text-white placeholder:text-secondary outline-none transition-colors resize-none leading-relaxed"
+                      className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl p-3 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-colors resize-none leading-relaxed"
                     />
                   </div>
 
                   {/* AI Sprint Task Breakdown Generator Engine */}
-                  <div className="p-4 rounded-2xl bg-gradient-to-br from-[#6324FC]/15 via-purple-900/10 to-transparent border border-[#6324FC]/30 space-y-3 shadow-lg">
+                  <div className="p-4 rounded-2xl bg-gradient-to-br from-[#6324FC]/10 via-purple-500/5 to-transparent dark:from-[#6324FC]/15 dark:via-purple-900/10 dark:to-transparent border border-purple-500/20 dark:border-[#6324FC]/30 space-y-3 shadow-sm">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-xl bg-[#6324FC]/25 border border-[#6324FC]/40 text-[#00E5FF] flex items-center justify-center shadow-[0_0_12px_rgba(99,36,252,0.4)]">
+                        <div className="w-8 h-8 rounded-xl bg-purple-500/15 dark:bg-[#6324FC]/25 border border-purple-500/30 dark:border-[#6324FC]/40 text-[#6324FC] dark:text-[#00E5FF] flex items-center justify-center shadow-sm">
                           <Sparkles size={16} />
                         </div>
                         <div>
-                          <h4 className="text-xs font-heading font-extrabold text-white">Gemini AI Sprint Breakdown</h4>
+                          <h4 className="text-xs font-heading font-extrabold text-slate-900 dark:text-white">Gemini AI Sprint Breakdown</h4>
                           <p className="text-[10px] text-secondary">Auto-generate actionable sprint tasks, hour estimates & priorities</p>
                         </div>
                       </div>
@@ -1927,7 +1935,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                     </div>
 
                     {aiTasks.length > 0 && (
-                      <div className="space-y-2 pt-2 border-t border-white/10">
+                      <div className="space-y-2 pt-2 border-t border-black/10 dark:border-white/10">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-mono text-secondary uppercase tracking-wider font-bold">
                             {aiTasks.length} Actionable Subtasks
@@ -1941,7 +1949,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                                 setFormData({ ...formData, description: `${prevDesc}Sprint Tasks:\n${taskText}` });
                                 toast.success('Tasks added to project notes!');
                               }}
-                              className="text-[10px] font-heading font-bold text-emerald-400 hover:underline flex items-center gap-1"
+                              className="text-[10px] font-heading font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
                             >
                               + Apply to Notes
                             </button>
@@ -1952,7 +1960,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                                 navigator.clipboard.writeText(taskText);
                                 toast.success('Sprint tasks copied to clipboard!');
                               }}
-                              className="text-[10px] font-heading font-bold text-[#00E5FF] hover:underline flex items-center gap-1"
+                              className="text-[10px] font-heading font-bold text-[#6324FC] dark:text-[#00E5FF] hover:underline flex items-center gap-1"
                             >
                               <Copy size={11} /> Copy All
                             </button>
@@ -1961,21 +1969,21 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
 
                         <div className="space-y-1.5 max-h-44 overflow-y-auto custom-scrollbar pr-1">
                           {aiTasks.map((task, idx) => (
-                            <div key={idx} className="p-2.5 rounded-xl bg-[#060608] border border-white/5 hover:border-white/15 flex items-center justify-between text-xs transition-colors">
+                            <div key={idx} className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#060608] border border-black/5 dark:border-white/5 hover:border-black/15 dark:hover:border-white/15 flex items-center justify-between text-xs transition-colors">
                               <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                <CheckSquare size={13} className="text-[#00E5FF] shrink-0" />
-                                <span className="text-white font-medium truncate text-xs">{task.title}</span>
+                                <CheckSquare size={13} className="text-[#6324FC] dark:text-[#00E5FF] shrink-0" />
+                                <span className="text-slate-900 dark:text-white font-medium truncate text-xs">{task.title}</span>
                               </div>
                               <div className="flex items-center gap-2 shrink-0 ml-2">
                                 <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded border ${
-                                  task.priority === 'High' ? 'bg-rose-500/10 text-rose-400 border-rose-500/30' :
-                                  task.priority === 'Medium' ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' :
-                                  'bg-white/5 text-secondary border-white/10'
+                                  task.priority === 'High' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30' :
+                                  task.priority === 'Medium' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30' :
+                                  'bg-slate-100 dark:bg-white/5 text-secondary border-black/10 dark:border-white/10'
                                 }`}>
                                   {task.priority || 'Medium'}
                                 </span>
                                 {task.estimatedHours && (
-                                  <span className="text-[10px] font-mono text-secondary bg-white/5 px-1.5 py-0.5 rounded">{task.estimatedHours}h</span>
+                                  <span className="text-[10px] font-mono text-secondary bg-slate-100 dark:bg-white/5 px-1.5 py-0.5 rounded">{task.estimatedHours}h</span>
                                 )}
                               </div>
                             </div>
@@ -1988,11 +1996,11 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                 </form>
 
                 {/* Modal Footer */}
-                <div className="p-4 md:px-6 md:py-4 border-t border-white/10 bg-white/[0.02] flex items-center justify-end gap-3 shrink-0">
+                <div className="p-4 md:px-6 md:py-4 border-t border-black/10 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] flex items-center justify-end gap-3 shrink-0">
                   <button
                     type="button"
                     onClick={() => { setIsAddOpen(false); setSelectedProject(null); }}
-                    className="px-4 py-2.5 rounded-xl text-xs font-heading font-bold text-secondary hover:text-white transition-colors"
+                    className="px-4 py-2.5 rounded-xl text-xs font-heading font-bold text-secondary hover:text-slate-900 dark:hover:text-white transition-colors"
                   >
                     Cancel
                   </button>

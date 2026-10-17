@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { 
-  LayoutDashboard, Users, Briefcase, DollarSign, Settings, X, Wallet, Map, Clock, Globe, Sparkles, CheckSquare 
+  LayoutDashboard, Users, Briefcase, DollarSign, Settings, X, Wallet, Map, Clock, Globe, Sparkles, CheckSquare, Flame, ChevronDown, Users2, Mail, CalendarDays 
 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import { useSidebar } from './SidebarContext';
@@ -14,6 +14,23 @@ import { useUser } from './UserContext';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, category: 'Overview' },
+  {
+    name: 'Lead Gen Engine',
+    href: '/lead-gen',
+    icon: Flame,
+    category: 'Operations',
+    subItems: [
+      { name: 'Dashboard', href: '/lead-gen/dashboard', icon: LayoutDashboard },
+      { name: 'Prospects', href: '/lead-gen/prospects', icon: Users2 },
+      { name: 'Daily Outreach', href: '/lead-gen/daily-outreach', icon: Mail },
+      { name: 'Clients & MRR', href: '/lead-gen/clients', icon: Briefcase },
+      { name: 'Time Tracking', href: '/lead-gen/time-tracking', icon: Clock },
+      { name: 'Team Tasks', href: '/lead-gen/team-tasks', icon: CheckSquare },
+      { name: 'Delivery SOPs', href: '/lead-gen/delivery-sops', icon: CalendarDays },
+      { name: 'Financials & PnL', href: '/lead-gen/financials', icon: DollarSign },
+      { name: 'Settings & Guide', href: '/lead-gen/settings', icon: Settings },
+    ],
+  },
   { name: 'Marketplace', href: '/marketplace', icon: Globe, category: 'Marketplace' },
   { name: 'Clients', href: '/marketplace/clients', icon: Users, category: 'Marketplace' },
   { name: 'Projects', href: '/projects', icon: Briefcase, category: 'Operations' },
@@ -31,6 +48,7 @@ export default function Sidebar() {
   const { sidebarLayout, mounted } = useAppearance();
   const { user, loading } = useUser();
   const isCollapsed = mounted && sidebarLayout === 'collapsed';
+  const isDock = mounted && sidebarLayout === 'dock';
 
   const filteredNavItems = navItems.filter((item) => {
     if (!user) return false;
@@ -42,12 +60,12 @@ export default function Sidebar() {
     }
     
     if (user.role === 'editor') {
-      const allowed = ['/dashboard', '/marketplace', '/marketplace/clients', '/projects', '/tasks', '/roadmap', '/timesheets', '/team-logs'];
+      const allowed = ['/dashboard', '/lead-gen', '/marketplace', '/marketplace/clients', '/projects', '/tasks', '/roadmap', '/timesheets', '/team-logs'];
       return allowed.includes(item.href);
     }
 
     if (user.role === 'marketplace_team') {
-      const allowed = ['/dashboard', '/marketplace', '/marketplace/clients', '/tasks', '/team-logs'];
+      const allowed = ['/dashboard', '/lead-gen', '/marketplace', '/marketplace/clients', '/tasks', '/team-logs'];
       return allowed.includes(item.href);
     }
     
@@ -72,7 +90,7 @@ export default function Sidebar() {
         />
       )}
       
-      <aside className={`${isCollapsed ? 'w-[80px]' : 'w-[260px]'} fixed top-0 bottom-0 left-0 z-50 bg-[#fafafc]/95 dark:bg-[#07080b]/95 backdrop-blur-2xl border-r border-black/5 dark:border-white/5 flex flex-col transition-all duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-[120%] lg:translate-x-0'}`}>
+      <aside className={`${isCollapsed ? 'w-[80px]' : 'w-[260px]'} ${isDock ? 'lg:hidden' : ''} fixed top-0 bottom-0 left-0 z-50 bg-[#fafafc]/95 dark:bg-[#07080b]/95 backdrop-blur-2xl border-r border-black/5 dark:border-white/5 flex flex-col transition-all duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-[120%] lg:translate-x-0'}`}>
         
         {/* Logo Section */}
         <div className={`h-[72px] flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-5'} border-b border-black/5 dark:border-white/5 relative`}>
@@ -91,6 +109,8 @@ export default function Sidebar() {
                     src="/assets/logo.webp" 
                     alt="INJAAZH" 
                     fill 
+                    sizes="112px"
+                    unoptimized
                     className="object-contain object-left dark:brightness-0 dark:invert transition-all duration-300" 
                     priority
                   />
@@ -165,36 +185,86 @@ export default function Sidebar() {
           : pathname.startsWith(item.href);
     
     const Icon = item.icon;
+    const hasSubItems = Boolean(item.subItems && item.subItems.length > 0);
+    const isSubMenuOpen = hasSubItems && !isCollapsed && pathname.startsWith(item.href);
+
     return (
-      <Link
-        key={item.name}
-        href={item.href}
-        title={isCollapsed ? item.name : undefined}
-        onClick={() => setIsMobileSidebarOpen(false)}
-        className={`group relative flex items-center ${isCollapsed ? 'justify-center w-11 h-11 mx-auto' : 'gap-3 px-3 py-2.5'} rounded-xl text-xs font-heading transition-all duration-200 ${
-          isActive 
-            ? 'bg-gradient-to-r from-[#6324FC]/20 via-[#6324FC]/10 to-transparent text-black dark:text-white font-bold border border-[#6324FC]/35 shadow-[0_0_20px_rgba(99,36,252,0.15)]' 
-            : 'text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/[0.04] border border-transparent hover:border-black/5 dark:hover:border-white/5 font-medium'
-        }`}
-      >
-        {/* Active Indicator Glowing Neon Bar */}
-        {isActive && (
-          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-gradient-to-b from-[#6324FC] to-[#00E5FF] rounded-r shadow-[0_0_12px_#6324FC]" />
+      <div key={item.name} className="space-y-0.5">
+        <Link
+          href={item.href}
+          prefetch={false}
+          title={isCollapsed ? item.name : undefined}
+          onClick={() => setIsMobileSidebarOpen(false)}
+          className={`group relative flex items-center justify-between ${isCollapsed ? 'justify-center w-11 h-11 mx-auto' : 'gap-3 px-3 py-2.5'} rounded-xl text-xs font-heading transition-all duration-200 ${
+            isActive 
+              ? 'bg-gradient-to-r from-[#6324FC]/20 via-[#6324FC]/10 to-transparent text-black dark:text-white font-bold border border-[#6324FC]/35 shadow-[0_0_20px_rgba(99,36,252,0.15)]' 
+              : 'text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/[0.04] border border-transparent hover:border-black/5 dark:hover:border-white/5 font-medium'
+          }`}
+        >
+          {/* Active Indicator Glowing Neon Bar */}
+          {isActive && (
+            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-gradient-to-b from-[#6324FC] to-[#00E5FF] rounded-r shadow-[0_0_12px_#6324FC]" />
+          )}
+          
+          <div className="flex items-center gap-3 min-w-0">
+            <Icon 
+              size={isCollapsed ? 20 : 17} 
+              className={`shrink-0 transition-transform duration-200 group-hover:scale-110 ${
+                isActive ? 'text-[#6324FC] dark:text-[#00E5FF]' : 'text-slate-500 group-hover:text-black dark:group-hover:text-white'
+              }`} 
+            />
+            
+            {!isCollapsed && (
+              <span className="truncate tracking-wide text-xs">
+                {item.name}
+              </span>
+            )}
+          </div>
+
+          {!isCollapsed && hasSubItems && (
+            <ChevronDown
+              size={13}
+              className={`transition-transform duration-200 text-slate-400 ${
+                isSubMenuOpen ? 'rotate-180 text-[#6324FC] dark:text-[#00E5FF]' : ''
+              }`}
+            />
+          )}
+        </Link>
+
+        {/* Sub-Items List */}
+        {isSubMenuOpen && (
+          <div className="ml-5 pl-2.5 border-l border-black/10 dark:border-white/10 space-y-0.5 py-1">
+            {item.subItems.map((sub: any) => {
+              const isSubActive =
+                sub.href === '/lead-gen/dashboard'
+                  ? pathname === '/lead-gen' || pathname === '/lead-gen/dashboard'
+                  : pathname.startsWith(sub.href);
+              const SubIcon = sub.icon;
+              return (
+                <Link
+                  key={sub.name}
+                  href={sub.href}
+                  prefetch={false}
+                  onClick={() => setIsMobileSidebarOpen(false)}
+                  className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
+                    isSubActive
+                      ? 'text-[#6324FC] dark:text-[#00E5FF] font-bold bg-[#6324FC]/10 shadow-sm'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
+                  }`}
+                >
+                  {SubIcon && (
+                    <SubIcon
+                      size={13}
+                      className={isSubActive ? 'text-[#6324FC] dark:text-[#00E5FF]' : 'text-slate-400'}
+                    />
+                  )}
+                  <span className="truncate">{sub.name}</span>
+                </Link>
+              );
+            })}
+          </div>
         )}
-        
-        <Icon 
-          size={isCollapsed ? 20 : 17} 
-          className={`shrink-0 transition-transform duration-200 group-hover:scale-110 ${
-            isActive ? 'text-[#6324FC] dark:text-[#00E5FF]' : 'text-slate-500 group-hover:text-black dark:group-hover:text-white'
-          }`} 
-        />
-        
-        {!isCollapsed && (
-          <span className="truncate tracking-wide text-xs">
-            {item.name}
-          </span>
-        )}
-      </Link>
+      </div>
     );
   }
 }

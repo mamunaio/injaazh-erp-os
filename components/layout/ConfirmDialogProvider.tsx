@@ -10,6 +10,7 @@ interface ConfirmOptions {
   confirmText?: string;
   cancelText?: string;
   danger?: boolean;
+  variant?: 'danger' | 'info' | 'primary';
 }
 
 interface ConfirmDialogContextType {
@@ -69,8 +70,8 @@ export const ConfirmDialogProvider: React.FC<{ children: React.ReactNode }> = ({
               className="relative w-full max-w-md neu-flat rounded-3xl p-6 sm:p-8 flex flex-col gap-6"
             >
               <div className="flex gap-4">
-                <div className={`shrink-0 w-12 h-12 rounded-2xl neu-pressed flex items-center justify-center ${options.danger ? 'text-rose-500' : 'text-indigo-500'}`}>
-                  {options.danger ? <AlertTriangle size={24} /> : <Info size={24} />}
+                <div className={`shrink-0 w-12 h-12 rounded-2xl neu-pressed flex items-center justify-center ${(options.danger || options.variant === 'danger') ? 'text-rose-500' : 'text-indigo-500'}`}>
+                  {(options.danger || options.variant === 'danger') ? <AlertTriangle size={24} /> : <Info size={24} />}
                 </div>
                 <div className="flex-1 pt-1">
                   <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight mb-2">
@@ -92,7 +93,7 @@ export const ConfirmDialogProvider: React.FC<{ children: React.ReactNode }> = ({
                 <button
                   onClick={handleConfirm}
                   className={`px-5 py-2.5 neu-button font-bold rounded-xl transition-all flex items-center gap-2 ${
-                    options.danger 
+                    (options.danger || options.variant === 'danger') 
                       ? 'text-rose-500 hover:text-rose-600' 
                       : 'text-indigo-500 hover:text-indigo-600'
                   }`}

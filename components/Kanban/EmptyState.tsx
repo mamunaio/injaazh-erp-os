@@ -15,13 +15,13 @@ export default function EmptyState({ status }: EmptyStateProps) {
   return (
     <div
       onClick={() => addProject(status)}
-      className="min-h-[150px] w-full neu-flat opacity-50 flex flex-col items-center justify-center cursor-pointer hover:opacity-100 transition-all duration-300 group"
+      className="min-h-[140px] w-full rounded-2xl border-2 border-dashed border-black/10 dark:border-white/10 hover:border-[#6324FC]/50 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group bg-black/[0.01] dark:bg-white/[0.01] hover:bg-black/[0.02] dark:hover:bg-white/[0.02]"
     >
-      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-100 to-violet-100 dark:from-purple-500/20 dark:to-violet-500/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
-        <Plus size={24} className="text-purple-600 dark:text-purple-400" />
+      <div className="w-9 h-9 rounded-xl bg-[#6324FC]/10 dark:bg-[#6324FC]/20 text-[#6324FC] dark:text-[#00E5FF] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+        <Plus size={16} />
       </div>
-      <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">No projects</p>
-      <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Drag here to add</p>
+      <p className="text-xs font-heading font-bold text-slate-700 dark:text-slate-300">No projects</p>
+      <p className="text-[10px] text-secondary mt-0.5">Click or drag here</p>
     </div>
   );
 }

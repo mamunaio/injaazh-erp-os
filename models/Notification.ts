@@ -4,6 +4,7 @@ export interface INotification extends Document {
   type: 'payment' | 'lead' | 'system' | 'proposal';
   message: string;
   isRead: boolean;
+  link?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,6 +23,10 @@ const NotificationSchema = new Schema(
     isRead: { 
       type: Boolean, 
       default: false 
+    },
+    link: {
+      type: String,
+      default: ''
     },
   },
   { timestamps: true }

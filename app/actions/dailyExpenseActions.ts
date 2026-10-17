@@ -4,6 +4,7 @@ import connectToDatabase from '@/lib/mongodb';
 import { DailyExpense } from '@/models/DailyExpense';
 import { revalidatePath } from 'next/cache';
 import { createNotification } from './notificationActions';
+import { requireWriteAuth } from '@/lib/auth';
 
 export async function getDailyExpenses() {
   try {
@@ -18,6 +19,7 @@ export async function getDailyExpenses() {
 
 export async function createDailyExpense(data: any) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     
     const expense = await DailyExpense.create(data);
@@ -25,7 +27,8 @@ export async function createDailyExpense(data: any) {
     // Create automated notification
     await createNotification(
       'system',
-      `A new expense of $${data.amount} has been added under ${data.category}.`
+      `A new expense of $${data.amount} has been added under ${data.category}.`,
+      '/daily-expenses'
     );
 
     revalidatePath('/daily-expenses');
@@ -38,6 +41,7 @@ export async function createDailyExpense(data: any) {
 
 export async function updateDailyExpense(id: string, data: any) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     
     const expense = await DailyExpense.findByIdAndUpdate(id, data, { new: true });
@@ -55,6 +59,7 @@ export async function updateDailyExpense(id: string, data: any) {
 
 export async function deleteDailyExpense(id: string) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     
     const expense = await DailyExpense.findByIdAndDelete(id);

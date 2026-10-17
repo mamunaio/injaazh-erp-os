@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Calendar, Clock } from 'lucide-react';
@@ -13,14 +13,14 @@ interface CardProps {
 }
 
 const TAG_COLORS: Record<string, string> = {
-  'LARAVEL': 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+  'LARAVEL': 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',
   'NEXT.JS': 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20',
-  'WORDPRESS': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  'SEO': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  'UI/UX': 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20',
-  'REACT': 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
-  'NODE.JS': 'bg-green-500/10 text-green-400 border-green-500/20',
-  'PYTHON': 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+  'WORDPRESS': 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+  'SEO': 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+  'UI/UX': 'bg-[#6324FC]/10 text-[#6324FC] dark:text-[#00E5FF] border-[#6324FC]/20',
+  'REACT': 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
+  'NODE.JS': 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
+  'PYTHON': 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20',
 };
 
 export default function Card({ card, onClick }: CardProps) {
@@ -58,7 +58,6 @@ export default function Card({ card, onClick }: CardProps) {
   const dueInfo = formatDueDate(card.dueDate);
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Only trigger onClick if not dragging
     if (onClick && !isDragging) {
       onClick();
     }
@@ -72,16 +71,16 @@ export default function Card({ card, onClick }: CardProps) {
       {...listeners}
       onClick={handleCardClick}
       suppressHydrationWarning
-      className="group bg-white dark:bg-[#11131A] border border-slate-200 dark:border-[#232734] hover:border-indigo-500/50 rounded-2xl p-4 hover:-translate-y-1 transition-all duration-300 cursor-pointer shadow-sm"
+      className="group bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 hover:border-[#6324FC]/50 rounded-2xl p-4 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-[0_0_20px_rgba(99,36,252,0.1)]"
     >
       {/* Tech Tags */}
-      {card.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-3">
+      {card.tags && card.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-2.5">
           {card.tags.map((tag, idx) => (
             <span
               key={idx}
-              className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
-                TAG_COLORS[tag.toUpperCase()] || 'bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-700'
+              className={`text-[9px] font-heading font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${
+                TAG_COLORS[tag.toUpperCase()] || 'bg-slate-100 dark:bg-white/5 text-secondary border-black/5 dark:border-white/5'
               }`}
             >
               {tag}
@@ -91,20 +90,20 @@ export default function Card({ card, onClick }: CardProps) {
       )}
 
       {/* Project Title */}
-      <h3 className="text-sm font-bold text-slate-900 dark:text-white my-3 line-clamp-2 leading-snug group-hover:text-indigo-400 transition-colors">
+      <h3 className="text-xs font-heading font-bold text-slate-900 dark:text-white my-2 line-clamp-2 leading-snug group-hover:text-[#6324FC] dark:group-hover:text-[#00E5FF] transition-colors">
         {card.title}
       </h3>
 
       {/* Progress Section */}
       {card.progress > 0 && (
-        <div className="mb-4">
-          <div className="flex justify-between items-center mb-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Progress</span>
-            <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">{card.progress}%</span>
+        <div className="mb-3">
+          <div className="flex justify-between items-center mb-1">
+            <span className="text-[9px] font-heading font-bold uppercase tracking-widest text-secondary">Progress</span>
+            <span className="text-[10px] font-mono font-bold text-slate-800 dark:text-slate-200">{card.progress}%</span>
           </div>
-          <div className="h-1.5 w-full bg-slate-50 dark:bg-[#09090B] border border-slate-200 dark:border-[#232734] rounded-full overflow-hidden">
+          <div className="h-1.5 w-full bg-slate-100 dark:bg-[#060608] border border-black/5 dark:border-white/5 rounded-full overflow-hidden">
             <div
-              className="h-full bg-indigo-500 rounded-full transition-all duration-500"
+              className="h-full bg-gradient-to-r from-[#6324FC] to-[#00E5FF] rounded-full transition-all duration-500"
               style={{ width: `${card.progress}%` }}
             />
           </div>
@@ -112,32 +111,32 @@ export default function Card({ card, onClick }: CardProps) {
       )}
 
       {/* Footer */}
-      <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-200 dark:border-[#232734]">
+      <div className="flex justify-between items-center mt-3 pt-3 border-t border-black/5 dark:border-white/5">
         {/* Due Date */}
-        <div className={`flex items-center gap-1.5 text-xs font-bold ${
+        <div className={`flex items-center gap-1.5 text-xs font-mono font-semibold ${
           dueInfo.isUrgent
-            ? 'text-rose-400'
-            : 'text-slate-500'
+            ? 'text-rose-500 dark:text-rose-400'
+            : 'text-secondary'
         }`}>
-          {dueInfo.isUrgent ? <Clock size={14} /> : <Calendar size={14} />}
-          {dueInfo.text}
+          {dueInfo.isUrgent ? <Clock size={13} /> : <Calendar size={13} />}
+          <span>{dueInfo.text}</span>
         </div>
 
         {/* Assignees */}
-        {card.assignees.length > 0 && (
+        {card.assignees && card.assignees.length > 0 && (
           <div className="flex -space-x-2">
             {card.assignees.slice(0, 3).map((assignee, idx) => (
               <div
                 key={idx}
-                className="w-7 h-7 rounded-full border-2 border-[#11131A] bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-slate-900 dark:text-white text-[10px] font-bold shadow-sm overflow-hidden"
+                className="w-6 h-6 rounded-full border-2 border-white dark:border-[#0a0a0d] bg-gradient-to-br from-[#6324FC] to-[#00E5FF] flex items-center justify-center text-white text-[9px] font-bold shadow-xs overflow-hidden"
                 title={assignee.name}
               >
                 {assignee.avatarUrl ? (
                   <Image
                     src={assignee.avatarUrl}
                     alt={assignee.name}
-                    width={28}
-                    height={28}
+                    width={24}
+                    height={24}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -146,7 +145,7 @@ export default function Card({ card, onClick }: CardProps) {
               </div>
             ))}
             {card.assignees.length > 3 && (
-              <div className="w-7 h-7 rounded-full border-2 border-[#11131A] bg-slate-200 dark:bg-[#232734] flex items-center justify-center text-slate-500 dark:text-slate-400 text-[10px] font-bold shadow-sm">
+              <div className="w-6 h-6 rounded-full border-2 border-white dark:border-[#0a0a0d] bg-slate-200 dark:bg-white/10 flex items-center justify-center text-secondary text-[9px] font-bold shadow-xs">
                 +{card.assignees.length - 3}
               </div>
             )}

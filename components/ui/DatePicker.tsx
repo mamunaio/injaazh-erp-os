@@ -226,8 +226,8 @@ export default function DatePicker({
             isSelected 
               ? 'bg-[#6324FC] text-white shadow-[0_0_12px_rgba(99,36,252,0.8)] font-bold scale-105 z-10' 
               : isToday
-                ? 'border border-[#00E5FF]/60 text-[#00E5FF] font-bold hover:bg-[#00E5FF]/15'
-                : 'text-white/80 hover:bg-white/10 hover:text-white'
+                ? 'border border-sky-500/50 dark:border-[#00E5FF]/60 text-sky-600 dark:text-[#00E5FF] font-bold hover:bg-sky-500/10 dark:hover:bg-[#00E5FF]/15'
+                : 'text-slate-700 dark:text-white/80 hover:bg-black/5 dark:hover:bg-white/10 hover:text-black dark:hover:text-white'
           }`}
         >
           {i}

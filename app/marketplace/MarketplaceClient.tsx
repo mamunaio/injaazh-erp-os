@@ -214,7 +214,7 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
   ];
 
   return (
-    <div className="min-h-screen bg-[#060608] text-white p-4 md:p-8 pt-6 pb-24 font-sans selection:bg-[#6324FC] selection:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#060608] text-slate-900 dark:text-white p-4 md:p-8 pt-6 pb-24 font-sans selection:bg-[#6324FC] selection:text-white">
       <Toaster position="top-right" />
 
       {/* Ambient background glows */}
@@ -231,19 +231,19 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
         <motion.div 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5 pb-4 border-b border-white/10"
+          className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5 pb-4 border-b border-black/10 dark:border-white/10"
         >
           <div>
             <div className="flex flex-wrap items-center gap-2.5 mb-2">
-              <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-[#6324FC]/10 border border-[#6324FC]/25 text-[#00E5FF] text-[10px] font-heading font-bold tracking-widest uppercase">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-pulse shadow-[0_0_8px_#00E5FF]" />
+              <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-[#6324FC]/10 border border-[#6324FC]/25 text-[#6324FC] dark:text-[#00E5FF] text-[10px] font-heading font-bold tracking-widest uppercase">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#6324FC] dark:bg-[#00E5FF] animate-pulse shadow-[0_0_8px_#6324FC]" />
                 GLOBAL MARKETPLACE DIRECTORY // CLIENT CHANNELS
               </div>
               <span className="text-xs text-secondary font-sans">
                 {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-extrabold tracking-tight text-white flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
               Marketplace Ecosystem
             </h1>
             <p className="text-xs md:text-sm text-secondary font-sans mt-0.5">
@@ -256,9 +256,9 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
             {/* Manage Clients Link */}
             <Link
               href="/marketplace/clients"
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0a0a0d] border border-white/10 hover:border-[#6324FC]/50 text-white text-xs font-heading font-bold transition-all group hover:shadow-[0_0_15px_rgba(99,36,252,0.25)]"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 hover:border-[#6324FC]/50 text-slate-900 dark:text-white text-xs font-heading font-bold transition-all group shadow-sm hover:shadow-[0_0_15px_rgba(99,36,252,0.25)]"
             >
-              <Users size={15} className="text-[#00E5FF] group-hover:scale-110 transition-transform" />
+              <Users size={15} className="text-[#6324FC] dark:text-[#00E5FF] group-hover:scale-110 transition-transform" />
               <span>Manage Clients</span>
             </Link>
 
@@ -274,8 +274,8 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
               <span className="absolute -inset-[180%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0deg,transparent_60deg,#6324FC_130deg,#00E5FF_180deg,#6324FC_230deg,transparent_300deg)] blur-[4px] opacity-75" />
               <span className="absolute -inset-[180%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0deg,transparent_60deg,#6324FC_130deg,#00E5FF_180deg,#6324FC_230deg,transparent_300deg)] opacity-100" />
               
-              <div className="relative z-10 px-4 py-2.5 rounded-[10px] bg-[#0a0a0d] group-hover:bg-[#121218] text-white font-heading font-bold text-xs flex items-center gap-2 transition-colors">
-                <Plus size={15} className="text-[#00E5FF] group-hover:rotate-90 transition-transform duration-300" />
+              <div className="relative z-10 px-4 py-2.5 rounded-[10px] bg-white dark:bg-[#0a0a0d] group-hover:bg-slate-50 dark:group-hover:bg-[#121218] text-slate-900 dark:text-white font-heading font-bold text-xs flex items-center gap-2 transition-colors">
+                <Plus size={15} className="text-[#6324FC] dark:text-[#00E5FF] group-hover:rotate-90 transition-transform duration-300" />
                 <span className="tracking-wide">+ Log Deliverable</span>
               </div>
             </button>
@@ -294,104 +294,104 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
           {/* Card 1: Total Realized Revenue */}
           <motion.div 
             variants={itemVariants} 
-            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#10B981]/60 hover:shadow-[0_12px_30px_rgba(16,185,129,0.25)] bg-[#0a0a0d]"
+            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#10B981]/60 hover:shadow-[0_12px_30px_rgba(16,185,129,0.25)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-sm"
           >
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#10B981]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#10B981]/25 blur-[35px] rounded-full opacity-20 dark:opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#10B981] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#10B981]" />
-            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/[0.02] dark:from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
             <div className="flex justify-between items-start mb-3 relative z-10">
               <div className="w-9 h-9 rounded-xl bg-[#10B981]/15 border border-[#10B981]/30 flex items-center justify-center text-[#10B981] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(16,185,129,0.6)] group-hover:border-[#10B981] transition-all duration-300">
                 <DollarSign size={17} />
               </div>
-              <span className="text-[10px] font-heading font-bold text-emerald-400 flex items-center gap-0.5 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 group-hover:border-emerald-500/40 transition-colors">
+              <span className="text-[10px] font-heading font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 group-hover:border-emerald-500/40 transition-colors">
                 <Flame size={11} /> Realized Inflow
               </span>
             </div>
             <div className="relative z-10">
               <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">Total Marketplace Revenue</p>
-              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-white font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#00E5FF] transition-all">
+              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 transition-all">
                 ${platformStats.overall.totalEarned.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </p>
-              <p className="text-[10px] font-sans text-secondary/70 mt-1 truncate">Paid milestones & completed project inflows</p>
+              <p className="text-[10px] font-sans text-secondary mt-1 truncate">Paid milestones & completed project inflows</p>
             </div>
           </motion.div>
 
           {/* Card 2: Active In-Flight Deliverables */}
           <motion.div 
             variants={itemVariants} 
-            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#00E5FF]/60 hover:shadow-[0_12px_30px_rgba(0,229,255,0.25)] bg-[#0a0a0d]"
+            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#00E5FF]/60 hover:shadow-[0_12px_30px_rgba(0,229,255,0.25)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-sm"
           >
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#00E5FF]/20 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#00E5FF]/20 blur-[35px] rounded-full opacity-20 dark:opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#00E5FF] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#00E5FF]" />
-            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/[0.02] dark:from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
             <div className="flex justify-between items-start mb-3 relative z-10">
-              <div className="w-9 h-9 rounded-xl bg-[#00E5FF]/15 border border-[#00E5FF]/30 flex items-center justify-center text-[#00E5FF] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(0,229,255,0.6)] group-hover:border-[#00E5FF] transition-all duration-300">
+              <div className="w-9 h-9 rounded-xl bg-cyan-500/15 dark:bg-[#00E5FF]/15 border border-cyan-500/30 dark:border-[#00E5FF]/30 flex items-center justify-center text-cyan-600 dark:text-[#00E5FF] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(0,229,255,0.6)] group-hover:border-[#00E5FF] transition-all duration-300">
                 <Clock size={17} />
               </div>
-              <span className="text-[10px] font-heading font-bold text-[#00E5FF] bg-[#00E5FF]/10 px-2 py-0.5 rounded-md border border-[#00E5FF]/20 group-hover:border-[#00E5FF]/40 transition-colors">
+              <span className="text-[10px] font-heading font-bold text-cyan-700 dark:text-[#00E5FF] bg-cyan-500/10 px-2 py-0.5 rounded-md border border-cyan-500/20 group-hover:border-cyan-500/40 transition-colors">
                 In Production
               </span>
             </div>
             <div className="relative z-10">
               <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">Active Operations</p>
-              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-white font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#00E5FF] transition-all">
+              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 transition-all">
                 {platformStats.overall.totalActive}
               </p>
-              <p className="text-[10px] font-sans text-secondary/70 mt-1 truncate">In-Progress & In-Review deliverables</p>
+              <p className="text-[10px] font-sans text-secondary mt-1 truncate">In-Progress & In-Review deliverables</p>
             </div>
           </motion.div>
 
           {/* Card 3: Pipeline Value in Delivery */}
           <motion.div 
             variants={itemVariants} 
-            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#6324FC]/60 hover:shadow-[0_12px_30px_rgba(99,36,252,0.25)] bg-[#0a0a0d]"
+            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#6324FC]/60 hover:shadow-[0_12px_30px_rgba(99,36,252,0.25)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-sm"
           >
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#6324FC]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#6324FC]/25 blur-[35px] rounded-full opacity-20 dark:opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#6324FC] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#6324FC]" />
-            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/[0.02] dark:from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
             <div className="flex justify-between items-start mb-3 relative z-10">
-              <div className="w-9 h-9 rounded-xl bg-[#6324FC]/15 border border-[#6324FC]/30 flex items-center justify-center text-[#6324FC] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(99,36,252,0.6)] group-hover:border-[#6324FC] transition-all duration-300">
+              <div className="w-9 h-9 rounded-xl bg-purple-500/15 dark:bg-[#6324FC]/15 border border-purple-500/30 dark:border-[#6324FC]/30 flex items-center justify-center text-[#6324FC] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(99,36,252,0.6)] group-hover:border-[#6324FC] transition-all duration-300">
                 <Briefcase size={17} />
               </div>
-              <span className="text-[10px] font-heading font-bold text-purple-300 bg-[#6324FC]/15 px-2 py-0.5 rounded-md border border-[#6324FC]/30 group-hover:border-[#6324FC]/50 transition-colors">
+              <span className="text-[10px] font-heading font-bold text-purple-700 dark:text-purple-300 bg-[#6324FC]/10 dark:bg-[#6324FC]/15 px-2 py-0.5 rounded-md border border-purple-500/30 dark:border-[#6324FC]/30 group-hover:border-[#6324FC]/50 transition-colors">
                 Pending Release
               </span>
             </div>
             <div className="relative z-10">
               <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">Outstanding Pipeline</p>
-              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-white font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#00E5FF] transition-all">
+              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 transition-all">
                 ${platformStats.overall.totalPipeline.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </p>
-              <p className="text-[10px] font-sans text-secondary/70 mt-1 truncate">Unreleased milestone and project budget value</p>
+              <p className="text-[10px] font-sans text-secondary mt-1 truncate">Unreleased milestone and project budget value</p>
             </div>
           </motion.div>
 
           {/* Card 4: Delivered Lifetime Projects */}
           <motion.div 
             variants={itemVariants} 
-            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#F59E0B]/60 hover:shadow-[0_12px_30px_rgba(245,158,11,0.25)] bg-[#0a0a0d]"
+            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#F59E0B]/60 hover:shadow-[0_12px_30px_rgba(245,158,11,0.25)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-sm"
           >
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#F59E0B]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#F59E0B]/25 blur-[35px] rounded-full opacity-20 dark:opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#F59E0B] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#F59E0B]" />
-            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/[0.02] dark:from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
             <div className="flex justify-between items-start mb-3 relative z-10">
-              <div className="w-9 h-9 rounded-xl bg-[#F59E0B]/15 border border-[#F59E0B]/30 flex items-center justify-center text-[#F59E0B] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(245,158,11,0.6)] group-hover:border-[#F59E0B] transition-all duration-300">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-[#F59E0B]/30 flex items-center justify-center text-amber-600 dark:text-[#F59E0B] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(245,158,11,0.6)] group-hover:border-[#F59E0B] transition-all duration-300">
                 <CheckCircle2 size={17} />
               </div>
-              <span className="text-[10px] font-heading font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 group-hover:border-amber-500/40 transition-colors">
+              <span className="text-[10px] font-heading font-bold text-amber-700 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 group-hover:border-amber-500/40 transition-colors">
                 100% Fulfilled
               </span>
             </div>
             <div className="relative z-10">
               <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">Completed Deliverables</p>
-              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-white font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#00E5FF] transition-all">
+              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 transition-all">
                 {platformStats.overall.totalCompleted}
               </p>
-              <p className="text-[10px] font-sans text-secondary/70 mt-1 truncate">Total projects delivered across channels</p>
+              <p className="text-[10px] font-sans text-secondary mt-1 truncate">Total projects delivered across channels</p>
             </div>
           </motion.div>
         </motion.div>
@@ -430,11 +430,11 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
                 >
                   <motion.div
                     variants={itemVariants}
-                    className={`glass-card rounded-3xl p-6 md:p-7 flex flex-col justify-between min-h-[420px] relative overflow-hidden transition-all duration-300 hover:-translate-y-2 bg-[#0a0a0d] border border-white/10 ${channel.borderColor} hover:shadow-[0_16px_40px_${channel.glowColor}]`}
+                    className={`glass-card rounded-3xl p-6 md:p-7 flex flex-col justify-between min-h-[420px] relative overflow-hidden transition-all duration-300 hover:-translate-y-2 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 ${channel.borderColor} hover:shadow-[0_16px_40px_${channel.glowColor}] shadow-sm`}
                   >
                     {/* Channel Ambient Flare */}
                     <div 
-                      className="absolute -top-16 -right-16 w-44 h-44 blur-[50px] rounded-full opacity-30 group-hover:opacity-90 group-hover:scale-150 transition-all duration-500 pointer-events-none"
+                      className="absolute -top-16 -right-16 w-44 h-44 blur-[50px] rounded-full opacity-15 dark:opacity-30 group-hover:opacity-90 group-hover:scale-150 transition-all duration-500 pointer-events-none"
                       style={{ backgroundColor: channel.color }}
                     />
                     {/* Top Accent Neon Line */}
@@ -449,10 +449,10 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
                     {/* Top Header & Icon Box */}
                     <div className="relative z-10 flex items-start justify-between mb-6">
                       <div 
-                        className="w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-lg"
+                        className="w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-sm border"
                         style={{
                           backgroundColor: `${channel.color}15`,
-                          border: `1px solid ${channel.color}35`,
+                          borderColor: `${channel.color}35`,
                           color: channel.color,
                           boxShadow: `0 0 20px ${channel.color}20`
                         }}
@@ -464,7 +464,7 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
                         <span className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-full border ${channel.badgeClass}`}>
                           {channel.stats.inProgress} Active
                         </span>
-                        <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-secondary group-hover:text-white group-hover:bg-white/10 transition-colors">
+                        <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/5 border border-black/5 dark:border-white/10 flex items-center justify-center text-secondary group-hover:text-slate-900 dark:group-hover:text-white group-hover:bg-slate-200/50 dark:group-hover:bg-white/10 transition-colors">
                           <ArrowRight size={14} className="group-hover:-rotate-45 transition-transform duration-300" />
                         </div>
                       </div>
@@ -472,7 +472,7 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
 
                     {/* Title & Subtitle */}
                     <div className="relative z-10 mb-6">
-                      <h3 className="text-xl md:text-2xl font-heading font-extrabold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#00E5FF] transition-all">
+                      <h3 className="text-xl md:text-2xl font-heading font-extrabold text-slate-900 dark:text-white group-hover:text-[#6324FC] dark:group-hover:text-[#00E5FF] transition-all">
                         {channel.name}
                       </h3>
                       <p className="text-xs font-sans text-secondary mt-0.5">
@@ -483,8 +483,8 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
                     {/* Project Status Counter Grid */}
                     <div className="relative z-10 grid grid-cols-3 gap-2 mb-6">
                       {/* In Progress */}
-                      <div className="text-center p-2.5 rounded-xl bg-[#060608] border border-white/5">
-                        <div className="text-lg font-mono font-bold text-[#00E5FF]">
+                      <div className="text-center p-2.5 rounded-xl bg-slate-50 dark:bg-[#060608] border border-black/5 dark:border-white/5">
+                        <div className="text-lg font-mono font-bold text-[#6324FC] dark:text-[#00E5FF]">
                           {channel.stats.inProgress}
                         </div>
                         <div className="text-[9px] font-heading font-bold text-secondary uppercase tracking-wider mt-0.5">
@@ -493,8 +493,8 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
                       </div>
 
                       {/* Completed */}
-                      <div className="text-center p-2.5 rounded-xl bg-[#060608] border border-white/5">
-                        <div className="text-lg font-mono font-bold text-emerald-400">
+                      <div className="text-center p-2.5 rounded-xl bg-slate-50 dark:bg-[#060608] border border-black/5 dark:border-white/5">
+                        <div className="text-lg font-mono font-bold text-emerald-600 dark:text-emerald-400">
                           {channel.stats.completed}
                         </div>
                         <div className="text-[9px] font-heading font-bold text-secondary uppercase tracking-wider mt-0.5">
@@ -503,8 +503,8 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
                       </div>
 
                       {/* Pipeline Count */}
-                      <div className="text-center p-2.5 rounded-xl bg-[#060608] border border-white/5">
-                        <div className="text-lg font-mono font-bold text-amber-400">
+                      <div className="text-center p-2.5 rounded-xl bg-slate-50 dark:bg-[#060608] border border-black/5 dark:border-white/5">
+                        <div className="text-lg font-mono font-bold text-amber-600 dark:text-amber-400">
                           {channel.stats.inReview || channel.stats.cancelled}
                         </div>
                         <div className="text-[9px] font-heading font-bold text-secondary uppercase tracking-wider mt-0.5">
@@ -514,7 +514,7 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
                     </div>
 
                     {/* Financial Summary Box */}
-                    <div className="relative z-10 p-4 rounded-2xl bg-[#060608] border border-white/5 space-y-2.5 mt-auto">
+                    <div className="relative z-10 p-4 rounded-2xl bg-slate-50 dark:bg-[#060608] border border-black/5 dark:border-white/5 space-y-2.5 mt-auto">
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">
                           Realized Inflow
@@ -527,13 +527,13 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
                         </span>
                       </div>
 
-                      <div className="h-[1px] bg-white/5" />
+                      <div className="h-[1px] bg-black/5 dark:bg-white/5" />
 
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">
                           Pipeline Buffer
                         </span>
-                        <span className="font-mono font-bold text-white whitespace-nowrap">
+                        <span className="font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
                           ${channel.stats.pipeline.toLocaleString('en-US', { minimumFractionDigits: 0 })}
                         </span>
                       </div>
@@ -544,7 +544,7 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
                           <span>Delivery Ratio</span>
                           <span>{completionRatio}%</span>
                         </div>
-                        <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+                        <div className="w-full h-1 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
                           <div 
                             className="h-full rounded-full transition-all duration-500"
                             style={{ 
@@ -572,11 +572,11 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
           <div className="lg:col-span-2 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <h2 className="text-xs font-heading font-bold text-secondary uppercase tracking-widest flex items-center gap-2">
-                <Activity size={14} className="text-[#00E5FF]" /> Live Channel Deliverables
+                <Activity size={14} className="text-[#6324FC] dark:text-[#00E5FF]" /> Live Channel Deliverables
               </h2>
 
               {/* Platform Filter Pills */}
-              <div className="flex items-center gap-1 p-0.5 bg-[#0a0a0d] border border-white/10 rounded-xl overflow-x-auto custom-scrollbar">
+              <div className="flex items-center gap-1 p-0.5 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-xl overflow-x-auto custom-scrollbar">
                 {(['All', 'Freelancer', 'Direct', 'Upwork', 'Fiverr'] as const).map((ch) => (
                   <button
                     key={ch}
@@ -584,7 +584,7 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
                     className={`px-3 py-1 rounded-lg text-xs font-heading font-bold transition-all whitespace-nowrap ${
                       channelFilter === ch 
                         ? 'bg-[#6324FC] text-white shadow-[0_0_10px_rgba(99,36,252,0.4)]' 
-                        : 'text-secondary hover:text-white'
+                        : 'text-secondary hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     {ch}
@@ -601,7 +601,7 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search deliverables by project title, client name or platform..."
-                className="w-full bg-[#0a0a0d] border border-white/10 focus:border-[#6324FC] rounded-xl pl-9 pr-4 py-2.5 text-xs text-white placeholder:text-secondary outline-none transition-colors"
+                className="w-full bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl pl-9 pr-4 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-colors"
               />
             </div>
 
@@ -616,7 +616,7 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
                     <div
                       key={p._id || p.id}
                       onClick={() => router.push(`/marketplace/${plat}/${p._id || p.id}`)}
-                      className="p-4 rounded-2xl bg-[#0a0a0d] border border-white/10 hover:border-white/20 transition-all cursor-pointer group flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md"
+                      className="p-4 rounded-2xl bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 transition-all cursor-pointer group flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm dark:shadow-md"
                     >
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 mb-1">
@@ -633,32 +633,32 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
 
                           <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${
                             p.status === 'Completed' 
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
                               : p.status === 'In Progress'
-                              ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
-                              : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                              ? 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20'
+                              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
                           }`}>
                             {p.status}
                           </span>
                         </div>
 
-                        <h4 className="text-xs md:text-sm font-heading font-semibold text-white group-hover:text-[#00E5FF] transition-colors truncate">
+                        <h4 className="text-xs md:text-sm font-heading font-semibold text-slate-900 dark:text-white group-hover:text-[#6324FC] dark:group-hover:text-[#00E5FF] transition-colors truncate">
                           {p.title}
                         </h4>
 
                         <p className="text-[11px] font-sans text-secondary mt-0.5 flex items-center gap-2">
-                          <span>Client: <strong className="text-white/80">{p.clientName || 'Direct Client'}</strong></span>
+                          <span>Client: <strong className="text-slate-800 dark:text-white/80">{p.clientName || 'Direct Client'}</strong></span>
                           {p.deadline && <span>• Due: {new Date(p.deadline).toLocaleDateString()}</span>}
                         </p>
                       </div>
 
-                      <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/5">
+                      <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-black/5 dark:border-white/5">
                         <div className="text-right">
                           <span className="text-[10px] font-heading font-bold text-secondary uppercase block">Budget</span>
-                          <span className="text-sm font-mono font-bold text-white">{p.budget || '$0'}</span>
+                          <span className="text-sm font-mono font-bold text-slate-900 dark:text-white">{p.budget || '$0'}</span>
                         </div>
 
-                        <div className="w-8 h-8 rounded-lg bg-white/5 group-hover:bg-[#6324FC] text-secondary group-hover:text-white flex items-center justify-center transition-all">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 group-hover:bg-[#6324FC] text-secondary group-hover:text-white flex items-center justify-center transition-all">
                           <ChevronRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
                         </div>
                       </div>
@@ -666,9 +666,9 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
                   );
                 })
               ) : (
-                <div className="text-center py-12 bg-[#0a0a0d] rounded-2xl border border-white/5 p-6">
+                <div className="text-center py-12 bg-white dark:bg-[#0a0a0d] rounded-2xl border border-black/5 dark:border-white/5 p-6 shadow-sm">
                   <AlertCircle size={22} className="text-secondary mx-auto mb-2" />
-                  <p className="text-xs font-heading font-bold text-white mb-0.5">No Projects Found</p>
+                  <p className="text-xs font-heading font-bold text-slate-900 dark:text-white mb-0.5">No Projects Found</p>
                   <p className="text-[11px] font-sans text-secondary">
                     {searchQuery ? 'No deliverables match your search criteria.' : 'Create a new marketplace deliverable above to populate this stream.'}
                   </p>
@@ -683,10 +683,10 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
               <TrendingUp size={14} className="text-[#6324FC]" /> Channel Workload Share
             </h2>
 
-            <div className="p-5 rounded-2xl bg-[#0a0a0d] border border-white/10 space-y-4 shadow-lg">
-              <div className="flex items-center justify-between pb-3 border-b border-white/5">
-                <span className="text-xs font-heading font-bold text-white">Active Pipeline Matrix</span>
-                <span className="text-[10px] font-mono text-[#00E5FF]">Live Synced</span>
+            <div className="p-5 rounded-2xl bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 space-y-4 shadow-sm dark:shadow-lg">
+              <div className="flex items-center justify-between pb-3 border-b border-black/5 dark:border-white/5">
+                <span className="text-xs font-heading font-bold text-slate-900 dark:text-white">Active Pipeline Matrix</span>
+                <span className="text-[10px] font-mono text-[#6324FC] dark:text-[#00E5FF]">Live Synced</span>
               </div>
 
               <div className="space-y-3.5">
@@ -699,7 +699,7 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
                   return (
                     <div key={channel.id} className="space-y-1.5">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="font-heading font-semibold text-white flex items-center gap-1.5">
+                        <span className="font-heading font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
                           <span className="w-2 h-2 rounded-full" style={{ backgroundColor: channel.color }} />
                           {channel.name}
                         </span>
@@ -707,7 +707,7 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
                           ${totalEarned.toLocaleString()} ({sharePct}%)
                         </span>
                       </div>
-                      <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                      <div className="w-full h-1.5 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
                         <div 
                           className="h-full rounded-full transition-all duration-500"
                           style={{ 
@@ -722,10 +722,10 @@ export default function MarketplaceClient({ allProjects = [] }: MarketplaceClien
               </div>
 
               {/* Quick Navigation Card Banner */}
-              <div className="mt-6 pt-4 border-t border-white/5">
-                <div className="p-3.5 rounded-xl bg-gradient-to-r from-[#6324FC]/15 to-[#00E5FF]/10 border border-[#6324FC]/30 flex items-center justify-between">
+              <div className="mt-6 pt-4 border-t border-black/5 dark:border-white/5">
+                <div className="p-3.5 rounded-xl bg-gradient-to-r from-[#6324FC]/10 to-cyan-500/10 dark:from-[#6324FC]/15 dark:to-[#00E5FF]/10 border border-purple-500/20 dark:border-[#6324FC]/30 flex items-center justify-between">
                   <div>
-                    <h5 className="text-xs font-heading font-bold text-white">Client Directory</h5>
+                    <h5 className="text-xs font-heading font-bold text-slate-900 dark:text-white">Client Directory</h5>
                     <p className="text-[10px] font-sans text-secondary mt-0.5">Manage contacts & contracts</p>
                   </div>
                   <Link

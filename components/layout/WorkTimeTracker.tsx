@@ -90,15 +90,13 @@ export default function WorkTimeTracker() {
 
     let interval: NodeJS.Timeout;
     
-    // Activity listener
     const handleActivity = () => {
       lastActivityRef.current = Date.now();
       if (isIdlePaused) {
         setIsIdlePaused(false);
         setIsActive(true);
-        // Reset start time so future elapsed calculations are correct
         startTimeRef.current = Date.now();
-        toast.success('Welcome back! Time tracker resumed.');
+        toast('Welcome back! Timer resumed automatically.', { icon: '⏱️' });
       }
     };
 
@@ -111,19 +109,18 @@ export default function WorkTimeTracker() {
       interval = setInterval(() => {
         const now = Date.now();
         if (now - lastActivityRef.current > IDLE_TIMEOUT) {
-          // Went idle! Subtract the idle time that was counted and pause
-          setTotalSeconds(prev => Math.max(0, prev - (IDLE_TIMEOUT / 1000)));
           setIsActive(false);
           setIsIdlePaused(true);
-          toast('You went idle. Time tracker paused.', { icon: '⏸️' });
-        } else {
-          setTotalSeconds(prev => prev + 1);
+          toast('Timer paused due to 5 mins of inactivity.', { icon: '💤' });
+          return;
         }
+
+        setTotalSeconds((prev) => prev + 1);
       }, 1000);
     }
-    
+
     return () => {
-      if (interval) clearInterval(interval);
+      clearInterval(interval);
       window.removeEventListener('mousemove', handleActivity);
       window.removeEventListener('keydown', handleActivity);
       window.removeEventListener('click', handleActivity);
@@ -131,72 +128,63 @@ export default function WorkTimeTracker() {
     };
   }, [isActive, isIdlePaused, pathname]);
 
-  if (pathname === '/login' || pathname === '/' || pathname === '/register') return null;
+  if (pathname === '/login' || pathname === '/' || pathname === '/register' || !isLoaded) {
+    return null;
+  }
 
-  const formatTime = (seconds: number) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  const formatTime = (secs: number) => {
+    const hrs = Math.floor(secs / 3600);
+    const mins = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
   const handleToggle = async () => {
     if (isActive || isIdlePaused) {
       // Stop and Save
-      setIsActive(false);
-      setIsIdlePaused(false);
       if (totalSeconds < 60) {
-        toast.error('Session too short to save (minimum 1 minute).');
-        setTotalSeconds(0);
-        startTimeRef.current = null;
-        return;
-      }
-
-      setIsSaving(true);
-      try {
-        const now = new Date();
-        const start = startTimeRef.current ? new Date(startTimeRef.current) : new Date(now.getTime() - totalSeconds * 1000);
-        
-        const startTimeStr = start.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-        const endTimeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-
-        const pageName = pathname === '/' ? 'Dashboard' : pathname.split('/').filter(Boolean).map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' / ');
-        const res = await createTimeLog({
-          project: activeProject || 'General',
-          task: activeProject !== 'General' ? `Sprint work on ${activeProject}` : `Tracked on ${pageName}`,
-          date: now.toISOString(),
-          startTime: startTimeStr,
-          endTime: endTimeStr,
-          durationSeconds: totalSeconds
-        });
-
-        if (res.success) {
-          toast.success(`Saved ${formatTime(totalSeconds)} for ${activeProject} to Timesheet!`);
-        } else {
-          toast.error(res.error || 'Failed to save timesheet entry.');
-        }
-      } catch (error) {
-        toast.error('An error occurred.');
         setIsActive(false);
         setIsIdlePaused(false);
         setTotalSeconds(0);
         startTimeRef.current = null;
-        localStorage.removeItem('timeTracker_isActive');
-        localStorage.removeItem('timeTracker_isIdlePaused');
         localStorage.removeItem('timeTracker_startTime');
         localStorage.removeItem('timeTracker_totalSeconds');
-        localStorage.removeItem('timeTracker_project');
-        setActiveProject('General');
+        toast('Session under 1 minute was not saved.', { icon: 'ℹ️' });
+        return;
+      }
+
+      setIsSaving(true);
+      const hours = Number((totalSeconds / 3600).toFixed(2));
+      const today = new Date().toISOString().split('T')[0];
+      const now = new Date();
+      const start = new Date(now.getTime() - totalSeconds * 1000);
+
+      try {
+        const res = await createTimeLog({
+          project: activeProject || 'General',
+          task: `Auto-tracked (${formatTime(totalSeconds)})`,
+          date: today,
+          startTime: start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          endTime: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          durationSeconds: totalSeconds,
+        });
+
+        if (res.success) {
+          toast.success(`Saved ${hours} hrs to Timesheets!`);
+          setIsActive(false);
+          setIsIdlePaused(false);
+          setTotalSeconds(0);
+          startTimeRef.current = null;
+          localStorage.removeItem('timeTracker_startTime');
+          localStorage.removeItem('timeTracker_totalSeconds');
+        } else {
+          toast.error(res.error || 'Failed to auto-save time log');
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error('Error recording timesheet log');
       } finally {
-        setTotalSeconds(0);
-        startTimeRef.current = null;
         setIsSaving(false);
-        localStorage.removeItem('timeTracker_isActive');
-        localStorage.removeItem('timeTracker_isIdlePaused');
-        localStorage.removeItem('timeTracker_startTime');
-        localStorage.removeItem('timeTracker_totalSeconds');
-        localStorage.removeItem('timeTracker_project');
-        setActiveProject('General');
       }
     } else {
       // Start
@@ -207,35 +195,35 @@ export default function WorkTimeTracker() {
   };
 
   return (
-    <div className="fixed bottom-6 right-28 z-40">
-      <div className="flex items-center gap-3 px-4 py-2 neu-flat rounded-2xl bg-white dark:bg-[#11131A] backdrop-blur-md border border-slate-200 dark:border-[#232734] shadow-2xl transition-all cursor-default group hover:border-[#2563EB]/30">
+    <div className="fixed bottom-6 right-24 z-40">
+      <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-lg transition-all cursor-default group hover:border-[#6324FC]/50">
         
         <button 
           onClick={handleToggle}
           disabled={isSaving}
-          className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all shadow-sm ${
+          className={`w-7 h-7 rounded-xl flex items-center justify-center transition-all shadow-xs ${
             (isActive || isIdlePaused) 
-              ? 'bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white' 
-              : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white'
+              ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 hover:bg-rose-500 hover:text-white' 
+              : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white'
           }`}
         >
           {isSaving ? (
-            <Loader2 size={14} className="animate-spin" />
+            <Loader2 size={13} className="animate-spin" />
           ) : (isActive || isIdlePaused) ? (
-            <Square size={14} className="fill-current" />
+            <Square size={12} className="fill-current" />
           ) : (
-            <Play size={14} className="fill-current ml-0.5" />
+            <Play size={12} className="fill-current ml-0.5" />
           )}
         </button>
 
-        <div className="flex flex-col min-w-[70px] max-w-[140px]">
+        <div className="flex flex-col min-w-[65px] max-w-[130px]">
           <div className="flex items-center gap-1.5 mb-0.5">
-            <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isActive ? 'bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]' : isIdlePaused ? 'bg-amber-500 animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.6)]' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
-            <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none truncate">
-              {isSaving ? "Saving" : isActive ? (activeProject !== 'General' ? activeProject : "Tracking") : isIdlePaused ? "Paused (Idle)" : "Ready"}
+            <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isActive ? 'bg-emerald-500 animate-pulse shadow-[0_0_6px_rgba(16,185,129,0.8)]' : isIdlePaused ? 'bg-amber-500 animate-pulse' : 'bg-slate-300 dark:bg-slate-700'}`}></div>
+            <span className="text-[9px] font-heading font-bold text-secondary uppercase tracking-widest leading-none truncate">
+              {isSaving ? "Saving" : isActive ? (activeProject !== 'General' ? activeProject : "Tracking") : isIdlePaused ? "Paused" : "Ready"}
             </span>
           </div>
-          <span className={`text-sm font-mono font-black leading-none ${isActive ? 'text-emerald-600 dark:text-emerald-400' : isIdlePaused ? 'text-amber-500' : 'text-slate-800 dark:text-slate-200'}`}>
+          <span className={`text-xs font-mono font-bold leading-none ${isActive ? 'text-emerald-600 dark:text-emerald-400' : isIdlePaused ? 'text-amber-500' : 'text-slate-900 dark:text-white'}`}>
             {formatTime(totalSeconds)}
           </span>
         </div>

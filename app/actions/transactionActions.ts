@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import connectToDatabase from '@/lib/mongodb';
 import { Transaction } from '@/models/Transaction';
-import { getAuthUser } from '@/lib/auth';
+import { getAuthUser, requireWriteAuth } from '@/lib/auth';
 import { createNotification } from './notificationActions';
 
 export async function getTransactions() {
@@ -48,6 +48,7 @@ export async function getTransactions() {
 
 export async function createTransaction(data: any) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     
     const transaction = new Transaction({
@@ -62,7 +63,11 @@ export async function createTransaction(data: any) {
     
     await transaction.save();
     
-    await createNotification('system', `A new transaction of $${transaction.amount} was recorded.`);
+    await createNotification(
+      transaction.type === 'Income' ? 'payment' : 'system',
+      `A new ${transaction.type.toLowerCase()} of $${transaction.amount} was recorded.`,
+      '/finance'
+    );
     
     revalidatePath('/finance');
     return { success: true, data: JSON.parse(JSON.stringify(transaction)) };
@@ -74,6 +79,7 @@ export async function createTransaction(data: any) {
 
 export async function updateTransaction(transactionId: string, data: any) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     
     const updated = await Transaction.findByIdAndUpdate(
@@ -90,7 +96,7 @@ export async function updateTransaction(transactionId: string, data: any) {
       { new: true }
     ).lean();
     
-    await createNotification('system', `Transaction for $${updated?.amount} was updated.`);
+    await createNotification('system', `Transaction for $${updated?.amount} was updated.`, '/finance');
     
     revalidatePath('/finance');
     return { success: true, data: JSON.parse(JSON.stringify(updated)) };
@@ -102,10 +108,11 @@ export async function updateTransaction(transactionId: string, data: any) {
 
 export async function deleteTransaction(transactionId: string) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     const transaction = await Transaction.findById(transactionId);
     if (transaction) {
-      await createNotification('system', `Transaction for $${transaction.amount} was deleted.`);
+      await createNotification('system', `Transaction for $${transaction.amount} was deleted.`, '/finance');
     }
     await Transaction.findByIdAndDelete(transactionId);
     
