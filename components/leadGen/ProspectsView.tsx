@@ -237,37 +237,37 @@ export default function ProspectsView({
   ];
 
   return (
-    <div className="space-y-6 pb-12 font-sans">
+    <div className="space-y-4 pb-6 font-sans">
       {/* Top Banner & Summary Cards */}
-      <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-6">
-        <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 p-4 text-center shadow-sm backdrop-blur-xl">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">Total Prospects</span>
-          <p className="text-2xl font-black text-slate-900 dark:text-white mt-1 font-mono">{total}</p>
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 p-2.5 sm:p-3 text-center shadow-sm backdrop-blur-xl">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Total Prospects</span>
+          <p className="text-xl font-black text-slate-900 dark:text-white mt-0.5 font-mono">{total}</p>
         </div>
-        <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 p-4 text-center shadow-sm backdrop-blur-xl">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">Verified Emails</span>
-          <p className="text-2xl font-black text-[#6324FC] dark:text-[#00E5FF] mt-1 font-mono">{verifiedCount}</p>
+        <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 p-2.5 sm:p-3 text-center shadow-sm backdrop-blur-xl">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Verified Emails</span>
+          <p className="text-xl font-black text-[#6324FC] dark:text-[#00E5FF] mt-0.5 font-mono">{verifiedCount}</p>
         </div>
-        <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 p-4 text-center shadow-sm backdrop-blur-xl">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">Positive Replies</span>
-          <p className="text-2xl font-black text-teal-600 dark:text-teal-400 mt-1 font-mono">{positiveCount}</p>
+        <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 p-2.5 sm:p-3 text-center shadow-sm backdrop-blur-xl">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Positive Replies</span>
+          <p className="text-xl font-black text-teal-600 dark:text-teal-400 mt-0.5 font-mono">{positiveCount}</p>
         </div>
-        <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 p-4 text-center shadow-sm backdrop-blur-xl">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">Calls Booked</span>
-          <p className="text-2xl font-black text-amber-500 dark:text-amber-300 mt-1 font-mono">{callsCount}</p>
+        <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 p-2.5 sm:p-3 text-center shadow-sm backdrop-blur-xl">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Calls Booked</span>
+          <p className="text-xl font-black text-amber-500 dark:text-amber-300 mt-0.5 font-mono">{callsCount}</p>
         </div>
-        <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 p-4 text-center shadow-sm backdrop-blur-xl">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">Closed Won</span>
-          <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 font-mono">{wonCount}</p>
+        <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 p-2.5 sm:p-3 text-center shadow-sm backdrop-blur-xl">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Closed Won</span>
+          <p className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5 font-mono">{wonCount}</p>
         </div>
-        <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 p-4 text-center shadow-sm backdrop-blur-xl">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">Suppressed</span>
-          <p className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1 font-mono">{suppressedCount}</p>
+        <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 p-2.5 sm:p-3 text-center shadow-sm backdrop-blur-xl">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Suppressed</span>
+          <p className="text-xl font-black text-rose-600 dark:text-rose-400 mt-0.5 font-mono">{suppressedCount}</p>
         </div>
       </div>
 
       {/* Control Bar: Search, Filters, View Toggle, Actions */}
-      <div className="flex flex-col gap-3.5 rounded-3xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 p-4 lg:p-5 backdrop-blur-xl shadow-sm lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-3 rounded-2xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 p-3 lg:p-4 backdrop-blur-xl shadow-sm lg:flex-row lg:items-center lg:justify-between">
         {/* Search */}
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400 pointer-events-none" />
@@ -424,17 +424,17 @@ export default function ProspectsView({
           </div>
 
           {/* Table Container */}
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overflow-y-hidden">
             <table className="w-full text-left text-sm text-slate-700 dark:text-slate-300">
               <thead className="border-b border-slate-200 dark:border-white/10 bg-slate-50/90 dark:bg-white/[0.03] text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 select-none">
                 <tr>
                   {/* Company Column Header */}
                   <th
                     onClick={() => toggleSort('company')}
-                    className="py-4 pl-5 pr-4 cursor-pointer hover:text-slate-900 dark:hover:text-white transition group min-w-[260px]"
+                    className="py-2.5 pl-4 pr-3 cursor-pointer hover:text-slate-900 dark:hover:text-white transition group min-w-[190px]"
                   >
                     <div className="flex items-center space-x-1.5">
-                      <span>Company &amp; Location</span>
+                      <span>Company</span>
                       {sortField === 'company' ? (
                         sortOrder === 'asc' ? <ArrowUp className="h-3.5 w-3.5 text-[#6324FC] dark:text-[#00E5FF]" /> : <ArrowDown className="h-3.5 w-3.5 text-[#6324FC] dark:text-[#00E5FF]" />
                       ) : (
@@ -444,17 +444,17 @@ export default function ProspectsView({
                   </th>
 
                   {/* Business Email */}
-                  <th className="px-4 py-4 min-w-[210px]">
+                  <th className="px-3 py-2.5 min-w-[170px]">
                     <span>Business Email</span>
                   </th>
 
                   {/* Maps Rank & Reviews */}
                   <th
                     onClick={() => toggleSort('rating')}
-                    className="px-4 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white transition group min-w-[170px]"
+                    className="px-3 py-2.5 cursor-pointer hover:text-slate-900 dark:hover:text-white transition group min-w-[120px]"
                   >
                     <div className="flex items-center space-x-1.5">
-                      <span>Audit &amp; Rank</span>
+                      <span>Rank &amp; Rating</span>
                       {sortField === 'rating' ? (
                         sortOrder === 'asc' ? <ArrowUp className="h-3.5 w-3.5 text-[#6324FC] dark:text-[#00E5FF]" /> : <ArrowDown className="h-3.5 w-3.5 text-[#6324FC] dark:text-[#00E5FF]" />
                       ) : (
@@ -464,14 +464,14 @@ export default function ProspectsView({
                   </th>
 
                   {/* Audit Gap */}
-                  <th className="px-4 py-4 min-w-[240px]">
+                  <th className="px-3 py-2.5 min-w-[160px]">
                     <span>Observation / Gap</span>
                   </th>
 
                   {/* Status */}
                   <th
                     onClick={() => toggleSort('status')}
-                    className="px-4 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white transition group min-w-[170px]"
+                    className="px-3 py-2.5 cursor-pointer hover:text-slate-900 dark:hover:text-white transition group min-w-[130px]"
                   >
                     <div className="flex items-center space-x-1.5">
                       <span>Pipeline Status</span>
@@ -484,14 +484,14 @@ export default function ProspectsView({
                   </th>
 
                   {/* Reply Tag */}
-                  <th className="px-4 py-4 min-w-[145px]">
+                  <th className="px-3 py-2.5 min-w-[105px]">
                     <span>Reply Tag</span>
                   </th>
 
                   {/* Next Follow-Up */}
                   <th
                     onClick={() => toggleSort('nextFollowUp')}
-                    className="px-4 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white transition group min-w-[160px]"
+                    className="px-3 py-2.5 cursor-pointer hover:text-slate-900 dark:hover:text-white transition group min-w-[120px]"
                   >
                     <div className="flex items-center space-x-1.5">
                       <span>Next Follow-Up</span>
@@ -504,7 +504,7 @@ export default function ProspectsView({
                   </th>
 
                   {/* Actions Header (Sticky Right) */}
-                  <th className="sticky right-0 z-20 bg-slate-50/95 dark:bg-[#0c0d14]/95 backdrop-blur-md py-4 pl-3 pr-5 text-right font-bold shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.06)] dark:shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.4)] min-w-[170px]">
+                  <th className="sticky right-0 z-20 bg-slate-50/95 dark:bg-[#0c0d14]/95 backdrop-blur-md py-2.5 pl-2.5 pr-4 text-right font-bold shadow-[-8px_0_12px_-4px_rgba(0,0,0,0.06)] dark:shadow-[-8px_0_12px_-4px_rgba(0,0,0,0.4)] min-w-[115px]">
                     Actions
                   </th>
                 </tr>
@@ -554,11 +554,11 @@ export default function ProspectsView({
                         }`}
                       >
                         {/* 1. Company & Location */}
-                        <td className="py-3.5 pl-5 pr-4">
-                          <div className="flex items-center space-x-3">
+                        <td className="py-2.5 pl-4 pr-3">
+                          <div className="flex items-center space-x-2.5">
                             {/* Stylized Gradient Avatar */}
                             <div
-                              className={`h-9 w-9 shrink-0 rounded-xl bg-gradient-to-br ${getAvatarGradient(
+                              className={`h-8 w-8 shrink-0 rounded-xl bg-gradient-to-br ${getAvatarGradient(
                                 p.company
                               )} flex items-center justify-center text-white font-extrabold text-xs shadow-sm ring-1 ring-black/10 dark:ring-white/10`}
                             >
@@ -570,11 +570,11 @@ export default function ProspectsView({
                                 <button
                                   type="button"
                                   onClick={() => onEditProspect(p)}
-                                  className="font-bold text-slate-900 dark:text-white text-sm hover:text-[#6324FC] dark:hover:text-[#00E5FF] transition-colors text-left truncate flex items-center group/lead"
+                                  className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm hover:text-[#6324FC] dark:hover:text-[#00E5FF] transition-colors text-left truncate flex items-center group/lead"
                                   title="Click to edit prospect"
                                 >
                                   <span className="truncate">{p.company}</span>
-                                  <Edit2 className="h-3 w-3 ml-1.5 opacity-0 group-hover/lead:opacity-100 text-[#6324FC] dark:text-[#00E5FF] transition-opacity shrink-0" />
+                                  <Edit2 className="h-3 w-3 ml-1 opacity-0 group-hover/lead:opacity-100 text-[#6324FC] dark:text-[#00E5FF] transition-opacity shrink-0" />
                                 </button>
 
                                 {p.website && (
@@ -590,7 +590,7 @@ export default function ProspectsView({
                                 )}
                               </div>
 
-                              <div className="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                              <div className="flex items-center space-x-1.5 text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                                 <span className="flex items-center gap-1 truncate">
                                   <MapPin className="h-3 w-3 text-slate-400 shrink-0" />
                                   <span>{p.city || 'N/A'}{p.state ? `, ${p.state}` : ''}</span>
@@ -603,9 +603,9 @@ export default function ProspectsView({
                         </td>
 
                         {/* 2. Business Email & Verification */}
-                        <td className="px-4 py-3.5">
+                        <td className="px-3 py-2.5">
                           <div className="flex items-center space-x-1.5">
-                            <span className="font-mono text-slate-800 dark:text-slate-200 text-xs font-semibold truncate max-w-[160px]">
+                            <span className="font-mono text-slate-800 dark:text-slate-200 text-xs font-semibold truncate max-w-[150px]">
                               {p.businessEmail}
                             </span>
                             <button
@@ -627,7 +627,7 @@ export default function ProspectsView({
 
                           <div className="mt-1">
                             <span
-                              className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-bold border ${
+                              className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-bold border ${
                                 p.emailVerified === 'Yes'
                                   ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                                   : p.emailVerified === 'No'
@@ -650,33 +650,33 @@ export default function ProspectsView({
                         </td>
 
                         {/* 3. Maps Rank & Reviews */}
-                        <td className="px-4 py-3.5">
+                        <td className="px-3 py-2.5">
                           <div className="flex items-center space-x-1.5">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-black/5 dark:bg-white/5 text-slate-800 dark:text-slate-200 border border-black/5 dark:border-white/10">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-black/5 dark:bg-white/5 text-slate-800 dark:text-slate-200 border border-black/5 dark:border-white/10">
                               {p.mapsRank ? `#${p.mapsRank} Rank` : 'Unranked'}
                             </span>
                           </div>
 
-                          <div className="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400 mt-1">
+                          <div className="flex items-center space-x-1.5 text-xs text-slate-500 dark:text-slate-400 mt-1">
                             <span className="inline-flex items-center text-amber-500 dark:text-amber-400 font-bold">
                               <Star className="h-3.5 w-3.5 mr-0.5 fill-current" />
                               <span>{Number(p.rating || 0).toFixed(1)}</span>
                             </span>
-                            <span>({p.reviewCount || 0} reviews)</span>
+                            <span className="text-[11px]">({p.reviewCount || 0})</span>
                           </div>
                         </td>
 
                         {/* 4. Audit Gap Observation */}
-                        <td className="px-4 py-3.5 max-w-xs">
+                        <td className="px-3 py-2.5 max-w-xs">
                           <p className="text-xs text-slate-600 dark:text-slate-300 truncate font-normal leading-relaxed" title={p.gap || ''}>
-                            {p.gap || <span className="text-slate-400 italic">No observation recorded</span>}
+                            {p.gap || <span className="text-slate-400 italic">No observation</span>}
                           </p>
                           {p.screenshotLink && (
                             <a
                               href={p.screenshotLink}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-xs text-[#6324FC] dark:text-[#00E5FF] hover:underline inline-flex items-center gap-1 mt-1 font-semibold"
+                              className="text-[11px] text-[#6324FC] dark:text-[#00E5FF] hover:underline inline-flex items-center gap-1 mt-0.5 font-semibold"
                             >
                               <span>View Proof</span>
                               <ExternalLink className="h-3 w-3" />
@@ -685,12 +685,12 @@ export default function ProspectsView({
                         </td>
 
                         {/* 5. Pipeline Status (Styled Pill Selector) */}
-                        <td className="px-4 py-3.5">
+                        <td className="px-3 py-2.5">
                           <div className="relative inline-block w-full">
                             <select
                               value={p.status}
                               onChange={(e) => onUpdateStatus(p.id, e.target.value as ProspectStatus)}
-                              className={`w-full appearance-none rounded-xl border px-3 py-1.5 pr-7 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#6324FC]/20 transition cursor-pointer ${getStatusBadgeStyle(
+                              className={`w-full appearance-none rounded-xl border px-2.5 py-1.5 pr-6 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#6324FC]/20 transition cursor-pointer ${getStatusBadgeStyle(
                                 p.status
                               )}`}
                             >
@@ -706,17 +706,17 @@ export default function ProspectsView({
                               <option value="Lost">Lost</option>
                               <option value="Suppressed">Suppressed</option>
                             </select>
-                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 pointer-events-none opacity-60" />
+                            <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 h-3 w-3 pointer-events-none opacity-60" />
                           </div>
                         </td>
 
                         {/* 6. Reply Tag */}
-                        <td className="px-4 py-3.5">
+                        <td className="px-3 py-2.5">
                           <div className="relative inline-block w-full">
                             <select
                               value={p.replyTag}
                               onChange={(e) => onUpdateReplyTag(p.id, e.target.value as ReplyTag)}
-                              className={`w-full appearance-none rounded-xl border px-2.5 py-1.5 pr-6 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#6324FC]/20 transition cursor-pointer ${
+                              className={`w-full appearance-none rounded-xl border px-2 py-1.5 pr-5 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#6324FC]/20 transition cursor-pointer ${
                                 p.replyTag === 'Positive'
                                   ? 'border-teal-500/40 bg-teal-500/10 text-teal-700 dark:text-teal-300'
                                   : p.replyTag === 'Unsubscribe'
@@ -732,16 +732,16 @@ export default function ProspectsView({
                               <option value="Negative">Negative</option>
                               <option value="Unsubscribe">Unsubscribe</option>
                             </select>
-                            <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 h-3 w-3 pointer-events-none opacity-50" />
+                            <ChevronDown className="absolute right-1 top-1/2 -translate-y-1/2 h-3 w-3 pointer-events-none opacity-50" />
                           </div>
                         </td>
 
                         {/* 7. Next Follow-up */}
-                        <td className="px-4 py-3.5">
+                        <td className="px-3 py-2.5">
                           {p.nextFollowUp ? (
-                            <div className="flex flex-col space-y-1">
+                            <div className="flex flex-col space-y-0.5">
                               <span
-                                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold border w-max ${
+                                className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-bold border w-max ${
                                   isOverdue
                                     ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30'
                                     : isDueToday
@@ -750,16 +750,16 @@ export default function ProspectsView({
                                 }`}
                               >
                                 <Calendar className="h-3 w-3 shrink-0" />
-                                <span className="font-mono">{p.nextFollowUp}</span>
+                                <span className="font-mono text-[11px]">{p.nextFollowUp}</span>
                               </span>
                               {isOverdue && (
-                                <span className="text-[10px] text-rose-600 dark:text-rose-400 font-extrabold uppercase tracking-wide">
-                                  Action Overdue
+                                <span className="text-[9px] text-rose-600 dark:text-rose-400 font-extrabold uppercase tracking-wide">
+                                  Overdue
                                 </span>
                               )}
                               {isDueToday && (
-                                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-extrabold uppercase tracking-wide">
-                                  Follow-up Today
+                                <span className="text-[9px] text-amber-600 dark:text-amber-400 font-extrabold uppercase tracking-wide">
+                                  Today
                                 </span>
                               )}
                             </div>
@@ -769,12 +769,12 @@ export default function ProspectsView({
                         </td>
 
                         {/* 8. Actions (Sticky Right Column) */}
-                        <td className="sticky right-0 z-10 bg-white/95 dark:bg-[#0c0d14]/95 backdrop-blur-md py-3.5 pl-3 pr-5 text-right shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.06)] dark:shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.4)]">
+                        <td className="sticky right-0 z-10 bg-white/95 dark:bg-[#0c0d14]/95 backdrop-blur-md py-2.5 pl-2.5 pr-4 text-right shadow-[-8px_0_12px_-4px_rgba(0,0,0,0.06)] dark:shadow-[-8px_0_12px_-4px_rgba(0,0,0,0.4)]">
                           <div className="flex items-center justify-end space-x-1.5">
                             <button
                               type="button"
                               onClick={() => onEditProspect(p)}
-                              className="inline-flex items-center space-x-1 rounded-xl px-2.5 py-1.5 text-xs font-bold text-[#6324FC] dark:text-[#00E5FF] bg-[#6324FC]/10 dark:bg-[#00E5FF]/10 hover:bg-[#6324FC]/20 dark:hover:bg-[#00E5FF]/20 border border-[#6324FC]/20 dark:border-[#00E5FF]/20 transition active:scale-95"
+                              className="inline-flex items-center space-x-1 rounded-xl px-2.5 py-1 text-xs font-bold text-[#6324FC] dark:text-[#00E5FF] bg-[#6324FC]/10 dark:bg-[#00E5FF]/10 hover:bg-[#6324FC]/20 dark:hover:bg-[#00E5FF]/20 border border-[#6324FC]/20 dark:border-[#00E5FF]/20 transition active:scale-95"
                               title="Edit Prospect"
                             >
                               <Edit2 className="h-3.5 w-3.5" />
@@ -783,7 +783,7 @@ export default function ProspectsView({
                             <button
                               type="button"
                               onClick={() => handleDeleteWithConfirm(p)}
-                              className="inline-flex items-center space-x-1 rounded-xl px-2.5 py-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition active:scale-95"
+                              className="inline-flex items-center space-x-1 rounded-xl px-2.5 py-1 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition active:scale-95"
                               title="Delete Prospect"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
@@ -800,7 +800,7 @@ export default function ProspectsView({
           </div>
 
           {/* Table Bottom Footer Summary */}
-          <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 border-t border-black/5 dark:border-white/10 bg-slate-50/70 dark:bg-white/[0.02] text-xs text-slate-500 dark:text-slate-400 font-medium">
+          <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-t border-black/5 dark:border-white/10 bg-slate-50/70 dark:bg-white/[0.02] text-xs text-slate-500 dark:text-slate-400 font-medium">
             <div>
               Showing <span className="font-bold text-slate-900 dark:text-white font-mono">{filteredAndSorted.length}</span> of <span className="font-bold text-slate-900 dark:text-white font-mono">{total}</span> total pipeline records
             </div>
@@ -851,7 +851,7 @@ export default function ProspectsView({
                   </span>
                 </div>
 
-                <div className="space-y-3 flex-1 overflow-y-auto max-h-[640px] pr-1">
+                <div className="space-y-3 flex-1">
                   {colProspects.length === 0 ? (
                     <div className="py-12 text-center text-xs text-slate-400 border border-dashed border-slate-200 dark:border-white/10 rounded-2xl">
                       No prospects in this stage

@@ -62,13 +62,13 @@ function LeadGenShell({ children }: { children: React.ReactNode }) {
   const currentMrr = activeClients.reduce((acc, c) => acc + (c.monthlyRetainer || 0), 0);
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full space-y-6">
+    <div className="p-3 sm:p-5 lg:p-6 max-w-[1600px] mx-auto w-full space-y-4">
       {/* 1. Top Hero Card */}
-      <div className="relative overflow-hidden rounded-3xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 backdrop-blur-xl p-6 lg:p-8 shadow-sm transition-all duration-300">
+      <div className="relative overflow-hidden rounded-3xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 backdrop-blur-xl p-5 lg:p-6 shadow-sm transition-all duration-300">
         <div className="absolute top-0 right-0 -mt-12 -mr-12 w-96 h-96 bg-gradient-to-br from-[#6324FC]/15 via-[#00E5FF]/10 to-transparent rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-1.5">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#6324FC]/20 bg-[#6324FC]/10 text-xs font-bold text-[#6324FC] dark:text-[#00E5FF]">
               <Flame className="h-3.5 w-3.5 fill-current animate-pulse" />
               <span>Independent Growth Engine • HVAC Specialized</span>
@@ -119,31 +119,31 @@ function LeadGenShell({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Live Mini KPIs Bar */}
-        <div className="mt-6 pt-5 border-t border-black/5 dark:border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-3 lg:gap-4">
-          <div className="rounded-2xl border border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] p-3.5">
+        <div className="mt-4 pt-4 border-t border-black/5 dark:border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-2.5 lg:gap-3">
+          <div className="rounded-2xl border border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] p-2.5 sm:p-3">
             <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Monthly Retainer MRR</span>
-            <p className="mt-0.5 text-xl lg:text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
+            <p className="mt-0.5 text-lg lg:text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
               ${currentMrr.toLocaleString()}
             </p>
           </div>
 
-          <div className="rounded-2xl border border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] p-3.5">
+          <div className="rounded-2xl border border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] p-2.5 sm:p-3">
             <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Active Retainers</span>
-            <p className="mt-0.5 text-xl lg:text-2xl font-extrabold text-slate-900 dark:text-white">
+            <p className="mt-0.5 text-lg lg:text-xl font-extrabold text-slate-900 dark:text-white">
               {activeClients.length} <span className="text-xs font-medium text-slate-400">Clients</span>
             </p>
           </div>
 
-          <div className="rounded-2xl border border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] p-3.5">
+          <div className="rounded-2xl border border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] p-2.5 sm:p-3">
             <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Total Pipeline Prospects</span>
-            <p className="mt-0.5 text-xl lg:text-2xl font-extrabold text-[#6324FC] dark:text-[#00E5FF]">
+            <p className="mt-0.5 text-lg lg:text-xl font-extrabold text-[#6324FC] dark:text-[#00E5FF]">
               {totalLeads}
             </p>
           </div>
 
-          <div className="rounded-2xl border border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] p-3.5">
+          <div className="rounded-2xl border border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] p-2.5 sm:p-3">
             <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Verified Contacts</span>
-            <p className="mt-0.5 text-xl lg:text-2xl font-extrabold text-indigo-500 dark:text-indigo-400">
+            <p className="mt-0.5 text-lg lg:text-xl font-extrabold text-indigo-500 dark:text-indigo-400">
               {verifiedLeads} <span className="text-xs font-medium text-slate-400">({totalLeads > 0 ? Math.round((verifiedLeads / totalLeads) * 100) : 0}%)</span>
             </p>
           </div>
