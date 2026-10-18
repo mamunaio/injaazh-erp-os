@@ -1,13 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Building } from 'lucide-react';
+import { X, Building, Trash2 } from 'lucide-react';
 import { Prospect, ProspectStatus, ReplyTag } from '@/types/leadGen';
+import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 
 interface LeadModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (prospect: Partial<Prospect>) => Promise<void>;
+  onDelete?: (id: string) => Promise<void> | void;
   initialData?: Prospect | null;
 }
 
@@ -15,6 +17,7 @@ export default function LeadModal({
   isOpen,
   onClose,
   onSave,
+  onDelete,
   initialData,
 }: LeadModalProps) {
   const [company, setCompany] = useState('');
@@ -34,6 +37,28 @@ export default function LeadModal({
   const [nextFollowUp, setNextFollowUp] = useState('');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const { confirm } = useConfirm();
+
+  const handleDelete = async () => {
+    if (!initialData || !onDelete) return;
+    const ok = await confirm({
+      title: 'Delete Prospect',
+      message: `Are you sure you want to permanently delete "${initialData.company}"? This cannot be undone.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      variant: 'danger',
+    });
+    if (ok) {
+      setDeleting(true);
+      try {
+        await onDelete(initialData.id);
+        onClose();
+      } finally {
+        setDeleting(false);
+      }
+    }
+  };
 
   useEffect(() => {
     if (initialData) {
@@ -339,21 +364,37 @@ export default function LeadModal({
           </div>
 
           {/* Action buttons */}
-          <div className="flex justify-end space-x-3.5 pt-4 border-t border-black/5 dark:border-white/10">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-xl px-5 py-2.5 text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-xl bg-gradient-to-r from-[#6324FC] to-[#4F46E5] hover:opacity-95 px-6 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-[#6324FC]/25 transition active:scale-95"
-            >
-              {saving ? 'Saving...' : initialData ? 'Update Lead' : 'Save Prospect'}
-            </button>
+          <div className="flex items-center justify-between pt-4 border-t border-black/5 dark:border-white/10">
+            <div>
+              {initialData && onDelete && (
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={deleting || saving}
+                  className="inline-flex items-center space-x-1.5 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition active:scale-95 disabled:opacity-50"
+                  title="Delete Prospect"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span>{deleting ? 'Deleting...' : 'Delete Lead'}</span>
+                </button>
+              )}
+            </div>
+            <div className="flex items-center space-x-3.5">
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-xl px-5 py-2.5 text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={saving || deleting}
+                className="rounded-xl bg-gradient-to-r from-[#6324FC] to-[#4F46E5] hover:opacity-95 px-6 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-[#6324FC]/25 transition active:scale-95 disabled:opacity-50"
+              >
+                {saving ? 'Saving...' : initialData ? 'Update Lead' : 'Save Prospect'}
+              </button>
+            </div>
           </div>
         </form>
       </div>

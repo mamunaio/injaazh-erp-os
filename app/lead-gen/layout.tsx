@@ -48,6 +48,7 @@ function LeadGenShell({ children }: { children: React.ReactNode }) {
     editingProspect,
     closeLeadModal,
     handleSaveLead,
+    handleDeleteProspect,
     isImportModalOpen,
     openImportModal,
     closeImportModal,
@@ -192,6 +193,7 @@ function LeadGenShell({ children }: { children: React.ReactNode }) {
         isOpen={isLeadModalOpen}
         onClose={closeLeadModal}
         onSave={handleSaveLead}
+        onDelete={handleDeleteProspect}
         initialData={editingProspect}
       />
 

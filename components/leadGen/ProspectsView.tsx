@@ -17,6 +17,7 @@ import {
   Star,
 } from 'lucide-react';
 import { Prospect, ProspectStatus, ReplyTag } from '@/types/leadGen';
+import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 
 interface ProspectsViewProps {
   prospects: Prospect[];
@@ -37,12 +38,26 @@ export default function ProspectsView({
   onUpdateReplyTag,
   onOpenImportModal,
 }: ProspectsViewProps) {
+  const { confirm } = useConfirm();
   const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [verifiedFilter, setVerifiedFilter] = useState<string>('ALL');
   const [replyTagFilter, setReplyTagFilter] = useState<string>('ALL');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleDeleteWithConfirm = async (p: Prospect) => {
+    const confirmed = await confirm({
+      title: 'Delete Prospect',
+      message: `Are you sure you want to permanently delete "${p.company}"? This action cannot be undone.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      variant: 'danger',
+    });
+    if (confirmed) {
+      onDeleteProspect(p.id);
+    }
+  };
 
   const todayStr = new Date().toISOString().split('T')[0];
 
@@ -239,7 +254,9 @@ export default function ProspectsView({
                   <th className="px-3 py-4">Status</th>
                   <th className="px-3 py-4">Reply Tag</th>
                   <th className="px-3 py-4">Next Follow-Up</th>
-                  <th className="py-4 pl-3 pr-5 text-right">Actions</th>
+                  <th className="sticky right-0 z-20 bg-slate-50/95 dark:bg-[#0c0d14]/95 backdrop-blur-md py-4 pl-3 pr-5 text-right font-bold shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.06)] dark:shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.4)] min-w-[170px]">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-white/5">
@@ -272,7 +289,15 @@ export default function ProspectsView({
                         {/* Company & Location */}
                         <td className="py-3.5 pl-5 pr-3">
                           <div className="flex items-center space-x-2">
-                            <span className="font-bold text-slate-900 dark:text-white text-sm">{p.company}</span>
+                            <button
+                              type="button"
+                              onClick={() => onEditProspect(p)}
+                              className="font-bold text-slate-900 dark:text-white text-sm hover:text-[#6324FC] dark:hover:text-[#00E5FF] transition-colors text-left flex items-center group/lead"
+                              title="Click to edit prospect"
+                            >
+                              <span>{p.company}</span>
+                              <Edit2 className="h-3 w-3 ml-1.5 opacity-0 group-hover/lead:opacity-100 text-[#6324FC] dark:text-[#00E5FF] transition-opacity" />
+                            </button>
                             {p.website && (
                               <a
                                 href={p.website.startsWith('http') ? p.website : `https://${p.website}`}
@@ -421,22 +446,26 @@ export default function ProspectsView({
                           )}
                         </td>
 
-                        {/* Actions */}
-                        <td className="py-3.5 pl-3 pr-5 text-right">
-                          <div className="flex items-center justify-end space-x-2">
+                        {/* Actions (Sticky Right Column) */}
+                        <td className="sticky right-0 z-10 bg-white/95 dark:bg-[#0c0d14]/95 backdrop-blur-md py-3.5 pl-3 pr-5 text-right shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.06)] dark:shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.4)]">
+                          <div className="flex items-center justify-end space-x-1.5">
                             <button
+                              type="button"
                               onClick={() => onEditProspect(p)}
-                              className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-[#6324FC] dark:hover:text-[#00E5FF] transition"
+                              className="inline-flex items-center space-x-1.5 rounded-xl px-2.5 py-1.5 text-xs font-bold text-[#6324FC] dark:text-[#00E5FF] bg-[#6324FC]/10 dark:bg-[#00E5FF]/10 hover:bg-[#6324FC]/20 dark:hover:bg-[#00E5FF]/20 border border-[#6324FC]/20 dark:border-[#00E5FF]/20 transition active:scale-95"
                               title="Edit Prospect"
                             >
-                              <Edit2 className="h-4 w-4" />
+                              <Edit2 className="h-3.5 w-3.5" />
+                              <span>Edit</span>
                             </button>
                             <button
-                              onClick={() => onDeleteProspect(p.id)}
-                              className="rounded-xl p-2 text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400 transition"
+                              type="button"
+                              onClick={() => handleDeleteWithConfirm(p)}
+                              className="inline-flex items-center space-x-1.5 rounded-xl px-2.5 py-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition active:scale-95"
                               title="Delete Prospect"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-3.5 w-3.5" />
+                              <span>Delete</span>
                             </button>
                           </div>
                         </td>
@@ -495,20 +524,37 @@ export default function ProspectsView({
                           }`}
                         >
                           <div className="flex items-start justify-between">
-                            <div>
-                              <h5 className="font-bold text-sm text-slate-900 dark:text-white leading-snug">
+                            <div className="flex-1 mr-2">
+                              <button
+                                type="button"
+                                onClick={() => onEditProspect(p)}
+                                className="font-bold text-sm text-slate-900 dark:text-white leading-snug hover:text-[#6324FC] dark:hover:text-[#00E5FF] text-left transition"
+                                title="Click to edit prospect"
+                              >
                                 {p.company}
-                              </h5>
+                              </button>
                               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                                 {p.city}, {p.state}
                               </p>
                             </div>
-                            <button
-                              onClick={() => onEditProspect(p)}
-                              className="text-slate-400 hover:text-[#6324FC] dark:hover:text-[#00E5FF] p-1"
-                            >
-                              <Edit2 className="h-3.5 w-3.5" />
-                            </button>
+                            <div className="flex items-center space-x-1 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => onEditProspect(p)}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-[#6324FC] dark:hover:text-[#00E5FF] hover:bg-slate-100 dark:hover:bg-white/10 transition"
+                                title="Edit Prospect"
+                              >
+                                <Edit2 className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteWithConfirm(p)}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition"
+                                title="Delete Prospect"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
                           </div>
 
                           {p.gap && (
