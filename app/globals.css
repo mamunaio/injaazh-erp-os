@@ -393,3 +393,26 @@ html:not(.dark) {
     border-color: rgba(15, 23, 42, 0.08);
   }
 }
+
+/* Fallback styles for neumorphic utilities */
+.neu-flat {
+  background-color: var(--surface);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06);
+}
+
+.neu-pressed {
+  background-color: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+}
+
+.neu-button {
+  background-color: var(--surface);
+  border: 1px solid var(--border-subtle);
+  transition: all 0.2s ease;
+}
+
+.neu-button:hover {
+  background-color: var(--surface-raised);
+}
+
