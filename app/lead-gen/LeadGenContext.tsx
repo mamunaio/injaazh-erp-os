@@ -41,21 +41,32 @@ interface LeadGenContextType {
   handleUpdateReplyTag: (id: string, newTag: ReplyTag) => Promise<void>;
 
   handleAddDailyLog: (logData: Omit<DailyLog, 'id'>) => Promise<void>;
+  handleUpdateDailyLog: (id: string, patch: Partial<DailyLog>) => Promise<void>;
+  handleDeleteDailyLog: (id: string) => Promise<void>;
 
   handleAddClient: (clientData: Omit<Client, 'id'>) => Promise<void>;
   handleUpdateClient: (id: string, patch: Partial<Client>) => Promise<void>;
+  handleDeleteClient: (id: string) => Promise<void>;
 
   handleAddTimeLog: (logData: Omit<TimeLog, 'id'>) => Promise<void>;
+  handleUpdateTimeLog: (id: string, patch: Partial<TimeLog>) => Promise<void>;
+  handleDeleteTimeLog: (id: string) => Promise<void>;
 
   handleAddTask: (taskData: Omit<TeamTask, 'id'>) => Promise<void>;
   handleUpdateTask: (id: string, patch: Partial<TeamTask>) => Promise<void>;
+  handleDeleteTask: (id: string) => Promise<void>;
 
   handleAddDeliveryItem: (itemData: Omit<DeliveryItem, 'id'>) => Promise<void>;
   handleUpdateDeliveryItem: (id: string, patch: Partial<DeliveryItem>) => Promise<void>;
+  handleDeleteDeliveryItem: (id: string) => Promise<void>;
 
   handleAddInvoice: (invData: Omit<Invoice, 'id'>) => Promise<void>;
   handleUpdateInvoice: (id: string, patch: Partial<Invoice>) => Promise<void>;
+  handleDeleteInvoice: (id: string) => Promise<void>;
+
   handleAddExpense: (expData: Omit<Expense, 'id'>) => Promise<void>;
+  handleUpdateExpense: (id: string, patch: Partial<Expense>) => Promise<void>;
+  handleDeleteExpense: (id: string) => Promise<void>;
 
   handleUpdateSettings: (newSettings: Partial<SystemSettings>) => Promise<void>;
   handleExportExcel: () => void;
@@ -246,6 +257,38 @@ export function LeadGenProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const handleUpdateDailyLog = async (id: string, patch: Partial<DailyLog>) => {
+    notify.edit('Daily outreach log updated');
+    setData((prev) =>
+      prev
+        ? {
+            ...prev,
+            dailyLogs: prev.dailyLogs.map((d) => (d.id === id ? { ...d, ...patch } : d)),
+          }
+        : null
+    );
+    await fetch(`/api/lead-gen/daily-log/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    });
+  };
+
+  const handleDeleteDailyLog = async (id: string) => {
+    notify.delete('Daily outreach log deleted');
+    setData((prev) =>
+      prev
+        ? {
+            ...prev,
+            dailyLogs: prev.dailyLogs.filter((d) => d.id !== id),
+          }
+        : null
+    );
+    await fetch(`/api/lead-gen/daily-log/${id}`, {
+      method: 'DELETE',
+    });
+  };
+
   // Client Handlers
   const handleAddClient = async (clientData: Omit<Client, 'id'>) => {
     notify.instant({
@@ -291,6 +334,21 @@ export function LeadGenProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const handleDeleteClient = async (id: string) => {
+    notify.delete('Client removed');
+    setData((prev) =>
+      prev
+        ? {
+            ...prev,
+            clients: prev.clients.filter((c) => c.id !== id),
+          }
+        : null
+    );
+    await fetch(`/api/lead-gen/clients/${id}`, {
+      method: 'DELETE',
+    });
+  };
+
   // Time Log Handlers
   const handleAddTimeLog = async (logData: Omit<TimeLog, 'id'>) => {
     notify.success('Time log entry recorded');
@@ -310,6 +368,38 @@ export function LeadGenProvider({ children }: { children: React.ReactNode }) {
           : null
       );
     }
+  };
+
+  const handleUpdateTimeLog = async (id: string, patch: Partial<TimeLog>) => {
+    notify.edit('Time log entry updated');
+    setData((prev) =>
+      prev
+        ? {
+            ...prev,
+            timeLogs: prev.timeLogs.map((t) => (t.id === id ? { ...t, ...patch } : t)),
+          }
+        : null
+    );
+    await fetch(`/api/lead-gen/time-log/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    });
+  };
+
+  const handleDeleteTimeLog = async (id: string) => {
+    notify.delete('Time log entry deleted');
+    setData((prev) =>
+      prev
+        ? {
+            ...prev,
+            timeLogs: prev.timeLogs.filter((t) => t.id !== id),
+          }
+        : null
+    );
+    await fetch(`/api/lead-gen/time-log/${id}`, {
+      method: 'DELETE',
+    });
   };
 
   // Team Task Handlers
@@ -351,6 +441,21 @@ export function LeadGenProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const handleDeleteTask = async (id: string) => {
+    notify.delete('Task removed');
+    setData((prev) =>
+      prev
+        ? {
+            ...prev,
+            teamTasks: prev.teamTasks.filter((t) => t.id !== id),
+          }
+        : null
+    );
+    await fetch(`/api/lead-gen/team-tasks/${id}`, {
+      method: 'DELETE',
+    });
+  };
+
   // Delivery Calendar Handlers
   const handleAddDeliveryItem = async (itemData: Omit<DeliveryItem, 'id'>) => {
     notify.success('Delivery milestone added');
@@ -387,6 +492,21 @@ export function LeadGenProvider({ children }: { children: React.ReactNode }) {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(patch),
+    });
+  };
+
+  const handleDeleteDeliveryItem = async (id: string) => {
+    notify.delete('Deliverable removed');
+    setData((prev) =>
+      prev
+        ? {
+            ...prev,
+            deliveryCalendar: prev.deliveryCalendar.filter((d) => d.id !== id),
+          }
+        : null
+    );
+    await fetch(`/api/lead-gen/delivery/${id}`, {
+      method: 'DELETE',
     });
   };
 
@@ -436,6 +556,21 @@ export function LeadGenProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const handleDeleteInvoice = async (id: string) => {
+    notify.delete('Invoice removed');
+    setData((prev) =>
+      prev
+        ? {
+            ...prev,
+            invoices: prev.invoices.filter((i) => i.id !== id),
+          }
+        : null
+    );
+    await fetch(`/api/lead-gen/invoices/${id}`, {
+      method: 'DELETE',
+    });
+  };
+
   const handleAddExpense = async (expData: Omit<Expense, 'id'>) => {
     // 🚀 0ms Instant Feedback
     notify.instant({
@@ -461,6 +596,38 @@ export function LeadGenProvider({ children }: { children: React.ReactNode }) {
           : null
       );
     }
+  };
+
+  const handleUpdateExpense = async (id: string, patch: Partial<Expense>) => {
+    notify.edit('Expense updated');
+    setData((prev) =>
+      prev
+        ? {
+            ...prev,
+            expenses: prev.expenses.map((e) => (e.id === id ? { ...e, ...patch } : e)),
+          }
+        : null
+    );
+    await fetch(`/api/lead-gen/expenses/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    });
+  };
+
+  const handleDeleteExpense = async (id: string) => {
+    notify.delete('Expense entry deleted');
+    setData((prev) =>
+      prev
+        ? {
+            ...prev,
+            expenses: prev.expenses.filter((e) => e.id !== id),
+          }
+        : null
+    );
+    await fetch(`/api/lead-gen/expenses/${id}`, {
+      method: 'DELETE',
+    });
   };
 
   // Settings Handlers
@@ -520,16 +687,26 @@ export function LeadGenProvider({ children }: { children: React.ReactNode }) {
         handleUpdateStatus,
         handleUpdateReplyTag,
         handleAddDailyLog,
+        handleUpdateDailyLog,
+        handleDeleteDailyLog,
         handleAddClient,
         handleUpdateClient,
+        handleDeleteClient,
         handleAddTimeLog,
+        handleUpdateTimeLog,
+        handleDeleteTimeLog,
         handleAddTask,
         handleUpdateTask,
+        handleDeleteTask,
         handleAddDeliveryItem,
         handleUpdateDeliveryItem,
+        handleDeleteDeliveryItem,
         handleAddInvoice,
         handleUpdateInvoice,
+        handleDeleteInvoice,
         handleAddExpense,
+        handleUpdateExpense,
+        handleDeleteExpense,
         handleUpdateSettings,
         handleExportExcel,
         handleResetDatabase,

@@ -10,10 +10,12 @@ import {
   CheckCircle2,
   TrendingUp,
   Edit2,
+  Trash2,
   Check,
   Building,
 } from 'lucide-react';
 import { Client, SystemSettings, TimeLog } from '@/types/leadGen';
+import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 
 interface ClientsViewProps {
   clients: Client[];
@@ -21,6 +23,7 @@ interface ClientsViewProps {
   settings: SystemSettings;
   onAddClient: (client: Omit<Client, 'id'>) => Promise<void>;
   onUpdateClient: (id: string, client: Partial<Client>) => Promise<void>;
+  onDeleteClient: (id: string) => Promise<void>;
 }
 
 export default function ClientsView({
@@ -29,7 +32,9 @@ export default function ClientsView({
   settings,
   onAddClient,
   onUpdateClient,
+  onDeleteClient,
 }: ClientsViewProps) {
+  const { confirm } = useConfirm();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
 
@@ -99,6 +104,19 @@ export default function ClientsView({
     setFormStartDate(c.startDate);
     setFormStatus(c.status === 'Example' ? 'Active' : c.status);
     setFormNotes(c.notes || '');
+  };
+
+  const handleDeleteWithConfirm = async (c: Client) => {
+    const confirmed = await confirm({
+      title: 'Delete Client',
+      message: `Are you sure you want to permanently delete "${c.name}"? This action cannot be undone.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      variant: 'danger',
+    });
+    if (confirmed) {
+      await onDeleteClient(c.id);
+    }
   };
 
   return (
@@ -257,13 +275,26 @@ export default function ClientsView({
                       </span>
                     </td>
                     <td className="py-3.5 pl-3 pr-5 text-right">
-                      <button
-                        onClick={() => handleStartEdit(client)}
-                        className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-[#6324FC] dark:hover:text-[#00E5FF] transition"
-                        title="Edit Client"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </button>
+                      <div className="flex items-center justify-end space-x-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleStartEdit(client)}
+                          className="inline-flex items-center space-x-1 rounded-xl px-2.5 py-1 text-xs font-bold text-[#6324FC] dark:text-[#00E5FF] bg-[#6324FC]/10 dark:bg-[#00E5FF]/10 hover:bg-[#6324FC]/20 dark:hover:bg-[#00E5FF]/20 border border-[#6324FC]/20 dark:border-[#00E5FF]/20 transition active:scale-95"
+                          title="Edit Client"
+                        >
+                          <Edit2 className="h-3.5 w-3.5" />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteWithConfirm(client)}
+                          className="inline-flex items-center space-x-1 rounded-xl px-2.5 py-1 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition active:scale-95"
+                          title="Delete Client"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          <span>Delete</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );

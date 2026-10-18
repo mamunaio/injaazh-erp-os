@@ -5,7 +5,7 @@ import ClientsView from '@/components/leadGen/ClientsView';
 import { useLeadGen } from '../LeadGenContext';
 
 export default function ClientsSubPage() {
-  const { data, handleAddClient, handleUpdateClient } = useLeadGen();
+  const { data, handleAddClient, handleUpdateClient, handleDeleteClient } = useLeadGen();
 
   if (!data) return null;
 
@@ -16,6 +16,7 @@ export default function ClientsSubPage() {
       settings={data.settings}
       onAddClient={handleAddClient}
       onUpdateClient={handleUpdateClient}
+      onDeleteClient={handleDeleteClient}
     />
   );
 }

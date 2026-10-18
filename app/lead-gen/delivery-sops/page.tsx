@@ -5,7 +5,7 @@ import DeliveryCalendarView from '@/components/leadGen/DeliveryCalendarView';
 import { useLeadGen } from '../LeadGenContext';
 
 export default function DeliverySopsSubPage() {
-  const { data, handleAddDeliveryItem, handleUpdateDeliveryItem } = useLeadGen();
+  const { data, handleAddDeliveryItem, handleUpdateDeliveryItem, handleDeleteDeliveryItem } = useLeadGen();
 
   if (!data) return null;
 
@@ -15,6 +15,7 @@ export default function DeliverySopsSubPage() {
       clients={data.clients}
       onAddItem={handleAddDeliveryItem}
       onUpdateItem={handleUpdateDeliveryItem}
+      onDeleteItem={handleDeleteDeliveryItem}
     />
   );
 }

@@ -248,6 +248,44 @@ export async function createDailyLog(data: Omit<DailyLog, 'id'> & { id?: string 
   return log;
 }
 
+export async function updateDailyLog(id: string, data: Partial<DailyLog>): Promise<DailyLog | null> {
+  try {
+    await connectToDatabase();
+    const updated = await LeadGenDailyLogModel.findOneAndUpdate({ id }, { $set: data }, { new: true }).lean();
+    if (updated) return updated as unknown as DailyLog;
+  } catch (err) {
+    console.warn('MongoDB updateDailyLog fallback to local:', err);
+  }
+
+  const local = ensureLocalFile();
+  const index = local.dailyLogs.findIndex((d) => d.id === id);
+  if (index !== -1) {
+    local.dailyLogs[index] = { ...local.dailyLogs[index], ...data };
+    saveLocalFile(local);
+    return local.dailyLogs[index];
+  }
+  return null;
+}
+
+export async function deleteDailyLog(id: string): Promise<boolean> {
+  try {
+    await connectToDatabase();
+    const res = await LeadGenDailyLogModel.deleteOne({ id });
+    if (res.deletedCount > 0) return true;
+  } catch (err) {
+    console.warn('MongoDB deleteDailyLog fallback to local:', err);
+  }
+
+  const local = ensureLocalFile();
+  const initialLen = local.dailyLogs.length;
+  local.dailyLogs = local.dailyLogs.filter((d) => d.id !== id);
+  if (local.dailyLogs.length !== initialLen) {
+    saveLocalFile(local);
+    return true;
+  }
+  return false;
+}
+
 // ================= CLIENTS =================
 export async function getClients(): Promise<Client[]> {
   const state = await getLeadGenFullState();
@@ -332,6 +370,44 @@ export async function createTimeLog(data: Omit<TimeLog, 'id'> & { id?: string })
   local.timeLogs.unshift(timeLog);
   saveLocalFile(local);
   return timeLog;
+}
+
+export async function updateTimeLog(id: string, data: Partial<TimeLog>): Promise<TimeLog | null> {
+  try {
+    await connectToDatabase();
+    const updated = await LeadGenTimeLogModel.findOneAndUpdate({ id }, { $set: data }, { new: true }).lean();
+    if (updated) return updated as unknown as TimeLog;
+  } catch (err) {
+    console.warn('MongoDB updateTimeLog fallback to local:', err);
+  }
+
+  const local = ensureLocalFile();
+  const index = local.timeLogs.findIndex((t) => t.id === id);
+  if (index !== -1) {
+    local.timeLogs[index] = { ...local.timeLogs[index], ...data };
+    saveLocalFile(local);
+    return local.timeLogs[index];
+  }
+  return null;
+}
+
+export async function deleteTimeLog(id: string): Promise<boolean> {
+  try {
+    await connectToDatabase();
+    const res = await LeadGenTimeLogModel.deleteOne({ id });
+    if (res.deletedCount > 0) return true;
+  } catch (err) {
+    console.warn('MongoDB deleteTimeLog fallback to local:', err);
+  }
+
+  const local = ensureLocalFile();
+  const initialLen = local.timeLogs.length;
+  local.timeLogs = local.timeLogs.filter((t) => t.id !== id);
+  if (local.timeLogs.length !== initialLen) {
+    saveLocalFile(local);
+    return true;
+  }
+  return false;
 }
 
 // ================= TEAM TASKS =================
@@ -439,6 +515,25 @@ export async function updateDeliveryItem(id: string, data: Partial<DeliveryItem>
   return null;
 }
 
+export async function deleteDeliveryItem(id: string): Promise<boolean> {
+  try {
+    await connectToDatabase();
+    const res = await LeadGenDeliveryItemModel.deleteOne({ id });
+    if (res.deletedCount > 0) return true;
+  } catch (err) {
+    console.warn('MongoDB deleteDeliveryItem fallback to local:', err);
+  }
+
+  const local = ensureLocalFile();
+  const initialLen = local.deliveryCalendar.length;
+  local.deliveryCalendar = local.deliveryCalendar.filter((d) => d.id !== id);
+  if (local.deliveryCalendar.length !== initialLen) {
+    saveLocalFile(local);
+    return true;
+  }
+  return false;
+}
+
 // ================= INVOICES =================
 export async function getInvoices(): Promise<Invoice[]> {
   const state = await getLeadGenFullState();
@@ -482,6 +577,25 @@ export async function updateInvoice(id: string, data: Partial<Invoice>): Promise
   return null;
 }
 
+export async function deleteInvoice(id: string): Promise<boolean> {
+  try {
+    await connectToDatabase();
+    const res = await LeadGenInvoiceModel.deleteOne({ id });
+    if (res.deletedCount > 0) return true;
+  } catch (err) {
+    console.warn('MongoDB deleteInvoice fallback to local:', err);
+  }
+
+  const local = ensureLocalFile();
+  const initialLen = local.invoices.length;
+  local.invoices = local.invoices.filter((inv) => inv.id !== id);
+  if (local.invoices.length !== initialLen) {
+    saveLocalFile(local);
+    return true;
+  }
+  return false;
+}
+
 // ================= EXPENSES =================
 export async function getExpenses(): Promise<Expense[]> {
   const state = await getLeadGenFullState();
@@ -504,6 +618,44 @@ export async function createExpense(data: Omit<Expense, 'id'> & { id?: string })
   local.expenses.unshift(expense);
   saveLocalFile(local);
   return expense;
+}
+
+export async function updateExpense(id: string, data: Partial<Expense>): Promise<Expense | null> {
+  try {
+    await connectToDatabase();
+    const updated = await LeadGenExpenseModel.findOneAndUpdate({ id }, { $set: data }, { new: true }).lean();
+    if (updated) return updated as unknown as Expense;
+  } catch (err) {
+    console.warn('MongoDB updateExpense fallback to local:', err);
+  }
+
+  const local = ensureLocalFile();
+  const index = local.expenses.findIndex((exp) => exp.id === id);
+  if (index !== -1) {
+    local.expenses[index] = { ...local.expenses[index], ...data };
+    saveLocalFile(local);
+    return local.expenses[index];
+  }
+  return null;
+}
+
+export async function deleteExpense(id: string): Promise<boolean> {
+  try {
+    await connectToDatabase();
+    const res = await LeadGenExpenseModel.deleteOne({ id });
+    if (res.deletedCount > 0) return true;
+  } catch (err) {
+    console.warn('MongoDB deleteExpense fallback to local:', err);
+  }
+
+  const local = ensureLocalFile();
+  const initialLen = local.expenses.length;
+  local.expenses = local.expenses.filter((exp) => exp.id !== id);
+  if (local.expenses.length !== initialLen) {
+    saveLocalFile(local);
+    return true;
+  }
+  return false;
 }
 
 // ================= SETTINGS =================

@@ -5,7 +5,7 @@ import DailyLogView from '@/components/leadGen/DailyLogView';
 import { useLeadGen } from '../LeadGenContext';
 
 export default function DailyOutreachSubPage() {
-  const { data, handleAddDailyLog } = useLeadGen();
+  const { data, handleAddDailyLog, handleUpdateDailyLog, handleDeleteDailyLog } = useLeadGen();
 
   if (!data) return null;
 
@@ -14,6 +14,8 @@ export default function DailyOutreachSubPage() {
       dailyLogs={data.dailyLogs}
       settings={data.settings}
       onAddDailyLog={handleAddDailyLog}
+      onUpdateDailyLog={handleUpdateDailyLog}
+      onDeleteDailyLog={handleDeleteDailyLog}
     />
   );
 }

@@ -9,7 +9,10 @@ export default function FinancialsSubPage() {
     data,
     handleAddInvoice,
     handleUpdateInvoice,
+    handleDeleteInvoice,
     handleAddExpense,
+    handleUpdateExpense,
+    handleDeleteExpense,
   } = useLeadGen();
 
   if (!data) return null;
@@ -21,7 +24,10 @@ export default function FinancialsSubPage() {
       clients={data.clients}
       onAddInvoice={handleAddInvoice}
       onUpdateInvoice={handleUpdateInvoice}
+      onDeleteInvoice={handleDeleteInvoice}
       onAddExpense={handleAddExpense}
+      onUpdateExpense={handleUpdateExpense}
+      onDeleteExpense={handleDeleteExpense}
     />
   );
 }

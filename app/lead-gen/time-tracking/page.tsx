@@ -5,7 +5,7 @@ import TimeLogView from '@/components/leadGen/TimeLogView';
 import { useLeadGen } from '../LeadGenContext';
 
 export default function TimeTrackingSubPage() {
-  const { data, handleAddTimeLog } = useLeadGen();
+  const { data, handleAddTimeLog, handleUpdateTimeLog, handleDeleteTimeLog } = useLeadGen();
 
   if (!data) return null;
 
@@ -14,6 +14,8 @@ export default function TimeTrackingSubPage() {
       timeLogs={data.timeLogs}
       clients={data.clients}
       onAddTimeLog={handleAddTimeLog}
+      onUpdateTimeLog={handleUpdateTimeLog}
+      onDeleteTimeLog={handleDeleteTimeLog}
     />
   );
 }

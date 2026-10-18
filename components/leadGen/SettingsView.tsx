@@ -11,6 +11,7 @@ import {
   Server,
 } from 'lucide-react';
 import { SystemSettings } from '@/types/leadGen';
+import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 
 interface SettingsViewProps {
   settings: SystemSettings;
@@ -25,6 +26,7 @@ export default function SettingsView({
   onExportExcel,
   onResetDatabase,
 }: SettingsViewProps) {
+  const { confirm } = useConfirm();
   const [activeSubTab, setActiveSubTab] = useState<'assumptions' | 'database' | 'guide'>('assumptions');
 
   // Form states
@@ -73,11 +75,17 @@ export default function SettingsView({
   };
 
   const handleReset = async () => {
-    if (confirm('Are you sure you want to restore the initial Excel template seed data?')) {
+    const confirmed = await confirm({
+      title: 'Reset Database to Template',
+      message: 'Are you sure you want to restore the initial Excel template seed data? Any uncommitted changes will be replaced with clean demo records.',
+      confirmText: 'Reset Database',
+      cancelText: 'Cancel',
+      variant: 'danger',
+    });
+    if (confirmed) {
       setResetting(true);
       try {
         await onResetDatabase();
-        alert('Database restored with Excel template seed data successfully!');
       } finally {
         setResetting(false);
       }

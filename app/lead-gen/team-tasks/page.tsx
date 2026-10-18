@@ -5,7 +5,7 @@ import TeamTasksView from '@/components/leadGen/TeamTasksView';
 import { useLeadGen } from '../LeadGenContext';
 
 export default function TeamTasksSubPage() {
-  const { data, handleAddTask, handleUpdateTask } = useLeadGen();
+  const { data, handleAddTask, handleUpdateTask, handleDeleteTask } = useLeadGen();
 
   if (!data) return null;
 
@@ -14,6 +14,7 @@ export default function TeamTasksSubPage() {
       tasks={data.teamTasks}
       onAddTask={handleAddTask}
       onUpdateTask={handleUpdateTask}
+      onDeleteTask={handleDeleteTask}
     />
   );
 }
