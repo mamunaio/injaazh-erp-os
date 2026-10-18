@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Search,
   Filter,
@@ -28,6 +28,10 @@ import {
   CheckCircle2,
   Clock,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
   Globe,
   RotateCcw,
   CheckCircle,
@@ -66,6 +70,8 @@ export default function ProspectsView({
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
 
   const todayStr = new Date().toISOString().split('T')[0];
 
@@ -110,7 +116,13 @@ export default function ProspectsView({
     setStatusFilter('ALL');
     setVerifiedFilter('ALL');
     setReplyTagFilter('ALL');
+    setCurrentPage(1);
   };
+
+  // Reset pagination to page 1 whenever filters or search or page size change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, verifiedFilter, replyTagFilter, pageSize]);
 
   // Filter & Sort prospects
   const filteredAndSorted = useMemo(() => {
@@ -167,6 +179,31 @@ export default function ProspectsView({
   const callsCount = prospects.filter((p) => p.status === 'Call booked').length;
   const wonCount = prospects.filter((p) => p.status === 'Won').length;
   const suppressedCount = prospects.filter((p) => p.status === 'Suppressed').length;
+
+  // Pagination calculations
+  const totalFiltered = filteredAndSorted.length;
+  const totalPages = Math.max(1, Math.ceil(totalFiltered / pageSize));
+  const safePage = Math.min(Math.max(1, currentPage), totalPages);
+  const startIndex = totalFiltered === 0 ? 0 : (safePage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalFiltered);
+  const startDisplay = totalFiltered === 0 ? 0 : startIndex + 1;
+
+  const paginatedProspects = useMemo(() => {
+    return filteredAndSorted.slice(startIndex, endIndex);
+  }, [filteredAndSorted, startIndex, endIndex]);
+
+  const pageNumbers = useMemo(() => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    if (safePage <= 4) {
+      return [1, 2, 3, 4, 5, '...', totalPages];
+    }
+    if (safePage >= totalPages - 3) {
+      return [1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    }
+    return [1, '...', safePage - 1, safePage, safePage + 1, '...', totalPages];
+  }, [totalPages, safePage]);
 
   // Visual helper: company avatar gradient
   const getAvatarGradient = (name: string) => {
@@ -402,9 +439,9 @@ export default function ProspectsView({
         <div className="overflow-hidden rounded-3xl border border-black/10 dark:border-white/10 bg-white/95 dark:bg-[#0c0d14]/90 shadow-sm backdrop-blur-xl">
           {/* Table Header Mini-Strip */}
           <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-black/5 dark:border-white/10 bg-slate-50/70 dark:bg-white/[0.02]">
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                {filteredAndSorted.length} {filteredAndSorted.length === 1 ? 'Prospect' : 'Prospects'}
+                {totalFiltered} {totalFiltered === 1 ? 'Prospect' : 'Prospects'}
               </span>
               {hasActiveFilters && (
                 <span className="rounded-full bg-[#6324FC]/10 text-[#6324FC] dark:text-[#00E5FF] px-2 py-0.5 text-[11px] font-bold">
@@ -416,10 +453,34 @@ export default function ProspectsView({
                   Sorted: {sortField} ({sortOrder})
                 </span>
               )}
+              {totalFiltered > 0 && (
+                <>
+                  <span className="text-slate-300 dark:text-slate-600 hidden sm:inline">&bull;</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 hidden sm:inline">
+                    Page <span className="font-bold text-slate-900 dark:text-white font-mono">{safePage}</span> of{' '}
+                    <span className="font-bold text-slate-900 dark:text-white font-mono">{totalPages}</span>
+                  </span>
+                </>
+              )}
             </div>
 
-            <div className="text-xs text-slate-400 hidden sm:block">
-              Tip: Click on column headers to sort &bull; Click company name to edit
+            <div className="flex items-center space-x-3 text-xs font-semibold hidden md:flex">
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                <span className="text-slate-600 dark:text-slate-400">{verifiedCount} Verified</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-purple-500" />
+                <span className="text-slate-600 dark:text-slate-400">{callsCount} Calls</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-teal-400" />
+                <span className="text-slate-600 dark:text-slate-400">{positiveCount} Positive</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                <span className="text-slate-600 dark:text-slate-400">{wonCount} Won</span>
+              </span>
             </div>
           </div>
 
@@ -534,7 +595,7 @@ export default function ProspectsView({
                     </td>
                   </tr>
                 ) : (
-                  filteredAndSorted.map((p) => {
+                  paginatedProspects.map((p) => {
                     const isOverdue =
                       p.nextFollowUp &&
                       p.nextFollowUp < todayStr &&
@@ -799,28 +860,123 @@ export default function ProspectsView({
             </table>
           </div>
 
-          {/* Table Bottom Footer Summary */}
-          <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-t border-black/5 dark:border-white/10 bg-slate-50/70 dark:bg-white/[0.02] text-xs text-slate-500 dark:text-slate-400 font-medium">
-            <div>
-              Showing <span className="font-bold text-slate-900 dark:text-white font-mono">{filteredAndSorted.length}</span> of <span className="font-bold text-slate-900 dark:text-white font-mono">{total}</span> total pipeline records
+          {/* Table Bottom Footer: Pagination & Controls */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-5 py-3.5 border-t border-black/5 dark:border-white/10 bg-slate-50/70 dark:bg-white/[0.02] text-xs text-slate-500 dark:text-slate-400">
+            {/* Left: Range and Per-page select */}
+            <div className="flex flex-wrap items-center gap-3.5 w-full sm:w-auto justify-between sm:justify-start">
+              <div className="flex items-center space-x-1.5">
+                <span>Showing</span>
+                <span className="font-bold text-slate-900 dark:text-white font-mono">
+                  {startDisplay}–{endIndex}
+                </span>
+                <span>of</span>
+                <span className="font-bold text-slate-900 dark:text-white font-mono">
+                  {totalFiltered}
+                </span>
+                <span>records</span>
+                {totalFiltered < total && (
+                  <span className="text-[11px] text-slate-400 hidden lg:inline">
+                    (from {total} total)
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center space-x-2 pl-3 border-l border-slate-200 dark:border-white/10">
+                <span className="text-slate-500 dark:text-slate-400 font-medium">Rows:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#12131c] px-2 py-1 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#6324FC]/20 cursor-pointer"
+                >
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+              </div>
             </div>
-            <div className="flex items-center space-x-4 text-xs font-semibold">
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                <span>{verifiedCount} Verified</span>
+
+            {/* Right: Pagination Navigation */}
+            <div className="flex items-center space-x-1 sm:space-x-1.5 w-full sm:w-auto justify-center sm:justify-end">
+              {/* First Page */}
+              <button
+                type="button"
+                onClick={() => setCurrentPage(1)}
+                disabled={safePage <= 1}
+                className="p-1.5 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#12131c] hover:bg-slate-100 dark:hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition text-slate-700 dark:text-slate-300"
+                title="First Page"
+              >
+                <ChevronsLeft className="h-4 w-4" />
+              </button>
+
+              {/* Prev Page */}
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={safePage <= 1}
+                className="p-1.5 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#12131c] hover:bg-slate-100 dark:hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition text-slate-700 dark:text-slate-300"
+                title="Previous Page"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+
+              {/* Page Number Buttons */}
+              <div className="hidden sm:flex items-center space-x-1">
+                {pageNumbers.map((num, idx) => {
+                  if (typeof num === 'string') {
+                    return (
+                      <span key={`ellipsis-${idx}`} className="px-2 py-1 text-xs text-slate-400 font-mono select-none">
+                        ...
+                      </span>
+                    );
+                  }
+                  const isActive = num === safePage;
+                  return (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => setCurrentPage(num)}
+                      className={`min-w-[28px] h-7 px-2 rounded-lg text-xs font-mono font-bold transition ${
+                        isActive
+                          ? 'bg-gradient-to-r from-[#6324FC] to-[#4F46E5] text-white shadow-sm'
+                          : 'border border-transparent hover:border-slate-200 dark:hover:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5'
+                      }`}
+                    >
+                      {num}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Mobile View Page Indicator */}
+              <span className="sm:hidden text-xs font-mono font-bold px-2 text-slate-700 dark:text-slate-300">
+                {safePage} / {totalPages}
               </span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-purple-500" />
-                <span>{callsCount} Calls</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-teal-400" />
-                <span>{positiveCount} Positive</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                <span>{wonCount} Won</span>
-              </span>
+
+              {/* Next Page */}
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={safePage >= totalPages}
+                className="p-1.5 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#12131c] hover:bg-slate-100 dark:hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition text-slate-700 dark:text-slate-300"
+                title="Next Page"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+
+              {/* Last Page */}
+              <button
+                type="button"
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={safePage >= totalPages}
+                className="p-1.5 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#12131c] hover:bg-slate-100 dark:hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition text-slate-700 dark:text-slate-300"
+                title="Last Page"
+              >
+                <ChevronsRight className="h-4 w-4" />
+              </button>
             </div>
           </div>
         </div>
