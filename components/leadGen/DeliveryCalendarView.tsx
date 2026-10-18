@@ -33,7 +33,7 @@ export default function DeliveryCalendarView({
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingItem, setEditingItem] = useState<DeliveryItem | null>(null);
 
-  const [client, setClient] = useState(clients[0]?.name || 'Acme Heating & Air');
+  const [client, setClient] = useState(clients[0]?.name || '');
   const [task, setTask] = useState('Weekly GBP update post & local offer highlight');
   const [frequency, setFrequency] = useState<'Weekly' | 'Bi-weekly' | 'Monthly' | 'Quarterly' | 'Bi-annual'>('Weekly');
   const [nextDue, setNextDue] = useState(new Date().toISOString().split('T')[0]);
@@ -289,17 +289,28 @@ export default function DeliveryCalendarView({
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Client *</label>
-                <select
-                  value={client}
-                  onChange={(e) => setClient(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/40 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/60 focus:border-[#6324FC] focus:outline-none transition-all"
-                >
-                  {clients.map((c) => (
-                    <option key={c.id} value={c.name}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
+                {clients.length > 0 ? (
+                  <select
+                    value={client}
+                    onChange={(e) => setClient(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/40 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/60 focus:border-[#6324FC] focus:outline-none transition-all"
+                  >
+                    {clients.map((c) => (
+                      <option key={c.id} value={c.name}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    required
+                    placeholder="Enter client name..."
+                    value={client}
+                    onChange={(e) => setClient(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/40 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/60 focus:border-[#6324FC] focus:outline-none transition-all"
+                  />
+                )}
               </div>
 
               <div>

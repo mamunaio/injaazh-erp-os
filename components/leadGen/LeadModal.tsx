@@ -155,7 +155,7 @@ export default function LeadModal({
               <input
                 type="text"
                 required
-                placeholder="e.g., Acme Heating & Air"
+                placeholder="e.g., Summit HVAC Services"
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/40 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-black/60 focus:border-[#6324FC] focus:outline-none transition-all"

@@ -47,7 +47,7 @@ export default function FinancialsView({
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
   // Invoice form state
-  const [invClient, setInvClient] = useState(clients[0]?.name || 'Acme Heating & Air');
+  const [invClient, setInvClient] = useState(clients[0]?.name || '');
   const [invAmount, setInvAmount] = useState(1000);
   const [invIssueDate, setInvIssueDate] = useState(new Date().toISOString().split('T')[0]);
   const [invDueDate, setInvDueDate] = useState(
@@ -530,17 +530,28 @@ export default function FinancialsView({
             <form onSubmit={handleInvoiceSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Client *</label>
-                <select
-                  value={invClient}
-                  onChange={(e) => setInvClient(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/40 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/60 focus:border-[#6324FC] focus:outline-none transition-all"
-                >
-                  {clients.map((c) => (
-                    <option key={c.id} value={c.name}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
+                {clients.length > 0 ? (
+                  <select
+                    value={invClient}
+                    onChange={(e) => setInvClient(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/40 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/60 focus:border-[#6324FC] focus:outline-none transition-all"
+                  >
+                    {clients.map((c) => (
+                      <option key={c.id} value={c.name}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    required
+                    placeholder="Enter client name..."
+                    value={invClient}
+                    onChange={(e) => setInvClient(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/40 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/60 focus:border-[#6324FC] focus:outline-none transition-all"
+                  />
+                )}
               </div>
 
               <div>

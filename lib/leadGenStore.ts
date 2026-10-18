@@ -76,20 +76,19 @@ export async function getLeadGenFullState(): Promise<DatabaseState> {
       LeadGenSettingsModel.findOne().lean(),
     ]);
 
-    // If MongoDB has no data yet, seed it from initial data
-    if (prospects.length === 0 && clients.length === 0) {
+    // If MongoDB has no settings yet, initialize default settings
+    if (!settingsDoc) {
       const defState = ensureLocalFile();
-      await Promise.all([
-        LeadGenProspectModel.insertMany(defState.prospects),
-        LeadGenDailyLogModel.insertMany(defState.dailyLogs),
-        LeadGenClientModel.insertMany(defState.clients),
-        LeadGenTimeLogModel.insertMany(defState.timeLogs),
-        LeadGenTeamTaskModel.insertMany(defState.teamTasks),
-        LeadGenDeliveryItemModel.insertMany(defState.deliveryCalendar),
-        LeadGenInvoiceModel.insertMany(defState.invoices),
-        LeadGenExpenseModel.insertMany(defState.expenses),
-        LeadGenSettingsModel.create(defState.settings),
-      ]);
+      await LeadGenSettingsModel.create(defState.settings);
+      if (defState.prospects.length > 0) await LeadGenProspectModel.insertMany(defState.prospects);
+      if (defState.dailyLogs.length > 0) await LeadGenDailyLogModel.insertMany(defState.dailyLogs);
+      if (defState.clients.length > 0) await LeadGenClientModel.insertMany(defState.clients);
+      if (defState.timeLogs.length > 0) await LeadGenTimeLogModel.insertMany(defState.timeLogs);
+      if (defState.teamTasks.length > 0) await LeadGenTeamTaskModel.insertMany(defState.teamTasks);
+      if (defState.deliveryCalendar.length > 0) await LeadGenDeliveryItemModel.insertMany(defState.deliveryCalendar);
+      if (defState.invoices.length > 0) await LeadGenInvoiceModel.insertMany(defState.invoices);
+      if (defState.expenses.length > 0) await LeadGenExpenseModel.insertMany(defState.expenses);
+
       return {
         ...defState,
         settings: {
@@ -700,18 +699,18 @@ export async function seedDatabase(forceMongoSync = true): Promise<{ success: bo
       ]);
 
       await Promise.all([
-        LeadGenProspectModel.insertMany(defaultData.prospects),
-        LeadGenDailyLogModel.insertMany(defaultData.dailyLogs),
-        LeadGenClientModel.insertMany(defaultData.clients),
-        LeadGenTimeLogModel.insertMany(defaultData.timeLogs),
-        LeadGenTeamTaskModel.insertMany(defaultData.teamTasks),
-        LeadGenDeliveryItemModel.insertMany(defaultData.deliveryCalendar),
-        LeadGenInvoiceModel.insertMany(defaultData.invoices),
-        LeadGenExpenseModel.insertMany(defaultData.expenses),
+        defaultData.prospects.length > 0 ? LeadGenProspectModel.insertMany(defaultData.prospects) : Promise.resolve(),
+        defaultData.dailyLogs.length > 0 ? LeadGenDailyLogModel.insertMany(defaultData.dailyLogs) : Promise.resolve(),
+        defaultData.clients.length > 0 ? LeadGenClientModel.insertMany(defaultData.clients) : Promise.resolve(),
+        defaultData.timeLogs.length > 0 ? LeadGenTimeLogModel.insertMany(defaultData.timeLogs) : Promise.resolve(),
+        defaultData.teamTasks.length > 0 ? LeadGenTeamTaskModel.insertMany(defaultData.teamTasks) : Promise.resolve(),
+        defaultData.deliveryCalendar.length > 0 ? LeadGenDeliveryItemModel.insertMany(defaultData.deliveryCalendar) : Promise.resolve(),
+        defaultData.invoices.length > 0 ? LeadGenInvoiceModel.insertMany(defaultData.invoices) : Promise.resolve(),
+        defaultData.expenses.length > 0 ? LeadGenExpenseModel.insertMany(defaultData.expenses) : Promise.resolve(),
         LeadGenSettingsModel.create(defaultData.settings),
       ]);
 
-      return { success: true, message: 'Seeded both MongoDB and local database successfully!' };
+      return { success: true, message: 'Database reset to clean state successfully!' };
     } catch (err) {
       return { success: true, message: `Seeded locally, but MongoDB error: ${(err as Error).message}` };
     }
