@@ -21,7 +21,7 @@ import {
   Loader2,
   Sparkles,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { LeadGenProvider, useLeadGen } from './LeadGenContext';
 import LeadModal from '@/components/leadGen/LeadModal';
 import ImportModal from '@/components/leadGen/ImportModal';
@@ -165,7 +165,7 @@ function LeadGenShell({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* 2. Sub-Navigation Tabs Bar (Smooth ERP Sub-Routes) */}
-      <div className="p-1.5 rounded-2xl bg-white/70 dark:bg-[#0a0a0d]/80 backdrop-blur-xl border border-black/10 dark:border-white/10 flex items-center gap-1 overflow-x-auto no-scrollbar shadow-sm">
+      <div className="p-1.5 rounded-2xl bg-white/70 dark:bg-[#0a0a0d]/80 backdrop-blur-xl border border-black/10 dark:border-white/10 flex items-center gap-1 overflow-x-auto no-scrollbar shadow-sm relative">
         {tabRoutes.map((tab) => {
           const Icon = tab.icon;
           const isActive =
@@ -178,14 +178,21 @@ function LeadGenShell({ children }: { children: React.ReactNode }) {
               key={tab.id}
               href={tab.href}
               prefetch={true}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-heading font-bold whitespace-nowrap transition-all duration-200 ${
+              className={`relative flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-heading font-bold whitespace-nowrap transition-colors duration-200 ${
                 isActive
-                  ? 'bg-gradient-to-r from-[#6324FC] to-[#4F46E5] text-white shadow-md shadow-[#6324FC]/25'
+                  ? 'text-white'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
               }`}
             >
-              <Icon className={`h-4 w-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-              <span>{tab.label}</span>
+              {isActive && (
+                <motion.div
+                  layoutId="activeLeadGenTabPill"
+                  className="absolute inset-0 bg-gradient-to-r from-[#6324FC] to-[#4F46E5] rounded-xl shadow-md shadow-[#6324FC]/25"
+                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                />
+              )}
+              <Icon className={`h-4 w-4 relative z-10 transition-colors ${isActive ? 'text-white' : 'text-slate-400'}`} />
+              <span className="relative z-10">{tab.label}</span>
             </Link>
           );
         })}
@@ -198,15 +205,18 @@ function LeadGenShell({ children }: { children: React.ReactNode }) {
             <Loader2 className="h-8 w-8 animate-spin text-[#6324FC]" />
           </div>
         ) : (
-          <motion.div
-            key={pathname}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full"
-          >
-            {children}
-          </motion.div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={pathname}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full"
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
         )}
       </div>
 

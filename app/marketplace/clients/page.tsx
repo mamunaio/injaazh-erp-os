@@ -29,10 +29,12 @@ export default async function MarketplaceClientsPage() {
   const initialClients = result.success ? result.data : [];
   const generalProjects = generalProjectsRes.success ? generalProjectsRes.data : [];
 
-  // Calculate total spent per client based on paid milestones and completed projects
+  // Calculate total spent per client based on paid milestones and completed projects without double counting
   const clientsWithSpending = initialClients.map((client: any) => {
     let totalSpent = 0;
     const clientProjects: any[] = [];
+    const seenProjectIds = new Set<string>();
+    const seenProjectTitles = new Set<string>();
     
     // Process Marketplace Projects
     projects.forEach((project: any) => {
@@ -52,7 +54,7 @@ export default async function MarketplaceClientsPage() {
           });
         }
         
-        const budgetValue = project.budget ? parseFloat(project.budget.replace(/[^0-9.-]+/g, '')) : 0;
+        const budgetValue = project.budget ? parseFloat(String(project.budget).replace(/[^0-9.-]+/g, '')) || 0 : 0;
         
         // If there are paid milestones, use that sum. 
         // Otherwise, if the project is fully completed, assume the full budget was paid.
@@ -61,6 +63,11 @@ export default async function MarketplaceClientsPage() {
           : (project.status === 'Completed' ? budgetValue : 0);
           
         totalSpent += earned;
+        seenProjectIds.add(project._id.toString());
+        if (project.title) {
+          seenProjectTitles.add(project.title.toLowerCase().trim());
+        }
+
         clientProjects.push({
           _id: project._id,
           title: project.title,
@@ -73,11 +80,43 @@ export default async function MarketplaceClientsPage() {
       }
     });
 
-    // Process General Projects (from Work -> Projects)
+    // Process General Projects (from Work -> Projects) ONLY if not already counted via Marketplace Projects
     generalProjects.forEach((project: any) => {
-      if (project.clientName && project.clientName.toLowerCase() === client.name?.toLowerCase() && project.status === 'Completed') {
-        totalSpent += project.budget || 0;
+      const matchesClient = 
+        project.clientName && project.clientName.toLowerCase() === client.name?.toLowerCase();
+
+      if (!matchesClient) return;
+
+      // Check if this project was already counted via MarketplaceProject (by marketplaceProjectId, ID, or title)
+      const isAlreadyInMarketplace = 
+        (project.marketplaceProjectId && seenProjectIds.has(project.marketplaceProjectId.toString())) ||
+        seenProjectIds.has(project._id.toString()) ||
+        (project.title && seenProjectTitles.has(project.title.toLowerCase().trim()));
+
+      if (isAlreadyInMarketplace) {
+        // Skip duplicate! Already counted in Marketplace Projects.
+        return;
       }
+
+      // If it's a unique general project belonging to this client:
+      const budgetValue = typeof project.budget === 'number' ? project.budget : parseFloat(String(project.budget || '0').replace(/[^0-9.-]+/g, '')) || 0;
+      const earned = project.status === 'Completed' ? budgetValue : 0;
+      totalSpent += earned;
+
+      seenProjectIds.add(project._id.toString());
+      if (project.title) {
+        seenProjectTitles.add(project.title.toLowerCase().trim());
+      }
+
+      clientProjects.push({
+        _id: project._id,
+        title: project.title,
+        platform: project.platform || 'Direct',
+        status: project.status || 'In Progress',
+        budget: typeof project.budget === 'number' ? `$${project.budget}` : (project.budget || '$0'),
+        earned: earned,
+        createdAt: project.createdAt
+      });
     });
 
     return { 

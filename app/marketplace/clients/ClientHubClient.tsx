@@ -37,11 +37,12 @@ type SortOption = 'revenue-desc' | 'revenue-asc' | 'name-asc' | 'newest' | 'proj
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function fmtCurrency(v: number) {
+  const hasCents = (v || 0) % 1 !== 0;
   return new Intl.NumberFormat('en-US', { 
     style: 'currency', 
     currency: 'USD', 
-    minimumFractionDigits: 0, 
-    maximumFractionDigits: 0 
+    minimumFractionDigits: hasCents ? 2 : 0, 
+    maximumFractionDigits: hasCents ? 2 : 0 
   }).format(v || 0);
 }
 

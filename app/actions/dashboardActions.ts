@@ -29,12 +29,18 @@ export async function getDashboardData() {
     const newLeadsToday = 0;
     const outreachAddedToday = 0;
 
-    // Combine regular projects and marketplace projects
-    const totalProjects = projects.length + marketplaceProjects.length;
-    const activeProjects = projects.filter((p: any) => 
+    // Combine regular projects and marketplace projects without double-counting synced projects
+    const syncedMpIds = new Set(
+      projects.map((p: any) => p.marketplaceProjectId?.toString()).filter(Boolean)
+    );
+    const uniqueMarketplaceProjects = marketplaceProjects.filter(
+      (mp: any) => !syncedMpIds.has(mp._id.toString())
+    );
+    const allUnifiedProjects = [...projects, ...uniqueMarketplaceProjects];
+
+    const totalProjects = allUnifiedProjects.length;
+    const activeProjects = allUnifiedProjects.filter((p: any) => 
       p.status === 'In Progress' || p.status === 'Planning' || p.status === 'In Review'
-    ).length + marketplaceProjects.filter((mp: any) => 
-      mp.status === 'In Progress' || mp.status === 'Planning' || mp.status === 'In Review'
     ).length;
 
     const totalMarketplaceProjects = marketplaceProjects.length;
