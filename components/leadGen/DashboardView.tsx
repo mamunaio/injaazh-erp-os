@@ -110,146 +110,193 @@ export default function DashboardView({
     <div className="space-y-7 pb-12">
       {/* Top Welcome & Safety Warning */}
       {isBounceUnsafe && (
-        <div className="flex items-center justify-between rounded-2xl border border-rose-500/40 bg-rose-500/10 p-5 text-rose-600 dark:text-rose-300 shadow-xl shadow-rose-950/20 backdrop-blur-md">
-          <div className="flex items-center space-x-3.5">
-            <ShieldAlert className="h-7 w-7 text-rose-500 dark:text-rose-400 shrink-0 animate-pulse" />
-            <div>
-              <h4 className="font-bold text-base text-rose-700 dark:text-rose-200">
-                Outreach Alert: Bounce Rate Exceeds Safety Ceiling ({bounceRate.toFixed(1)}% &gt; {maxBounce}%)
-              </h4>
-              <p className="text-sm text-rose-600/90 dark:text-rose-300/90 mt-0.5">
-                Pause sending immediately as per SOP guide rules and re-verify your contact list using BounceZero or NeverBounce.
-              </p>
+        <div className="relative overflow-hidden rounded-2xl border border-rose-500/40 bg-rose-500/10 p-5 text-rose-600 dark:text-rose-300 shadow-xl shadow-rose-950/20 backdrop-blur-md">
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-rose-500 to-transparent shadow-[0_0_12px_#F43F5E]" />
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center space-x-3.5">
+              <div className="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center shrink-0">
+                <ShieldAlert className="h-6 w-6 text-rose-500 dark:text-rose-400 animate-pulse" />
+              </div>
+              <div>
+                <h4 className="font-heading font-bold text-base text-rose-700 dark:text-rose-200">
+                  Outreach Alert: Bounce Rate Exceeds Safety Ceiling ({bounceRate.toFixed(1)}% &gt; {maxBounce}%)
+                </h4>
+                <p className="text-xs sm:text-sm text-rose-600/90 dark:text-rose-300/90 mt-0.5">
+                  Pause sending immediately as per SOP guide rules and re-verify your contact list using BounceZero or NeverBounce.
+                </p>
+              </div>
             </div>
-          </div>
-          <button
-            onClick={() => onNavigateTab('daily-log')}
-            className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-500 transition shadow"
-          >
-            Review Daily Log
-          </button>
-        </div>
-      )}
-
-      {/* Main KPI Cards Grid */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {/* MRR Card */}
-        <div className="relative overflow-hidden rounded-2xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 p-6 shadow-sm hover:shadow-md transition-all backdrop-blur-xl">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Monthly Retainer MRR</span>
-            <span className="rounded-xl bg-emerald-500/10 p-2.5 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              <DollarSign className="h-5 w-5" />
-            </span>
-          </div>
-          <div className="mt-4 flex items-baseline space-x-2.5">
-            <span className="text-3xl lg:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-              ${currentMrr.toLocaleString()}
-            </span>
-            <span className="text-sm text-emerald-600 dark:text-emerald-400 font-bold">
-              {activeClients.length} Active
-            </span>
-          </div>
-
-          <div className="mt-5 space-y-2">
-            <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
-              <span>Month 6 Goal (${targetM6.toLocaleString()})</span>
-              <span className="font-bold text-slate-800 dark:text-slate-200">{mrrProgressM6}%</span>
-            </div>
-            <div className="h-2.5 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500"
-                style={{ width: `${mrrProgressM6}%` }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Total Prospects Card */}
-        <div className="relative overflow-hidden rounded-2xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 p-6 shadow-sm hover:shadow-md transition-all backdrop-blur-xl">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Total Prospects in Pipeline</span>
-            <span className="rounded-xl bg-[#6324FC]/10 p-2.5 text-[#6324FC] dark:text-[#00E5FF] border border-[#6324FC]/20">
-              <Users className="h-5 w-5" />
-            </span>
-          </div>
-          <div className="mt-4 flex items-baseline space-x-2.5">
-            <span className="text-3xl lg:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-              {totalProspects}
-            </span>
-            <span className="text-sm text-[#6324FC] dark:text-[#00E5FF] font-bold">
-              {verifiedCount} Verified ({totalProspects > 0 ? Math.round((verifiedCount / totalProspects) * 100) : 0}%)
-            </span>
-          </div>
-
-          <div className="mt-5 flex items-center justify-between pt-3 border-t border-black/5 dark:border-white/10 text-xs text-slate-500 dark:text-slate-400">
-            <span>HVAC B2B List</span>
             <button
-              onClick={() => onNavigateTab('prospects')}
-              className="text-[#6324FC] dark:text-[#00E5FF] font-bold hover:underline flex items-center text-xs"
+              onClick={() => onNavigateTab('daily-log')}
+              className="rounded-xl bg-rose-600 hover:bg-rose-500 px-4 py-2 text-xs font-heading font-bold text-white transition shadow-lg shrink-0"
             >
-              View Pipeline <ArrowUpRight className="h-3.5 w-3.5 ml-1" />
+              Review Daily Log
             </button>
           </div>
         </div>
+      )}
 
-        {/* Cold Emails Sent Card */}
-        <div className="relative overflow-hidden rounded-2xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 p-6 shadow-sm hover:shadow-md transition-all backdrop-blur-xl">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">30-Day Cold Emails Sent</span>
-            <span className="rounded-xl bg-indigo-500/10 p-2.5 text-indigo-500 dark:text-indigo-400 border border-indigo-500/20">
-              <Send className="h-5 w-5" />
-            </span>
-          </div>
-          <div className="mt-4 flex items-baseline space-x-2.5">
-            <span className="text-3xl lg:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-              {totalEmailsSent}
-            </span>
-            <span className="text-sm text-indigo-500 dark:text-indigo-400 font-bold">
-              Target: {sendTargetLow} - {sendTargetHigh}
-            </span>
-          </div>
+      {/* Main KPI Cards Grid (Matching Dashboard Style) */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Metric 1: MRR Card */}
+        <div
+          onClick={() => onNavigateTab('clients')}
+          className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[185px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-emerald-500/60 hover:shadow-[0_16px_36px_rgba(16,185,129,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
+        >
+          {/* Radial Hover Spotlight */}
+          <div className="absolute -top-10 -right-10 w-36 h-36 bg-emerald-500/20 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+          {/* Top Accent Neon Line */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] bg-gradient-to-r from-transparent via-emerald-500 to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#10B981]" />
+          {/* Subtle Card Glass Sheen */}
+          <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-          <div className="mt-5 space-y-2">
-            <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
-              <span>Send Pace Progress</span>
-              <span className="font-bold text-slate-800 dark:text-slate-200">{sendPacePercent}%</span>
+          <div className="flex justify-between items-start mb-4 relative z-10">
+            <div className="w-11 h-11 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-500 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(16,185,129,0.6)] group-hover:border-emerald-500 transition-all duration-300 shadow-sm">
+              <DollarSign size={21} />
             </div>
-            <div className="h-2.5 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-cyan-400 transition-all duration-500"
-                style={{ width: `${sendPacePercent}%` }}
-              />
+            <span className="text-xs font-heading font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20 group-hover:border-emerald-500/40 transition-colors">
+              <ArrowUpRight size={13} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" /> {activeClients.length} Active
+            </span>
+          </div>
+
+          <div className="relative z-10">
+            <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">Monthly Retainer MRR</p>
+            <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-emerald-500 dark:group-hover:text-transparent dark:group-hover:bg-clip-text dark:group-hover:bg-gradient-to-r dark:group-hover:from-white dark:group-hover:to-emerald-400 transition-all">
+              ${currentMrr.toLocaleString()}
+            </p>
+
+            <div className="mt-4 space-y-1.5">
+              <div className="flex justify-between text-[11px] font-mono text-secondary">
+                <span>Month 6 Goal (${targetM6.toLocaleString()})</span>
+                <span className="font-bold text-slate-700 dark:text-slate-300">{mrrProgressM6}%</span>
+              </div>
+              <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500 shadow-[0_0_8px_#10B981]"
+                  style={{ width: `${mrrProgressM6}%` }}
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Won & Calls Booked Card */}
-        <div className="relative overflow-hidden rounded-2xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 p-6 shadow-sm hover:shadow-md transition-all backdrop-blur-xl">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Calls Booked &amp; Deals Won</span>
-            <span className="rounded-xl bg-amber-500/10 p-2.5 text-amber-500 dark:text-amber-400 border border-amber-500/20">
-              <Award className="h-5 w-5" />
+        {/* Metric 2: Total Prospects Card */}
+        <div
+          onClick={() => onNavigateTab('prospects')}
+          className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[185px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-[#6324FC]/60 hover:shadow-[0_16px_36px_rgba(99,36,252,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
+        >
+          {/* Radial Hover Spotlight */}
+          <div className="absolute -top-10 -right-10 w-36 h-36 bg-[#6324FC]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+          {/* Top Accent Neon Line */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] bg-gradient-to-r from-transparent via-[#6324FC] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#6324FC]" />
+          {/* Subtle Card Glass Sheen */}
+          <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+          <div className="flex justify-between items-start mb-4 relative z-10">
+            <div className="w-11 h-11 rounded-2xl bg-[#6324FC]/15 border border-[#6324FC]/30 flex items-center justify-center text-[#6324FC] dark:text-[#00E5FF] group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(99,36,252,0.6)] group-hover:border-[#6324FC] transition-all duration-300 shadow-sm">
+              <Users size={21} />
+            </div>
+            <span className="text-xs font-heading font-bold text-[#6324FC] dark:text-[#00E5FF] flex items-center gap-1 bg-[#6324FC]/10 px-2.5 py-1 rounded-lg border border-[#6324FC]/20 group-hover:border-[#6324FC]/40 transition-colors">
+              {totalProspects > 0 ? Math.round((verifiedCount / totalProspects) * 100) : 0}% Verified
             </span>
-          </div>
-          <div className="mt-4 flex items-baseline space-x-4">
-            <div>
-              <span className="text-3xl lg:text-4xl font-black tracking-tight text-emerald-600 dark:text-emerald-400">
-                {wonDeals}
-              </span>
-              <span className="ml-1.5 text-sm text-slate-500 dark:text-slate-400 font-bold">Won</span>
-            </div>
-            <span className="text-slate-400 dark:text-slate-600 text-2xl font-light">/</span>
-            <div>
-              <span className="text-3xl font-black text-amber-500 dark:text-amber-300">{callsBooked}</span>
-              <span className="ml-1.5 text-sm text-slate-500 dark:text-slate-400 font-bold">Calls</span>
-            </div>
           </div>
 
-          <div className="mt-5 flex items-center justify-between pt-3 border-t border-black/5 dark:border-white/10 text-xs text-slate-500 dark:text-slate-400">
-            <span>
-              Positive: <strong className="text-emerald-600 dark:text-emerald-400 font-extrabold">{positiveRate.toFixed(1)}%</strong>
+          <div className="relative z-10">
+            <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">Total Pipeline Prospects</p>
+            <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-[#6324FC] dark:group-hover:text-transparent dark:group-hover:bg-clip-text dark:group-hover:bg-gradient-to-r dark:group-hover:from-white dark:group-hover:to-[#00E5FF] transition-all">
+              {totalProspects}
+            </p>
+
+            <div className="mt-4 flex items-center justify-between text-xs font-sans text-secondary pt-2 border-t border-black/5 dark:border-white/5">
+              <span>{verifiedCount} Verified Contacts</span>
+              <span className="text-[#6324FC] dark:text-[#00E5FF] font-bold flex items-center group-hover:underline">
+                View Pipeline <ArrowUpRight size={13} className="ml-1" />
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Metric 3: Cold Emails Sent Card */}
+        <div
+          onClick={() => onNavigateTab('daily-log')}
+          className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[185px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-[#00E5FF]/60 hover:shadow-[0_16px_36px_rgba(0,229,255,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
+        >
+          {/* Radial Hover Spotlight */}
+          <div className="absolute -top-10 -right-10 w-36 h-36 bg-[#00E5FF]/20 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+          {/* Top Accent Neon Line */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] bg-gradient-to-r from-transparent via-[#00E5FF] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#00E5FF]" />
+          {/* Subtle Card Glass Sheen */}
+          <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+          <div className="flex justify-between items-start mb-4 relative z-10">
+            <div className="w-11 h-11 rounded-2xl bg-[#00E5FF]/15 border border-[#00E5FF]/30 flex items-center justify-center text-[#00E5FF] group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(0,229,255,0.6)] group-hover:border-[#00E5FF] transition-all duration-300 shadow-sm">
+              <Send size={20} />
+            </div>
+            <span className="text-xs font-heading font-bold text-cyan-600 dark:text-cyan-400 flex items-center gap-1 bg-cyan-500/10 px-2.5 py-1 rounded-lg border border-cyan-500/20 group-hover:border-cyan-500/40 transition-colors">
+              Pace: {sendPacePercent}%
             </span>
-            <span>Target &ge; {minPositive}%</span>
+          </div>
+
+          <div className="relative z-10">
+            <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">30-Day Cold Emails Sent</p>
+            <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-[#00E5FF] dark:group-hover:text-transparent dark:group-hover:bg-clip-text dark:group-hover:bg-gradient-to-r dark:group-hover:from-white dark:group-hover:to-[#00E5FF] transition-all">
+              {totalEmailsSent}
+            </p>
+
+            <div className="mt-4 space-y-1.5">
+              <div className="flex justify-between text-[11px] font-mono text-secondary">
+                <span>Target: {sendTargetLow} - {sendTargetHigh}</span>
+                <span className="font-bold text-slate-700 dark:text-slate-300">{sendPacePercent}%</span>
+              </div>
+              <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-indigo-500 transition-all duration-500 shadow-[0_0_8px_#00E5FF]"
+                  style={{ width: `${sendPacePercent}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Metric 4: Won & Calls Booked Card */}
+        <div
+          onClick={() => onNavigateTab('prospects')}
+          className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[185px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-amber-500/60 hover:shadow-[0_16px_36px_rgba(245,158,11,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
+        >
+          {/* Radial Hover Spotlight */}
+          <div className="absolute -top-10 -right-10 w-36 h-36 bg-amber-500/20 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+          {/* Top Accent Neon Line */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] bg-gradient-to-r from-transparent via-amber-500 to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#F59E0B]" />
+          {/* Subtle Card Glass Sheen */}
+          <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+          <div className="flex justify-between items-start mb-4 relative z-10">
+            <div className="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(245,158,11,0.6)] group-hover:border-amber-500 transition-all duration-300 shadow-sm">
+              <Award size={21} />
+            </div>
+            <span className="text-xs font-heading font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20 group-hover:border-amber-500/40 transition-colors">
+              {positiveRate.toFixed(1)}% Positive
+            </span>
+          </div>
+
+          <div className="relative z-10">
+            <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">Deals Won &amp; Strategy Calls</p>
+            <div className="flex items-baseline gap-3 mt-0.5">
+              <span className="text-2xl lg:text-3xl font-heading font-extrabold text-emerald-600 dark:text-emerald-400 font-mono tracking-tight">
+                {wonDeals} <span className="text-xs font-heading font-bold text-secondary uppercase">Won</span>
+              </span>
+              <span className="text-secondary/40 font-mono text-xl">/</span>
+              <span className="text-2xl lg:text-3xl font-heading font-extrabold text-amber-500 dark:text-amber-300 font-mono tracking-tight">
+                {callsBooked} <span className="text-xs font-heading font-bold text-secondary uppercase">Calls</span>
+              </span>
+            </div>
+
+            <div className="mt-4 flex items-center justify-between text-xs font-sans text-secondary pt-2 border-t border-black/5 dark:border-white/5">
+              <span>Target &ge; {minPositive}%</span>
+              <span className="text-amber-500 font-bold flex items-center group-hover:underline">
+                Outreach Log <ChevronRight size={13} className="ml-0.5" />
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -257,48 +304,52 @@ export default function DashboardView({
       {/* Funnel & Daily SOP Checklist */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Cold Outreach Funnel */}
-        <div className="rounded-3xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 p-6 lg:p-8 lg:col-span-2 backdrop-blur-xl shadow-sm">
-          <div className="flex items-center justify-between border-b border-black/5 dark:border-white/10 pb-4">
+        <div className="rounded-3xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0a0a0d] p-6 lg:p-8 lg:col-span-2 relative overflow-hidden shadow-sm hover:shadow-md transition-all">
+          {/* Top Neon Accent Line */}
+          <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-transparent via-[#6324FC] to-transparent shadow-[0_0_12px_#6324FC]" />
+          <div className="absolute -top-12 -right-12 w-64 h-64 bg-[#6324FC]/10 blur-[45px] rounded-full pointer-events-none" />
+
+          <div className="flex items-center justify-between border-b border-black/5 dark:border-white/10 pb-4 relative z-10">
             <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Outreach Conversion Funnel</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              <h3 className="text-lg font-heading font-extrabold text-slate-900 dark:text-white">Outreach Conversion Funnel</h3>
+              <p className="text-xs text-secondary mt-0.5 font-sans">
                 Cold Emails Sent &rarr; Replies &rarr; Positive Replies &rarr; Calls Booked &rarr; Won Retainers
               </p>
             </div>
-            <span className="rounded-full bg-[#6324FC]/10 dark:bg-[#6324FC]/20 px-3 py-1 text-xs font-bold text-[#6324FC] dark:text-[#00E5FF] border border-[#6324FC]/20">
+            <span className="rounded-full bg-[#6324FC]/10 px-3 py-1 text-xs font-mono font-bold text-[#6324FC] dark:text-[#00E5FF] border border-[#6324FC]/25">
               Live Funnel
             </span>
           </div>
 
-          <div className="mt-6 space-y-5">
+          <div className="mt-6 space-y-5 relative z-10">
             {/* Step 1: Emails Sent */}
             <div className="space-y-1.5">
-              <div className="flex justify-between text-sm font-semibold">
+              <div className="flex justify-between text-sm font-heading font-semibold">
                 <span className="text-slate-700 dark:text-slate-200 flex items-center">
                   <Mail className="h-4 w-4 mr-2 text-cyan-500" />
                   1. Cold Emails Sent
                 </span>
-                <span className="font-extrabold text-slate-900 dark:text-white">{totalEmailsSent}</span>
+                <span className="font-extrabold font-mono text-slate-900 dark:text-white">{totalEmailsSent}</span>
               </div>
-              <div className="h-3 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden">
-                <div className="h-full rounded-full bg-gradient-to-r from-[#6324FC] to-[#00E5FF] w-full" />
+              <div className="h-2.5 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden">
+                <div className="h-full rounded-full bg-gradient-to-r from-[#6324FC] to-[#00E5FF] w-full shadow-[0_0_8px_#00E5FF]" />
               </div>
             </div>
 
             {/* Step 2: Total Replies */}
             <div className="space-y-1.5">
-              <div className="flex justify-between text-sm font-semibold">
+              <div className="flex justify-between text-sm font-heading font-semibold">
                 <span className="text-slate-700 dark:text-slate-200 flex items-center">
                   <TrendingUp className="h-4 w-4 mr-2 text-indigo-500" />
                   2. Total Replies Received
                 </span>
-                <span className="font-extrabold text-indigo-600 dark:text-indigo-300">
+                <span className="font-extrabold font-mono text-indigo-600 dark:text-indigo-300">
                   {totalReplies} ({replyRate.toFixed(1)}%)
                 </span>
               </div>
-              <div className="h-3 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden">
+              <div className="h-2.5 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-indigo-500 transition-all duration-500"
+                  className="h-full rounded-full bg-indigo-500 transition-all duration-500 shadow-[0_0_8px_#6366F1]"
                   style={{
                     width: `${totalEmailsSent > 0 ? Math.max(6, (totalReplies / totalEmailsSent) * 100) : 0}%`,
                   }}
@@ -308,18 +359,18 @@ export default function DashboardView({
 
             {/* Step 3: Positive Replies */}
             <div className="space-y-1.5">
-              <div className="flex justify-between text-sm font-semibold">
+              <div className="flex justify-between text-sm font-heading font-semibold">
                 <span className="text-slate-700 dark:text-slate-200 flex items-center">
                   <Sparkles className="h-4 w-4 mr-2 text-teal-500" />
                   3. Positive Interested Replies
                 </span>
-                <span className="font-extrabold text-teal-600 dark:text-teal-300">
+                <span className="font-extrabold font-mono text-teal-600 dark:text-teal-300">
                   {totalPositiveReplies} ({positiveRate.toFixed(1)}%)
                 </span>
               </div>
-              <div className="h-3 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden">
+              <div className="h-2.5 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-teal-500 transition-all duration-500"
+                  className="h-full rounded-full bg-teal-500 transition-all duration-500 shadow-[0_0_8px_#14B8A6]"
                   style={{
                     width: `${totalEmailsSent > 0 ? Math.max(5, (totalPositiveReplies / totalEmailsSent) * 100) : 0}%`,
                   }}
@@ -329,16 +380,16 @@ export default function DashboardView({
 
             {/* Step 4: Calls Booked */}
             <div className="space-y-1.5">
-              <div className="flex justify-between text-sm font-semibold">
+              <div className="flex justify-between text-sm font-heading font-semibold">
                 <span className="text-slate-700 dark:text-slate-200 flex items-center">
                   <PhoneCall className="h-4 w-4 mr-2 text-amber-500" />
                   4. Strategy Calls Booked
                 </span>
-                <span className="font-extrabold text-amber-600 dark:text-amber-300">{callsBooked}</span>
+                <span className="font-extrabold font-mono text-amber-600 dark:text-amber-300">{callsBooked}</span>
               </div>
-              <div className="h-3 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden">
+              <div className="h-2.5 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-amber-500 transition-all duration-500"
+                  className="h-full rounded-full bg-amber-500 transition-all duration-500 shadow-[0_0_8px_#F59E0B]"
                   style={{
                     width: `${totalEmailsSent > 0 ? Math.max(4, (callsBooked / totalEmailsSent) * 100) : 0}%`,
                   }}
@@ -348,18 +399,18 @@ export default function DashboardView({
 
             {/* Step 5: Deals Won */}
             <div className="space-y-1.5">
-              <div className="flex justify-between text-sm font-semibold">
+              <div className="flex justify-between text-sm font-heading font-semibold">
                 <span className="text-slate-700 dark:text-slate-200 flex items-center">
                   <Award className="h-4 w-4 mr-2 text-emerald-500" />
                   5. Retainers Closed (Won Deals)
                 </span>
-                <span className="font-extrabold text-emerald-600 dark:text-emerald-300">
+                <span className="font-extrabold font-mono text-emerald-600 dark:text-emerald-300">
                   {wonDeals} Clients (${currentMrr.toLocaleString()} MRR)
                 </span>
               </div>
-              <div className="h-3 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden">
+              <div className="h-2.5 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+                  className="h-full rounded-full bg-emerald-500 transition-all duration-500 shadow-[0_0_8px_#10B981]"
                   style={{
                     width: `${totalEmailsSent > 0 ? Math.max(3, (wonDeals / totalEmailsSent) * 100) : 0}%`,
                   }}
@@ -369,53 +420,57 @@ export default function DashboardView({
           </div>
 
           {/* Rates Indicator Footer */}
-          <div className="mt-8 grid grid-cols-3 gap-3 border-t border-black/5 dark:border-white/10 pt-5 text-center">
-            <div className="rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] p-3.5 border border-black/5 dark:border-white/5">
-              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Bounce Rate</span>
+          <div className="mt-8 grid grid-cols-3 gap-3 border-t border-black/5 dark:border-white/10 pt-5 text-center relative z-10">
+            <div className="rounded-2xl bg-slate-50 dark:bg-[#11131a] p-3.5 border border-black/5 dark:border-white/5 shadow-sm">
+              <span className="text-xs text-secondary font-medium font-sans">Bounce Rate</span>
               <p
-                className={`text-xl font-black mt-1 ${
+                className={`text-xl font-mono font-extrabold mt-1 ${
                   bounceRate <= maxBounce ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
                 }`}
               >
                 {bounceRate.toFixed(1)}%
               </p>
-              <span className="text-[11px] text-slate-400">Ceiling: &le; {maxBounce}%</span>
+              <span className="text-[11px] font-mono text-secondary">Ceiling: &le; {maxBounce}%</span>
             </div>
-            <div className="rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] p-3.5 border border-black/5 dark:border-white/5">
-              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Total Reply Rate</span>
-              <p className="text-xl font-black text-indigo-600 dark:text-indigo-400 mt-1">
+            <div className="rounded-2xl bg-slate-50 dark:bg-[#11131a] p-3.5 border border-black/5 dark:border-white/5 shadow-sm">
+              <span className="text-xs text-secondary font-medium font-sans">Total Reply Rate</span>
+              <p className="text-xl font-mono font-extrabold text-indigo-600 dark:text-indigo-400 mt-1">
                 {replyRate.toFixed(1)}%
               </p>
-              <span className="text-[11px] text-slate-400">{totalReplies} total replies</span>
+              <span className="text-[11px] font-mono text-secondary">{totalReplies} total replies</span>
             </div>
-            <div className="rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] p-3.5 border border-black/5 dark:border-white/5">
-              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Positive Reply Rate</span>
-              <p className="text-xl font-black text-teal-600 dark:text-teal-400 mt-1">
+            <div className="rounded-2xl bg-slate-50 dark:bg-[#11131a] p-3.5 border border-black/5 dark:border-white/5 shadow-sm">
+              <span className="text-xs text-secondary font-medium font-sans">Positive Reply Rate</span>
+              <p className="text-xl font-mono font-extrabold text-teal-600 dark:text-teal-400 mt-1">
                 {positiveRate.toFixed(1)}%
               </p>
-              <span className="text-[11px] text-slate-400">Benchmark: &ge; {minPositive}%</span>
+              <span className="text-[11px] font-mono text-secondary">Target: &ge; {minPositive}%</span>
             </div>
           </div>
         </div>
 
         {/* 10-Minute Daily Routine Checklist */}
-        <div className="rounded-3xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 p-6 lg:p-8 backdrop-blur-xl flex flex-col justify-between shadow-sm">
+        <div className="rounded-3xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0a0a0d] p-6 lg:p-8 relative overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          {/* Top Neon Accent Line */}
+          <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-transparent via-[#00E5FF] to-transparent shadow-[0_0_12px_#00E5FF]" />
+          <div className="absolute -top-12 -right-12 w-64 h-64 bg-[#00E5FF]/10 blur-[45px] rounded-full pointer-events-none" />
+
           <div>
-            <div className="flex items-center justify-between border-b border-black/5 dark:border-white/10 pb-4">
-              <div className="flex items-center space-x-2">
-                <Clock className="h-5 w-5 text-[#6324FC] dark:text-[#00E5FF]" />
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">Daily 10-Minute SOP</h3>
+            <div className="flex items-center justify-between border-b border-black/5 dark:border-white/10 pb-4 relative z-10">
+              <div className="flex items-center space-x-2.5">
+                <Clock className="h-5 w-5 text-[#00E5FF]" />
+                <h3 className="text-base font-heading font-extrabold text-slate-900 dark:text-white">Daily 10-Min SOP</h3>
               </div>
-              <span className="rounded-full bg-[#6324FC]/10 dark:bg-[#6324FC]/20 px-2.5 py-0.5 text-xs font-bold text-[#6324FC] dark:text-[#00E5FF] border border-[#6324FC]/20">
-                Operating Routine
+              <span className="rounded-full bg-[#00E5FF]/10 px-2.5 py-0.5 text-xs font-mono font-bold text-[#00E5FF] border border-[#00E5FF]/25">
+                Routine
               </span>
             </div>
 
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2.5">
-              Execute this 10-minute checklist every morning to keep your HVAC pipeline clean:
+            <p className="text-xs text-secondary mt-2.5 font-sans relative z-10">
+              Execute this checklist every morning to keep your HVAC pipeline clean:
             </p>
 
-            <div className="mt-4 space-y-3">
+            <div className="mt-4 space-y-2.5 relative z-10">
               {[
                 {
                   id: 1,
@@ -453,22 +508,22 @@ export default function DashboardView({
                   <div
                     key={step.id}
                     onClick={() => toggleRoutine(step.id)}
-                    className={`flex items-start space-x-3 rounded-2xl p-3.5 cursor-pointer border transition-all ${
+                    className={`flex items-start space-x-3 rounded-2xl p-3 cursor-pointer border transition-all ${
                       isChecked
-                        ? 'border-emerald-500/30 bg-emerald-500/10 text-slate-400 line-through'
-                        : 'border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] hover:bg-[#6324FC]/5 text-slate-700 dark:text-slate-200'
+                        ? 'border-emerald-500/30 bg-emerald-500/10 text-secondary line-through'
+                        : 'border-black/5 dark:border-white/5 bg-slate-50/80 dark:bg-[#11131a] hover:bg-[#6324FC]/5 hover:border-[#6324FC]/25 text-slate-700 dark:text-slate-200'
                     }`}
                   >
-                    <div className="mt-0.5">
+                    <div className="mt-0.5 shrink-0">
                       <CheckCircle2
-                        className={`h-5 w-5 ${isChecked ? 'text-emerald-500' : 'text-slate-400'}`}
+                        className={`h-4 w-4 ${isChecked ? 'text-emerald-500' : 'text-secondary/60'}`}
                       />
                     </div>
-                    <div className="flex-1">
-                      <p className={`text-sm font-bold ${isChecked ? 'text-slate-400' : 'text-slate-900 dark:text-white'}`}>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-xs font-heading font-bold ${isChecked ? 'text-secondary' : 'text-slate-900 dark:text-white'}`}>
                         {step.id}. {step.title}
                       </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{step.desc}</p>
+                      <p className="text-[11px] text-secondary mt-0.5 line-clamp-1">{step.desc}</p>
                     </div>
                   </div>
                 );
@@ -476,8 +531,8 @@ export default function DashboardView({
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-black/5 dark:border-white/10 text-xs text-slate-400 text-center">
-            Click any routine item to record completed action.
+          <div className="mt-4 pt-3 border-t border-black/5 dark:border-white/10 text-[11px] font-sans text-secondary text-center relative z-10">
+            Click any routine item to record completed status.
           </div>
         </div>
       </div>
@@ -485,27 +540,31 @@ export default function DashboardView({
       {/* Urgent Attention Center (Follow-ups & Deliverables) */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Urgent Follow-ups */}
-        <div className="rounded-3xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 p-6 lg:p-8 backdrop-blur-xl shadow-sm">
-          <div className="flex items-center justify-between border-b border-black/5 dark:border-white/10 pb-4">
+        <div className="rounded-3xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0a0a0d] p-6 lg:p-8 relative overflow-hidden shadow-sm hover:shadow-md transition-all">
+          {/* Top Neon Accent Line */}
+          <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-transparent via-amber-500 to-transparent shadow-[0_0_12px_#F59E0B]" />
+          <div className="absolute -top-12 -right-12 w-64 h-64 bg-amber-500/10 blur-[45px] rounded-full pointer-events-none" />
+
+          <div className="flex items-center justify-between border-b border-black/5 dark:border-white/10 pb-4 relative z-10">
             <div className="flex items-center space-x-2.5">
               <AlertTriangle className="h-5 w-5 text-amber-500" />
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Follow-ups Due &amp; Overdue</h3>
+              <h3 className="text-base font-heading font-extrabold text-slate-900 dark:text-white">Follow-ups Due &amp; Overdue</h3>
             </div>
             <button
               onClick={() => onNavigateTab('prospects')}
-              className="text-xs font-bold text-[#6324FC] dark:text-[#00E5FF] hover:underline flex items-center"
+              className="text-xs font-heading font-bold text-[#6324FC] dark:text-[#00E5FF] hover:underline flex items-center"
             >
               All Prospects <ChevronRight className="h-4 w-4 ml-0.5" />
             </button>
           </div>
 
           {urgentFollowUps.length === 0 ? (
-            <div className="py-10 text-center text-sm text-slate-500 dark:text-slate-400">
+            <div className="py-10 text-center text-sm text-secondary relative z-10">
               <CheckCircle2 className="mx-auto h-9 w-9 text-emerald-500/80 mb-2.5" />
               No overdue follow-ups! Everything is on schedule.
             </div>
           ) : (
-            <div className="mt-4 space-y-3">
+            <div className="mt-4 space-y-2.5 relative z-10">
               {urgentFollowUps.map((p) => {
                 const isOverdue = p.nextFollowUp && p.nextFollowUp < todayStr;
                 return (
@@ -515,23 +574,23 @@ export default function DashboardView({
                       onSelectProspect(p);
                       onNavigateTab('prospects');
                     }}
-                    className="flex items-center justify-between rounded-2xl border border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] p-4 hover:border-[#6324FC]/30 cursor-pointer transition-all"
+                    className="flex items-center justify-between rounded-2xl border border-black/5 dark:border-white/5 bg-slate-50/80 dark:bg-[#11131a] p-3.5 hover:border-[#6324FC]/30 cursor-pointer transition-all"
                   >
                     <div>
                       <div className="flex items-center space-x-2">
-                        <span className="font-bold text-sm text-slate-900 dark:text-white">{p.company}</span>
-                        <span className="rounded bg-slate-100 dark:bg-white/10 px-2 py-0.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        <span className="font-heading font-bold text-sm text-slate-900 dark:text-white">{p.company}</span>
+                        <span className="rounded-lg bg-black/5 dark:bg-white/10 px-2 py-0.5 text-[11px] text-secondary font-mono">
                           {p.city}, {p.state}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate max-w-sm">
+                      <p className="text-xs text-secondary mt-1 truncate max-w-sm">
                         {p.gap || p.businessEmail}
                       </p>
                     </div>
 
                     <div className="flex items-center space-x-2.5">
                       <span
-                        className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                        className={`rounded-full px-2.5 py-1 text-[11px] font-heading font-bold ${
                           isOverdue
                             ? 'bg-rose-500/15 text-rose-600 dark:text-rose-300 border border-rose-500/30'
                             : 'bg-amber-500/15 text-amber-600 dark:text-amber-300 border border-amber-500/30'
@@ -539,7 +598,7 @@ export default function DashboardView({
                       >
                         {isOverdue ? 'Overdue' : 'Due Today'}
                       </span>
-                      <ChevronRight className="h-4 w-4 text-slate-400" />
+                      <ChevronRight className="h-4 w-4 text-secondary" />
                     </div>
                   </div>
                 );
@@ -549,42 +608,46 @@ export default function DashboardView({
         </div>
 
         {/* Deliverables Calendar Snapshot */}
-        <div className="rounded-3xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#0c0d14]/80 p-6 lg:p-8 backdrop-blur-xl shadow-sm">
-          <div className="flex items-center justify-between border-b border-black/5 dark:border-white/10 pb-4">
+        <div className="rounded-3xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0a0a0d] p-6 lg:p-8 relative overflow-hidden shadow-sm hover:shadow-md transition-all">
+          {/* Top Neon Accent Line */}
+          <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-transparent via-[#6324FC] to-transparent shadow-[0_0_12px_#6324FC]" />
+          <div className="absolute -top-12 -right-12 w-64 h-64 bg-[#6324FC]/10 blur-[45px] rounded-full pointer-events-none" />
+
+          <div className="flex items-center justify-between border-b border-black/5 dark:border-white/10 pb-4 relative z-10">
             <div className="flex items-center space-x-2.5">
               <Calendar className="h-5 w-5 text-[#6324FC] dark:text-[#00E5FF]" />
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Upcoming Client Deliverables</h3>
+              <h3 className="text-base font-heading font-extrabold text-slate-900 dark:text-white">Upcoming Client Deliverables</h3>
             </div>
             <button
               onClick={() => onNavigateTab('calendar')}
-              className="text-xs font-bold text-[#6324FC] dark:text-[#00E5FF] hover:underline flex items-center"
+              className="text-xs font-heading font-bold text-[#6324FC] dark:text-[#00E5FF] hover:underline flex items-center"
             >
               Full Calendar <ChevronRight className="h-4 w-4 ml-0.5" />
             </button>
           </div>
 
           {urgentDeliverables.length === 0 ? (
-            <div className="py-10 text-center text-sm text-slate-500 dark:text-slate-400">
+            <div className="py-10 text-center text-sm text-secondary relative z-10">
               <CheckCircle2 className="mx-auto h-9 w-9 text-emerald-500/80 mb-2.5" />
               All client recurring deliverables are up to date!
             </div>
           ) : (
-            <div className="mt-4 space-y-3">
+            <div className="mt-4 space-y-2.5 relative z-10">
               {urgentDeliverables.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between rounded-2xl border border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] p-4 hover:border-[#6324FC]/30 transition-all"
+                  className="flex items-center justify-between rounded-2xl border border-black/5 dark:border-white/5 bg-slate-50/80 dark:bg-[#11131a] p-3.5 hover:border-[#6324FC]/30 transition-all"
                 >
                   <div>
                     <div className="flex items-center space-x-2">
-                      <span className="font-bold text-sm text-slate-900 dark:text-white">{item.client}</span>
-                      <span className="text-xs text-[#6324FC] dark:text-[#00E5FF] font-semibold">({item.frequency})</span>
+                      <span className="font-heading font-bold text-sm text-slate-900 dark:text-white">{item.client}</span>
+                      <span className="text-xs text-[#6324FC] dark:text-[#00E5FF] font-mono">({item.frequency})</span>
                     </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{item.task}</p>
+                    <p className="text-xs text-secondary mt-1">{item.task}</p>
                   </div>
 
                   <span
-                    className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                    className={`rounded-full px-2.5 py-1 text-[11px] font-heading font-bold ${
                       item.status === 'Overdue'
                         ? 'bg-rose-500/15 text-rose-600 dark:text-rose-300 border border-rose-500/30'
                         : 'bg-amber-500/15 text-amber-600 dark:text-amber-300 border border-amber-500/30'
@@ -600,26 +663,30 @@ export default function DashboardView({
       </div>
 
       {/* Financial Health Snapshot Banner */}
-      <div className="rounded-3xl border border-black/10 dark:border-white/10 bg-gradient-to-r from-slate-900 via-[#0e111a] to-slate-950 p-6 lg:p-8 shadow-xl text-white">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="rounded-3xl border border-black/10 dark:border-white/10 bg-gradient-to-r from-slate-950 via-[#0b0e17] to-slate-950 p-6 lg:p-8 shadow-xl text-white relative overflow-hidden">
+        {/* Top Neon Accent Line */}
+        <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-transparent via-emerald-500 to-transparent shadow-[0_0_15px_#10B981]" />
+        <div className="absolute -top-12 -right-12 w-64 h-64 bg-emerald-500/10 blur-[45px] rounded-full pointer-events-none" />
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
           <div>
-            <span className="text-xs font-extrabold text-[#00E5FF] uppercase tracking-wider">
+            <span className="text-xs font-heading font-extrabold text-[#00E5FF] uppercase tracking-wider">
               Financial Overview &bull; Monthly PnL
             </span>
-            <h4 className="text-xl sm:text-2xl font-black text-white mt-1">
+            <h4 className="text-xl sm:text-2xl font-heading font-extrabold text-white mt-1">
               Collected Revenue: ${totalCollected.toLocaleString()} &bull; Net Profit:{' '}
-              <span className={netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+              <span className={netProfit >= 0 ? 'text-emerald-400 font-mono' : 'text-rose-400 font-mono'}>
                 ${netProfit.toLocaleString()}
               </span>
             </h4>
-            <p className="text-xs sm:text-sm text-slate-300 mt-1">
+            <p className="text-xs sm:text-sm text-slate-400 mt-1 font-sans">
               Total Invoiced: ${totalInvoiced.toLocaleString()} | Total Operating Expenses: ${totalExpenses.toLocaleString()}
             </p>
           </div>
 
           <button
             onClick={() => onNavigateTab('financials')}
-            className="flex items-center space-x-2 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 px-5 py-3 text-sm font-bold text-white transition self-start sm:self-auto shadow-lg"
+            className="flex items-center space-x-2 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 px-5 py-3 text-xs font-heading font-bold text-white transition self-start sm:self-auto shadow-lg"
           >
             <DollarSign className="h-4 w-4 text-emerald-400" />
             <span>Manage Invoices &amp; PnL</span>

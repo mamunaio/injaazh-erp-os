@@ -70,6 +70,7 @@ export async function createTransaction(data: any) {
     );
     
     revalidatePath('/finance');
+    revalidatePath('/dashboard');
     return { success: true, data: JSON.parse(JSON.stringify(transaction)) };
   } catch (error: any) {
     console.error('❌ Error creating transaction:', error);
@@ -99,6 +100,7 @@ export async function updateTransaction(transactionId: string, data: any) {
     await createNotification('system', `Transaction for $${updated?.amount} was updated.`, '/finance');
     
     revalidatePath('/finance');
+    revalidatePath('/dashboard');
     return { success: true, data: JSON.parse(JSON.stringify(updated)) };
   } catch (error: any) {
     console.error('❌ Error updating transaction:', error);
@@ -117,6 +119,7 @@ export async function deleteTransaction(transactionId: string) {
     await Transaction.findByIdAndDelete(transactionId);
     
     revalidatePath('/finance');
+    revalidatePath('/dashboard');
     return { success: true };
   } catch (error: any) {
     console.error('❌ Error deleting transaction:', error);

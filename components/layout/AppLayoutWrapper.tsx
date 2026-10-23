@@ -10,6 +10,7 @@ import { AppearanceProvider, useAppearance } from '@/components/layout/Appearanc
 import { UserProvider } from '@/components/layout/UserContext';
 import { ConfirmDialogProvider } from '@/components/layout/ConfirmDialogProvider';
 import { logoutUser } from '@/app/actions/authActions';
+import GlobalModalScrollLock from '@/components/layout/GlobalModalScrollLock';
 
 import { motion } from 'framer-motion';
 
@@ -33,7 +34,12 @@ export default function AppLayoutWrapper({ children, initialUser }: { children: 
   }, [isAuthPage, initialUser]);
 
   if (isAuthPage) {
-    return <main className="min-h-screen bg-slate-50 dark:bg-[#0A0A0B]">{children}</main>;
+    return (
+      <>
+        <GlobalModalScrollLock />
+        <main className="min-h-screen bg-slate-50 dark:bg-[#0A0A0B]">{children}</main>
+      </>
+    );
   }
 
   return (
@@ -41,6 +47,7 @@ export default function AppLayoutWrapper({ children, initialUser }: { children: 
       <UserProvider initialUser={initialUser}>
         <ConfirmDialogProvider>
           <SidebarProvider>
+            <GlobalModalScrollLock />
             <AppContent initialUser={initialUser}>
               {children}
             </AppContent>
@@ -56,6 +63,9 @@ function AppContent({ children, initialUser }: { children: React.ReactNode, init
   const isDock = mounted && sidebarLayout === 'dock';
   const pathname = usePathname();
   
+  // Keep lead-gen as a unified layout boundary so sub-tab route changes don't re-trigger full page entrance animation
+  const routeAnimationKey = pathname.startsWith('/lead-gen') ? '/lead-gen' : pathname;
+  
   return (
     <>
       <Sidebar />
@@ -68,7 +78,7 @@ function AppContent({ children, initialUser }: { children: React.ReactNode, init
             : 'pl-4 lg:pl-[288px] pb-6'
       }`}>
         <motion.div
-          key={pathname}
+          key={routeAnimationKey}
           initial={{ opacity: 0, y: 16, scale: 0.985 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, X, PlayCircle } from 'lucide-react';
+import { useScrollLock } from '@/lib/useScrollLock';
 
 interface IslamicSplashModalProps {
   islamicQuote: any;
@@ -11,6 +12,7 @@ interface IslamicSplashModalProps {
 export default function IslamicSplashModal({ islamicQuote }: IslamicSplashModalProps) {
   const [showSplash, setShowSplash] = useState(false);
   const [minimized, setMinimized] = useState(true);
+  useScrollLock(showSplash && !minimized);
 
   useEffect(() => {
     // Check if we already showed it today

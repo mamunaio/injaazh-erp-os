@@ -22,6 +22,7 @@ import toast from 'react-hot-toast';
 
 import { createTransaction, updateTransaction, deleteTransaction } from '@/app/actions/transactionActions';
 import { analyzeFinancialHealth } from '@/app/actions/aiActions';
+import { useScrollLock } from '@/lib/useScrollLock';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Transaction {
@@ -57,6 +58,7 @@ export default function FinanceClient({ initialTransactions, platformSummary, pr
   const [typeFilter, setTypeFilter] = useState<'All' | 'Income' | 'Expense'>('All');
   
   const [isSlidePanelOpen, setIsSlidePanelOpen] = useState(false);
+  useScrollLock(isSlidePanelOpen);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);

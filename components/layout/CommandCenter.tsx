@@ -23,6 +23,7 @@ import {
   Flame
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useScrollLock } from '@/lib/useScrollLock';
 
 interface CommandItem {
   id: string;
@@ -36,6 +37,7 @@ interface CommandItem {
 
 export default function CommandCenter() {
   const [isOpen, setIsOpen] = useState(false);
+  useScrollLock(isOpen);
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const router = useRouter();
@@ -133,7 +135,11 @@ export default function CommandCenter() {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[99999] flex items-start justify-center pt-[12vh] px-4 bg-black/75 backdrop-blur-xl">
+        <div 
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-[99999] flex items-start justify-center pt-[12vh] px-4 bg-black/75 backdrop-blur-xl overscroll-contain"
+        >
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -146,7 +152,7 @@ export default function CommandCenter() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.98, y: -10 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
-            className="relative w-full max-w-2xl bg-white dark:bg-[#0d0f17] border border-black/10 dark:border-white/15 rounded-2xl shadow-[0_20px_50px_-10px_rgba(15,23,42,0.15),0_0_30px_rgba(99,36,252,0.1)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),0_0_30px_rgba(99,36,252,0.15)] overflow-hidden backdrop-blur-2xl"
+            className="relative w-full max-w-2xl bg-white dark:bg-[#0d0f17] border border-black/10 dark:border-white/15 rounded-2xl shadow-[0_20px_50px_-10px_rgba(15,23,42,0.15),0_0_30px_rgba(99,36,252,0.1)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),0_0_30px_rgba(99,36,252,0.15)] overflow-hidden backdrop-blur-2xl overscroll-contain"
           >
             {/* Search Input */}
             <div className="flex items-center px-5 py-3.5 border-b border-black/5 dark:border-white/10 bg-black/[0.01] dark:bg-white/[0.02]">

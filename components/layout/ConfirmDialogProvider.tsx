@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, Info, Check, X } from 'lucide-react';
+import { useScrollLock } from '@/lib/useScrollLock';
 
 interface ConfirmOptions {
   title?: string;
@@ -29,6 +30,7 @@ export const useConfirm = () => {
 
 export const ConfirmDialogProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
+  useScrollLock(isOpen);
   const [options, setOptions] = useState<ConfirmOptions>({ message: '' });
   const [resolveCallback, setResolveCallback] = useState<(value: boolean) => void>(() => {});
 
@@ -55,7 +57,11 @@ export const ConfirmDialogProvider: React.FC<{ children: React.ReactNode }> = ({
       {children}
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div 
+            role="dialog"
+            aria-modal="true"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 overscroll-contain"
+          >
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -68,7 +74,7 @@ export const ConfirmDialogProvider: React.FC<{ children: React.ReactNode }> = ({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 12 }}
               transition={{ duration: 0.18, ease: 'easeOut' }}
-              className="relative w-full max-w-md rounded-3xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0c0d14] p-6 sm:p-8 shadow-2xl backdrop-blur-2xl flex flex-col gap-6 z-10"
+              className="relative w-full max-w-md rounded-3xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0c0d14] p-6 sm:p-8 shadow-2xl backdrop-blur-2xl flex flex-col gap-6 z-10 overscroll-contain"
             >
               <div className="flex gap-4 items-start">
                 <div

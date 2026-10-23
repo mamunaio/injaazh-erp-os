@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { X, Upload, FileSpreadsheet, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useScrollLock } from '@/lib/useScrollLock';
 
 interface ImportModalProps {
   isOpen: boolean;
@@ -10,6 +11,8 @@ interface ImportModalProps {
 }
 
 export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalProps) {
+  useScrollLock(isOpen);
+
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -56,8 +59,12 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md">
-      <div className="relative w-full max-w-md rounded-3xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0c0d14] p-6 lg:p-8 shadow-2xl text-slate-900 dark:text-white">
+    <div 
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md overscroll-contain"
+    >
+      <div className="relative w-full max-w-md rounded-3xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0c0d14] p-6 lg:p-8 shadow-2xl text-slate-900 dark:text-white overscroll-contain">
         <button
           onClick={onClose}
           className="absolute right-5 top-5 text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg transition"

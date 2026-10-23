@@ -14,6 +14,7 @@ function safeRevalidatePath(path: string, type?: 'layout' | 'page') {
     // Silent catch - allows actions to run outside Next.js request/static context
   }
 }
+import mongoose from 'mongoose';
 import connectToDatabase from '@/lib/mongodb';
 import MarketplaceProject from '@/models/MarketplaceProject';
 import { Project } from '@/models/Project';
@@ -206,9 +207,13 @@ export async function updateMarketplaceProject(id: string, data: any) {
     if (!existingProject) {
       return { success: false, error: 'Project not found' };
     }
-    
     const oldStatus = existingProject.status;
-    
+
+    // Sanitize clientId: if empty string or invalid ObjectId, delete from update payload
+    if (data.clientId === '' || (data.clientId && !mongoose.Types.ObjectId.isValid(data.clientId))) {
+      delete data.clientId;
+    }
+
     // Update the project
     const updatedProject = await MarketplaceProject.findByIdAndUpdate(id, data, { new: true }).lean().exec();
     if (!updatedProject) {

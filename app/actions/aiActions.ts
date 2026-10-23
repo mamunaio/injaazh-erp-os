@@ -158,3 +158,103 @@ OUTPUT STRICT JSON WITH THIS STRUCTURE:
   }
 }
 
+/**
+ * 9. AI Scope & Deliverable Specifications Generator for Marketplace Projects
+ */
+export async function generateMarketplaceProjectScope(params: {
+  projectTitle: string;
+  clientName?: string;
+  platform?: string;
+  budget?: string;
+  currentScope?: string;
+  target?: 'scope' | 'tasks' | 'both';
+}) {
+  try {
+    const user = await getAuthUser();
+    if (!user) return { success: false, error: 'Unauthorized' };
+
+    const prompt = `You are an elite Digital Agency Delivery Director and Senior Project Manager.
+Analyze this project title, client, and parameters, and generate an executive-quality Project Scope Statement and Sprint Delivery Milestones:
+
+- Project Title: ${params.projectTitle}
+- Client Name / Company: ${params.clientName || 'Direct Client'}
+- Marketplace Platform / Channel: ${params.platform || 'Direct'}
+- Contract Budget: ${params.budget ? `$${params.budget}` : 'Agreed contract rate'}
+${params.currentScope ? `- Current Notes / Scope Context: ${params.currentScope}` : ''}
+
+CRITICAL FORMATTING INSTRUCTIONS FOR "scope":
+DO NOT write an unbroken wall of text.
+Structure the scope into 4-5 clearly labeled bullet sections separated by double newlines (\n\n):
+• Project Mission & Objectives: [High-level overview and core purpose for this client deliverable]
+
+• Architecture & UI/UX Design: [Design system, responsiveness across devices, clean user journey]
+
+• Core Features & Deliverables: [Key functionality, workflows, database/API models, content presentation]
+
+• Scope Boundaries & Integrations: [Key boundaries, third-party APIs/analytics, communication mechanisms]
+
+• Quality Assurance & Handover: [Cross-browser testing, performance audit, deployment and credentials handover]
+
+Make it sound sophisticated, client-ready, and directly relevant to "${params.projectTitle}".
+
+OUTPUT STRICT JSON WITH THIS STRUCTURE:
+{
+  "scope": "• Project Mission & Objectives: ...\n\n• Architecture & UI/UX Design: ...\n\n• Core Features & Deliverables: ...\n\n• Quality Assurance & Handover: ...",
+  "tasks": [
+    "1. Setup repository, architecture & UI design system",
+    "2. Develop core client interfaces and responsive layouts",
+    "3. Build server actions, database models & API endpoints",
+    "4. Comprehensive testing, bugfixes & performance optimization",
+    "5. Production deployment, documentation & client handover"
+  ]
+}`;
+
+    const result = await generateAIContent({ prompt, jsonMode: true });
+    if (!result.success || !result.text) {
+      // High quality fallback if AI keys quota is reached
+      const fallbackScope = `• Project Mission & Objectives: Establish a premier digital presence for ${params.projectTitle}, delivering a fast, responsive, and modern platform tailored for ${params.clientName || 'the client'}.
+
+• Architecture & UI/UX Design: Complete system architecture setup with modern responsive design tokens, clean typography, and intuitive navigation across mobile and desktop.
+
+• Core Features & Deliverables: Full-stack implementation of requested modules, dynamic dashboards, secure API integrations, and robust data persistence.
+
+• Scope Boundaries & Integrations: Optimized foundational delivery focusing on high performance, analytics tracking, and streamlined communication flows.
+
+• Quality Assurance & Handover: End-to-end cross-browser testing, performance audit, production deployment, and client handover documentation with admin credentials.`;
+
+      const fallbackTasks = [
+        "1. Setup repository, environment & UI design tokens",
+        "2. Develop core interactive layouts & components",
+        "3. Implement backend data models & API integrations",
+        "4. Perform cross-browser testing & security checks",
+        "5. Final production deployment & client handover"
+      ];
+
+      return {
+        success: true,
+        scope: fallbackScope,
+        tasks: fallbackTasks,
+        isFallback: true
+      };
+    }
+
+    try {
+      const data = JSON.parse(result.text);
+      return {
+        success: true,
+        scope: data.scope || '',
+        tasks: Array.isArray(data.tasks) ? data.tasks : []
+      };
+    } catch {
+      return {
+        success: true,
+        scope: result.text,
+        tasks: []
+      };
+    }
+  } catch (error: any) {
+    console.error('generateMarketplaceProjectScope error:', error);
+    return { success: false, error: error.message || 'Internal error' };
+  }
+}
+

@@ -23,6 +23,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getMarketplaceClients, createMarketplaceClient } from '@/actions/marketplaceClientActions';
 import toast from 'react-hot-toast';
 import DatePicker from '@/components/ui/DatePicker';
+import { useScrollLock } from '@/lib/useScrollLock';
 
 interface CreateMarketplaceProjectModalProps {
   isOpen: boolean;
@@ -44,6 +45,8 @@ export default function CreateMarketplaceProjectModal({
   onSave,
   defaultPlatform = 'Freelancer'
 }: CreateMarketplaceProjectModalProps) {
+  useScrollLock(isOpen);
+
   const [selectedPlatform, setSelectedPlatform] = useState(defaultPlatform);
   const [formData, setFormData] = useState({
     title: '',
@@ -161,7 +164,11 @@ export default function CreateMarketplaceProjectModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+      <div 
+        role="dialog"
+        aria-modal="true"
+        className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 overflow-y-auto overscroll-contain"
+      >
         {/* Backdrop */}
         <motion.div 
           initial={{ opacity: 0 }} 
@@ -177,7 +184,7 @@ export default function CreateMarketplaceProjectModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ type: "spring", damping: 28, stiffness: 320 }}
-          className="relative w-full max-w-2xl my-auto bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/15 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.2),0_0_30px_rgba(99,36,252,0.15)] dark:shadow-[0_25px_70px_rgba(0,0,0,0.9),0_0_30px_rgba(99,36,252,0.2)] flex flex-col overflow-hidden z-10"
+          className="relative w-full max-w-2xl my-auto bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/15 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.2),0_0_30px_rgba(99,36,252,0.15)] dark:shadow-[0_25px_70px_rgba(0,0,0,0.9),0_0_30px_rgba(99,36,252,0.2)] flex flex-col overflow-hidden z-10 overscroll-contain"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Top Neon Accent Glow Line */}

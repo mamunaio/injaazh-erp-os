@@ -8,7 +8,7 @@ import {
   Plus, Search, Building2, Mail, Globe, Clock,
   User as UserIcon, DollarSign, Link as LinkIcon, Image as ImageIcon,
   X, Edit2, Trash2, FileText, Calendar, ExternalLink,
-  ChevronRight, ArrowUpRight, Activity, StickyNote,
+  ChevronRight, ChevronLeft, ArrowUpRight, Activity, StickyNote,
   LayoutGrid, List, DownloadCloud, Loader2, Sparkles,
   ArrowLeft, Users, Briefcase, ShoppingCart, Shield,
   Copy, Check, Flame, FolderKanban
@@ -24,6 +24,7 @@ import { useUser } from '@/components/layout/UserContext';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 import toast, { Toaster } from 'react-hot-toast';
 import CreateMarketplaceProjectModal from '@/components/CreateMarketplaceProjectModal';
+import { useScrollLock } from '@/lib/useScrollLock';
 
 interface ClientHubClientProps {
   initialClients: any[];
@@ -170,6 +171,8 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
   const [tierFilter, setTierFilter] = useState<'All' | 'VIP' | 'Growth' | 'Starter'>('All');
   const [sortBy, setSortBy] = useState<SortOption>('revenue-desc');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 12;
 
   // Modals & Panels
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -210,6 +213,10 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
       setNotesDraft(selectedClient.notes || '');
     }
   }, [selectedClient]);
+
+  // Prevent background page scrolling when modal is open
+  const isAnyModalOpen = Boolean(selectedClient || isAddModalOpen || isCreateProjectOpen);
+  useScrollLock(isAnyModalOpen);
 
   // ── Handlers ─────────────────────────────────────────────────────────────
   const handleSaveClient = async (e: React.FormEvent) => {
@@ -412,6 +419,20 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
     });
   }, [clients, platformFilter, tierFilter, searchQuery, sortBy, user]);
 
+  // Reset pagination to page 1 whenever filters or search query change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, platformFilter, tierFilter, sortBy]);
+
+  const totalItems = filteredClients.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
+  const validPage = Math.min(Math.max(1, currentPage), totalPages);
+
+  const paginatedClients = useMemo(() => {
+    const startIndex = (validPage - 1) * ITEMS_PER_PAGE;
+    return filteredClients.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredClients, validPage]);
+
   // ── KPI Telemetry Calculations ────────────────────────────────────────────
   const totalRevenue = clients.reduce((acc, c) => acc + (c.totalSpent || 0), 0);
   const vipCount = clients.filter(c => (c.totalSpent || 0) >= 5000).length;
@@ -447,62 +468,101 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
         {/* ── Page Header & Telemetry Actions ───────────────────────────────── */}
         <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-4">
           
-          {/* Breadcrumb & Subtitle */}
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-xs font-mono text-secondary">
-              <Link href="/marketplace" className="hover:text-indigo-600 dark:hover:text-[#00E5FF] transition-colors flex items-center gap-1 font-semibold">
-                <ArrowLeft size={13} /> Marketplace Hub
-              </Link>
-              <span>/</span>
-              <span className="text-slate-900 dark:text-white font-semibold">CRM Clients</span>
-            </div>
+          {/* Navigation Breadcrumb Bar */}
+          <div className="flex items-center justify-between gap-4">
+            <Link 
+              href="/marketplace"
+              className="group inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 hover:border-[#6324FC]/60 dark:hover:border-[#00E5FF]/60 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white text-xs font-heading font-bold shadow-sm transition-all duration-300 hover:shadow-[0_0_20px_rgba(99,36,252,0.25)] hover:-translate-x-1"
+            >
+              <div className="w-5 h-5 rounded-lg bg-black/5 dark:bg-white/5 group-hover:bg-[#6324FC]/15 dark:group-hover:bg-[#00E5FF]/15 flex items-center justify-center text-secondary group-hover:text-[#6324FC] dark:group-hover:text-[#00E5FF] transition-all duration-300">
+                <ArrowLeft size={12} className="group-hover:-translate-x-0.5 transition-transform" />
+              </div>
+              <span>Back to Marketplace Directory</span>
+              <span className="text-secondary/40 font-mono text-[11px]">•</span>
+              <span className="text-secondary font-mono text-[11px]">CRM Hub</span>
+            </Link>
 
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-[#6324FC]/10 text-indigo-600 dark:text-[#00E5FF] border border-[#6324FC]/20 dark:border-[#6324FC]/30 shadow-sm">
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-[#00E5FF] animate-pulse shadow-[0_0_8px_#00E5FF]" />
-                Live Client Telemetry
-              </span>
+            <div className="hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-white/60 dark:bg-[#0a0a0d]/60 backdrop-blur-md border border-black/5 dark:border-white/5 text-xs font-mono text-secondary">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10B981]" />
+              <span>Marketplace</span>
+              <span className="opacity-40">/</span>
+              <span className="text-slate-900 dark:text-white font-bold">CRM Clients</span>
             </div>
           </div>
 
-          {/* Title & Primary Toolbar */}
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-5 pb-2 border-b border-black/5 dark:border-white/5">
-            <div>
-              <div className="flex items-center gap-3 mb-1.5">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6324FC]/15 to-[#00E5FF]/15 border border-black/10 dark:border-white/15 flex items-center justify-center text-indigo-600 dark:text-[#00E5FF] shadow-sm dark:shadow-[0_0_20px_rgba(99,36,252,0.3)]">
-                  <Users size={20} />
-                </div>
-                <div>
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-extrabold text-slate-900 dark:text-white tracking-tight">
-                    Client Network & CRM
-                  </h1>
-                </div>
+          {/* Dynamic Channel Header Banner (Unified Card matching Executive Hub) */}
+          <div className="p-6 md:p-8 rounded-3xl bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 relative overflow-hidden shadow-lg dark:shadow-2xl">
+            {/* Top Neon Glow line */}
+            <div 
+              className="absolute top-0 left-0 right-0 h-[2.5px]"
+              style={{ 
+                backgroundImage: 'linear-gradient(to right, transparent, #00E5FF, transparent)',
+                boxShadow: '0 0 14px #00E5FF'
+              }}
+            />
+
+            <div className="flex items-center gap-5">
+              <div 
+                className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-md shrink-0 transition-transform duration-300 group-hover:scale-105"
+                style={{
+                  backgroundColor: '#00E5FF15',
+                  border: '1px solid #00E5FF35',
+                  color: '#00E5FF',
+                  boxShadow: '0 0 25px #00E5FF25'
+                }}
+              >
+                <Globe size={32} />
               </div>
-              <p className="text-xs sm:text-sm font-sans text-secondary max-w-2xl">
-                Global client directory, contract history, lifetime value tracking, and communication telemetry.
-              </p>
+
+              <div>
+                <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                  <span className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border bg-cyan-500/10 text-cyan-600 dark:text-[#00E5FF] border-cyan-500/30">
+                    <Sparkles size={10} className="inline mr-1" />
+                    CLIENT NETWORK CRM
+                  </span>
+                  <span className="text-xs text-secondary">•</span>
+                  <span className="text-xs font-mono text-secondary">
+                    {clients.length} Total Client Accounts Logged
+                  </span>
+                </div>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-extrabold text-slate-900 dark:text-white">
+                  Client Network & CRM
+                </h1>
+                <p className="text-xs md:text-sm font-sans text-secondary mt-0.5">
+                  Global client directory, contract history, lifetime value tracking, and communication telemetry.
+                </p>
+              </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
-              {/* Export Button */}
-              <button 
-                onClick={handleExportCSV}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-heading font-bold bg-white dark:bg-[#0a0a0d] hover:bg-slate-100 dark:hover:bg-[#121218] text-slate-700 dark:text-secondary hover:text-slate-900 dark:hover:text-white border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/25 transition-all shadow-sm"
-                title="Export Clients to CSV"
-              >
-                <DownloadCloud size={15} />
-                <span>Export CSV</span>
-              </button>
+            {/* Action Controls */}
+            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+              {/* Search Input */}
+              <div className="relative flex-1 sm:w-64">
+                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary" />
+                <input 
+                  type="text" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search projects or clients..." 
+                  className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl pl-9 pr-8 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-colors"
+                />
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-secondary hover:text-slate-900 dark:hover:text-white"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
 
               {/* View Mode Toggle */}
-              <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10">
+              <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl">
                 <button
                   type="button"
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-lg text-xs font-bold transition-all ${
-                    viewMode === 'grid' 
-                      ? 'bg-[#6324FC] text-white shadow-[0_0_10px_rgba(99,36,252,0.5)]' 
-                      : 'text-slate-600 dark:text-secondary hover:text-slate-900 dark:hover:text-white'
+                  className={`p-1.5 rounded-lg transition-all ${
+                    viewMode === 'grid' ? 'bg-[#6324FC] text-white shadow-[0_0_10px_rgba(99,36,252,0.5)]' : 'text-secondary hover:text-slate-900 dark:hover:text-white'
                   }`}
                   title="Grid Cards View"
                 >
@@ -511,57 +571,76 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                 <button
                   type="button"
                   onClick={() => setViewMode('table')}
-                  className={`p-2 rounded-lg text-xs font-bold transition-all ${
-                    viewMode === 'table' 
-                      ? 'bg-[#6324FC] text-white shadow-[0_0_10px_rgba(99,36,252,0.5)]' 
-                      : 'text-slate-600 dark:text-secondary hover:text-slate-900 dark:hover:text-white'
+                  className={`p-1.5 rounded-lg transition-all ${
+                    viewMode === 'table' ? 'bg-[#6324FC] text-white shadow-[0_0_10px_rgba(99,36,252,0.5)]' : 'text-secondary hover:text-slate-900 dark:hover:text-white'
                   }`}
-                  title="Table View"
+                  title="Data Table View"
                 >
                   <List size={15} />
                 </button>
               </div>
-
-              {/* Add Client Button */}
-              <button
+              
+              {/* + Add Client Laser Beam CTA (Symmetrically Calibrated Clockwise Single Stream) */}
+              <button 
                 onClick={() => setIsAddModalOpen(true)}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-heading font-bold text-xs bg-gradient-to-r from-[#6324FC] to-[#8B5CF6] hover:brightness-110 text-white shadow-[0_0_20px_rgba(99,36,252,0.3)] hover:shadow-[0_0_30px_rgba(99,36,252,0.5)] transition-all border border-purple-400/30"
+                className="h-10 group relative p-[2px] rounded-xl overflow-hidden flex items-center justify-center cursor-pointer transition-all duration-300 active:scale-95 shadow-[0_0_20px_rgba(99,36,252,0.35)] hover:shadow-[0_0_35px_rgba(0,229,255,0.5),0_0_20px_rgba(236,72,153,0.35)]"
               >
-                <Plus size={16} strokeWidth={2.5} />
-                <span>Add Client</span>
+                {/* Perfectly Centered Square Conic Glow Aura (Uniform Distance on All 4 Sides) */}
+                <span 
+                  className="absolute top-1/2 left-1/2 w-[450%] aspect-square -translate-x-1/2 -translate-y-1/2 animate-[spin_3s_linear_infinite] blur-[8px] opacity-85 pointer-events-none" 
+                  style={{
+                    background: 'conic-gradient(from 0deg, transparent 0deg, transparent 60deg, #00e5ff 110deg, #6324fc 140deg, #ec4899 170deg, transparent 210deg, transparent 360deg)'
+                  }}
+                />
+                
+                {/* Crisp Symmetrical Single Laser Beam Stream (Clockwise: Left to Right Loop) */}
+                <span 
+                  className="absolute top-1/2 left-1/2 w-[450%] aspect-square -translate-x-1/2 -translate-y-1/2 animate-[spin_3s_linear_infinite] opacity-100 pointer-events-none" 
+                  style={{
+                    background: 'conic-gradient(from 0deg, transparent 0deg, transparent 60deg, #00e5ff 110deg, #6324fc 140deg, #ec4899 170deg, transparent 210deg, transparent 360deg)'
+                  }}
+                />
+                
+                {/* Inner High-Contrast Surface: Concentric 10px radius matching outer 12px minus 2px */}
+                <div className="relative z-10 w-full h-full px-4 rounded-[10px] bg-white dark:bg-[#0a0a0d] group-hover:bg-slate-50 dark:group-hover:bg-[#121218] text-slate-900 dark:text-white font-heading font-bold text-xs flex items-center gap-2 transition-all">
+                  <Briefcase size={14} className="text-[#00E5FF] group-hover:rotate-6 group-hover:scale-110 drop-shadow-[0_0_6px_#00E5FF] transition-transform duration-300" />
+                  <span className="tracking-wide group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-slate-900 group-hover:to-[#6324FC] dark:group-hover:from-white dark:group-hover:via-[#00E5FF] dark:group-hover:to-[#EC4899] transition-all whitespace-nowrap">
+                    + Add Client
+                  </span>
+                </div>
               </button>
             </div>
           </div>
 
-          {/* ── Executive KPI Telemetry Cards ── */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
+          {/* ── Executive KPI Telemetry Cards (Dashboard Elevation) ── */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5 pt-1">
             
             {/* KPI 1: Total Clients */}
             <motion.div
               variants={itemVariants}
-              className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#6324FC]/60 hover:shadow-[0_12px_30px_rgba(99,36,252,0.15)] dark:hover:shadow-[0_12px_30px_rgba(99,36,252,0.25)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-sm"
+              className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-[#6324FC]/60 hover:shadow-[0_16px_36px_rgba(99,36,252,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
             >
               {/* Radial Hover Spotlight */}
-              <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#6324FC]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              <div className="absolute -top-10 -right-10 w-36 h-36 bg-[#6324FC]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
               {/* Top Accent Neon Line - Expands on Hover */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#6324FC] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#6324FC]" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] bg-gradient-to-r from-transparent via-[#6324FC] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#6324FC]" />
               {/* Subtle Card Glass Sheen */}
               <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-              <div className="flex justify-between items-start mb-3 relative z-10">
-                <div className="w-9 h-9 rounded-xl bg-[#6324FC]/15 border border-[#6324FC]/30 flex items-center justify-center text-indigo-600 dark:text-[#6324FC] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(99,36,252,0.6)] group-hover:border-[#6324FC] transition-all duration-300">
-                  <Users size={17} />
+              <div className="flex justify-between items-start mb-4 relative z-10">
+                <div className="w-11 h-11 rounded-2xl bg-[#6324FC]/15 border border-[#6324FC]/30 flex items-center justify-center text-indigo-600 dark:text-[#6324FC] group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(99,36,252,0.6)] group-hover:border-[#6324FC] transition-all duration-300 shadow-sm">
+                  <Users size={20} />
                 </div>
-                <span className="text-[10px] font-heading font-bold text-indigo-600 dark:text-[#00E5FF] bg-[#6324FC]/10 dark:bg-[#6324FC]/15 px-2 py-0.5 rounded-md border border-[#6324FC]/20 dark:border-[#6324FC]/30 group-hover:border-[#6324FC]/50 transition-colors">
+                <span className="text-xs font-heading font-bold text-indigo-600 dark:text-[#00E5FF] bg-[#6324FC]/10 dark:bg-[#6324FC]/15 px-2.5 py-1 rounded-lg border border-[#6324FC]/20 dark:border-[#6324FC]/30 group-hover:border-[#6324FC]/50 transition-colors">
                   Live Network
                 </span>
               </div>
               <div className="relative z-10">
-                <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">Total Client Accounts</p>
-                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-slate-900 group-hover:to-indigo-600 dark:group-hover:from-white dark:group-hover:to-[#00E5FF] transition-all">
+                <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">Total Client Accounts</p>
+                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-[#6324FC] dark:group-hover:text-transparent dark:group-hover:bg-clip-text dark:group-hover:bg-gradient-to-r dark:group-hover:from-white dark:group-hover:to-[#00E5FF] transition-all">
                   {clients.length}
                 </p>
-                <div className="mt-2 flex items-center gap-1.5 flex-wrap text-[10px] font-mono">
+                <div className="mt-2 flex items-center gap-1.5 flex-wrap text-xs font-mono">
                   <span className="text-cyan-600 dark:text-[#00E5FF] font-bold">{platformCounts.Freelancer} FL</span>
                   <span className="text-secondary">·</span>
                   <span className="text-indigo-600 dark:text-[#A78BFA] font-bold">{platformCounts.Direct} Direct</span>
@@ -576,137 +655,115 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
             {/* KPI 2: Lifetime Revenue (LTV) */}
             <motion.div
               variants={itemVariants}
-              className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#10B981]/60 hover:shadow-[0_12px_30px_rgba(16,185,129,0.15)] dark:hover:shadow-[0_12px_30px_rgba(16,185,129,0.25)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-sm"
+              className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-[#10B981]/60 hover:shadow-[0_16px_36px_rgba(16,185,129,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
             >
-              <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#10B981]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#10B981] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#10B981]" />
+              <div className="absolute -top-10 -right-10 w-36 h-36 bg-[#10B981]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] bg-gradient-to-r from-transparent via-[#10B981] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#10B981]" />
               <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-              <div className="flex justify-between items-start mb-3 relative z-10">
-                <div className="w-9 h-9 rounded-xl bg-[#10B981]/15 border border-[#10B981]/30 flex items-center justify-center text-emerald-600 dark:text-[#10B981] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(16,185,129,0.6)] group-hover:border-[#10B981] transition-all duration-300">
-                  <DollarSign size={17} />
+              <div className="flex justify-between items-start mb-4 relative z-10">
+                <div className="w-11 h-11 rounded-2xl bg-[#10B981]/15 border border-[#10B981]/30 flex items-center justify-center text-emerald-600 dark:text-[#10B981] group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(16,185,129,0.6)] group-hover:border-[#10B981] transition-all duration-300 shadow-sm">
+                  <DollarSign size={20} />
                 </div>
-                <span className="text-[10px] font-heading font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 group-hover:border-emerald-500/40 transition-colors">
-                  <Flame size={11} /> Realized Inflow
+                <span className="text-xs font-heading font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20 group-hover:border-emerald-500/40 transition-colors">
+                  <Flame size={13} /> Realized Inflow
                 </span>
               </div>
               <div className="relative z-10">
-                <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">Lifetime Client Spend</p>
-                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-emerald-600 dark:text-emerald-400 font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-emerald-500 group-hover:to-cyan-500 dark:group-hover:from-emerald-300 dark:group-hover:to-[#00E5FF] transition-all">
+                <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">Lifetime Client Spend</p>
+                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-emerald-600 dark:text-emerald-400 font-mono tracking-tight mt-0.5 group-hover:text-[#10B981] dark:group-hover:text-transparent dark:group-hover:bg-clip-text dark:group-hover:bg-gradient-to-r dark:group-hover:from-emerald-300 dark:group-hover:to-[#00E5FF] transition-all">
                   {fmtCurrency(totalRevenue)}
                 </p>
-                <p className="text-[10px] font-sans text-secondary/80 mt-1 truncate">Average LTV: {fmtCurrency(avgSpent)} / client</p>
+                <p className="text-xs font-sans text-secondary/80 mt-1.5 truncate">Average LTV: {fmtCurrency(avgSpent)} / client</p>
               </div>
             </motion.div>
 
             {/* KPI 3: VIP Enterprise Clients */}
             <motion.div
               variants={itemVariants}
-              className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#F59E0B]/60 hover:shadow-[0_12px_30px_rgba(245,158,11,0.15)] dark:hover:shadow-[0_12px_30px_rgba(245,158,11,0.25)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-sm"
+              className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-[#F59E0B]/60 hover:shadow-[0_16px_36px_rgba(245,158,11,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
             >
-              <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#F59E0B]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#F59E0B] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#F59E0B]" />
+              <div className="absolute -top-10 -right-10 w-36 h-36 bg-[#F59E0B]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] bg-gradient-to-r from-transparent via-[#F59E0B] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#F59E0B]" />
               <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-              <div className="flex justify-between items-start mb-3 relative z-10">
-                <div className="w-9 h-9 rounded-xl bg-[#F59E0B]/15 border border-[#F59E0B]/30 flex items-center justify-center text-amber-600 dark:text-[#F59E0B] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(245,158,11,0.6)] group-hover:border-[#F59E0B] transition-all duration-300">
-                  <Sparkles size={17} />
+              <div className="flex justify-between items-start mb-4 relative z-10">
+                <div className="w-11 h-11 rounded-2xl bg-[#F59E0B]/15 border border-[#F59E0B]/30 flex items-center justify-center text-amber-600 dark:text-[#F59E0B] group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(245,158,11,0.6)] group-hover:border-[#F59E0B] transition-all duration-300 shadow-sm">
+                  <Sparkles size={20} />
                 </div>
-                <span className="text-[10px] font-heading font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 group-hover:border-amber-500/40 transition-colors">
+                <span className="text-xs font-heading font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20 group-hover:border-amber-500/40 transition-colors">
                   &gt;$5,000+
                 </span>
               </div>
               <div className="relative z-10">
-                <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">VIP Enterprise Tier</p>
-                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-amber-600 dark:text-amber-400 font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-amber-500 group-hover:to-cyan-500 dark:group-hover:from-amber-300 dark:group-hover:to-[#00E5FF] transition-all">
+                <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">VIP Enterprise Tier</p>
+                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-amber-600 dark:text-amber-400 font-mono tracking-tight mt-0.5 group-hover:text-[#F59E0B] dark:group-hover:text-transparent dark:group-hover:bg-clip-text dark:group-hover:bg-gradient-to-r dark:group-hover:from-amber-300 dark:group-hover:to-[#00E5FF] transition-all">
                   {vipCount}
                 </p>
-                <p className="text-[10px] font-sans text-secondary/80 mt-1 truncate">High-value enterprise partnerships</p>
+                <p className="text-xs font-sans text-secondary/80 mt-1.5 truncate">High-value enterprise partnerships</p>
               </div>
             </motion.div>
 
             {/* KPI 4: Global Reach & Timezones */}
             <motion.div
               variants={itemVariants}
-              className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#00E5FF]/60 hover:shadow-[0_12px_30px_rgba(0,229,255,0.15)] dark:hover:shadow-[0_12px_30px_rgba(0,229,255,0.25)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-sm"
+              className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-[#00E5FF]/60 hover:shadow-[0_16px_36px_rgba(0,229,255,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
             >
-              <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#00E5FF]/20 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#00E5FF] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#00E5FF]" />
+              <div className="absolute -top-10 -right-10 w-36 h-36 bg-[#00E5FF]/20 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] bg-gradient-to-r from-transparent via-[#00E5FF] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#00E5FF]" />
               <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-              <div className="flex justify-between items-start mb-3 relative z-10">
-                <div className="w-9 h-9 rounded-xl bg-[#00E5FF]/15 border border-[#00E5FF]/30 flex items-center justify-center text-cyan-600 dark:text-[#00E5FF] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(0,229,255,0.6)] group-hover:border-[#00E5FF] transition-all duration-300">
-                  <Globe size={17} />
+              <div className="flex justify-between items-start mb-4 relative z-10">
+                <div className="w-11 h-11 rounded-2xl bg-[#00E5FF]/15 border border-[#00E5FF]/30 flex items-center justify-center text-cyan-600 dark:text-[#00E5FF] group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(0,229,255,0.6)] group-hover:border-[#00E5FF] transition-all duration-300 shadow-sm">
+                  <Globe size={20} />
                 </div>
-                <span className="text-[10px] font-heading font-bold text-cyan-600 dark:text-[#00E5FF] bg-[#00E5FF]/10 px-2 py-0.5 rounded-md border border-[#00E5FF]/20 group-hover:border-[#00E5FF]/40 transition-colors">
+                <span className="text-xs font-heading font-bold text-cyan-600 dark:text-[#00E5FF] bg-[#00E5FF]/10 px-2.5 py-1 rounded-lg border border-[#00E5FF]/20 group-hover:border-[#00E5FF]/40 transition-colors">
                   Global Reach
                 </span>
               </div>
               <div className="relative z-10">
-                <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">Country Footprint</p>
-                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-slate-900 group-hover:to-cyan-600 dark:group-hover:from-white dark:group-hover:to-[#00E5FF] transition-all">
+                <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">Country Footprint</p>
+                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-cyan-600 dark:group-hover:text-transparent dark:group-hover:bg-clip-text dark:group-hover:bg-gradient-to-r dark:group-hover:from-white dark:group-hover:to-[#00E5FF] transition-all">
                   {uniqueCountries}
                 </p>
-                <p className="text-[10px] font-sans text-secondary/80 mt-1 truncate">Covering US, Europe, Asia & Middle East</p>
               </div>
             </motion.div>
 
           </div>
 
-          {/* ── Filter, Search & Command Bar ──────────────────────────────────── */}
+          {/* ── Secondary Platform & Tier Filter Toolbar ─────────────────────── */}
           <div className="p-4 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl space-y-3.5 shadow-sm dark:shadow-lg">
             <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
               
-              {/* Search Box */}
-              <div className="relative flex-1 max-w-md group">
-                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary group-focus-within:text-indigo-600 dark:group-focus-within:text-[#00E5FF] transition-colors pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="Search by client name, company, email, country, notes..."
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-9 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-all shadow-inner"
-                />
-                {searchQuery && (
-                  <button 
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                  >
-                    <X size={12} />
-                  </button>
-                )}
+              {/* Platform Pills */}
+              <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl overflow-x-auto scrollbar-none">
+                {['All', 'Freelancer', 'Direct', 'Upwork', 'Fiverr'].map(p => {
+                  if (user?.role === 'marketplace_team' && p === 'Direct') return null;
+                  const isSelected = platformFilter.toLowerCase() === p.toLowerCase();
+                  const pConf = p === 'All' ? null : PLATFORMS_CONFIG[p];
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => setPlatformFilter(p)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-heading font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                        isSelected 
+                          ? 'bg-white dark:bg-white/15 text-slate-900 dark:text-white border border-black/10 dark:border-white/20 shadow-sm' 
+                          : 'text-slate-600 dark:text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
+                      }`}
+                      style={{
+                        borderColor: isSelected && pConf ? pConf.color : undefined,
+                        color: isSelected && pConf ? pConf.color : undefined
+                      }}
+                    >
+                      {pConf && <pConf.icon size={12} />}
+                      <span>{p === 'Direct' ? 'Direct Client' : p}</span>
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* Controls: Platform Pills & Sort */}
-              <div className="flex flex-wrap items-center gap-2">
-                
-                {/* Platform Pills */}
-                <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl overflow-x-auto scrollbar-none">
-                  {['All', 'Freelancer', 'Direct', 'Upwork', 'Fiverr'].map(p => {
-                    if (user?.role === 'marketplace_team' && p === 'Direct') return null;
-                    const isSelected = platformFilter.toLowerCase() === p.toLowerCase();
-                    const pConf = p === 'All' ? null : PLATFORMS_CONFIG[p];
-                    return (
-                      <button
-                        key={p}
-                        onClick={() => setPlatformFilter(p)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-heading font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
-                          isSelected 
-                            ? 'bg-white dark:bg-white/15 text-slate-900 dark:text-white border border-black/10 dark:border-white/20 shadow-sm' 
-                            : 'text-slate-600 dark:text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
-                        }`}
-                        style={{
-                          borderColor: isSelected && pConf ? pConf.color : undefined,
-                          color: isSelected && pConf ? pConf.color : undefined
-                        }}
-                      >
-                        {pConf && <pConf.icon size={12} />}
-                        <span>{p === 'Direct' ? 'Direct Client' : p}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
+              {/* Controls: Tier Filter, Sort, & Export CSV */}
+              <div className="flex flex-wrap items-center gap-2.5">
                 {/* Tier Filter */}
                 <select
                   value={tierFilter}
@@ -732,13 +789,23 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                   <option value="name-asc">Name (A-Z)</option>
                 </select>
 
+                {/* Export CSV Button */}
+                <button 
+                  onClick={handleExportCSV}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-heading font-bold bg-slate-100 dark:bg-[#060608] hover:bg-slate-200 dark:hover:bg-[#121218] text-slate-700 dark:text-secondary hover:text-slate-900 dark:hover:text-white border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 transition-all cursor-pointer shadow-sm"
+                  title="Export Clients to CSV"
+                >
+                  <DownloadCloud size={14} />
+                  <span>Export CSV</span>
+                </button>
               </div>
+
             </div>
 
             {/* Active Filters Summary */}
             <div className="flex items-center justify-between text-[11px] font-mono text-secondary pt-1 border-t border-black/5 dark:border-white/5">
               <div>
-                Showing <span className="text-slate-900 dark:text-white font-bold">{filteredClients.length}</span> of <span className="text-slate-900 dark:text-white font-bold">{clients.length}</span> total clients
+                Showing <span className="text-slate-900 dark:text-white font-bold">{totalItems === 0 ? 0 : (validPage - 1) * ITEMS_PER_PAGE + 1} - {Math.min(validPage * ITEMS_PER_PAGE, totalItems)}</span> of <span className="text-slate-900 dark:text-white font-bold">{totalItems}</span> clients (<span className="font-bold text-slate-900 dark:text-white">{clients.length}</span> total)
               </div>
               {(searchQuery || platformFilter !== 'All' || tierFilter !== 'All') && (
                 <button
@@ -788,7 +855,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
             animate="show"
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
           >
-            {filteredClients.map((client: any) => {
+            {paginatedClients.map((client: any) => {
               const pBadge = getPlatformBadge(client.platform);
               const localTime = getLocalTime(client.timezone);
               const projectCount = client.projectCount || (client.projects ? client.projects.length : 0);
@@ -798,17 +865,17 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                   key={client._id}
                   variants={itemVariants}
                   onClick={() => setSelectedClient(client)}
-                  className={`group glass-card rounded-2xl p-5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 shadow-sm dark:shadow-none ${pBadge.borderColor}`}
+                  className={`group glass-card rounded-2xl p-5 md:p-6 min-h-[220px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 hover:border-black/25 dark:hover:border-white/25 shadow-sm hover:shadow-[0_16px_36px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.7)] ${pBadge.borderColor}`}
                 >
-                  {/* Radial Hover Spotlight */}
+                  {/* Radial Hover Spotlight (Dashboard Signature) */}
                   <div 
-                    className="absolute -top-10 -right-10 w-32 h-32 blur-[35px] rounded-full opacity-35 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none"
+                    className="absolute -top-10 -right-10 w-36 h-36 blur-[35px] rounded-full opacity-30 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none"
                     style={{ backgroundColor: pBadge.color }}
                   />
 
                   {/* Top Accent Neon Line - Center-anchored, expands on hover */}
                   <div 
-                    className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] transition-all duration-500 opacity-90"
+                    className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] transition-all duration-500 opacity-90 shadow-[0_0_10px]"
                     style={{ 
                       backgroundImage: `linear-gradient(to right, transparent, ${pBadge.color}, transparent)`,
                       boxShadow: `0 0 10px ${pBadge.color}`
@@ -817,6 +884,15 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
 
                   {/* Subtle Card Glass Sheen Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+                  {/* Left Accent Bar (Dashboard Signature) */}
+                  <div 
+                    className="absolute left-0 top-6 bottom-6 w-[3px] rounded-r-full transition-all duration-300 opacity-80 group-hover:opacity-100"
+                    style={{
+                      backgroundColor: pBadge.color,
+                      boxShadow: `0 0 8px ${pBadge.color}`
+                    }}
+                  />
 
                   {/* Card Header: Avatar & Platform Badge */}
                   <div className="relative z-10">
@@ -1012,7 +1088,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                 </thead>
                 <tbody className="divide-y divide-black/5 dark:divide-white/5">
                   <AnimatePresence>
-                    {filteredClients.map((client: any) => {
+                    {paginatedClients.map((client: any) => {
                       const pBadge = getPlatformBadge(client.platform);
                       const localTime = getLocalTime(client.timezone);
                       const projectCount = client.projectCount || (client.projects ? client.projects.length : 0);
@@ -1150,10 +1226,76 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
           </div>
         )}
 
+        {/* ========================================================================= */}
+        {/* PAGINATION CONTROLS (MAX 12 CLIENTS PER PAGE) */}
+        {/* ========================================================================= */}
+        {filteredClients.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-5 pb-8 border-t border-black/10 dark:border-white/10">
+            {/* Range counter */}
+            <div className="text-xs font-mono text-secondary">
+              Showing <span className="font-bold text-slate-900 dark:text-white">{(validPage - 1) * ITEMS_PER_PAGE + 1}</span> - <span className="font-bold text-slate-900 dark:text-white">{Math.min(validPage * ITEMS_PER_PAGE, totalItems)}</span> of <span className="font-bold text-slate-900 dark:text-white">{totalItems}</span> clients
+            </div>
+
+            {/* Page navigation buttons */}
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1.5">
+                {/* Prev Button */}
+                <button
+                  onClick={() => {
+                    setCurrentPage((prev) => Math.max(1, prev - 1));
+                    window.scrollTo({ top: 350, behavior: 'smooth' });
+                  }}
+                  disabled={validPage === 1}
+                  className="px-3.5 py-1.5 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0a0a0d] text-xs font-heading font-bold text-slate-800 dark:text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-white/5 transition-all flex items-center gap-1 shadow-sm"
+                >
+                  <ChevronLeft size={14} />
+                  <span>Prev</span>
+                </button>
+
+                {/* Page numbers */}
+                <div className="flex items-center gap-1 px-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                    const isActive = pageNum === validPage;
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => {
+                          setCurrentPage(pageNum);
+                          window.scrollTo({ top: 350, behavior: 'smooth' });
+                        }}
+                        className={`w-8 h-8 rounded-xl text-xs font-mono font-bold transition-all flex items-center justify-center ${
+                          isActive
+                            ? 'bg-[#6324FC] text-white shadow-[0_0_15px_rgba(99,36,252,0.4)] scale-105 font-extrabold'
+                            : 'bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 text-secondary hover:text-slate-900 dark:hover:text-white hover:border-black/20 dark:hover:border-white/20'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Next Button */}
+                <button
+                  onClick={() => {
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+                    window.scrollTo({ top: 350, behavior: 'smooth' });
+                  }}
+                  disabled={validPage === totalPages}
+                  className="px-3.5 py-1.5 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0a0a0d] text-xs font-heading font-bold text-slate-800 dark:text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-white/5 transition-all flex items-center gap-1 shadow-sm"
+                >
+                  <span>Next</span>
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ── Slide-Over Dossier Drawer (Client Details) ────────────────────── */}
         <AnimatePresence>
           {selectedClient && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 overflow-y-auto overscroll-contain">
               {/* Backdrop */}
               <motion.div 
                 initial={{ opacity: 0 }} 
@@ -1169,7 +1311,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                 transition={{ type: "spring", damping: 28, stiffness: 320 }}
-                className="relative w-full max-w-2xl my-auto bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/15 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.25),0_0_30px_rgba(99,36,252,0.1)] dark:shadow-[0_25px_70px_rgba(0,0,0,0.9),0_0_30px_rgba(99,36,252,0.25)] flex flex-col overflow-hidden z-10 max-h-[92vh]"
+                className="relative w-full max-w-2xl my-auto bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/15 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.25),0_0_30px_rgba(99,36,252,0.1)] dark:shadow-[0_25px_70px_rgba(0,0,0,0.9),0_0_30px_rgba(99,36,252,0.25)] flex flex-col overflow-hidden z-10 max-h-[92vh] overscroll-contain"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Top Platform Line */}
@@ -1284,7 +1426,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                 </div>
 
                 {/* Tab Body */}
-                <div className="p-5 md:p-6 overflow-y-auto max-h-[55vh] custom-scrollbar space-y-5">
+                <div className="p-5 md:p-6 overflow-y-auto max-h-[55vh] custom-scrollbar space-y-5 overscroll-contain">
                   <AnimatePresence mode="wait">
                     
                     {/* TAB 1: OVERVIEW & ASSOCIATED CONTRACTS */}
@@ -1526,7 +1668,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
         {/* ── Add / Edit Client Modal ───────────────────────────────────────── */}
         <AnimatePresence>
           {isAddModalOpen && (
-            <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+            <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-6 overflow-y-auto overscroll-contain">
               {/* Backdrop */}
               <motion.div 
                 initial={{ opacity: 0 }} 
@@ -1542,7 +1684,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 15 }}
                 transition={{ type: "spring", damping: 28, stiffness: 320 }}
-                className="relative w-full max-w-2xl my-auto bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/15 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.25),0_0_30px_rgba(99,36,252,0.15)] dark:shadow-[0_25px_70px_rgba(0,0,0,0.9),0_0_30px_rgba(99,36,252,0.25)] flex flex-col overflow-hidden z-10"
+                className="relative w-full max-w-2xl my-auto bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/15 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.25),0_0_30px_rgba(99,36,252,0.15)] dark:shadow-[0_25px_70px_rgba(0,0,0,0.9),0_0_30px_rgba(99,36,252,0.25)] flex flex-col overflow-hidden z-10 overscroll-contain"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Top Glow Line */}
@@ -1586,7 +1728,7 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
                 </div>
 
                 {/* Form */}
-                <form id="client-form" onSubmit={handleSaveClient} className="p-5 md:p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar">
+                <form id="client-form" onSubmit={handleSaveClient} className="p-5 md:p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar overscroll-contain">
                   
                   {/* Platform Selector */}
                   <div>

@@ -20,6 +20,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 
 import { createDailyExpense, updateDailyExpense, deleteDailyExpense } from '@/app/actions/dailyExpenseActions';
 import BorrowLendTab from '@/components/expenses/BorrowLendTab';
+import { useScrollLock } from '@/lib/useScrollLock';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Expense {
@@ -71,6 +72,7 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
   
   const [isSlidePanelOpen, setIsSlidePanelOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  useScrollLock(isSlidePanelOpen || isUploadModalOpen);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);

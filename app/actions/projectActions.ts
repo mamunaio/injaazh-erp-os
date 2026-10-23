@@ -91,6 +91,7 @@ async function handleProjectCompletionSync(project: any) {
 }
 
 import { createNotification } from './notificationActions';
+import MarketplaceProject from '@/models/MarketplaceProject';
 
 export async function createProject(data: any) {
   try {
@@ -131,6 +132,40 @@ export async function createProject(data: any) {
       await handleProjectCompletionSync(newProject);
     }
 
+    // Auto-sync to MarketplaceProject if it belongs to a marketplace platform
+    if (newProject.platform && ['Freelancer', 'Direct', 'Upwork', 'Fiverr'].includes(newProject.platform)) {
+      try {
+        const mp = await MarketplaceProject.create({
+          title: newProject.title,
+          platform: newProject.platform,
+          status: ['Completed', 'In Progress', 'In Review'].includes(newProject.status) ? newProject.status : 'Planning',
+          budget: `$${newProject.budget || 0}`,
+          scope: newProject.description || '',
+          tasks: [{ id: 1, title: newProject.title, completed: newProject.status === 'Completed' }],
+          milestones: [{
+            id: 1,
+            description: newProject.status === 'Completed' ? 'Project Delivery & Milestone Release' : 'In-Flight Milestone Deliverable',
+            date: (newProject.deadline || new Date()).toISOString().split('T')[0],
+            status: newProject.status === 'Completed' ? 'Paid' : 'Pending',
+            amount: newProject.budget || 0
+          }],
+          startDate: newProject.startDate || new Date(),
+          deadline: newProject.deadline,
+          clientId: newProject.clientId || null,
+          clientDetails: {
+            clientName: newProject.clientName || 'Direct Client',
+          },
+          progress: newProject.progress || (newProject.status === 'Completed' ? 100 : 0)
+        });
+        newProject.marketplaceProjectId = mp._id;
+        await newProject.save();
+        revalidatePath('/marketplace');
+        revalidatePath(`/marketplace/${newProject.platform.toLowerCase()}`);
+      } catch (mpErr) {
+        console.error('Failed to auto-sync to MarketplaceProject:', mpErr);
+      }
+    }
+
     revalidatePath('/projects');
     return { success: true, data: JSON.parse(JSON.stringify(newProject)) };
   } catch (error: any) {
@@ -152,6 +187,19 @@ export async function updateProjectStatus(projectId: string, newStatus: string) 
     
     if (newStatus === 'Completed') {
       await handleProjectCompletionSync(updatedProject);
+    }
+
+    // Sync status with corresponding MarketplaceProject
+    if (updatedProject?.marketplaceProjectId) {
+      try {
+        await MarketplaceProject.findByIdAndUpdate(updatedProject.marketplaceProjectId, {
+          status: ['Completed', 'In Progress', 'In Review'].includes(newStatus) ? newStatus : 'Planning',
+          progress: newStatus === 'Completed' ? 100 : (updatedProject.progress || 0)
+        });
+        revalidatePath('/marketplace');
+      } catch (mpErr) {
+        console.error('Failed to sync status to MarketplaceProject:', mpErr);
+      }
     }
     
     revalidatePath('/projects');
@@ -240,6 +288,25 @@ export async function updateProject(projectId: string, updateData: any) {
     if (updatedProject && updatedProject.status === 'Completed') {
       await handleProjectCompletionSync(updatedProject);
     }
+
+    // Sync with corresponding MarketplaceProject
+    if (updatedProject?.marketplaceProjectId) {
+      try {
+        const mpUpdate: any = {};
+        if (updateData.title) mpUpdate.title = updateData.title;
+        if (updateData.status) mpUpdate.status = ['Completed', 'In Progress', 'In Review'].includes(updateData.status) ? updateData.status : 'Planning';
+        if (updateData.budget !== undefined) mpUpdate.budget = `$${updateData.budget}`;
+        if (updateData.platform) mpUpdate.platform = updateData.platform;
+        if (updateData.progress !== undefined) mpUpdate.progress = updateData.progress;
+        if (updateData.clientName) mpUpdate['clientDetails.clientName'] = updateData.clientName;
+        if (Object.keys(mpUpdate).length > 0) {
+          await MarketplaceProject.findByIdAndUpdate(updatedProject.marketplaceProjectId, { $set: mpUpdate });
+          revalidatePath('/marketplace');
+        }
+      } catch (mpErr) {
+        console.error('Failed to sync update to MarketplaceProject:', mpErr);
+      }
+    }
     
     await createNotification('system', `Project "${updatedProject?.title}" was updated.`, '/projects');
     
@@ -258,6 +325,14 @@ export async function deleteProject(projectId: string) {
     const project = await Project.findById(projectId);
     if (project) {
       await createNotification('system', `Project "${project.title}" was deleted.`, '/projects');
+      if (project.marketplaceProjectId) {
+        try {
+          await MarketplaceProject.findByIdAndDelete(project.marketplaceProjectId);
+          revalidatePath('/marketplace');
+        } catch (mpErr) {
+          console.error('Failed to delete associated MarketplaceProject:', mpErr);
+        }
+      }
     }
     await Project.findByIdAndDelete(projectId);
     revalidatePath('/projects');

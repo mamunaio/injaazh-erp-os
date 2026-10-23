@@ -112,6 +112,24 @@
   }
 }
 
+/* Universal Modal & Dialog Scroll Lock */
+html.modal-open,
+html.modal-open body {
+  overflow: hidden !important;
+  height: 100% !important;
+  overscroll-behavior: none !important;
+}
+
+/* Modal Scroll Containment (Stops scroll chaining to background viewport) */
+[role="dialog"],
+[aria-modal="true"],
+[data-modal],
+.modal-overlay,
+.modal-container,
+.overscroll-contain {
+  overscroll-behavior: contain !important;
+}
+
 /* Precision Scrollbar */
 .custom-scrollbar, ::-webkit-scrollbar {
   scrollbar-width: thin;

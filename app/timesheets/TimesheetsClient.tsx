@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
+import { useScrollLock } from '@/lib/useScrollLock';
 
 const BILLABLE_RATE = 25;
 
@@ -30,23 +31,10 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis }: { u
   };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  useScrollLock(isModalOpen);
   const [editingLogId, setEditingLogId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ project: '', task: '', date: format(new Date(), 'yyyy-MM-dd'), startTime: '09:00', endTime: '17:00' });
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (isModalOpen) {
-      document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-    };
-  }, [isModalOpen]);
 
   const formatTimeSeconds = (seconds: number) => {
     const h = Math.floor(seconds / 3600);

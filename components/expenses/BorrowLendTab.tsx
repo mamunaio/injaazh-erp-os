@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { useScrollLock } from '@/lib/useScrollLock';
 
 export default function BorrowLendTab({ initialLoans }: { initialLoans: any[] }) {
   const { confirm } = useConfirm();
@@ -16,6 +17,7 @@ export default function BorrowLendTab({ initialLoans }: { initialLoans: any[] })
   const [searchQuery, setSearchQuery] = useState('');
   
   const [isSlidePanelOpen, setIsSlidePanelOpen] = useState(false);
+  useScrollLock(isSlidePanelOpen);
   const [editingLoan, setEditingLoan] = useState<any | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 

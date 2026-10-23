@@ -14,7 +14,7 @@ import { useUser } from './UserContext';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, category: 'Overview' },
-  { name: 'Lead Gen Engine', href: '/lead-gen', icon: Flame, category: 'Operations' },
+  { name: 'Lead Gen Engine', href: '/lead-gen/dashboard', icon: Flame, category: 'Operations' },
   { name: 'Marketplace', href: '/marketplace', icon: Globe, category: 'Marketplace' },
   { name: 'Clients', href: '/marketplace/clients', icon: Users, category: 'Marketplace' },
   { name: 'Projects', href: '/projects', icon: Briefcase, category: 'Operations' },
@@ -44,12 +44,12 @@ export default function Sidebar() {
     }
     
     if (user.role === 'editor') {
-      const allowed = ['/dashboard', '/lead-gen', '/marketplace', '/marketplace/clients', '/projects', '/tasks', '/roadmap', '/timesheets', '/team-logs'];
+      const allowed = ['/dashboard', '/lead-gen', '/lead-gen/dashboard', '/marketplace', '/marketplace/clients', '/projects', '/tasks', '/roadmap', '/timesheets', '/team-logs'];
       return allowed.includes(item.href);
     }
 
     if (user.role === 'marketplace_team') {
-      const allowed = ['/dashboard', '/lead-gen', '/marketplace', '/marketplace/clients', '/tasks', '/team-logs'];
+      const allowed = ['/dashboard', '/lead-gen', '/lead-gen/dashboard', '/marketplace', '/marketplace/clients', '/tasks', '/team-logs'];
       return allowed.includes(item.href);
     }
     
@@ -166,7 +166,9 @@ export default function Sidebar() {
         ? pathname === '/marketplace' || (pathname.startsWith('/marketplace/') && !pathname.startsWith('/marketplace/clients'))
         : item.href === '/settings'
           ? pathname === '/settings' || pathname.startsWith('/settings/')
-          : pathname.startsWith(item.href);
+          : item.href === '/lead-gen/dashboard'
+            ? pathname.startsWith('/lead-gen')
+            : pathname.startsWith(item.href);
     
     const Icon = item.icon;
 

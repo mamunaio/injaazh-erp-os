@@ -64,6 +64,16 @@ export async function getDashboardData() {
       })
       .reduce((sum: number, t: any) => sum + t.amount, 0);
 
+    const thisMonthExpenses = transactions
+      .filter((t: any) => {
+        const date = new Date(t.date);
+        const now = new Date();
+        return (t.type === 'Expense' || t.type === 'expense') && 
+               date.getMonth() === now.getMonth() && 
+               date.getFullYear() === now.getFullYear();
+      })
+      .reduce((sum: number, t: any) => sum + (parseFloat(t.amount) || 0), 0);
+
     const lastMonthIncome = transactions
       .filter((t: any) => {
         const date = new Date(t.date);
@@ -216,27 +226,52 @@ export async function getDashboardData() {
       }
     });
 
-    // Income trend (30 Days)
+    // Cash flow trend (30 Days) - Income and Expenses
+    // Check if any recent transaction is dated up to 7 days in the future (e.g. Oct 26)
+    const currentDate = new Date();
+    let trendEndDate = new Date(currentDate);
+    transactions.forEach((t: any) => {
+      const tDate = new Date(t.date);
+      if (tDate > trendEndDate && tDate.getTime() - currentDate.getTime() <= 7 * 24 * 60 * 60 * 1000) {
+        trendEndDate = tDate;
+      }
+    });
+
     const revenueTrend30Days = [];
     for (let i = 29; i >= 0; i--) {
-      const date = new Date();
+      const date = new Date(trendEndDate);
       date.setDate(date.getDate() - i);
       const dayKey = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       
       const dayIncome = transactions
         .filter((t: any) => {
           const tDate = new Date(t.date);
-          return t.type === 'Income' && 
+          return (t.type === 'Income' || t.type === 'income') && 
                  tDate.getDate() === date.getDate() &&
                  tDate.getMonth() === date.getMonth() && 
                  tDate.getFullYear() === date.getFullYear();
         })
-        .reduce((sum: number, t: any) => sum + t.amount, 0);
+        .reduce((sum: number, t: any) => sum + (parseFloat(t.amount) || 0), 0);
+
+      const dayExpense = transactions
+        .filter((t: any) => {
+          const tDate = new Date(t.date);
+          return (t.type === 'Expense' || t.type === 'expense') && 
+                 tDate.getDate() === date.getDate() &&
+                 tDate.getMonth() === date.getMonth() && 
+                 tDate.getFullYear() === date.getFullYear();
+        })
+        .reduce((sum: number, t: any) => sum + (parseFloat(t.amount) || 0), 0);
       
-      revenueTrend30Days.push({ dateStr: dayKey, Income: dayIncome });
+      revenueTrend30Days.push({ 
+        dateStr: dayKey, 
+        Income: Math.round(dayIncome * 100) / 100,
+        Expense: Math.round(dayExpense * 100) / 100,
+        Net: Math.round((dayIncome - dayExpense) * 100) / 100
+      });
     }
 
-    // Income trend (last 6 months)
+    // Cash flow trend (last 6 months)
     const revenueTrend6Months = [];
     for (let i = 5; i >= 0; i--) {
       const date = new Date();
@@ -246,16 +281,30 @@ export async function getDashboardData() {
       const monthIncome = transactions
         .filter((t: any) => {
           const tDate = new Date(t.date);
-          return t.type === 'Income' && 
+          return (t.type === 'Income' || t.type === 'income') && 
                  tDate.getMonth() === date.getMonth() && 
                  tDate.getFullYear() === date.getFullYear();
         })
-        .reduce((sum: number, t: any) => sum + t.amount, 0);
+        .reduce((sum: number, t: any) => sum + (parseFloat(t.amount) || 0), 0);
+
+      const monthExpense = transactions
+        .filter((t: any) => {
+          const tDate = new Date(t.date);
+          return (t.type === 'Expense' || t.type === 'expense') && 
+                 tDate.getMonth() === date.getMonth() && 
+                 tDate.getFullYear() === date.getFullYear();
+        })
+        .reduce((sum: number, t: any) => sum + (parseFloat(t.amount) || 0), 0);
       
-      revenueTrend6Months.push({ dateStr: monthKey, Income: monthIncome });
+      revenueTrend6Months.push({ 
+        dateStr: monthKey, 
+        Income: Math.round(monthIncome * 100) / 100,
+        Expense: Math.round(monthExpense * 100) / 100,
+        Net: Math.round((monthIncome - monthExpense) * 100) / 100
+      });
     }
 
-    // Income trend (This Year)
+    // Cash flow trend (This Year)
     const revenueTrendYear = [];
     for (let i = 0; i < 12; i++) {
       const date = new Date(new Date().getFullYear(), i, 1);
@@ -264,13 +313,27 @@ export async function getDashboardData() {
       const monthIncome = transactions
         .filter((t: any) => {
           const tDate = new Date(t.date);
-          return t.type === 'Income' && 
+          return (t.type === 'Income' || t.type === 'income') && 
                  tDate.getMonth() === date.getMonth() && 
                  tDate.getFullYear() === date.getFullYear();
         })
-        .reduce((sum: number, t: any) => sum + t.amount, 0);
+        .reduce((sum: number, t: any) => sum + (parseFloat(t.amount) || 0), 0);
+
+      const monthExpense = transactions
+        .filter((t: any) => {
+          const tDate = new Date(t.date);
+          return (t.type === 'Expense' || t.type === 'expense') && 
+                 tDate.getMonth() === date.getMonth() && 
+                 tDate.getFullYear() === date.getFullYear();
+        })
+        .reduce((sum: number, t: any) => sum + (parseFloat(t.amount) || 0), 0);
       
-      revenueTrendYear.push({ dateStr: monthKey, Income: monthIncome });
+      revenueTrendYear.push({ 
+        dateStr: monthKey, 
+        Income: Math.round(monthIncome * 100) / 100,
+        Expense: Math.round(monthExpense * 100) / 100,
+        Net: Math.round((monthIncome - monthExpense) * 100) / 100
+      });
     }
 
     // Serialize SEO projects
@@ -406,6 +469,7 @@ export async function getDashboardData() {
           totalIncome,
           thisMonthIncome,
           totalExpenses,
+          thisMonthExpenses,
           netProfit,
           outstandingPipelineValue: salesPipeline.Pending,
           acceptedProposalsValue: salesPipeline.Accepted,

@@ -26,6 +26,7 @@ import {
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
+import { useScrollLock } from '@/lib/useScrollLock';
 import { 
   createDailyTask, 
   toggleTaskComplete, 
@@ -103,6 +104,7 @@ export default function TasksClient({
 
   // Modal full task creator
   const [isModalOpen, setIsModalOpen] = useState(false);
+  useScrollLock(isModalOpen);
   const [modalForm, setModalForm] = useState({
     title: '',
     description: '',

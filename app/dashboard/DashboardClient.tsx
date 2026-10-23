@@ -48,19 +48,42 @@ interface DashboardClientProps {
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
-    const val = payload[0].value || 0;
+    const incomeEntry = payload.find((p: any) => p.dataKey === 'Income');
+    const expenseEntry = payload.find((p: any) => p.dataKey === 'Expense');
+    const incomeVal = incomeEntry?.value || 0;
+    const expenseVal = expenseEntry?.value || 0;
+    const netVal = incomeVal - expenseVal;
+    
     return (
-      <div className="bg-white/95 dark:bg-[#0a0a0d]/95 border border-black/10 dark:border-[#6324FC]/40 p-3.5 rounded-2xl shadow-xl dark:shadow-[0_10px_30px_rgba(0,0,0,0.8),0_0_20px_rgba(99,36,252,0.25)] backdrop-blur-2xl min-w-[170px]">
-        <div className="flex items-center justify-between gap-3 mb-1.5 pb-1.5 border-b border-black/5 dark:border-white/10">
-          <span className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">{label || payload[0].name}</span>
+      <div className="bg-white/95 dark:bg-[#0a0a0d]/95 border border-black/10 dark:border-[#6324FC]/40 p-3.5 rounded-2xl shadow-xl dark:shadow-[0_10px_30px_rgba(0,0,0,0.8),0_0_20px_rgba(99,36,252,0.25)] backdrop-blur-2xl min-w-[190px]">
+        <div className="flex items-center justify-between gap-3 mb-2 pb-1.5 border-b border-black/5 dark:border-white/10">
+          <span className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">{label || payload[0]?.payload?.dateStr}</span>
           <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-pulse shadow-[0_0_6px_#00E5FF]" />
         </div>
-        <p className="text-lg font-heading font-extrabold text-slate-900 dark:text-white font-mono flex items-center gap-1.5">
-          {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(val)}
-        </p>
-        <p className="text-[10px] font-sans text-emerald-500 dark:text-emerald-400 mt-0.5 flex items-center gap-1 font-semibold">
-          <span>● Verified Inflow</span>
-        </p>
+        <div className="space-y-1.5 font-mono text-xs">
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-[11px] font-sans text-emerald-500 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] shadow-[0_0_6px_#00E5FF]" /> Inflow:
+            </span>
+            <span className="font-bold text-slate-900 dark:text-white">
+              +{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(incomeVal)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-[11px] font-sans text-rose-500 dark:text-rose-400 font-semibold flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#F43F5E] shadow-[0_0_6px_#F43F5E]" /> Expenses:
+            </span>
+            <span className="font-bold text-rose-500 dark:text-rose-400">
+              -{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(expenseVal)}
+            </span>
+          </div>
+          <div className="pt-1.5 mt-1 border-t border-black/5 dark:border-white/10 flex items-center justify-between gap-4 font-bold">
+            <span className="text-[10px] font-sans uppercase tracking-wider text-secondary">Net Cash:</span>
+            <span className={netVal >= 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500'}>
+              {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(netVal)}
+            </span>
+          </div>
+        </div>
       </div>
     );
   }
@@ -281,7 +304,10 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
     ? revenueTrend6Months 
     : revenueTrendYear;
 
-  const chartTotal = chartData?.reduce((acc: number, item: any) => acc + (item.Income || 0), 0) || 0;
+  const chartIncomeTotal = chartData?.reduce((acc: number, item: any) => acc + (item.Income || 0), 0) || 0;
+  const chartExpenseTotal = chartData?.reduce((acc: number, item: any) => acc + (item.Expense || 0), 0) || 0;
+  const chartNetTotal = chartIncomeTotal - chartExpenseTotal;
+  const chartTotal = chartIncomeTotal;
   const chartAvg = chartData?.length ? Math.round(chartTotal / chartData.length) : 0;
   const chartPeak = Math.max(...(chartData?.map((item: any) => item.Income || 0) || [0]));
 
@@ -353,31 +379,33 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
               <span>AI Copilot</span>
             </button>
 
-            {/* New Project (Ultra-Smooth 360-Degree Laser Border Beam CTA) */}
+            {/* + New Project Laser Beam CTA (Symmetrically Calibrated Clockwise Single Stream) */}
             <button 
               onClick={() => router.push('/projects')}
-              className="group relative p-[2px] rounded-xl overflow-hidden flex items-center justify-center cursor-pointer transition-all duration-300 active:scale-95 shadow-[0_0_20px_rgba(99,36,252,0.3)] hover:shadow-[0_0_30px_rgba(0,229,255,0.5)]"
+              className="h-9 group relative p-[2px] rounded-xl overflow-hidden flex items-center justify-center cursor-pointer transition-all duration-300 active:scale-95 shadow-[0_0_20px_rgba(99,36,252,0.35)] hover:shadow-[0_0_35px_rgba(0,229,255,0.5),0_0_20px_rgba(236,72,153,0.35)]"
             >
-              {/* Ambient Glow Beam Layer */}
+              {/* Perfectly Centered Square Conic Glow Aura (Uniform Distance on All 4 Sides) */}
               <span 
-                className="absolute top-1/2 left-1/2 w-[350%] aspect-square -translate-x-1/2 -translate-y-1/2 animate-neon-border blur-[8px] opacity-80 pointer-events-none" 
+                className="absolute top-1/2 left-1/2 w-[450%] aspect-square -translate-x-1/2 -translate-y-1/2 animate-[spin_3s_linear_infinite] blur-[8px] opacity-85 pointer-events-none" 
                 style={{
-                  background: 'conic-gradient(from 0deg, transparent 0deg, transparent 60deg, #6324FC 120deg, #00E5FF 180deg, #EC4899 240deg, transparent 300deg)'
+                  background: 'conic-gradient(from 0deg, transparent 0deg, transparent 60deg, #00e5ff 110deg, #6324fc 140deg, #ec4899 170deg, transparent 210deg, transparent 360deg)'
                 }}
               />
               
-              {/* Sharp Crisp Laser Beam Layer */}
+              {/* Crisp Symmetrical Single Laser Beam Stream (Clockwise: Left to Right Loop) */}
               <span 
-                className="absolute top-1/2 left-1/2 w-[350%] aspect-square -translate-x-1/2 -translate-y-1/2 animate-neon-border opacity-100 pointer-events-none" 
+                className="absolute top-1/2 left-1/2 w-[450%] aspect-square -translate-x-1/2 -translate-y-1/2 animate-[spin_3s_linear_infinite] opacity-100 pointer-events-none" 
                 style={{
-                  background: 'conic-gradient(from 0deg, transparent 0deg, transparent 60deg, #6324FC 120deg, #00E5FF 180deg, #EC4899 240deg, transparent 300deg)'
+                  background: 'conic-gradient(from 0deg, transparent 0deg, transparent 60deg, #00e5ff 110deg, #6324fc 140deg, #ec4899 170deg, transparent 210deg, transparent 360deg)'
                 }}
               />
               
-              {/* Inner Luxury Surface */}
-              <div className="relative z-10 px-4 py-2 rounded-[9px] bg-white dark:bg-[#0a0a0d] group-hover:bg-slate-50 dark:group-hover:bg-[#121218] text-slate-900 dark:text-white font-heading font-bold text-xs flex items-center gap-2 transition-colors">
-                <Briefcase size={14} className="text-[#6324FC] dark:text-[#00E5FF] group-hover:rotate-6 transition-transform" />
-                <span className="tracking-wide">+ New Project</span>
+              {/* Inner High-Contrast Surface: Concentric 10px radius matching outer 12px minus 2px */}
+              <div className="relative z-10 w-full h-full px-3.5 rounded-[10px] bg-white dark:bg-[#0a0a0d] group-hover:bg-slate-50 dark:group-hover:bg-[#121218] text-slate-900 dark:text-white font-heading font-bold text-xs flex items-center gap-2 transition-all">
+                <Briefcase size={14} className="text-[#00E5FF] group-hover:rotate-6 group-hover:scale-110 drop-shadow-[0_0_6px_#00E5FF] transition-transform duration-300" />
+                <span className="tracking-wide group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-slate-900 group-hover:to-[#6324FC] dark:group-hover:from-white dark:group-hover:via-[#00E5FF] dark:group-hover:to-[#EC4899] transition-all">
+                  + New Project
+                </span>
               </div>
             </button>
           </div>
@@ -484,37 +512,9 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
               </div>
             </div>
 
-            {/* Metric 4: Milestone Escrow Vault */}
+            {/* Metric 4: Monthly Expenses / Burn Rate */}
             <div 
-              onClick={() => router.push('/marketplace')} 
-              className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-amber-500/60 hover:shadow-[0_16px_36px_rgba(245,158,11,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
-            >
-              {/* Radial Hover Spotlight */}
-              <div className="absolute -top-10 -right-10 w-36 h-36 bg-amber-500/20 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
-              {/* Top Accent Neon Line */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] bg-gradient-to-r from-transparent via-amber-500 to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#F59E0B]" />
-              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-
-              <div className="flex justify-between items-start mb-4 relative z-10">
-                <div className="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500 dark:text-amber-400 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(245,158,11,0.6)] group-hover:border-amber-400 transition-all duration-300 shadow-sm">
-                  <Layers size={21} />
-                </div>
-                <span className="text-xs font-heading font-bold text-amber-500 dark:text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20 group-hover:border-amber-500/40 transition-colors">
-                  Escrow Vault
-                </span>
-              </div>
-              <div className="relative z-10">
-                <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">Milestones Locked</p>
-                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-amber-500 dark:group-hover:text-transparent dark:group-hover:bg-clip-text dark:group-hover:bg-gradient-to-r dark:group-hover:from-white dark:group-hover:to-amber-400 transition-all">
-                  {formatCurrency(stats?.pendingMilestoneValue || 0)}
-                </p>
-                <p className="text-xs font-sans text-secondary/80 mt-1.5 truncate">Awaiting Delivery Approval</p>
-              </div>
-            </div>
-
-            {/* Metric 5: Sprint Deadlines Due */}
-            <div 
-              onClick={() => router.push('/roadmap')} 
+              onClick={() => router.push('/finance')} 
               className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-rose-500/60 hover:shadow-[0_16px_36px_rgba(244,63,94,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
             >
               {/* Radial Hover Spotlight */}
@@ -525,15 +525,43 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
 
               <div className="flex justify-between items-start mb-4 relative z-10">
                 <div className="w-11 h-11 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-500 dark:text-rose-400 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(244,63,94,0.6)] group-hover:border-rose-400 transition-all duration-300 shadow-sm">
-                  <Flame size={21} />
+                  <CreditCard size={21} />
                 </div>
                 <span className="text-xs font-heading font-bold text-rose-500 dark:text-rose-400 bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/20 group-hover:border-rose-500/40 transition-colors">
+                  Monthly Burn
+                </span>
+              </div>
+              <div className="relative z-10">
+                <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">Expenses This Month</p>
+                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-rose-500 dark:group-hover:text-transparent dark:group-hover:bg-clip-text dark:group-hover:bg-gradient-to-r dark:group-hover:from-white dark:group-hover:to-rose-400 transition-all">
+                  {formatCurrency(stats?.thisMonthExpenses || 0)}
+                </p>
+                <p className="text-xs font-sans text-secondary/80 mt-1.5 truncate">Total Expenses: {formatCurrency(stats?.totalExpenses || 0)}</p>
+              </div>
+            </div>
+
+            {/* Metric 5: Sprint Deadlines Due */}
+            <div 
+              onClick={() => router.push('/roadmap')} 
+              className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-amber-500/60 hover:shadow-[0_16px_36px_rgba(245,158,11,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
+            >
+              {/* Radial Hover Spotlight */}
+              <div className="absolute -top-10 -right-10 w-36 h-36 bg-amber-500/20 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              {/* Top Accent Neon Line */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] bg-gradient-to-r from-transparent via-amber-500 to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#F59E0B]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+              <div className="flex justify-between items-start mb-4 relative z-10">
+                <div className="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500 dark:text-amber-400 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(245,158,11,0.6)] group-hover:border-amber-400 transition-all duration-300 shadow-sm">
+                  <Flame size={21} />
+                </div>
+                <span className="text-xs font-heading font-bold text-amber-500 dark:text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20 group-hover:border-amber-500/40 transition-colors">
                   7-Day Sprint
                 </span>
               </div>
               <div className="relative z-10">
                 <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">Pending Deliverables</p>
-                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-rose-500 dark:group-hover:text-transparent dark:group-hover:bg-clip-text dark:group-hover:bg-gradient-to-r dark:group-hover:from-white dark:group-hover:to-rose-400 transition-all">
+                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-amber-500 dark:group-hover:text-transparent dark:group-hover:bg-clip-text dark:group-hover:bg-gradient-to-r dark:group-hover:from-white dark:group-hover:to-amber-400 transition-all">
                   {stats?.pendingTasks || upcomingDeadlines?.length || 0}
                 </p>
                 <p className="text-xs font-sans text-secondary/80 mt-1.5 truncate">Critical Milestones Due</p>
@@ -598,16 +626,29 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                         </h3>
                       </div>
                       <span className="px-2 py-0.5 rounded-full bg-[#6324FC]/15 border border-[#6324FC]/30 text-[#6324FC] dark:text-[#00E5FF] text-[9px] font-mono font-bold tracking-widest uppercase">
-                        Real-time Inflow Stream
+                        Dual Cash Flow Stream
                       </span>
                     </div>
                     <p className="text-xs font-sans text-secondary">
-                      Comprehensive telemetry of gross receipts, client retainers, and milestone payouts across selected timeline.
+                      Comprehensive telemetry of gross receipts, expenditures, and net runway across selected timeline.
                     </p>
                   </div>
                   
-                  {/* Timeframe Switcher Controls */}
-                  <div className="flex items-center gap-2 self-start lg:self-auto">
+                  {/* Legend & Timeframe Switcher */}
+                  <div className="flex flex-wrap items-center gap-3 self-start lg:self-auto">
+                    {/* Live Stream Legend */}
+                    <div className="flex items-center gap-3 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#060608] border border-black/5 dark:border-white/10 text-[11px] font-mono">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-[#00E5FF] shadow-[0_0_6px_#00E5FF]" />
+                        <span className="text-slate-800 dark:text-slate-200 font-semibold">Inflow</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-[#F43F5E] shadow-[0_0_6px_#F43F5E]" />
+                        <span className="text-slate-800 dark:text-slate-200 font-semibold">Expenses</span>
+                      </div>
+                    </div>
+
+                    {/* Timeframe Switcher Controls */}
                     <div className="flex items-center p-1 bg-slate-100 dark:bg-[#060608] border border-black/5 dark:border-white/10 rounded-xl shadow-inner">
                       {(['30days', '6months', 'year'] as const).map((filterKey) => (
                         <button
@@ -633,8 +674,13 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                       <defs>
                         <linearGradient id="colorRevBrutalGrad" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#00E5FF" stopOpacity={0.45}/>
-                          <stop offset="35%" stopColor="#6324FC" stopOpacity={0.25}/>
+                          <stop offset="35%" stopColor="#6324FC" stopOpacity={0.2}/>
                           <stop offset="100%" stopColor="#6324FC" stopOpacity={0.0}/>
+                        </linearGradient>
+                        <linearGradient id="colorExpGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#F43F5E" stopOpacity={0.45}/>
+                          <stop offset="35%" stopColor="#E11D48" stopOpacity={0.2}/>
+                          <stop offset="100%" stopColor="#E11D48" stopOpacity={0.0}/>
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="4 4" stroke="currentColor" className="text-black/5 dark:text-white/5" vertical={false} />
@@ -656,14 +702,24 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                         tickFormatter={(val) => `$${val}`} 
                         tickMargin={12} 
                       />
-                      <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#00E5FF', strokeWidth: 1.5, strokeDasharray: '4 4' }} />
+                      <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#6324FC', strokeWidth: 1.5, strokeDasharray: '4 4' }} />
                       <Area 
                         type="monotone" 
                         dataKey="Income" 
+                        name="Inflow"
                         stroke="#00E5FF" 
-                        strokeWidth={3} 
+                        strokeWidth={2.5} 
                         fill="url(#colorRevBrutalGrad)" 
-                        activeDot={{ r: 7, fill: '#00E5FF', stroke: '#060608', strokeWidth: 3 }} 
+                        activeDot={{ r: 6, fill: '#00E5FF', stroke: '#060608', strokeWidth: 2 }} 
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="Expense" 
+                        name="Expenses"
+                        stroke="#F43F5E" 
+                        strokeWidth={2.5} 
+                        fill="url(#colorExpGrad)" 
+                        activeDot={{ r: 6, fill: '#F43F5E', stroke: '#060608', strokeWidth: 2 }} 
                       />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -672,44 +728,48 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                 {/* Bottom Runway & Run-Rate Analytics Bar (3 Elevated Glass Tiles) */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-5 mt-3 border-t border-black/5 dark:border-white/5 relative z-10">
                   
-                  {/* Tile 1: Timeframe Total */}
-                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-surface/70 border border-black/5 dark:border-white/5 hover:border-[#6324FC]/30 transition-all flex items-center justify-between group">
+                  {/* Tile 1: Timeframe Total Inflow */}
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-surface/70 border border-black/5 dark:border-white/5 hover:border-[#00E5FF]/30 transition-all flex items-center justify-between group">
                     <div>
-                      <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">Timeframe Volume</p>
-                      <p className="text-base sm:text-lg font-heading font-extrabold text-slate-900 dark:text-white font-mono mt-0.5 group-hover:text-[#6324FC] dark:group-hover:text-[#00E5FF] transition-colors">
-                        {formatCurrency(chartTotal)}
+                      <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">Timeframe Inflow</p>
+                      <p className="text-base sm:text-lg font-heading font-extrabold text-slate-900 dark:text-white font-mono mt-0.5 group-hover:text-[#00E5FF] transition-colors">
+                        {formatCurrency(chartIncomeTotal)}
                       </p>
-                      <p className="text-[10px] font-sans text-secondary/60 mt-0.5">Total verified cash inflow</p>
+                      <p className="text-[10px] font-sans text-emerald-500 dark:text-emerald-400 mt-0.5 flex items-center gap-1 font-semibold">
+                        <span>● Gross Revenue Inflow</span>
+                      </p>
                     </div>
-                    <div className="w-8 h-8 rounded-lg bg-[#6324FC]/15 border border-[#6324FC]/25 flex items-center justify-center text-[#6324FC] group-hover:scale-110 transition-transform">
+                    <div className="w-8 h-8 rounded-lg bg-[#00E5FF]/15 border border-[#00E5FF]/25 flex items-center justify-center text-[#00E5FF] group-hover:scale-110 transition-transform">
                       <DollarSign size={16} />
                     </div>
                   </div>
 
-                  {/* Tile 2: Average Inflow Velocity */}
-                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-surface/70 border border-black/5 dark:border-white/5 hover:border-[#00E5FF]/30 transition-all flex items-center justify-between group">
+                  {/* Tile 2: Timeframe Expenses */}
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-surface/70 border border-black/5 dark:border-white/5 hover:border-rose-500/30 transition-all flex items-center justify-between group">
                     <div>
-                      <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">Average Pacing</p>
-                      <p className="text-base sm:text-lg font-heading font-extrabold text-slate-900 dark:text-[#00E5FF] font-mono mt-0.5">
-                        {formatCurrency(chartAvg)}
+                      <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">Timeframe Expenses</p>
+                      <p className="text-base sm:text-lg font-heading font-extrabold text-rose-500 dark:text-rose-400 font-mono mt-0.5">
+                        {formatCurrency(chartExpenseTotal)}
                       </p>
-                      <p className="text-[10px] font-sans text-secondary/60 mt-0.5">Mean inflow per interval</p>
+                      <p className="text-[10px] font-sans text-rose-500/80 mt-0.5 flex items-center gap-1 font-semibold">
+                        <span>● Total Outflow / Burn</span>
+                      </p>
                     </div>
-                    <div className="w-8 h-8 rounded-lg bg-[#00E5FF]/15 border border-[#00E5FF]/25 flex items-center justify-center text-[#00E5FF] group-hover:scale-110 transition-transform">
-                      <TrendingUp size={16} />
+                    <div className="w-8 h-8 rounded-lg bg-rose-500/15 border border-rose-500/25 flex items-center justify-center text-rose-500 dark:text-rose-400 group-hover:scale-110 transition-transform">
+                      <TrendingUp size={16} className="rotate-180" />
                     </div>
                   </div>
 
-                  {/* Tile 3: Peak Surge Velocity */}
-                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-surface/70 border border-black/5 dark:border-white/5 hover:border-amber-500/30 transition-all flex items-center justify-between group">
+                  {/* Tile 3: Net Cashflow Velocity */}
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-surface/70 border border-black/5 dark:border-white/5 hover:border-[#6324FC]/30 transition-all flex items-center justify-between group">
                     <div>
-                      <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">Peak Velocity Surge</p>
-                      <p className="text-base sm:text-lg font-heading font-extrabold text-amber-500 dark:text-amber-400 font-mono mt-0.5">
-                        {formatCurrency(chartPeak)}
+                      <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">Net Realized Cashflow</p>
+                      <p className={`text-base sm:text-lg font-heading font-extrabold font-mono mt-0.5 ${chartNetTotal >= 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500'}`}>
+                        {formatCurrency(chartNetTotal)}
                       </p>
-                      <p className="text-[10px] font-sans text-secondary/60 mt-0.5">Highest single interval</p>
+                      <p className="text-[10px] font-sans text-secondary/70 mt-0.5">Inflow minus Outflow</p>
                     </div>
-                    <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/25 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
+                    <div className="w-8 h-8 rounded-lg bg-[#6324FC]/15 border border-[#6324FC]/25 flex items-center justify-center text-[#6324FC] group-hover:scale-110 transition-transform">
                       <Flame size={16} />
                     </div>
                   </div>
@@ -1159,19 +1219,29 @@ export default function DashboardClient({ dashboardData, islamicQuote }: Dashboa
                     </div>
                   </div>
                   
-                  {/* Full Copilot Launch Button (Continuous 360° Circular Neon Laser Border Beam) */}
+                  {/* Full Copilot Launch Button (Symmetrically Calibrated Single Clockwise Laser Beam) */}
                   <button
                     onClick={() => window.dispatchEvent(new CustomEvent('open-ai-chat'))}
-                    className="w-full neon-border-wrapper cursor-pointer active:scale-[0.98]"
+                    className="group relative w-full p-[2px] rounded-2xl overflow-hidden flex items-center justify-center cursor-pointer transition-all duration-300 active:scale-[0.98] shadow-[0_0_20px_rgba(99,36,252,0.35)] hover:shadow-[0_0_35px_rgba(0,229,255,0.5),0_0_20px_rgba(236,72,153,0.35)]"
                   >
-                    {/* Ambient Outer Rotating Glow Aura */}
-                    <div className="neon-laser-glow" />
+                    {/* Perfectly Centered Square Conic Glow Aura (Uniform Distance on All 4 Sides) */}
+                    <span 
+                      className="absolute top-1/2 left-1/2 w-[450%] aspect-square -translate-x-1/2 -translate-y-1/2 animate-[spin_3s_linear_infinite] blur-[8px] opacity-85 pointer-events-none"
+                      style={{
+                        background: 'conic-gradient(from 0deg, transparent 0deg, transparent 60deg, #00e5ff 110deg, #6324fc 140deg, #ec4899 170deg, transparent 210deg, transparent 360deg)'
+                      }}
+                    />
                     
-                    {/* Ultra-Crisp High-Intensity Rotating Laser Beam */}
-                    <div className="neon-laser-beam" />
+                    {/* Crisp Symmetrical Single Laser Beam Stream (Clockwise: Left to Right across top) */}
+                    <span 
+                      className="absolute top-1/2 left-1/2 w-[450%] aspect-square -translate-x-1/2 -translate-y-1/2 animate-[spin_3s_linear_infinite] opacity-100 pointer-events-none"
+                      style={{
+                        background: 'conic-gradient(from 0deg, transparent 0deg, transparent 60deg, #00e5ff 110deg, #6324fc 140deg, #ec4899 170deg, transparent 210deg, transparent 360deg)'
+                      }}
+                    />
                     
-                    {/* Inner Surface with Glassmorphic Sheen & High-Contrast Accents */}
-                    <div className="relative z-10 w-full py-3.5 px-4.5 rounded-[13.5px] bg-white dark:bg-[#07080b] group-hover:bg-slate-50 dark:group-hover:bg-[#0d0f17] flex items-center justify-between transition-all duration-300 shadow-inner">
+                    {/* Inner Surface: Concentric 14px radius matching outer 16px minus 2px padding */}
+                    <div className="relative z-10 w-full py-3.5 px-4.5 rounded-[14px] bg-white dark:bg-[#07080b] group-hover:bg-slate-50 dark:group-hover:bg-[#0d0f17] flex items-center justify-between transition-all duration-300 shadow-inner">
                       <div className="flex items-center gap-3">
                         <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#00E5FF]/20 via-[#6324FC]/15 to-[#EC4899]/20 border border-[#00E5FF]/40 flex items-center justify-center text-[#00E5FF] shadow-[0_0_12px_rgba(0,229,255,0.4)] group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
                           <Bot size={16} className="drop-shadow-[0_0_6px_#00E5FF]" />

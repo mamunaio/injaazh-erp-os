@@ -5,6 +5,7 @@ import { X, Calendar, DollarSign, Briefcase, User, Sparkles, Layers, Users as Us
 import { motion, AnimatePresence } from 'framer-motion';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { useScrollLock } from '@/lib/useScrollLock';
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -28,6 +29,8 @@ const TECH_STACK_OPTIONS = [
 ];
 
 export default function CreateProjectModal({ isOpen, onClose, onCreateProject }: CreateProjectModalProps) {
+  useScrollLock(isOpen);
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -93,7 +96,11 @@ export default function CreateProjectModal({ isOpen, onClose, onCreateProject }:
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+      <div 
+        role="dialog"
+        aria-modal="true"
+        className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 overflow-y-auto overscroll-contain"
+      >
         <motion.div 
           initial={{ opacity: 0 }} 
           animate={{ opacity: 1 }} 
@@ -107,7 +114,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreateProject }:
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ type: "spring", damping: 28, stiffness: 320 }}
-          className="relative w-full max-w-2xl my-auto bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/15 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.2),0_0_30px_rgba(99,36,252,0.15)] dark:shadow-[0_25px_70px_rgba(0,0,0,0.9),0_0_30px_rgba(99,36,252,0.2)] flex flex-col overflow-hidden z-10 max-h-[90vh]"
+          className="relative w-full max-w-2xl my-auto bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/15 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.2),0_0_30px_rgba(99,36,252,0.15)] dark:shadow-[0_25px_70px_rgba(0,0,0,0.9),0_0_30px_rgba(99,36,252,0.2)] flex flex-col overflow-hidden z-10 max-h-[90vh] overscroll-contain"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Top Neon Accent Line */}

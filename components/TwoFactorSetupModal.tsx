@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Shield, Key, Copy, Check, QrCode } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { generateTwoFactorSecret, verifyAndEnableTwoFactor, disableTwoFactor } from '@/app/actions/twoFactorActions';
+import { useScrollLock } from '@/lib/useScrollLock';
 
 interface TwoFactorSetupModalProps {
   isOpen: boolean;
@@ -14,6 +15,8 @@ interface TwoFactorSetupModalProps {
 }
 
 export default function TwoFactorSetupModal({ isOpen, onClose, isDisabling = false, onSuccess }: TwoFactorSetupModalProps) {
+  useScrollLock(isOpen);
+
   const [step, setStep] = useState<1 | 2>(isDisabling ? 2 : 1);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [secretKey, setSecretKey] = useState<string>('');
@@ -81,7 +84,11 @@ export default function TwoFactorSetupModal({ isOpen, onClose, isDisabling = fal
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+      <div 
+        role="dialog"
+        aria-modal="true"
+        className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 overflow-y-auto overscroll-contain"
+      >
         <motion.div 
           initial={{ opacity: 0 }} 
           animate={{ opacity: 1 }} 
@@ -95,7 +102,7 @@ export default function TwoFactorSetupModal({ isOpen, onClose, isDisabling = fal
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ type: "spring", damping: 28, stiffness: 320 }}
-          className="relative w-full max-w-md my-auto bg-white dark:bg-[#0a0a0d] rounded-3xl shadow-2xl overflow-hidden border border-black/10 dark:border-white/15 z-10"
+          className="relative w-full max-w-md my-auto bg-white dark:bg-[#0a0a0d] rounded-3xl shadow-2xl overflow-hidden border border-black/10 dark:border-white/15 z-10 overscroll-contain"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
