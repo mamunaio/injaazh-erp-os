@@ -332,7 +332,12 @@ export default function DashboardView({
                 <span className="font-extrabold font-mono text-slate-900 dark:text-white">{totalEmailsSent}</span>
               </div>
               <div className="h-2.5 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden">
-                <div className="h-full rounded-full bg-gradient-to-r from-[#6324FC] to-[#00E5FF] w-full shadow-[0_0_8px_#00E5FF]" />
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-[#6324FC] to-[#00E5FF] transition-all duration-500 shadow-[0_0_8px_#00E5FF]"
+                  style={{
+                    width: `${totalEmailsSent > 0 ? 100 : 0}%`,
+                  }}
+                />
               </div>
             </div>
 

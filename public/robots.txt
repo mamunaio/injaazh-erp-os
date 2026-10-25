@@ -1,0 +1,3 @@
+# Completely block all web crawlers and search engine indexing for this private ERP & OS
+User-agent: *
+Disallow: /

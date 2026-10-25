@@ -27,6 +27,19 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://injaazh.com'),
   title: "Injaazh Global - ERP & Business OS",
   description: "Enterprise Resource Planning and Business Operations OS for Injaazh Global",
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'none',
+      'max-snippet': -1,
+    },
+  },
   icons: {
     icon: "/fav.png",
   },
