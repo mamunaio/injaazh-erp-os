@@ -3,6 +3,7 @@
 import React from 'react';
 import ProspectsView from '@/components/leadGen/ProspectsView';
 import { useLeadGen } from '../LeadGenContext';
+import { Loader2 } from 'lucide-react';
 
 export default function ProspectsSubPage() {
   const {
@@ -15,11 +16,17 @@ export default function ProspectsSubPage() {
     openImportModal,
   } = useLeadGen();
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-[#6324FC]" />
+      </div>
+    );
+  }
 
   return (
     <ProspectsView
-      prospects={data.prospects}
+      prospects={data.prospects || []}
       onOpenNewModal={openNewLead}
       onEditProspect={openEditLead}
       onDeleteProspect={handleDeleteProspect}

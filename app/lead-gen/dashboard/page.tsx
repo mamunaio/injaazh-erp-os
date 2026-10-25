@@ -4,12 +4,19 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardView from '@/components/leadGen/DashboardView';
 import { useLeadGen } from '../LeadGenContext';
+import { Loader2 } from 'lucide-react';
 
 export default function DashboardSubPage() {
   const { data, openEditLead } = useLeadGen();
   const router = useRouter();
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-[#6324FC]" />
+      </div>
+    );
+  }
 
   const handleNavigateTab = (tab: string) => {
     const routeMap: Record<string, string> = {

@@ -721,13 +721,13 @@ export default function ProspectsView({
   // Filter & Sort prospects
   const filteredAndSorted = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
-    const result = prospects.filter((p) => {
+    const result = (prospects || []).filter((p) => {
       const matchesSearch =
         !term ||
-        p.company.toLowerCase().includes(term) ||
-        p.businessEmail.toLowerCase().includes(term) ||
-        p.city.toLowerCase().includes(term) ||
-        p.state.toLowerCase().includes(term) ||
+        (p.company || '').toLowerCase().includes(term) ||
+        (p.businessEmail || '').toLowerCase().includes(term) ||
+        (p.city || '').toLowerCase().includes(term) ||
+        (p.state || '').toLowerCase().includes(term) ||
         (p.gap && p.gap.toLowerCase().includes(term));
 
       const matchesStatus = statusFilter === 'ALL' || p.status === statusFilter;
