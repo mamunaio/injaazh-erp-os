@@ -1,32 +1,24 @@
-'use client';
-
-import React, { useEffect, useState } from 'react';
+import { Metadata } from 'next';
 import RoadmapClient from './RoadmapClient';
 import { getRoadmapProjects } from '@/app/actions/roadmapActions';
-import { Loader2 } from 'lucide-react';
+import { getAuthUser } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 
-export default function RoadmapPage() {
-  const [projects, setProjects] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export const metadata: Metadata = {
+  title: 'Product & Architecture Roadmap | Injaazh ERP',
+  description: 'Plan milestones, quarterly sprints, SaaS architecture, and software deployments',
+};
 
-  useEffect(() => {
-    async function fetchProjects() {
-      const result = await getRoadmapProjects();
-      if (result.success) {
-        setProjects(result.data);
-      }
-      setIsLoading(false);
-    }
-    fetchProjects();
-  }, []);
+export const dynamic = 'force-dynamic';
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-[calc(100vh-100px)]">
-        <Loader2 className="animate-spin text-indigo-500" size={32} />
-      </div>
-    );
+export default async function RoadmapPage() {
+  const authUser = await getAuthUser();
+  if (!authUser) {
+    redirect('/login');
   }
 
-  return <RoadmapClient initialProjects={projects} />;
+  const result = await getRoadmapProjects();
+  const initialProjects = result.success && result.data ? result.data : [];
+
+  return <RoadmapClient initialProjects={initialProjects} />;
 }

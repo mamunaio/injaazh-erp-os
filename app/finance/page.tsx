@@ -1,4 +1,10 @@
-import { getTransactions, getPlatformSummary } from '@/app/actions/transactionActions';
+import { 
+  getTransactions, 
+  getPlatformSummary, 
+  getTimesheetRevenueSummary, 
+  getFinanceProjectsList, 
+  getExchangeRate 
+} from '@/app/actions/transactionActions';
 import { getProjectAnalytics } from '@/app/actions/marketplaceActions';
 import FinanceClient from './FinanceClient';
 import { getAuthUser } from '@/lib/auth';
@@ -12,10 +18,20 @@ export default async function FinancePage() {
     redirect('/dashboard');
   }
 
-  const [transactionsResult, summaryResult, analyticsResult] = await Promise.all([
+  const [
+    transactionsResult, 
+    summaryResult, 
+    analyticsResult,
+    timesheetResult,
+    projectsResult,
+    fxResult
+  ] = await Promise.all([
     getTransactions(),
     getPlatformSummary(),
     getProjectAnalytics(),
+    getTimesheetRevenueSummary(),
+    getFinanceProjectsList(),
+    getExchangeRate(),
   ]);
 
   const transactions = transactionsResult.success ? transactionsResult.data : [];
@@ -23,12 +39,21 @@ export default async function FinancePage() {
   const projectAnalytics = analyticsResult.success 
     ? analyticsResult.data 
     : { Freelancer: 0, Direct: 0, Upwork: 0, Fiverr: 0 };
+  const timesheetSummary = timesheetResult.success 
+    ? timesheetResult.data 
+    : { totalBillableSeconds: 0, totalBillableEarnings: 0, projects: [] };
+  const projectsList = projectsResult.success ? projectsResult.data : [];
+  const initialExchangeRate = fxResult.success ? fxResult.rate : 122;
 
   return (
     <FinanceClient 
       initialTransactions={transactions}
       platformSummary={platformSummary}
       projectAnalytics={projectAnalytics}
+      timesheetSummary={timesheetSummary}
+      projectsList={projectsList}
+      initialExchangeRate={initialExchangeRate}
+      authUser={authUser}
     />
   );
 }

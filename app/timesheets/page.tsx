@@ -1,5 +1,5 @@
 import { getCurrentUser } from '@/app/actions/authActions';
-import { getTimeLogs, getTimesheetKPIs } from '@/app/actions/timesheetActions';
+import { getTimeLogs, getTimesheetKPIs, getProjectRatesAndList } from '@/app/actions/timesheetActions';
 import { redirect } from 'next/navigation';
 import TimesheetsClient from './TimesheetsClient';
 
@@ -16,12 +16,14 @@ export default async function TimesheetsPage() {
 
   const logsRes = await getTimeLogs();
   const kpisRes = await getTimesheetKPIs();
+  const projectRatesRes = await getProjectRatesAndList();
 
   return (
     <TimesheetsClient 
       user={userRes.data} 
       initialLogs={logsRes.success ? logsRes.data : []} 
       initialKpis={kpisRes.success ? kpisRes.data : null} 
+      initialProjectRates={projectRatesRes.success ? projectRatesRes.data : { projects: [], rates: {} }}
     />
   );
 }

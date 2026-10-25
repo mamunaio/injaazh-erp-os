@@ -1,18 +1,25 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import mongoose from 'mongoose';
 import { RoadmapProject } from '../models/RoadmapProject';
 import { roadmapData } from '../app/roadmap/data';
 
-// Replace with your MongoDB URI
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://injaazhos:rXfVzMOVEz2gD7Jx@injaazh-os.kerqqku.mongodb.net/injaazh_os?retryWrites=true&w=majority&appName=Injaazh-OS";
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  console.error('MONGODB_URI is not set in environment!');
+  process.exit(1);
+}
 
 async function seed() {
   try {
-    await mongoose.connect(MONGODB_URI);
+    await mongoose.connect(MONGODB_URI as string);
     console.log('Connected to MongoDB');
 
-    // Optional: Clear existing data
+    // Clear existing data
     await RoadmapProject.deleteMany({});
-    console.log('Cleared existing roadmap projects');
+    console.log('Cleared existing bloated/duplicate roadmap projects');
 
     let orderIndex = 0;
     for (const category of roadmapData) {
@@ -22,12 +29,17 @@ async function seed() {
           category: category.category,
           status: project.status as any,
           orderIndex: orderIndex++,
-          logs: []
+          logs: (project.logs || []).map(l => ({
+            text: l.text,
+            completed: l.completed,
+            date: new Date()
+          }))
         });
       }
     }
 
-    console.log('Successfully seeded roadmap projects');
+    const total = await RoadmapProject.countDocuments();
+    console.log(`Successfully seeded ${total} curated Injaazh Product & SaaS Roadmap projects!`);
     process.exit(0);
   } catch (error) {
     console.error('Error seeding data:', error);

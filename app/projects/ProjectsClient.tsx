@@ -584,6 +584,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
       if (statusFilter === 'Completed') return p.status === 'Completed';
       if (statusFilter === 'Cancelled') return p.status === 'Cancelled';
       if (statusFilter === 'Overdue') return checkOverdue(p.deadline, p.status);
+      if (statusFilter === 'Monetized') return (p.budget || 0) > 0;
       return p.status === statusFilter;
     });
   }, [projects, searchQuery, statusFilter, priorityFilter]);
@@ -757,13 +758,64 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
   const overdueCount = projects.filter(p => checkOverdue(p.deadline, p.status)).length;
   const onHoldCount = projects.filter(p => p.status === 'On Hold').length;
   const totalCount = projects.length;
+  const totalBudget = projects.reduce((acc, p) => acc + (p.budget || 0), 0);
+  const completionRate = totalCount > 0 ? Math.round((compCount / totalCount) * 100) : 0;
 
   const kpis = [
-    { id: 'Active',    label: 'Active Operations',   value: activeCount, color: '#00E5FF', icon: PlayCircle, subtitle: 'In-flight sprints & reviews' },
-    { id: 'Completed', label: 'Delivered Projects',  value: compCount,   color: '#10B981', icon: CheckCircle, subtitle: `${totalCount > 0 ? Math.round((compCount / totalCount) * 100) : 0}% completion rate` },
-    { id: 'Overdue',   label: 'Overdue / At-Risk',   value: overdueCount,color: '#EF4444', icon: AlertTriangle, subtitle: 'Requires urgent intervention' },
-    { id: 'On Hold',   label: 'On Hold / Paused',    value: onHoldCount, color: '#F59E0B', icon: Clock, subtitle: 'Awaiting client or assets' },
-    { id: 'All',       label: 'Total Pipeline',      value: totalCount,  color: '#6324FC', icon: Layers, subtitle: 'All registered enterprise projects' },
+    { 
+      id: 'Active', 
+      label: 'Active Operations', 
+      value: activeCount, 
+      color: '#00E5FF', 
+      icon: PlayCircle, 
+      badge: 'In Flight',
+      subtitle: 'In-flight sprints & reviews' 
+    },
+    { 
+      id: 'Monetized', 
+      label: 'Pipeline Contract Value', 
+      value: fmtCurrency(totalBudget), 
+      color: '#10B981', 
+      icon: DollarSign, 
+      badge: `${projects.filter(p => (p.budget || 0) > 0).length} Contracts`,
+      subtitle: 'Total portfolio volume' 
+    },
+    { 
+      id: 'Completed', 
+      label: 'Delivered Projects', 
+      value: compCount, 
+      color: '#6324FC', 
+      icon: CheckCircle, 
+      badge: `${completionRate}% Done`,
+      subtitle: 'Completed deliverables' 
+    },
+    { 
+      id: 'Overdue', 
+      label: 'Overdue / At-Risk', 
+      value: overdueCount, 
+      color: '#EF4444', 
+      icon: AlertTriangle, 
+      badge: overdueCount > 0 ? `${overdueCount} Alerts` : 'All On Track',
+      subtitle: overdueCount > 0 ? 'Urgent intervention needed' : 'Zero overdue milestones' 
+    },
+    { 
+      id: 'On Hold', 
+      label: 'On Hold / Paused', 
+      value: onHoldCount, 
+      color: '#F59E0B', 
+      icon: Clock, 
+      badge: 'Paused',
+      subtitle: 'Awaiting client or assets' 
+    },
+    { 
+      id: 'All', 
+      label: 'Total Pipeline', 
+      value: totalCount, 
+      color: '#8B5CF6', 
+      icon: Layers, 
+      badge: 'All Stages',
+      subtitle: 'Enterprise operations roster' 
+    },
   ];
 
   const currentPlatformObj = PLATFORM_CHANNELS.find(p => p.id.toLowerCase() === (formData.platform || 'Freelancer').toLowerCase()) || PLATFORM_CHANNELS[0];
@@ -780,125 +832,181 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
 
       <div className="max-w-[1750px] mx-auto relative z-10 space-y-6">
 
-        {/* ── Page Header ──────────────────────────────────────────────────── */}
-        <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-4">
-          
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-xs font-mono text-secondary">
-              <span className="text-secondary">Workspace</span>
-              <span>/</span>
-              <span className="text-slate-900 dark:text-white font-semibold">Projects Engine</span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-[#6324FC]/15 text-[#6324FC] dark:text-[#00E5FF] border border-[#6324FC]/30 shadow-[0_0_12px_rgba(99,36,252,0.2)]">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse shadow-[0_0_8px_#10B981]" />
-                Live Pipeline Active
+        {/* ── Executive Header & Live Telemetry Bar (Standardized to Match Dashboard) ── */}
+        <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
+          <motion.div variants={itemVariants} className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5 relative z-10 pb-2 border-b border-black/5 dark:border-white/5">
+          <div>
+            <div className="flex flex-wrap items-center gap-2.5 mb-2">
+              <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-[#6324FC]/10 border border-[#6324FC]/25 text-[#6324FC] dark:text-[#00E5FF] text-[10px] font-heading font-bold tracking-widest uppercase">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#6324FC] dark:bg-[#00E5FF] animate-pulse shadow-[0_0_8px_#6324FC] dark:shadow-[0_0_8px_#00E5FF]" />
+                INJAAZH GLOBAL OS // OPERATIONS SUITE
+              </div>
+              <span className="text-xs font-sans text-secondary">
+                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}
               </span>
             </div>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
+              Projects &amp; Operations Engine
+            </h1>
+            <p className="text-xs sm:text-sm font-sans text-secondary mt-1 max-w-2xl">
+              Enterprise sprint execution, Kanban pipelines, client deliverables, milestones &amp; team performance.
+            </p>
           </div>
 
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-5 pb-2 border-b border-black/5 dark:border-white/5">
-            <div>
-              <div className="flex items-center gap-3 mb-1.5">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6324FC]/20 to-purple-500/20 border border-black/10 dark:border-white/15 flex items-center justify-center text-[#6324FC] dark:text-[#00E5FF] shadow-[0_0_20px_rgba(99,36,252,0.3)]">
-                  <Briefcase size={20} />
-                </div>
-                <div>
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-extrabold text-slate-900 dark:text-white tracking-tight">
-                    Projects & Operations Engine
-                  </h1>
-                </div>
+          {/* Quick Action Controls */}
+          <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+            {/* Command shortcut button */}
+            <button 
+              type="button"
+              onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 text-secondary hover:text-slate-900 dark:hover:text-white text-xs font-heading font-semibold transition-all group"
+            >
+              <Search size={14} className="group-hover:text-[#6324FC] dark:group-hover:text-[#00E5FF] transition-colors" />
+              <span>Command</span>
+              <kbd className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 text-[10px] font-mono text-secondary">⌘K</kbd>
+            </button>
+
+            {/* AI Copilot Dispatch */}
+            <button 
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent('open-ai-chat', { detail: { initialPrompt: 'Review my active projects and highlight urgent deadlines or bottlenecks' } }))}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[#6324FC]/10 border border-[#6324FC]/30 hover:border-[#6324FC] text-slate-800 dark:text-[#edeae2] text-xs font-heading font-semibold transition-all hover:shadow-[0_0_15px_rgba(99,36,252,0.3)] shadow-sm"
+            >
+              <Sparkles size={14} className="text-[#6324FC] dark:text-[#00E5FF] animate-pulse" />
+              <span>AI Copilot</span>
+            </button>
+
+            {/* + New Project Laser Beam CTA (Symmetrically Calibrated Clockwise Single Stream) */}
+            <button 
+              type="button"
+              onClick={openAdd}
+              className="h-9 group relative p-[2px] rounded-xl overflow-hidden flex items-center justify-center cursor-pointer transition-all duration-300 active:scale-95 shadow-[0_0_20px_rgba(99,36,252,0.35)] hover:shadow-[0_0_35px_rgba(0,229,255,0.5),0_0_20px_rgba(236,72,153,0.35)]"
+            >
+              {/* Perfectly Centered Square Conic Glow Aura (Uniform Distance on All 4 Sides) */}
+              <span 
+                className="absolute top-1/2 left-1/2 w-[450%] aspect-square -translate-x-1/2 -translate-y-1/2 animate-[spin_3s_linear_infinite] blur-[8px] opacity-85 pointer-events-none" 
+                style={{
+                  background: 'conic-gradient(from 0deg, transparent 0deg, transparent 60deg, #00e5ff 110deg, #6324fc 140deg, #ec4899 170deg, transparent 210deg, transparent 360deg)'
+                }}
+              />
+              
+              {/* Crisp Symmetrical Single Laser Beam Stream (Clockwise: Left to Right Loop) */}
+              <span 
+                className="absolute top-1/2 left-1/2 w-[450%] aspect-square -translate-x-1/2 -translate-y-1/2 animate-[spin_3s_linear_infinite] opacity-100 pointer-events-none" 
+                style={{
+                  background: 'conic-gradient(from 0deg, transparent 0deg, transparent 60deg, #00e5ff 110deg, #6324fc 140deg, #ec4899 170deg, transparent 210deg, transparent 360deg)'
+                }}
+              />
+              
+              {/* Inner High-Contrast Surface: Concentric 10px radius matching outer 12px minus 2px */}
+              <div className="relative z-10 w-full h-full px-3.5 rounded-[10px] bg-white dark:bg-[#0a0a0d] group-hover:bg-slate-50 dark:group-hover:bg-[#121218] text-slate-900 dark:text-white font-heading font-bold text-xs flex items-center gap-2 transition-all">
+                <Briefcase size={14} className="text-[#00E5FF] group-hover:rotate-6 group-hover:scale-110 drop-shadow-[0_0_6px_#00E5FF] transition-transform duration-300" />
+                <span className="tracking-wide group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-slate-900 group-hover:to-[#6324FC] dark:group-hover:from-white dark:group-hover:via-[#00E5FF] dark:group-hover:to-[#EC4899] transition-all">
+                  + New Project
+                </span>
               </div>
-              <p className="text-xs sm:text-sm font-sans text-secondary max-w-2xl">
-                Manage team execution, Kanban sprints, client deliverables, milestones & timelines.
-              </p>
-            </div>
+            </button>
+          </div>
+        </motion.div>
 
-            <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
-              <button
-                type="button"
-                onClick={openAdd}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-heading font-bold text-xs bg-gradient-to-r from-[#6324FC] to-[#8B5CF6] hover:brightness-110 text-white shadow-[0_0_20px_rgba(99,36,252,0.4)] hover:shadow-[0_0_30px_rgba(99,36,252,0.6)] transition-all border border-purple-400/30"
-              >
-                <Plus size={16} strokeWidth={2.5} />
-                <span>New Project</span>
-              </button>
+        {/* ── High-Level Operations Telemetry Section (Dashboard Matching) ── */}
+        <motion.div variants={itemVariants} className="space-y-3">
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="text-sm font-heading font-bold text-secondary uppercase tracking-widest flex items-center gap-2.5">
+              <Activity size={16} className="text-[#6324FC]" /> High-Level Operations Telemetry
+            </h2>
+            <div className="flex items-center gap-2 text-xs font-mono text-secondary">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_#10B981]" />
+              <span>Live Engine Connected</span>
             </div>
           </div>
 
-          {/* ── Standardized Executive KPI Metric Cards ──────────────────────── */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 pt-1">
+          {/* 6 Metric Cards Matching Dashboard 1:1 */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 lg:gap-5">
             {kpis.map((k) => {
               const isSelected = statusFilter === k.id;
               const KIcon = k.icon;
               return (
-                <motion.div
+                <div
                   key={k.id}
-                  variants={itemVariants}
-                  onClick={() => setStatusFilter(k.id)}
-                  className={`group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 bg-white dark:bg-[#0a0a0d] border ${
-                    isSelected ? 'border-purple-500 ring-2 ring-purple-500/30' : 'border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/25'
-                  } shadow-sm`}
+                  onClick={() => setStatusFilter(statusFilter === k.id ? 'All' : k.id)}
+                  className={`group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 bg-white dark:bg-[#0a0a0d] border ${
+                    isSelected
+                      ? 'ring-2 ring-purple-500/50'
+                      : 'border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/25'
+                  }`}
                   style={{
                     borderColor: isSelected ? k.color : undefined,
-                    boxShadow: isSelected ? `0 0 20px ${k.color}30` : undefined
+                    boxShadow: isSelected
+                      ? `0 0 25px ${k.color}35`
+                      : undefined,
                   }}
                 >
                   {/* Radial Hover Spotlight */}
-                  <div 
-                    className="absolute -top-10 -right-10 w-32 h-32 blur-[35px] rounded-full opacity-20 dark:opacity-35 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none"
-                    style={{ backgroundColor: k.color }}
+                  <div
+                    className="absolute -top-10 -right-10 w-36 h-36 blur-[35px] rounded-full opacity-30 dark:opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none"
+                    style={{ backgroundColor: `${k.color}40` }}
                   />
 
-                  {/* Top Accent Neon Line - Expands on Hover */}
-                  <div 
-                    className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] transition-all duration-500 opacity-90"
-                    style={{ 
+                  {/* Top Accent Neon Line - Expands on hover */}
+                  <div
+                    className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] transition-all duration-500 opacity-90"
+                    style={{
                       backgroundImage: `linear-gradient(to right, transparent, ${k.color}, transparent)`,
-                      boxShadow: `0 0 10px ${k.color}`
+                      boxShadow: `0 0 10px ${k.color}`,
                     }}
                   />
 
                   {/* Subtle Card Glass Sheen Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/[0.02] dark:from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-                  <div className="flex justify-between items-start mb-3 relative z-10">
-                    <div 
-                      className="w-9 h-9 rounded-xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 border"
+                  {/* Top Row: Icon Container & Pill Badge */}
+                  <div className="flex justify-between items-start mb-4 relative z-10">
+                    <div
+                      className="w-11 h-11 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-sm border"
                       style={{
                         backgroundColor: `${k.color}15`,
-                        borderColor: `${k.color}35`,
+                        borderColor: `${k.color}30`,
                         color: k.color,
-                        boxShadow: `0 0 12px ${k.color}25`
                       }}
                     >
-                      <KIcon size={17} />
+                      <KIcon size={21} />
                     </div>
-                    {isSelected && (
-                      <span 
-                        className="text-[9px] font-mono px-2 py-0.5 rounded font-bold uppercase tracking-wider"
-                        style={{ backgroundColor: `${k.color}20`, color: k.color }}
-                      >
-                        Selected
-                      </span>
-                    )}
+
+                    <span
+                      className="text-xs font-heading font-bold flex items-center gap-1 px-2.5 py-1 rounded-lg border transition-colors"
+                      style={{
+                        backgroundColor: `${k.color}15`,
+                        borderColor: `${k.color}30`,
+                        color: k.color,
+                      }}
+                    >
+                      {isSelected ? '● Selected' : k.badge}
+                    </span>
                   </div>
 
+                  {/* Bottom Content */}
                   <div className="relative z-10">
-                    <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">{k.label}</p>
-                    <p 
-                      className="text-2xl lg:text-3xl font-heading font-extrabold font-mono tracking-tight mt-0.5 transition-all"
-                      style={{ color: k.color }}
+                    <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">
+                      {k.label}
+                    </p>
+                    <p
+                      className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white transition-all"
+                      style={{
+                        color: k.color,
+                      }}
                     >
                       {k.value}
                     </p>
-                    <p className="text-[10px] font-sans text-secondary mt-1 truncate">{k.subtitle}</p>
+                    <p className="text-xs font-sans text-secondary/80 mt-1.5 truncate">
+                      {k.subtitle}
+                    </p>
                   </div>
-                </motion.div>
+                </div>
               );
             })}
           </div>
+        </motion.div>
 
           {/* ── Filter Bar & View Switcher ──────────────────────────────────── */}
           <div className="p-4 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl space-y-3.5 shadow-sm dark:shadow-lg">
@@ -972,6 +1080,8 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                 >
                   <option value="Active">Active Projects</option>
                   <option value="All">All Projects</option>
+                  <option value="Monetized">Monetized Contracts</option>
+                  <option value="Overdue">Overdue / At-Risk</option>
                   {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
 

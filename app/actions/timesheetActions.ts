@@ -3,11 +3,13 @@
 import { getCurrentUser } from './authActions';
 import connectToDatabase from '@/lib/mongodb';
 import TimeLog from '@/models/TimeLog';
+import { Project } from '@/models/Project';
+import { SystemSettings } from '@/models/SystemSettings';
 
 export async function getTimeLogs() {
   try {
     const authRes = await getCurrentUser();
-    if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
+    if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized', data: [] };
     
     await connectToDatabase();
     
@@ -17,17 +19,19 @@ export async function getTimeLogs() {
       
     return { success: true, data: JSON.parse(JSON.stringify(logs)) };
   } catch (error: any) {
-    return { success: false, error: error.message };
+    return { success: false, error: error.message, data: [] };
   }
 }
 
 export async function createTimeLog(data: {
   project: string;
   task: string;
-  date: string; // ISO string
+  date: string; // ISO string or YYYY-MM-DD
   startTime: string;
   endTime: string;
   durationSeconds: number;
+  hourlyRate?: number;
+  billable?: boolean;
 }) {
   try {
     const authRes = await getCurrentUser();
@@ -37,15 +41,20 @@ export async function createTimeLog(data: {
     
     const logDate = new Date(data.date);
     logDate.setHours(0, 0, 0, 0);
+
+    const rate = typeof data.hourlyRate === 'number' && data.hourlyRate >= 0 ? data.hourlyRate : 25;
+    const isBillable = data.billable !== false;
     
     const newLog = await TimeLog.create({
       userId: authRes.data._id,
-      project: data.project,
-      task: data.task,
+      project: data.project.trim(),
+      task: data.task.trim(),
       date: logDate,
       startTime: data.startTime,
       endTime: data.endTime,
       durationSeconds: data.durationSeconds,
+      hourlyRate: rate,
+      billable: isBillable,
     });
     
     return { success: true, data: JSON.parse(JSON.stringify(newLog)) };
@@ -61,6 +70,8 @@ export async function updateTimeLog(id: string, data: {
   startTime: string;
   endTime: string;
   durationSeconds: number;
+  hourlyRate?: number;
+  billable?: boolean;
 }) {
   try {
     const authRes = await getCurrentUser();
@@ -70,17 +81,45 @@ export async function updateTimeLog(id: string, data: {
     
     const logDate = new Date(data.date);
     logDate.setHours(0, 0, 0, 0);
+
+    const rate = typeof data.hourlyRate === 'number' && data.hourlyRate >= 0 ? data.hourlyRate : 25;
+    const isBillable = data.billable !== false;
     
     const updated = await TimeLog.findOneAndUpdate(
       { _id: id, userId: authRes.data._id },
       {
-        project: data.project,
-        task: data.task,
+        project: data.project.trim(),
+        task: data.task.trim(),
         date: logDate,
         startTime: data.startTime,
         endTime: data.endTime,
         durationSeconds: data.durationSeconds,
+        hourlyRate: rate,
+        billable: isBillable,
       },
+      { new: true }
+    ).lean();
+    
+    if (!updated) return { success: false, error: 'Log not found or unauthorized' };
+    
+    return { success: true, data: JSON.parse(JSON.stringify(updated)) };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function updateTimeLogRate(id: string, hourlyRate: number) {
+  try {
+    const authRes = await getCurrentUser();
+    if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
+    
+    await connectToDatabase();
+    
+    const rate = typeof hourlyRate === 'number' && hourlyRate >= 0 ? hourlyRate : 25;
+    
+    const updated = await TimeLog.findOneAndUpdate(
+      { _id: id, userId: authRes.data._id },
+      { hourlyRate: rate },
       { new: true }
     ).lean();
     
@@ -108,6 +147,35 @@ export async function deleteTimeLog(id: string) {
   }
 }
 
+export async function saveUserDefaultRate(hourlyRate: number) {
+  try {
+    const authRes = await getCurrentUser();
+    if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
+    const userId = authRes.data._id;
+
+    const rate = typeof hourlyRate === 'number' && hourlyRate >= 0 ? hourlyRate : 25;
+
+    await connectToDatabase();
+
+    const key = `default_hourly_rate_${userId}`;
+    await SystemSettings.findOneAndUpdate(
+      { key },
+      { key, value: rate },
+      { upsert: true, new: true }
+    );
+
+    // Also update any logs for this user where hourlyRate was not explicitly set
+    await TimeLog.updateMany(
+      { userId, $or: [{ hourlyRate: { $exists: false } }, { hourlyRate: null }] },
+      { hourlyRate: rate }
+    );
+
+    return { success: true, rate };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
 export async function getTimesheetKPIs() {
   try {
     const authRes = await getCurrentUser();
@@ -115,6 +183,12 @@ export async function getTimesheetKPIs() {
     const userId = authRes.data._id;
     
     await connectToDatabase();
+
+    // Fetch user's custom saved default rate (fallback 25)
+    const defaultRateDoc = await SystemSettings.findOne({ key: `default_hourly_rate_${userId}` }).lean();
+    const userDefaultRate = typeof defaultRateDoc?.value === 'number' && defaultRateDoc.value >= 0 
+      ? defaultRateDoc.value 
+      : 25;
     
     const now = new Date();
     
@@ -138,6 +212,11 @@ export async function getTimesheetKPIs() {
     let secondsToday = 0;
     let secondsWeek = 0;
     let secondsMonth = 0;
+    let billableSecondsMonth = 0;
+    let billableValueMonth = 0;
+    let totalRateSum = 0;
+    let logsCount = 0;
+    const projectSet = new Set<string>();
     
     // Chart data for last 7 days
     const chartData: any[] = [];
@@ -156,14 +235,26 @@ export async function getTimesheetKPIs() {
     }
 
     logs.forEach((log: any) => {
-      // Get log date as YYYY-MM-DD string (timezone-safe)
       const logDate = new Date(log.date);
       const logDateStr = logDate.toISOString().slice(0, 10);
       const s = log.durationSeconds || 0;
+      const rate = typeof log.hourlyRate === 'number' && log.hourlyRate >= 0 ? log.hourlyRate : userDefaultRate;
+      const isBillable = log.billable !== false;
+
+      if (log.project) projectSet.add(log.project);
       
       if (logDateStr === todayStr) secondsToday += s;
       if (logDateStr >= weekStartStr) secondsWeek += s;
-      if (logDateStr >= monthStartStr) secondsMonth += s;
+      if (logDateStr >= monthStartStr) {
+        secondsMonth += s;
+        if (isBillable) {
+          billableValueMonth += (s / 3600) * rate;
+          billableSecondsMonth += s;
+        }
+      }
+
+      totalRateSum += rate;
+      logsCount++;
       
       // Add to chart by matching date string
       const chartItem = chartData.find(c => c.dateStr === logDateStr);
@@ -181,8 +272,10 @@ export async function getTimesheetKPIs() {
     const globalMax = Math.max(1, ...chartData.map(c => c.hours));
     chartData.forEach(c => c.max = globalMax);
 
-    const billableRate = 25; // $25/hr
-    const billableValue = (secondsMonth / 3600) * billableRate;
+    // Effective rate: if we have billable hours this month, rate = total earnings / billable hours; otherwise average rate
+    const averageRate = billableSecondsMonth > 0 
+      ? Number((billableValueMonth / (billableSecondsMonth / 3600)).toFixed(2))
+      : (logsCount > 0 ? Number((totalRateSum / logsCount).toFixed(2)) : userDefaultRate);
 
     return { 
       success: true, 
@@ -190,7 +283,9 @@ export async function getTimesheetKPIs() {
         today: secondsToday,
         week: secondsWeek,
         month: secondsMonth,
-        billableValue,
+        billableValue: billableValueMonth,
+        averageRate,
+        uniqueProjectsCount: projectSet.size,
         chartData
       }
     };
@@ -199,3 +294,114 @@ export async function getTimesheetKPIs() {
   }
 }
 
+export async function getProjectRatesAndList() {
+  try {
+    const authRes = await getCurrentUser();
+    if (!authRes.success || !authRes.data) {
+      return { success: false, error: 'Unauthorized', data: { projects: [], rates: {} } };
+    }
+    const userId = authRes.data._id;
+
+    await connectToDatabase();
+
+    // 1. Fetch from Project collection
+    const dbProjects = await Project.find({}).sort({ updatedAt: -1 }).lean();
+    
+    // 2. Fetch custom saved project rates from SystemSettings
+    const settingsDoc = await SystemSettings.findOne({ key: `project_hourly_rates_${userId}` }).lean();
+    const savedRates: Record<string, number> = (settingsDoc?.value as Record<string, number>) || {};
+
+    // 3. Collect from past TimeLogs for this user
+    const pastLogs = await TimeLog.find({ userId }).sort({ createdAt: -1 }).select('project hourlyRate').lean();
+
+    const ratesMap: Record<string, number> = {};
+    const projectsList: Array<{ name: string; rate: number; status?: string }> = [];
+    const seenNames = new Set<string>();
+
+    // Priority 1: DB Projects
+    dbProjects.forEach((p: any) => {
+      const name = p.title?.trim();
+      if (!name) return;
+      seenNames.add(name.toLowerCase());
+      const rate = typeof savedRates[name] === 'number' 
+        ? savedRates[name] 
+        : (typeof p.hourlyRate === 'number' && p.hourlyRate > 0 ? p.hourlyRate : 25);
+      ratesMap[name] = rate;
+      projectsList.push({ name, rate, status: p.status || 'In Progress' });
+    });
+
+    // Priority 2: Custom saved rates from SystemSettings not in DB Projects
+    Object.entries(savedRates).forEach(([name, rate]) => {
+      if (!seenNames.has(name.toLowerCase())) {
+        seenNames.add(name.toLowerCase());
+        ratesMap[name] = rate;
+        projectsList.push({ name, rate, status: 'Active' });
+      }
+    });
+
+    // Priority 3: Historical projects from TimeLogs
+    pastLogs.forEach((l: any) => {
+      const name = l.project?.trim();
+      if (!name) return;
+      if (!seenNames.has(name.toLowerCase())) {
+        seenNames.add(name.toLowerCase());
+        const rate = typeof l.hourlyRate === 'number' && l.hourlyRate > 0 ? l.hourlyRate : 25;
+        ratesMap[name] = rate;
+        projectsList.push({ name, rate, status: 'Historical' });
+      }
+    });
+
+    const defaultRateDoc = await SystemSettings.findOne({ key: `default_hourly_rate_${userId}` }).lean();
+    const savedDefaultRate = typeof defaultRateDoc?.value === 'number' && defaultRateDoc.value >= 0 ? defaultRateDoc.value : 25;
+
+    return {
+      success: true,
+      data: {
+        projects: projectsList,
+        rates: ratesMap,
+        defaultRate: savedDefaultRate,
+      }
+    };
+  } catch (error: any) {
+    return { success: false, error: error.message, data: { projects: [], rates: {}, defaultRate: 25 } };
+  }
+}
+
+export async function saveProjectHourlyRate(projectName: string, hourlyRate: number) {
+  try {
+    const authRes = await getCurrentUser();
+    if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
+    const userId = authRes.data._id;
+
+    if (!projectName || !projectName.trim()) {
+      return { success: false, error: 'Project name is required' };
+    }
+
+    const trimmedName = projectName.trim();
+    const rate = typeof hourlyRate === 'number' && hourlyRate >= 0 ? hourlyRate : 25;
+
+    await connectToDatabase();
+
+    // 1. Update Project in DB if title matches (case-insensitive)
+    await Project.updateMany(
+      { title: new RegExp(`^${trimmedName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') },
+      { hourlyRate: rate }
+    );
+
+    // 2. Update SystemSettings map
+    const key = `project_hourly_rates_${userId}`;
+    const existing = await SystemSettings.findOne({ key });
+    const currentRates: Record<string, number> = (existing?.value as Record<string, number>) || {};
+    currentRates[trimmedName] = rate;
+
+    await SystemSettings.findOneAndUpdate(
+      { key },
+      { key, value: currentRates },
+      { upsert: true, new: true }
+    );
+
+    return { success: true, projectName: trimmedName, rate, rates: currentRates };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

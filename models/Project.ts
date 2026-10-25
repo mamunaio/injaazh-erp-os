@@ -12,6 +12,7 @@ export interface IProject extends Document {
   priority: 'Low' | 'Medium' | 'High' | 'Urgent';
   tags: string[];
   budget?: number;
+  hourlyRate?: number;
   platform?: 'Upwork' | 'Freelancer' | 'Fiverr' | 'Direct' | 'Other';
   platformFee?: number;
   clientId?: mongoose.Types.ObjectId;
@@ -44,6 +45,7 @@ const ProjectSchema = new Schema<IProject>({
   },
   tags: [{ type: String }],
   budget: { type: Number },
+  hourlyRate: { type: Number, default: 25 },
   platform: { 
     type: String, 
     enum: ['Upwork', 'Freelancer', 'Fiverr', 'Direct', 'Other'] 

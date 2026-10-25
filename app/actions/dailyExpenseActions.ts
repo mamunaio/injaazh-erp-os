@@ -32,6 +32,7 @@ export async function createDailyExpense(data: any) {
     );
 
     revalidatePath('/daily-expenses');
+    revalidatePath('/daily-expenses/archive');
     return { success: true, data: JSON.parse(JSON.stringify(expense)) };
   } catch (error: any) {
     console.error('Error creating daily expense:', error);
@@ -50,6 +51,7 @@ export async function updateDailyExpense(id: string, data: any) {
     }
 
     revalidatePath('/daily-expenses');
+    revalidatePath('/daily-expenses/archive');
     return { success: true, data: JSON.parse(JSON.stringify(expense)) };
   } catch (error: any) {
     console.error('Error updating daily expense:', error);
@@ -68,6 +70,7 @@ export async function deleteDailyExpense(id: string) {
     }
 
     revalidatePath('/daily-expenses');
+    revalidatePath('/daily-expenses/archive');
     return { success: true };
   } catch (error: any) {
     console.error('Error deleting daily expense:', error);

@@ -17,6 +17,7 @@ export default function SettingsSubPage() {
   return (
     <SettingsView
       settings={data.settings}
+      data={data}
       onUpdateSettings={handleUpdateSettings}
       onExportExcel={handleExportExcel}
       onResetDatabase={handleResetDatabase}

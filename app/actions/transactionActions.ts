@@ -3,6 +3,9 @@
 import { revalidatePath } from 'next/cache';
 import connectToDatabase from '@/lib/mongodb';
 import { Transaction } from '@/models/Transaction';
+import TimeLog from '@/models/TimeLog';
+import { Project } from '@/models/Project';
+import { SystemSettings } from '@/models/SystemSettings';
 import { getAuthUser, requireWriteAuth } from '@/lib/auth';
 import { createNotification } from './notificationActions';
 
@@ -16,9 +19,9 @@ export async function getTransactions() {
       .lean();
     const authUser = await getAuthUser();
     
-    // Serialize for client
+    // Serialize for client - confidential censorship only for non-admin viewers
     const serialized = transactions.map((t: any) => {
-      const isDirectAdmin = authUser && authUser.role === 'admin' && t.platform === 'Direct';
+      const isConfidential = (!authUser || authUser.role === 'team_member') && t.platform === 'Direct';
       
       return {
         _id: t._id?.toString() || '',
@@ -27,15 +30,15 @@ export async function getTransactions() {
         amount: t.amount || 0,
         date: t.date ? new Date(t.date).toISOString() : new Date().toISOString(),
         category: t.category || '',
-        description: isDirectAdmin ? 'Confidential Transaction' : (t.description || ''),
+        description: isConfidential ? 'Confidential Transaction' : (t.description || ''),
         projectId: t.projectId ? {
           _id: t.projectId._id?.toString(),
-          title: isDirectAdmin ? 'Confidential Direct Project' : t.projectId.title,
+          title: isConfidential ? 'Confidential Direct Project' : t.projectId.title,
           platform: t.projectId.platform,
         } : null,
-      milestoneId: t.milestoneId || null,
-      createdAt: t.createdAt ? new Date(t.createdAt).toISOString() : new Date().toISOString(),
-      updatedAt: t.updatedAt ? new Date(t.updatedAt).toISOString() : new Date().toISOString(),
+        milestoneId: t.milestoneId || null,
+        createdAt: t.createdAt ? new Date(t.createdAt).toISOString() : new Date().toISOString(),
+        updatedAt: t.updatedAt ? new Date(t.updatedAt).toISOString() : new Date().toISOString(),
       };
     });
     
@@ -58,7 +61,7 @@ export async function createTransaction(data: any) {
       date: data.date ? new Date(data.date) : new Date(),
       category: data.category || 'Other',
       description: data.description || '',
-      projectId: data.projectId || null,
+      projectId: data.projectId ? data.projectId : undefined,
     });
     
     await transaction.save();
@@ -92,7 +95,7 @@ export async function updateTransaction(transactionId: string, data: any) {
         date: data.date ? new Date(data.date) : new Date(),
         category: data.category,
         description: data.description,
-        projectId: data.projectId || null,
+        projectId: data.projectId ? data.projectId : undefined,
       },
       { new: true }
     ).lean();
@@ -159,5 +162,209 @@ export async function getPlatformSummary() {
   } catch (error: any) {
     console.error('❌ Error getting platform summary:', error);
     return { success: false, error: error.message, data: {} };
+  }
+}
+
+export async function getTimesheetRevenueSummary() {
+  try {
+    await connectToDatabase();
+    
+    // Fetch all billable time logs
+    const logs = await TimeLog.find({ billable: { $ne: false } }).sort({ date: -1 }).lean();
+    
+    // Fetch existing synced transactions to detect already synced items
+    const existingSyncTx = await Transaction.find({
+      $or: [
+        { category: 'Timesheet Billing' },
+        { description: { $regex: /Timesheet Billable/i } }
+      ]
+    }).lean();
+
+    const syncedSignatures = new Set(existingSyncTx.map((t: any) => t.description.toLowerCase()));
+
+    // Aggregate by project
+    const projectAgg: Record<string, {
+      project: string;
+      totalSeconds: number;
+      totalEarnings: number;
+      effectiveRate: number;
+      logsCount: number;
+      lastDate: string;
+      isSynced: boolean;
+      platform: 'Freelancer' | 'Direct' | 'Upwork' | 'Fiverr';
+    }> = {};
+
+    let totalBillableSeconds = 0;
+    let totalBillableEarnings = 0;
+
+    // Fetch project platforms for attribution
+    const dbProjects = await Project.find({}).select('title platform').lean();
+    const platformMap: Record<string, 'Freelancer' | 'Direct' | 'Upwork' | 'Fiverr'> = {};
+    dbProjects.forEach((p: any) => {
+      if (p.title) {
+        platformMap[p.title.trim().toLowerCase()] = (p.platform && ['Freelancer', 'Direct', 'Upwork', 'Fiverr'].includes(p.platform))
+          ? p.platform
+          : 'Direct';
+      }
+    });
+
+    logs.forEach((log: any) => {
+      const proj = log.project?.trim() || 'General';
+      const sec = log.durationSeconds || 0;
+      const rate = typeof log.hourlyRate === 'number' && log.hourlyRate >= 0 ? log.hourlyRate : 25;
+      const earnings = (sec / 3600) * rate;
+
+      totalBillableSeconds += sec;
+      totalBillableEarnings += earnings;
+
+      if (!projectAgg[proj]) {
+        projectAgg[proj] = {
+          project: proj,
+          totalSeconds: 0,
+          totalEarnings: 0,
+          effectiveRate: rate,
+          logsCount: 0,
+          lastDate: log.date ? new Date(log.date).toISOString() : new Date().toISOString(),
+          isSynced: false,
+          platform: platformMap[proj.toLowerCase()] || 'Direct',
+        };
+      }
+
+      projectAgg[proj].totalSeconds += sec;
+      projectAgg[proj].totalEarnings += earnings;
+      projectAgg[proj].logsCount += 1;
+      if (new Date(log.date) > new Date(projectAgg[proj].lastDate)) {
+        projectAgg[proj].lastDate = new Date(log.date).toISOString();
+      }
+    });
+
+    const projectBreakdown = Object.values(projectAgg).map(p => {
+      const effectiveRate = p.totalSeconds > 0 ? (p.totalEarnings / (p.totalSeconds / 3600)) : 25;
+      const hoursStr = (p.totalSeconds / 3600).toFixed(1);
+      const isSynced = Array.from(syncedSignatures).some(sig => 
+        sig.includes(p.project.toLowerCase()) && (sig.includes(`$${p.totalEarnings.toFixed(2)}`) || sig.includes(`${hoursStr}h`))
+      );
+      return {
+        ...p,
+        totalEarnings: Number(p.totalEarnings.toFixed(2)),
+        effectiveRate: Number(effectiveRate.toFixed(2)),
+        isSynced
+      };
+    });
+
+    return {
+      success: true,
+      data: {
+        totalBillableSeconds,
+        totalBillableEarnings: Number(totalBillableEarnings.toFixed(2)),
+        projects: projectBreakdown
+      }
+    };
+  } catch (error: any) {
+    console.error('❌ Error getting timesheet revenue summary:', error);
+    return { 
+      success: false, 
+      error: error.message, 
+      data: { totalBillableSeconds: 0, totalBillableEarnings: 0, projects: [] } 
+    };
+  }
+}
+
+export async function syncTimesheetProjectRevenue(data: {
+  projectName: string;
+  amount: number;
+  platform?: 'Freelancer' | 'Direct' | 'Upwork' | 'Fiverr';
+  hours?: number;
+}) {
+  try {
+    await requireWriteAuth();
+    await connectToDatabase();
+
+    let targetPlatform: 'Freelancer' | 'Direct' | 'Upwork' | 'Fiverr' = data.platform || 'Direct';
+    const projDoc = await Project.findOne({ 
+      title: new RegExp(`^${data.projectName.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') 
+    }).lean();
+
+    if (projDoc?.platform && ['Upwork', 'Freelancer', 'Fiverr', 'Direct'].includes(projDoc.platform)) {
+      targetPlatform = projDoc.platform as any;
+    }
+
+    const hoursText = data.hours ? `${data.hours.toFixed(1)}h logged` : 'billable sprint';
+    const description = `Timesheet Billable: ${data.projectName} (${hoursText} • $${data.amount.toFixed(2)})`;
+
+    const newTx = await Transaction.create({
+      platform: targetPlatform,
+      type: 'Income',
+      amount: data.amount,
+      date: new Date(),
+      category: 'Services',
+      description,
+      projectId: projDoc?._id ? projDoc._id : undefined,
+    });
+
+    await createNotification(
+      'payment',
+      `Synced Timesheet Revenue: $${data.amount} for "${data.projectName}" recorded in Finance.`,
+      '/finance'
+    );
+
+    revalidatePath('/finance');
+    revalidatePath('/dashboard');
+    return { success: true, data: JSON.parse(JSON.stringify(newTx)) };
+  } catch (error: any) {
+    console.error('❌ Error syncing timesheet revenue:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function getFinanceProjectsList() {
+  try {
+    await connectToDatabase();
+    const projects = await Project.find({})
+      .select('title platform budget hourlyRate clientName')
+      .sort({ updatedAt: -1 })
+      .lean();
+
+    return { 
+      success: true, 
+      data: projects.map((p: any) => ({
+        _id: p._id.toString(),
+        title: p.title,
+        platform: (p.platform && ['Freelancer', 'Direct', 'Upwork', 'Fiverr'].includes(p.platform)) ? p.platform : 'Direct',
+        budget: p.budget || 0,
+        hourlyRate: p.hourlyRate || 25,
+        clientName: p.clientName || '',
+      }))
+    };
+  } catch (error: any) {
+    return { success: false, error: error.message, data: [] };
+  }
+}
+
+export async function getExchangeRate() {
+  try {
+    await connectToDatabase();
+    const doc = await SystemSettings.findOne({ key: 'finance_exchange_rate_bdt' }).lean();
+    const rate = typeof doc?.value === 'number' && doc.value > 0 ? doc.value : 122;
+    return { success: true, rate };
+  } catch (error: any) {
+    return { success: true, rate: 122 };
+  }
+}
+
+export async function saveExchangeRate(rate: number) {
+  try {
+    await requireWriteAuth();
+    await connectToDatabase();
+    const cleanRate = typeof rate === 'number' && rate > 0 ? rate : 122;
+    await SystemSettings.findOneAndUpdate(
+      { key: 'finance_exchange_rate_bdt' },
+      { key: 'finance_exchange_rate_bdt', value: cleanRate },
+      { upsert: true, new: true }
+    );
+    revalidatePath('/finance');
+    return { success: true, rate: cleanRate };
+  } catch (error: any) {
+    return { success: false, error: error.message };
   }
 }

@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   DollarSign, Search, Plus, FileText, Download,
   Calendar, X, Loader2, CreditCard,
-  Trash2, UploadCloud, CheckCircle2, AlertCircle, Paperclip, TrendingDown
+  Trash2, UploadCloud, CheckCircle2, AlertCircle, Paperclip, TrendingDown,
+  ArrowUpRight, ArrowDownRight, TrendingUp, Archive, Clock, ArrowRight, History
 } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
@@ -15,11 +16,11 @@ import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import { notify } from '@/lib/notify';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import DatePicker from '@/components/ui/DatePicker';
 
 import { createDailyExpense, updateDailyExpense, deleteDailyExpense } from '@/app/actions/dailyExpenseActions';
 import BorrowLendTab from '@/components/expenses/BorrowLendTab';
+import ArchiveExpensesTab from '@/components/expenses/ArchiveExpensesTab';
 import { useScrollLock } from '@/lib/useScrollLock';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -35,6 +36,7 @@ interface Expense {
 interface ExpensesClientProps {
   initialExpenses: Expense[];
   initialLoans: any[];
+  defaultTab?: 'expenses' | 'archive' | 'loans';
 }
 
 // ─── Configs ──────────────────────────────────────────────────────────────────
@@ -60,14 +62,36 @@ const formatCurrency = (amount: number) =>
 const formatDate = (date: string | Date) => 
   new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-export default function DailyExpensesClient({ initialExpenses, initialLoans }: ExpensesClientProps) {
+// ─── 7-Day Window Cutoff Logic ───────────────────────────────────────────────
+const getSevenDaysCutoff = () => {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - 6); // Today + previous 6 days = 7 days
+  return d;
+};
+
+const isWithinSevenDays = (dateInput: string | Date): boolean => {
+  if (!dateInput) return false;
+  const dateStr = typeof dateInput === 'string' ? dateInput.split('T')[0] : '';
+  let itemDate: Date;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    itemDate = new Date(`${dateStr}T00:00:00`);
+  } else {
+    itemDate = new Date(dateInput);
+  }
+  if (isNaN(itemDate.getTime())) return false;
+  itemDate.setHours(0, 0, 0, 0);
+  return itemDate.getTime() >= getSevenDaysCutoff().getTime();
+};
+
+export default function DailyExpensesClient({ initialExpenses, initialLoans, defaultTab = 'expenses' }: ExpensesClientProps) {
   const { confirm } = useConfirm();
   const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
-  const [activeTab, setActiveTab] = useState<'expenses' | 'loans'>('expenses');
+  const [activeTab, setActiveTab] = useState<'expenses' | 'archive' | 'loans'>(defaultTab);
   
   // UI States
   const [searchQuery, setSearchQuery] = useState('');
-  const [dateFilter, setDateFilter] = useState<'All' | 'ThisMonth' | 'Last3Months' | 'ThisYear'>('ThisMonth');
+  const [liveDateFilter, setLiveDateFilter] = useState<'All7Days' | 'Today' | 'Yesterday' | 'Last3Days'>('All7Days');
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
   
   const [isSlidePanelOpen, setIsSlidePanelOpen] = useState(false);
@@ -88,18 +112,73 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
 
   useEffect(() => { setExpenses(initialExpenses); }, [initialExpenses]);
 
-  // ── Computed ────────────────────────────────────────────────────────────────
+  // Sync route on popstate or URL
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname;
+      const searchParams = new URLSearchParams(window.location.search);
+      if (path.includes('/archive')) {
+        setActiveTab('archive');
+      } else if (searchParams.get('tab') === 'loans') {
+        setActiveTab('loans');
+      }
+    }
+  }, []);
+
+  const handleTabChange = (tab: 'expenses' | 'archive' | 'loans') => {
+    setActiveTab(tab);
+    if (typeof window !== 'undefined') {
+      if (tab === 'archive') {
+        window.history.pushState(null, '', '/daily-expenses/archive');
+      } else if (tab === 'loans') {
+        window.history.pushState(null, '', '/daily-expenses?tab=loans');
+      } else {
+        window.history.pushState(null, '', '/daily-expenses');
+      }
+    }
+  };
+
+  // ── 7-Day Partitioning ──────────────────────────────────────────────────────
+  const liveExpensesList = useMemo(() => {
+    return expenses.filter(e => isWithinSevenDays(e.date));
+  }, [expenses]);
+
+  const archivedExpensesList = useMemo(() => {
+    return expenses.filter(e => !isWithinSevenDays(e.date));
+  }, [expenses]);
+
+  const liveTotal = useMemo(() => 
+    liveExpensesList.reduce((sum, e) => sum + e.amount, 0),
+    [liveExpensesList]
+  );
+
+  const archivedTotal = useMemo(() => 
+    archivedExpensesList.reduce((sum, e) => sum + e.amount, 0),
+    [archivedExpensesList]
+  );
+
+  // ── Computed for 7-Day Live Expenses ────────────────────────────────────────
   const filteredExpenses = useMemo(() => {
-    let result = [...expenses];
+    let result = [...liveExpensesList];
     const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
 
-    // Date Filter
-    if (dateFilter !== 'All') {
-      let startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-      if (dateFilter === 'Last3Months') startDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-      if (dateFilter === 'ThisYear') startDate = new Date(now.getFullYear(), 0, 1);
-
-      result = result.filter(e => new Date(e.date) >= startDate);
+    if (liveDateFilter === 'Today') {
+      result = result.filter(e => new Date(e.date) >= startOfToday);
+    } else if (liveDateFilter === 'Yesterday') {
+      const startOfYesterday = new Date(startOfToday);
+      startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+      result = result.filter(e => {
+        const d = new Date(e.date);
+        return d >= startOfYesterday && d < startOfToday;
+      });
+    } else if (liveDateFilter === 'Last3Days') {
+      const startOf3Days = new Date(startOfToday);
+      startOf3Days.setDate(startOf3Days.getDate() - 2);
+      result = result.filter(e => {
+        const d = new Date(e.date);
+        return d >= startOf3Days;
+      });
     }
 
     // Category Filter
@@ -109,20 +188,22 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
 
     // Search Query
     if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+      const q = searchQuery.toLowerCase().trim();
       result = result.filter(e => 
         e.description.toLowerCase().includes(q) || 
         e.category.toLowerCase().includes(q) ||
-        e.paymentMethod.toLowerCase().includes(q)
+        e.paymentMethod.toLowerCase().includes(q) ||
+        e.amount.toString().includes(q)
       );
     }
 
     return result.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [expenses, dateFilter, categoryFilter, searchQuery]);
+  }, [liveExpensesList, liveDateFilter, categoryFilter, searchQuery]);
 
-  // Metrics
+  // Metrics for 7-Day View
   const totalExpenses = useMemo(() => filteredExpenses.reduce((sum, e) => sum + e.amount, 0), [filteredExpenses]);
   const avgExpense = useMemo(() => filteredExpenses.length ? Math.round(totalExpenses / filteredExpenses.length) : 0, [filteredExpenses, totalExpenses]);
+  const maxExpense = useMemo(() => filteredExpenses.length ? Math.max(...filteredExpenses.map(e => e.amount)) : 0, [filteredExpenses]);
 
   // Charts
   const categoryData = useMemo(() => {
@@ -134,16 +215,29 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
   }, [filteredExpenses]);
 
   const trendData = useMemo(() => {
-    const map = new Map<string, number>();
+    const days: { dateStr: string; key: string; Amount: number }[] = [];
+    const now = new Date();
+    
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      days.push({ dateStr, key, Amount: 0 });
+    }
+
     filteredExpenses.forEach(e => {
-      const d = new Date(e.date);
-      const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      map.set(k, (map.get(k) || 0) + e.amount);
+      const expDate = new Date(e.date);
+      if (!isNaN(expDate.getTime())) {
+        const key = `${expDate.getFullYear()}-${String(expDate.getMonth() + 1).padStart(2, '0')}-${String(expDate.getDate()).padStart(2, '0')}`;
+        const dayItem = days.find(d => d.key === key);
+        if (dayItem) {
+          dayItem.Amount += e.amount;
+        }
+      }
     });
-    return Array.from(map.entries())
-      .sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
-      .slice(-14)
-      .map(([dateStr, Amount]) => ({ dateStr: formatDate(dateStr), Amount }));
+
+    return days;
   }, [filteredExpenses]);
 
   // ── Handlers ────────────────────────────────────────────────────────────────
@@ -193,18 +287,22 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
         notify.error(res.error || 'Failed to update');
       }
     } else {
+      const isLive = isWithinSevenDays(payload.date);
       // 🚀 0ms ZERO-DELAY INSTANT FEEDBACK (Sound + Toast + Topbar Badge)
       notify.instant({
         type: 'system',
         sound: 'expense',
-        message: `A new expense of $${payload.amount} has been added under ${payload.category}.`,
-        link: '/daily-expenses'
+        message: `A new expense of ৳${payload.amount} has been added under ${payload.category}.`,
+        link: isLive ? '/daily-expenses' : '/daily-expenses/archive'
       });
       setIsSlidePanelOpen(false);
 
       const res = await createDailyExpense(payload);
       if (res.success && res.data) {
         setExpenses(prev => [res.data, ...prev]);
+        if (!isLive) {
+          toast('Expense stored in Archive (> 7 days old)', { icon: '📦' });
+        }
       } else {
         notify.error(res.error || 'Failed to create');
       }
@@ -279,30 +377,62 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
               <p className="text-xs text-secondary font-medium">Track operational costs, company expenditures, and loans.</p>
             </div>
             
-            <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
-              <div className="flex items-center bg-slate-100 dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl p-1">
+            <div className="flex flex-wrap lg:flex-nowrap items-center gap-2.5 w-full md:w-auto">
+              <div className="flex items-center bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl p-1 shadow-xs shrink-0 overflow-x-auto">
                 <button
-                  onClick={() => setActiveTab('expenses')}
-                  className={`px-3.5 py-1.5 rounded-xl font-heading font-bold text-xs transition-all ${activeTab === 'expenses' ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-xs' : 'text-secondary hover:text-slate-900 dark:hover:text-white'}`}
+                  onClick={() => handleTabChange('expenses')}
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-heading font-bold text-xs transition-all cursor-pointer whitespace-nowrap ${
+                    activeTab === 'expenses' 
+                      ? 'bg-[#6324FC] text-white shadow-xs' 
+                      : 'text-secondary hover:text-slate-900 dark:hover:text-white'
+                  }`}
                 >
-                  Expenses
+                  <span>Expenses (7 Days)</span>
+                  <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${activeTab === 'expenses' ? 'bg-white/20 text-white font-extrabold' : 'bg-black/5 dark:bg-white/10 text-secondary'}`}>
+                    {liveExpensesList.length}
+                  </span>
                 </button>
+
                 <button
-                  onClick={() => setActiveTab('loans')}
-                  className={`px-3.5 py-1.5 rounded-xl font-heading font-bold text-xs transition-all ${activeTab === 'loans' ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-xs' : 'text-secondary hover:text-slate-900 dark:hover:text-white'}`}
+                  onClick={() => handleTabChange('archive')}
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-heading font-bold text-xs transition-all cursor-pointer whitespace-nowrap ${
+                    activeTab === 'archive' 
+                      ? 'bg-amber-500 text-white shadow-xs' 
+                      : 'text-secondary hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Archive size={12} />
+                  <span>Archive (আর্কাইভ)</span>
+                  <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${activeTab === 'archive' ? 'bg-white/20 text-white font-extrabold' : 'bg-amber-500/10 text-amber-500'}`}>
+                    {archivedExpensesList.length}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => handleTabChange('loans')}
+                  className={`px-3.5 py-1.5 rounded-xl font-heading font-bold text-xs transition-all cursor-pointer whitespace-nowrap ${
+                    activeTab === 'loans' 
+                      ? 'bg-[#6324FC] text-white shadow-xs' 
+                      : 'text-secondary hover:text-slate-900 dark:hover:text-white'
+                  }`}
                 >
                   Borrow & Lend
                 </button>
               </div>
-              <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-heading font-bold text-xs bg-white dark:bg-[#0a0a0d] hover:bg-slate-100 dark:hover:bg-white/5 border border-black/10 dark:border-white/10 text-slate-900 dark:text-white transition-all shadow-xs">
+
+              <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center justify-center gap-2 px-3.5 py-2 rounded-2xl font-heading font-bold text-xs bg-white dark:bg-[#0a0a0d] hover:bg-slate-100 dark:hover:bg-white/5 border border-black/10 dark:border-white/10 text-slate-900 dark:text-white transition-all shadow-xs shrink-0 cursor-pointer">
                 <UploadCloud size={14} /> Upload Receipt
               </button>
-              <button onClick={handleExport} disabled={isExporting} className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-heading font-bold text-xs bg-white dark:bg-[#0a0a0d] hover:bg-slate-100 dark:hover:bg-white/5 border border-black/10 dark:border-white/10 text-slate-900 dark:text-white transition-all disabled:opacity-50 shadow-xs">
-                {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />} 
-                {isExporting ? 'Exporting...' : 'Export'}
-              </button>
+
               {activeTab === 'expenses' && (
-                <button onClick={openAddPanel} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-heading font-bold text-xs bg-gradient-to-r from-[#6324FC] to-[#8B5CF6] hover:brightness-110 text-white shadow-[0_0_20px_rgba(99,36,252,0.4)] transition-all">
+                <button onClick={handleExport} disabled={isExporting} className="flex items-center justify-center gap-2 px-3.5 py-2 rounded-2xl font-heading font-bold text-xs bg-white dark:bg-[#0a0a0d] hover:bg-slate-100 dark:hover:bg-white/5 border border-black/10 dark:border-white/10 text-slate-900 dark:text-white transition-all disabled:opacity-50 shadow-xs shrink-0 cursor-pointer">
+                  {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />} 
+                  {isExporting ? 'Exporting...' : 'Export'}
+                </button>
+              )}
+
+              {activeTab !== 'loans' && (
+                <button onClick={openAddPanel} className="flex items-center justify-center gap-2 px-4 py-2 rounded-2xl font-heading font-bold text-xs bg-gradient-to-r from-[#6324FC] to-[#8B5CF6] hover:brightness-110 text-white shadow-[0_0_20px_rgba(99,36,252,0.4)] transition-all shrink-0 whitespace-nowrap cursor-pointer">
                   <Plus size={15} strokeWidth={2.5} /> Add Expense
                 </button>
               )}
@@ -313,41 +443,121 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
         {activeTab === 'expenses' ? (
           <>
           <motion.div variants={containerVariants} initial="hidden" animate="show">
-            {/* ── KPI Cards ─────────────────────────────────────────────────── */}
-          <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-3xl p-5 flex flex-col justify-center relative overflow-hidden group shadow-sm hover:border-[#6324FC]/40 transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">Total Expenses</p>
-                <div className="w-8 h-8 rounded-xl bg-[#6324FC]/10 flex items-center justify-center text-[#6324FC] dark:text-[#00E5FF]"><DollarSign size={15} /></div>
-              </div>
-              <p className="text-2xl font-heading font-extrabold font-mono text-slate-900 dark:text-white tracking-tight">{formatCurrency(totalExpenses)}</p>
-            </div>
+            {/* ── KPI Cards (Dashboard Glass-Card Design System) ─────────────────── */}
+            <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              
+              {/* Card 1: 7-Day Total Burn */}
+              <div 
+                className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-rose-500/60 hover:shadow-[0_16px_36px_rgba(244,63,94,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
+              >
+                <div className="absolute -top-10 -right-10 w-36 h-36 bg-rose-500/20 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] bg-gradient-to-r from-transparent via-rose-500 to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#F43F5E]" />
+                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-            <div className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-3xl p-5 flex flex-col justify-center relative overflow-hidden group shadow-sm hover:border-[#6324FC]/40 transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">Approved</p>
-                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500"><CheckCircle2 size={15} /></div>
+                <div className="flex justify-between items-start mb-4 relative z-10">
+                  <div className="w-11 h-11 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-500 dark:text-rose-400 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(244,63,94,0.6)] group-hover:border-rose-400 transition-all duration-300 shadow-sm">
+                    <Clock size={21} />
+                  </div>
+                  <span className="text-xs font-heading font-bold text-rose-500 dark:text-rose-400 bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/20 group-hover:border-rose-500/40 transition-colors">
+                    7-Day Live
+                  </span>
+                </div>
+                <div className="relative z-10">
+                  <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">7-Day Total Burn</p>
+                  <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-rose-500 dark:group-hover:text-transparent dark:group-hover:bg-clip-text dark:group-hover:bg-gradient-to-r dark:group-hover:from-white dark:group-hover:to-rose-400 transition-all">
+                    {formatCurrency(totalExpenses)}
+                  </p>
+                  <p className="text-xs font-sans text-secondary/80 mt-1.5 truncate">
+                    {filteredExpenses.length} active records in 7-day queue
+                  </p>
+                </div>
               </div>
-              <p className="text-2xl font-heading font-extrabold font-mono text-slate-900 dark:text-white tracking-tight">{formatCurrency(totalExpenses)}</p>
-            </div>
 
-            <div className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-3xl p-5 flex flex-col justify-center relative overflow-hidden group shadow-sm hover:border-[#6324FC]/40 transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">Pending</p>
-                <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-secondary"><AlertCircle size={15} /></div>
-              </div>
-              <p className="text-2xl font-heading font-extrabold font-mono text-secondary tracking-tight">৳0</p>
-            </div>
+              {/* Card 2: Daily Run Rate */}
+              <div 
+                className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-emerald-500/60 hover:shadow-[0_16px_36px_rgba(16,185,129,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
+              >
+                <div className="absolute -top-10 -right-10 w-36 h-36 bg-emerald-500/20 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] bg-gradient-to-r from-transparent via-emerald-500 to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#10B981]" />
+                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-            <div className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-3xl p-5 flex flex-col justify-center relative overflow-hidden group shadow-sm hover:border-[#6324FC]/40 transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-widest">Avg Expense</p>
-                <div className="w-8 h-8 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500"><TrendingDown size={15} /></div>
+                <div className="flex justify-between items-start mb-4 relative z-10">
+                  <div className="w-11 h-11 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-500 dark:text-emerald-400 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(16,185,129,0.6)] group-hover:border-emerald-400 transition-all duration-300 shadow-sm">
+                    <TrendingDown size={21} />
+                  </div>
+                  <span className="text-xs font-heading font-bold text-emerald-500 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20 group-hover:border-emerald-500/40 transition-colors">
+                    Daily Average
+                  </span>
+                </div>
+                <div className="relative z-10">
+                  <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">7-Day Run-Rate</p>
+                  <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-emerald-500 dark:group-hover:text-transparent dark:group-hover:bg-clip-text dark:group-hover:bg-gradient-to-r dark:group-hover:from-white dark:group-hover:to-emerald-400 transition-all">
+                    {formatCurrency(Math.round(totalExpenses / 7))}
+                  </p>
+                  <p className="text-xs font-sans text-secondary/80 mt-1.5 truncate">
+                    Daily operational run-rate
+                  </p>
+                </div>
               </div>
-              <p className="text-2xl font-heading font-extrabold font-mono text-slate-900 dark:text-white tracking-tight">{formatCurrency(avgExpense)}</p>
-            </div>
+
+              {/* Card 3: Largest 7-Day Ticket */}
+              <div 
+                className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-[#6324FC]/60 hover:shadow-[0_16px_36px_rgba(99,36,252,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
+              >
+                <div className="absolute -top-10 -right-10 w-36 h-36 bg-[#6324FC]/20 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] bg-gradient-to-r from-transparent via-[#6324FC] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#6324FC]" />
+                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+                <div className="flex justify-between items-start mb-4 relative z-10">
+                  <div className="w-11 h-11 rounded-2xl bg-[#6324FC]/15 border border-[#6324FC]/30 flex items-center justify-center text-[#6324FC] dark:text-[#A78BFA] group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(99,36,252,0.6)] group-hover:border-[#6324FC] transition-all duration-300 shadow-sm">
+                    <DollarSign size={21} />
+                  </div>
+                  <span className="text-xs font-heading font-bold text-[#6324FC] dark:text-[#A78BFA] bg-[#6324FC]/10 px-2.5 py-1 rounded-lg border border-[#6324FC]/20 group-hover:border-[#6324FC]/40 transition-colors">
+                    Peak Expense
+                  </span>
+                </div>
+                <div className="relative z-10">
+                  <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">Highest 7-Day Spend</p>
+                  <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-[#6324FC] dark:group-hover:text-transparent dark:group-hover:bg-clip-text dark:group-hover:bg-gradient-to-r dark:group-hover:from-white dark:group-hover:to-[#00E5FF] transition-all">
+                    {formatCurrency(maxExpense)}
+                  </p>
+                  <p className="text-xs font-sans text-secondary/80 mt-1.5 truncate">
+                    Max single transaction in window
+                  </p>
+                </div>
+              </div>
+
+              {/* Card 4: Archived Vault Status (Clickable) */}
+              <div 
+                onClick={() => handleTabChange('archive')}
+                className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-amber-500/60 hover:shadow-[0_16px_36px_rgba(245,158,11,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
+              >
+                <div className="absolute -top-10 -right-10 w-36 h-36 bg-amber-500/20 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] bg-gradient-to-r from-transparent via-amber-500 to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#F59E0B]" />
+                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+                <div className="flex justify-between items-start mb-4 relative z-10">
+                  <div className="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500 dark:text-amber-400 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(245,158,11,0.6)] group-hover:border-amber-400 transition-all duration-300 shadow-sm">
+                    <Archive size={21} />
+                  </div>
+                  <span className="text-xs font-heading font-bold text-amber-500 dark:text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20 group-hover:border-amber-500/40 transition-colors flex items-center gap-1">
+                    <span>Archive Vault</span>
+                    <ArrowUpRight size={12} />
+                  </span>
+                </div>
+                <div className="relative z-10">
+                  <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">Past History Vault</p>
+                  <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-amber-500 dark:group-hover:text-transparent dark:group-hover:bg-clip-text dark:group-hover:bg-gradient-to-r dark:group-hover:from-white dark:group-hover:to-amber-400 transition-all">
+                    {archivedExpensesList.length} Archived
+                  </p>
+                  <p className="text-xs font-sans text-secondary/80 mt-1.5 truncate">
+                    {formatCurrency(archivedTotal)} stored • Click to explore &rarr;
+                  </p>
+                </div>
+              </div>
+
+            </motion.div>
           </motion.div>
-        </motion.div>
 
         {/* ── Charts ───────────────────────────────────────────────────────── */}
         <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -443,6 +653,36 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
           </motion.div>
         </motion.div>
 
+        {/* ── 7-Day Window Active Notice Banner ─────────────────────────────── */}
+        <motion.div variants={itemVariants} className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-[#6324FC]/10 via-[#00E5FF]/5 to-transparent border border-[#6324FC]/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#6324FC]/20 border border-[#6324FC]/30 flex items-center justify-center text-[#6324FC] dark:text-[#00E5FF] shrink-0 shadow-sm">
+              <Clock size={18} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="text-xs sm:text-sm font-heading font-extrabold text-slate-900 dark:text-white">
+                  Active 7-Day Live Queue
+                </h4>
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#6324FC]/15 text-[#6324FC] dark:text-[#00E5FF] border border-[#6324FC]/30">
+                  Rolling 7 Days
+                </span>
+              </div>
+              <p className="text-[11px] text-secondary mt-0.5">
+                Showing expenditures from the last 7 days. Older items ({archivedExpensesList.length} records • {formatCurrency(archivedTotal)}) automatically move to the Archive vault.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => handleTabChange('archive')}
+            className="flex items-center justify-center gap-2 px-4 py-2 rounded-2xl font-heading font-bold text-xs bg-white dark:bg-[#0a0a0d] hover:bg-[#6324FC]/10 text-[#6324FC] dark:text-[#00E5FF] border border-[#6324FC]/30 shadow-xs transition-all shrink-0 cursor-pointer self-start sm:self-auto group"
+          >
+            <Archive size={14} />
+            <span>Open Archive & History ({archivedExpensesList.length})</span>
+            <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+          </button>
+        </motion.div>
+
         {/* ── Filters & Table ──────────────────────────────────────────────── */}
         <motion.div variants={containerVariants} initial="hidden" animate="show" className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-3xl overflow-hidden shadow-sm">
           {/* Table Toolbar */}
@@ -450,7 +690,7 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
             <div className="flex items-center gap-2.5 w-full md:w-auto">
               <div className="relative flex-1 md:w-64 group">
                 <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary group-focus-within:text-[#6324FC] transition-colors" />
-                <input type="text" placeholder="Search expenses..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                <input type="text" placeholder="Search 7-day expenses..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                   className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 text-slate-800 dark:text-white text-xs rounded-xl pl-9 pr-3.5 py-2 focus:outline-none focus:border-[#6324FC] transition-all placeholder:text-secondary" />
               </div>
             </div>
@@ -462,12 +702,12 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
               
-              <select value={dateFilter} onChange={e => setDateFilter(e.target.value as any)}
+              <select value={liveDateFilter} onChange={e => setLiveDateFilter(e.target.value as any)}
                 className="bg-white dark:bg-[#060608] border border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-300 text-xs font-heading font-bold rounded-xl pl-3.5 pr-8 py-2 appearance-none focus:outline-none focus:border-[#6324FC] cursor-pointer w-full md:w-auto">
-                <option value="All">All Time</option>
-                <option value="ThisMonth">This Month</option>
-                <option value="Last3Months">Last 3 Months</option>
-                <option value="ThisYear">This Year</option>
+                <option value="All7Days">All (Last 7 Days)</option>
+                <option value="Today">Today</option>
+                <option value="Yesterday">Yesterday</option>
+                <option value="Last3Days">Last 3 Days</option>
               </select>
             </div>
           </div>
@@ -596,17 +836,14 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
                       className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 text-slate-900 dark:text-white rounded-xl px-3.5 py-2.5 text-xs focus:border-[#6324FC] focus:outline-none placeholder:text-secondary" placeholder="e.g. Client Dinner" />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[10px] font-heading font-bold tracking-widest text-secondary uppercase mb-1.5">Date</label>
                       <DatePicker 
-                        selected={formData.date && !isNaN(new Date(formData.date).getTime()) ? new Date(formData.date) : null} 
-                        onChange={(date: Date | null) => setFormData({...formData, date: date ? format(date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')})}
-                        className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 text-slate-900 dark:text-white rounded-xl px-3.5 py-2.5 text-xs focus:border-[#6324FC] focus:outline-none" 
-                        dateFormat="MMMM d, yyyy"
-                        required
-                        popperPlacement="bottom-start"
-                        popperClassName="z-[60]"
+                        value={formData.date}
+                        onChange={(val) => setFormData({ ...formData, date: val || format(new Date(), 'yyyy-MM-dd') })}
+                        color="#6324FC"
+                        placeholder="Select Date"
                       />
                     </div>
                     <div>
@@ -639,6 +876,19 @@ export default function DailyExpensesClient({ initialExpenses, initialLoans }: E
         </AnimatePresence>
 
           </>
+        ) : activeTab === 'archive' ? (
+          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+            <ArchiveExpensesTab
+              archivedExpenses={archivedExpensesList}
+              liveCount={liveExpensesList.length}
+              liveTotal={liveTotal}
+              onEditExpense={openEditPanel}
+              onDeleteExpense={handleDelete}
+              onBackToLive={() => handleTabChange('expenses')}
+              categoryColors={CATEGORY_COLORS}
+              formatCurrency={formatCurrency}
+            />
+          </motion.div>
         ) : (
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
             <BorrowLendTab initialLoans={initialLoans} />

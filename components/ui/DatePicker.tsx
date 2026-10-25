@@ -6,7 +6,7 @@ import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, Sparkles } 
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface DatePickerProps {
-  value: string; // YYYY-MM-DD
+  value: string; // YYYY-MM-DD or ISO string
   onChange: (val: string) => void;
   className?: string;
   placeholder?: string;
@@ -15,6 +15,8 @@ interface DatePickerProps {
   color?: string; // Brand accent color e.g. '#00E5FF', '#6324FC', '#10B981'
   align?: 'left' | 'right' | 'auto';
   direction?: 'up' | 'down' | 'auto';
+  disabled?: boolean;
+  required?: boolean;
 }
 
 export default function DatePicker({ 
@@ -26,7 +28,9 @@ export default function DatePicker({
   icon = 'calendar',
   color = '#6324FC',
   align = 'auto',
-  direction = 'auto'
+  direction = 'auto',
+  disabled = false,
+  required = false
 }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -44,8 +48,16 @@ export default function DatePicker({
     setMounted(true);
   }, []);
 
-  // Parse current value or default to today
-  const selectedDate = value ? new Date(value + 'T00:00:00') : null;
+  // Parse current value safely (YYYY-MM-DD or ISO string)
+  const selectedDate = React.useMemo(() => {
+    if (!value) return null;
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      const d = new Date(value + 'T00:00:00');
+      return isNaN(d.getTime()) ? null : d;
+    }
+    const d = new Date(value);
+    return isNaN(d.getTime()) ? null : d;
+  }, [value]);
   
   // View state
   const [currentMonth, setCurrentMonth] = useState(selectedDate ? selectedDate.getMonth() : new Date().getMonth());
@@ -252,12 +264,13 @@ export default function DatePicker({
       <button
         ref={triggerRef}
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-black/[0.02] dark:bg-[#07080b] border transition-all duration-200 text-xs text-left group ${
+        disabled={disabled}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#060608] border transition-all duration-200 text-xs text-left group ${
           isOpen 
             ? 'border-[#6324FC] dark:border-[#6324FC] shadow-[0_0_15px_rgba(99,36,252,0.3)]' 
             : 'border-black/10 dark:border-white/10 hover:border-[#6324FC]/40'
-        }`}
+        } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
       >
         <div className="flex items-center gap-2.5 min-w-0">
           <IconComponent 
@@ -321,21 +334,41 @@ export default function DatePicker({
                 <button 
                   type="button" 
                   onClick={handlePrevMonth}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/15 text-slate-500 dark:text-slate-300 hover:text-black dark:hover:text-white transition-all"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/15 text-slate-500 dark:text-slate-300 hover:text-black dark:hover:text-white transition-all cursor-pointer"
                   title="Previous Month"
                 >
                   <ChevronLeft size={14} />
                 </button>
 
-                <div className="font-heading font-extrabold text-xs text-black dark:text-white tracking-wide flex items-center gap-1.5">
-                  <span>{monthNames[currentMonth]}</span>
-                  <span className="text-slate-400 font-mono">{currentYear}</span>
+                <div className="font-heading font-extrabold text-xs text-black dark:text-white tracking-wide flex items-center gap-1">
+                  <select
+                    value={currentMonth}
+                    onChange={(e) => setCurrentMonth(Number(e.target.value))}
+                    className="bg-transparent text-xs font-heading font-extrabold text-black dark:text-white hover:text-[#6324FC] dark:hover:text-[#00E5FF] cursor-pointer focus:outline-none appearance-none"
+                  >
+                    {monthNames.map((m, idx) => (
+                      <option key={m} value={idx} className="bg-white dark:bg-[#0d0f17] text-slate-900 dark:text-white">
+                        {m}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={currentYear}
+                    onChange={(e) => setCurrentYear(Number(e.target.value))}
+                    className="bg-transparent text-xs font-mono font-bold text-slate-500 dark:text-slate-400 hover:text-black dark:hover:text-white cursor-pointer focus:outline-none appearance-none"
+                  >
+                    {Array.from({ length: 30 }, (_, i) => new Date().getFullYear() - 15 + i).map((y) => (
+                      <option key={y} value={y} className="bg-white dark:bg-[#0d0f17] text-slate-900 dark:text-white">
+                        {y}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <button 
                   type="button" 
                   onClick={handleNextMonth}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/15 text-slate-500 dark:text-slate-300 hover:text-black dark:hover:text-white transition-all"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/15 text-slate-500 dark:text-slate-300 hover:text-black dark:hover:text-white transition-all cursor-pointer"
                   title="Next Month"
                 >
                   <ChevronRight size={14} />

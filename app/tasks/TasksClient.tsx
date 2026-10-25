@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   CheckSquare, 
   Sparkles, 
@@ -21,7 +22,10 @@ import {
   AlertCircle,
   Tag,
   ChevronRight,
-  RotateCcw
+  ChevronDown,
+  RotateCcw,
+  Activity,
+  Bot
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -31,6 +35,7 @@ import {
   createDailyTask, 
   toggleTaskComplete, 
   deleteDailyTask, 
+  updateDailyTask,
   getAllTaskHistory 
 } from '@/app/actions/taskActions';
 
@@ -71,6 +76,372 @@ const CATEGORIES = [
   'General',
 ];
 
+interface PortalSelectOption {
+  value: string;
+  label: string;
+  color?: string;
+  icon?: string;
+}
+
+const CATEGORY_OPTIONS: PortalSelectOption[] = [
+  { value: 'Development', label: 'Development', color: '#06B6D4' },
+  { value: 'Design', label: 'Design', color: '#EC4899' },
+  { value: 'Marketplace', label: 'Marketplace', color: '#8B5CF6' },
+  { value: 'Client Work', label: 'Client Work', color: '#3B82F6' },
+  { value: 'Finance', label: 'Finance', color: '#10B981' },
+  { value: 'Admin', label: 'Admin', color: '#64748B' },
+  { value: 'General', label: 'General', color: '#F59E0B' },
+];
+
+const CATEGORY_FILTER_OPTIONS: PortalSelectOption[] = [
+  { value: 'All', label: 'All Categories' },
+  ...CATEGORY_OPTIONS,
+];
+
+const PRIORITY_OPTIONS: PortalSelectOption[] = [
+  { value: 'High', label: 'High Priority', color: '#EF4444' },
+  { value: 'Medium', label: 'Medium Priority', color: '#F59E0B' },
+  { value: 'Low', label: 'Low Priority', color: '#10B981' },
+];
+
+const PRIORITY_FILTER_OPTIONS: PortalSelectOption[] = [
+  { value: 'All', label: 'All Priorities' },
+  { value: 'High', label: 'High Priority 🔴', color: '#EF4444' },
+  { value: 'Medium', label: 'Medium Priority 🟡', color: '#F59E0B' },
+  { value: 'Low', label: 'Low Priority 🟢', color: '#10B981' },
+];
+
+const STATUS_FILTER_OPTIONS: PortalSelectOption[] = [
+  { value: 'all', label: 'All Statuses' },
+  { value: 'completed', label: 'Completed Only', color: '#10B981' },
+  { value: 'pending', label: 'In-Flight Only', color: '#F59E0B' },
+];
+
+// ==========================================
+// Universal React Portal Dropdown (Never Clipped)
+// ==========================================
+interface DropdownPortalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  triggerRef: React.RefObject<HTMLElement | null>;
+  children: React.ReactNode;
+  minWidth?: number;
+  className?: string;
+}
+
+function DropdownPortal({
+  isOpen,
+  onClose,
+  triggerRef,
+  children,
+  minWidth = 180,
+  className = '',
+}: DropdownPortalProps) {
+  const [mounted, setMounted] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState<{
+    top?: number;
+    bottom?: number;
+    left: number;
+    width: number;
+    placement: 'top' | 'bottom';
+  }>({
+    left: 0,
+    width: minWidth,
+    placement: 'bottom',
+  });
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const updatePosition = useCallback(() => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const dropdownHeight = 260;
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+
+    const spaceBelow = viewportHeight - rect.bottom;
+    const spaceAbove = rect.top;
+
+    let placement: 'top' | 'bottom' = 'bottom';
+    if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+      placement = 'top';
+    }
+
+    const targetWidth = Math.max(minWidth, rect.width);
+    let left = rect.left;
+    if (left + targetWidth > viewportWidth - 12) {
+      left = rect.right - targetWidth;
+    }
+    left = Math.max(12, Math.min(left, viewportWidth - targetWidth - 12));
+
+    if (placement === 'top') {
+      setCoords({
+        bottom: viewportHeight - rect.top + 6,
+        left,
+        width: targetWidth,
+        placement: 'top',
+      });
+    } else {
+      setCoords({
+        top: rect.bottom + 6,
+        left,
+        width: targetWidth,
+        placement: 'bottom',
+      });
+    }
+  }, [minWidth, triggerRef]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    updatePosition();
+    const handleScrollOrResize = () => updatePosition();
+    window.addEventListener('resize', handleScrollOrResize);
+    window.addEventListener('scroll', handleScrollOrResize, true);
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (triggerRef.current && triggerRef.current.contains(target)) return;
+      if (menuRef.current && menuRef.current.contains(target)) return;
+      onClose();
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('resize', handleScrollOrResize);
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose, updatePosition, triggerRef]);
+
+  if (!mounted || !isOpen) return null;
+
+  return createPortal(
+    <div
+      ref={menuRef}
+      style={{
+        position: 'fixed',
+        top: coords.top !== undefined ? `${coords.top}px` : 'auto',
+        bottom: coords.bottom !== undefined ? `${coords.bottom}px` : 'auto',
+        left: `${coords.left}px`,
+        width: `${coords.width}px`,
+        zIndex: 999999,
+      }}
+      className={`animate-in fade-in-0 zoom-in-95 duration-150 ${className}`}
+    >
+      {children}
+    </div>,
+    document.body
+  );
+}
+
+// Portal Select Component
+interface PortalSelectProps {
+  value: string;
+  onChange: (val: string) => void;
+  options: PortalSelectOption[];
+  labelPrefix?: string;
+  minWidth?: number;
+  className?: string;
+  size?: 'sm' | 'md';
+}
+
+function PortalSelect({
+  value,
+  onChange,
+  options,
+  labelPrefix,
+  minWidth = 160,
+  className = '',
+  size = 'md',
+}: PortalSelectProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const selectedOpt = options.find((o) => o.value === value) || options[0];
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`flex items-center justify-between gap-2 rounded-xl border border-black/10 dark:border-white/10 bg-slate-50 dark:bg-[#060608] hover:border-[#6324FC]/60 dark:hover:border-white/25 transition-all outline-none select-none ${
+          size === 'sm' ? 'px-3 py-2 text-xs' : 'px-3.5 py-2 text-xs'
+        } ${className}`}
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          {selectedOpt?.color && (
+            <span
+              className="w-2 h-2 rounded-full shrink-0 shadow-sm"
+              style={{
+                backgroundColor: selectedOpt.color,
+                boxShadow: `0 0 8px ${selectedOpt.color}`,
+              }}
+            />
+          )}
+          {labelPrefix && <span className="text-secondary font-normal shrink-0">{labelPrefix}:</span>}
+          <span className="font-heading font-semibold text-slate-900 dark:text-white truncate">
+            {selectedOpt?.label || value}
+          </span>
+        </div>
+        <ChevronDown
+          size={13}
+          className={`text-secondary shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 text-[#6324FC] dark:text-[#00E5FF]' : ''}`}
+        />
+      </button>
+
+      <DropdownPortal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        triggerRef={triggerRef}
+        minWidth={minWidth}
+        className="rounded-2xl border border-black/10 dark:border-white/15 bg-white dark:bg-[#0c0d14] p-1.5 shadow-[0_20px_50px_rgba(0,0,0,0.45)] backdrop-blur-2xl"
+      >
+        {labelPrefix && (
+          <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-secondary border-b border-black/5 dark:border-white/5 mb-1">
+            Select {labelPrefix}
+          </div>
+        )}
+        <div className="max-h-60 overflow-y-auto custom-scrollbar space-y-0.5">
+          {options.map((opt) => {
+            const isSelected = opt.value === value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  onChange(opt.value);
+                  setIsOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-heading font-medium transition-colors text-left ${
+                  isSelected
+                    ? 'bg-[#6324FC]/10 dark:bg-[#00E5FF]/10 text-[#6324FC] dark:text-[#00E5FF] font-bold'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-black/5 dark:hover:bg-white/5'
+                }`}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  {opt.color ? (
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{
+                        backgroundColor: opt.color,
+                        boxShadow: isSelected ? `0 0 8px ${opt.color}` : undefined,
+                      }}
+                    />
+                  ) : null}
+                  <span className="truncate">{opt.label}</span>
+                </div>
+                {isSelected && (
+                  <Check size={13} className="shrink-0 text-[#6324FC] dark:text-[#00E5FF]" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </DropdownPortal>
+    </>
+  );
+}
+
+// Inline Priority Toggle Dropdown for Task Cards
+interface InlinePriorityDropdownProps {
+  currentPriority?: 'High' | 'Medium' | 'Low';
+  onSelect: (priority: 'High' | 'Medium' | 'Low') => void;
+  disabled?: boolean;
+}
+
+function InlinePriorityDropdown({
+  currentPriority = 'Medium',
+  onSelect,
+  disabled = false,
+}: InlinePriorityDropdownProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  const getPriorityStyle = (p: string) => {
+    switch (p) {
+      case 'High':
+        return 'bg-rose-500/10 text-rose-500 dark:text-rose-400 border-rose-500/30 hover:border-rose-500/60 shadow-[0_0_8px_rgba(239,68,68,0.2)]';
+      case 'Medium':
+        return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:border-amber-500/60 shadow-[0_0_8px_rgba(245,158,11,0.2)]';
+      case 'Low':
+      default:
+        return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:border-emerald-500/60 shadow-[0_0_8px_rgba(16,185,129,0.2)]';
+    }
+  };
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        disabled={disabled}
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
+        className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-lg border uppercase shrink-0 transition-all flex items-center gap-1 cursor-pointer select-none ${getPriorityStyle(
+          currentPriority
+        )}`}
+        title="Click to toggle priority"
+      >
+        <span>{currentPriority}</span>
+        <ChevronDown size={10} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      <DropdownPortal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        triggerRef={triggerRef}
+        minWidth={135}
+        className="rounded-xl border border-black/10 dark:border-white/15 bg-white dark:bg-[#0c0d14] p-1 shadow-[0_15px_35px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
+      >
+        <div className="px-2 py-1 text-[9px] font-mono uppercase tracking-wider text-secondary border-b border-black/5 dark:border-white/5 mb-1">
+          Set Priority
+        </div>
+        {PRIORITY_OPTIONS.map((opt) => {
+          const isSelected = opt.value === currentPriority;
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect(opt.value as any);
+                setIsOpen(false);
+              }}
+              className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-mono font-semibold transition-colors text-left ${
+                isSelected
+                  ? 'bg-[#6324FC]/10 dark:bg-[#00E5FF]/10 text-[#6324FC] dark:text-[#00E5FF]'
+                  : 'text-slate-700 dark:text-slate-300 hover:bg-black/5 dark:hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-1.5">
+                <span
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: opt.color, boxShadow: `0 0 6px ${opt.color}` }}
+                />
+                <span>{opt.label}</span>
+              </div>
+              {isSelected && <Check size={11} className="text-[#6324FC] dark:text-[#00E5FF]" />}
+            </button>
+          );
+        })}
+      </DropdownPortal>
+    </>
+  );
+}
+
 const containerVariants = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.05 } },
@@ -94,7 +465,34 @@ export default function TasksClient({
   // Search and filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [priorityFilter, setPriorityFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'pending'>('all');
+
+  // Real-time Priority Change
+  const handleUpdatePriority = async (task: TaskItem, newPriority: 'High' | 'Medium' | 'Low') => {
+    const taskId = (task.id || task._id)?.toString() || '';
+    if (!taskId) return;
+
+    const updateItem = (item: TaskItem): TaskItem => {
+      const id = (item.id || item._id)?.toString();
+      if (id === taskId) {
+        return { ...item, priority: newPriority };
+      }
+      return item;
+    };
+
+    setTodayTasks((prev) => prev.map(updateItem));
+    setHistoryTasks((prev) => prev.map(updateItem));
+    toast.success(`Priority updated to ${newPriority}`);
+
+    try {
+      if (!taskId.startsWith('temp_') && !taskId.startsWith('proj_') && !taskId.startsWith('mptask_')) {
+        await updateDailyTask(taskId, { priority: newPriority });
+      }
+    } catch {
+      toast.error('Failed to sync priority change');
+    }
+  };
 
   // Quick inline add
   const [quickTitle, setQuickTitle] = useState('');
@@ -324,6 +722,10 @@ export default function TasksClient({
       if (selectedCategory !== 'All' && task.category !== selectedCategory) {
         return false;
       }
+      // Priority filter
+      if (priorityFilter !== 'All' && task.priority !== priorityFilter) {
+        return false;
+      }
       // Status filter
       if (statusFilter === 'completed' && !task.completed) return false;
       if (statusFilter === 'pending' && task.completed) return false;
@@ -339,7 +741,7 @@ export default function TasksClient({
 
       return true;
     });
-  }, [historyTasks, selectedCategory, statusFilter, searchQuery]);
+  }, [historyTasks, selectedCategory, priorityFilter, statusFilter, searchQuery]);
 
   // Group History by Date
   const groupedHistory = useMemo(() => {
@@ -374,6 +776,7 @@ export default function TasksClient({
   // Today's Focus active vs completed
   const activeTodayTasks = todayTasks.filter((t) => !t.completed);
   const completedTodayTasks = todayTasks.filter((t) => t.completed);
+  const highPriorityToday = todayTasks.filter((t) => !t.completed && t.priority === 'High');
   const todayProgress = todayTasks.length > 0 
     ? Math.round((completedTodayTasks.length / todayTasks.length) * 100) 
     : 0;
@@ -386,175 +789,287 @@ export default function TasksClient({
         <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-[#00E5FF]/5 rounded-full blur-[120px]" />
       </div>
 
-      <div className="max-w-7xl mx-auto relative z-10 space-y-6">
+      <div className="max-w-[1750px] mx-auto relative z-10 space-y-6">
         
         {/* ========================================================================= */}
-        {/* HEADER SECTION */}
+        {/* EXECUTIVE HEADER & LIVE TELEMETRY BAR (MATCHING DASHBOARD & PROJECTS) */}
         {/* ========================================================================= */}
         <motion.div 
-          initial={{ opacity: 0, y: -10 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-black/10 dark:border-white/10"
+          variants={itemVariants}
+          className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5 relative z-10 pb-2 border-b border-black/5 dark:border-white/5"
         >
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-[#6324FC] dark:text-[#00E5FF] px-2 py-0.5 rounded-full bg-[#6324FC]/10 dark:bg-[#00E5FF]/10 border border-[#6324FC]/20 dark:border-[#00E5FF]/20 flex items-center gap-1 font-bold">
-                <Sparkles size={10} /> Daily Sprint & Work Audit
-              </span>
-              <span className="text-xs text-secondary">•</span>
-              <span className="text-xs font-mono text-secondary">
-                {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+            <div className="flex flex-wrap items-center gap-2.5 mb-2">
+              <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-[#6324FC]/10 border border-[#6324FC]/25 text-[#6324FC] dark:text-[#00E5FF] text-[10px] font-heading font-bold tracking-widest uppercase">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#6324FC] dark:bg-[#00E5FF] animate-pulse shadow-[0_0_8px_#6324FC] dark:shadow-[0_0_8px_#00E5FF]" />
+                INJAAZH GLOBAL OS // WORK AUDIT SUITE
+              </div>
+              <span className="text-xs font-sans text-secondary">
+                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}
               </span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-heading font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
-              Work Log & Execution History
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
+              Work Log &amp; Execution History
             </h1>
-            <p className="text-xs md:text-sm text-secondary font-sans mt-0.5">
-              Track daily sprint focus, manage to-dos, and inspect lifetime work history with exact timestamps.
+            <p className="text-xs sm:text-sm font-sans text-secondary mt-1 max-w-2xl">
+              Track daily sprint focus, manage to-dos, and inspect lifetime work execution with exact audit timestamps.
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          {/* Quick Action Controls */}
+          <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+            {/* Command shortcut button */}
+            <button 
+              type="button"
+              onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 text-secondary hover:text-slate-900 dark:hover:text-white text-xs font-heading font-semibold transition-all group"
+            >
+              <Search size={14} className="group-hover:text-[#6324FC] dark:group-hover:text-[#00E5FF] transition-colors" />
+              <span>Command</span>
+              <kbd className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 text-[10px] font-mono text-secondary">⌘K</kbd>
+            </button>
+
+            {/* Export CSV button */}
             <button
+              type="button"
               onClick={handleExportCSV}
-              className="px-3.5 py-2 rounded-xl bg-slate-200/70 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 text-xs font-heading font-bold text-slate-800 dark:text-white transition-all flex items-center gap-2"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-surface border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 text-secondary hover:text-slate-900 dark:hover:text-white text-xs font-heading font-semibold transition-all group shadow-sm"
               title="Download lifetime work history in CSV format"
             >
-              <Download size={14} className="text-[#6324FC] dark:text-[#00E5FF]" />
+              <Download size={14} className="text-emerald-500 group-hover:scale-110 transition-transform" />
               <span>Export CSV</span>
             </button>
 
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="relative px-4 py-2 rounded-xl text-xs font-heading font-bold text-white transition-all overflow-hidden group shadow-[0_0_20px_rgba(99,36,252,0.3)] bg-gradient-to-r from-[#6324FC] to-[#8B5CF6] hover:brightness-110 flex items-center gap-2"
+            {/* AI Copilot Dispatch */}
+            <button 
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent('open-ai-chat', { detail: { initialPrompt: 'Review my today tasks and suggest priority focus order' } }))}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[#6324FC]/10 border border-[#6324FC]/30 hover:border-[#6324FC] text-slate-800 dark:text-[#edeae2] text-xs font-heading font-semibold transition-all hover:shadow-[0_0_15px_rgba(99,36,252,0.3)] shadow-sm"
             >
-              <Plus size={14} />
-              <span>Log New Work</span>
+              <Sparkles size={14} className="text-[#6324FC] dark:text-[#00E5FF] animate-pulse" />
+              <span>AI Copilot</span>
+            </button>
+
+            {/* + Log New Work Laser Beam CTA (Symmetrically Calibrated Clockwise Single Stream) */}
+            <button 
+              type="button"
+              onClick={() => setIsModalOpen(true)}
+              className="h-9 group relative p-[2px] rounded-xl overflow-hidden flex items-center justify-center cursor-pointer transition-all duration-300 active:scale-95 shadow-[0_0_20px_rgba(99,36,252,0.35)] hover:shadow-[0_0_35px_rgba(0,229,255,0.5),0_0_20px_rgba(236,72,153,0.35)]"
+            >
+              {/* Perfectly Centered Square Conic Glow Aura (Uniform Distance on All 4 Sides) */}
+              <span 
+                className="absolute top-1/2 left-1/2 w-[450%] aspect-square -translate-x-1/2 -translate-y-1/2 animate-[spin_3s_linear_infinite] blur-[8px] opacity-85 pointer-events-none" 
+                style={{
+                  background: 'conic-gradient(from 0deg, transparent 0deg, transparent 60deg, #00e5ff 110deg, #6324fc 140deg, #ec4899 170deg, transparent 210deg, transparent 360deg)'
+                }}
+              />
+              
+              {/* Crisp Symmetrical Single Laser Beam Stream (Clockwise: Left to Right Loop) */}
+              <span 
+                className="absolute top-1/2 left-1/2 w-[450%] aspect-square -translate-x-1/2 -translate-y-1/2 animate-[spin_3s_linear_infinite] opacity-100 pointer-events-none" 
+                style={{
+                  background: 'conic-gradient(from 0deg, transparent 0deg, transparent 60deg, #00e5ff 110deg, #6324fc 140deg, #ec4899 170deg, transparent 210deg, transparent 360deg)'
+                }}
+              />
+              
+              {/* Inner High-Contrast Surface: Concentric 10px radius matching outer 12px minus 2px */}
+              <div className="relative z-10 w-full h-full px-3.5 rounded-[10px] bg-white dark:bg-[#0a0a0d] group-hover:bg-slate-50 dark:group-hover:bg-[#121218] text-slate-900 dark:text-white font-heading font-bold text-xs flex items-center gap-2 transition-all">
+                <CheckSquare size={14} className="text-[#00E5FF] group-hover:rotate-6 group-hover:scale-110 drop-shadow-[0_0_6px_#00E5FF] transition-transform duration-300" />
+                <span className="tracking-wide group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-slate-900 group-hover:to-[#6324FC] dark:group-hover:from-white dark:group-hover:via-[#00E5FF] dark:group-hover:to-[#EC4899] transition-all">
+                  + Log New Work
+                </span>
+              </div>
             </button>
           </div>
         </motion.div>
 
         {/* ========================================================================= */}
-        {/* EXECUTIVE TELEMETRY KPI CARDS */}
+        {/* EXECUTIVE WORK TELEMETRY KPI CARDS (DASHBOARD MATCHING 6-GRID) */}
         {/* ========================================================================= */}
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          animate="show"
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5"
-        >
-          {/* Card 1: Completed Today */}
-          <motion.div 
-            variants={itemVariants} 
-            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#10B981]/60 hover:shadow-[0_12px_30px_rgba(16,185,129,0.25)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
-          >
-            {/* Radial Hover Spotlight */}
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#10B981]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
-            {/* Top Accent Neon Line */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#10B981] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#10B981]" />
-            {/* Subtle Card Glass Sheen */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/[0.02] dark:from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        <motion.div variants={itemVariants} className="space-y-3">
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="text-sm font-heading font-bold text-secondary uppercase tracking-widest flex items-center gap-2.5">
+              <Activity size={16} className="text-[#6324FC]" /> High-Level Work Telemetry
+            </h2>
+            <div className="flex items-center gap-2 text-xs font-mono text-secondary">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_#10B981]" />
+              <span>Live Engine Connected</span>
+            </div>
+          </div>
 
-            <div className="flex justify-between items-start mb-3 relative z-10">
-              <div className="w-9 h-9 rounded-xl bg-[#10B981]/15 border border-[#10B981]/30 flex items-center justify-center text-[#10B981] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(16,185,129,0.6)] group-hover:border-[#10B981] transition-all duration-300">
-                <Flame size={17} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 lg:gap-5">
+            {/* Card 1: Completed Today */}
+            <div 
+              onClick={() => setActiveTab('today')}
+              className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-[#10B981]/60 hover:shadow-[0_16px_36px_rgba(16,185,129,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
+            >
+              <div className="absolute -top-10 -right-10 w-36 h-36 bg-[#10B981]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] bg-gradient-to-r from-transparent via-[#10B981] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#10B981]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+              <div className="flex justify-between items-start mb-4 relative z-10">
+                <div className="w-11 h-11 rounded-2xl bg-[#10B981]/15 border border-[#10B981]/30 flex items-center justify-center text-[#10B981] group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(16,185,129,0.6)] group-hover:border-[#10B981] transition-all duration-300 shadow-sm">
+                  <Flame size={21} />
+                </div>
+                <span className="text-xs font-heading font-bold text-emerald-500 dark:text-emerald-400 flex items-center gap-1 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20 group-hover:border-emerald-500/40 transition-colors">
+                  <Sparkles size={12} /> Today's Velocity
+                </span>
               </div>
-              <span className="text-[10px] font-heading font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 group-hover:border-emerald-500/40 transition-colors">
-                <Sparkles size={11} /> Today's Velocity
-              </span>
-            </div>
-            <div className="relative z-10">
-              <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">Completed Today</p>
-              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-[#10B981] transition-all">
-                {stats.completedToday}
-              </p>
-              <p className="text-[10px] font-sans text-secondary mt-1 truncate">Daily sprint deliverables finished</p>
-            </div>
-          </motion.div>
-
-          {/* Card 2: In-Flight Pending */}
-          <motion.div 
-            variants={itemVariants} 
-            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#00E5FF]/60 hover:shadow-[0_12px_30px_rgba(0,229,255,0.25)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
-          >
-            {/* Radial Hover Spotlight */}
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#00E5FF]/20 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
-            {/* Top Accent Neon Line */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#00E5FF] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#00E5FF]" />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/[0.02] dark:from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-
-            <div className="flex justify-between items-start mb-3 relative z-10">
-              <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-600 dark:text-[#00E5FF] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(0,229,255,0.6)] group-hover:border-[#00E5FF] transition-all duration-300">
-                <Clock size={17} />
+              <div className="relative z-10">
+                <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">Completed Today</p>
+                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-[#10B981] dark:group-hover:text-transparent dark:group-hover:bg-clip-text dark:group-hover:bg-gradient-to-r dark:group-hover:from-white dark:group-hover:to-[#10B981] transition-all">
+                  {stats.completedToday}
+                </p>
+                <p className="text-xs font-sans text-secondary/80 mt-1.5 truncate">
+                  {completedTodayTasks.length} daily sprint tasks finished
+                </p>
               </div>
-              <span className="text-[10px] font-heading font-bold text-cyan-600 dark:text-[#00E5FF] bg-cyan-500/10 px-2 py-0.5 rounded-md border border-cyan-500/20 group-hover:border-cyan-500/40 transition-colors">
-                In Flight
-              </span>
             </div>
-            <div className="relative z-10">
-              <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">In-Flight Today</p>
-              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-cyan-600 dark:group-hover:text-[#00E5FF] transition-all">
-                {activeTodayTasks.length}
-              </p>
-              <p className="text-[10px] font-sans text-secondary mt-1 truncate">Active sprint queue awaiting delivery</p>
-            </div>
-          </motion.div>
 
-          {/* Card 3: Total Lifetime Completed */}
-          <motion.div 
-            variants={itemVariants} 
-            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#6324FC]/60 hover:shadow-[0_12px_30px_rgba(99,36,252,0.25)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
-          >
-            {/* Radial Hover Spotlight */}
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#6324FC]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
-            {/* Top Accent Neon Line */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#6324FC] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#6324FC]" />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/[0.02] dark:from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+            {/* Card 2: In-Flight Today */}
+            <div 
+              onClick={() => setActiveTab('today')}
+              className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-[#00E5FF]/60 hover:shadow-[0_16px_36px_rgba(0,229,255,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
+            >
+              <div className="absolute -top-10 -right-10 w-36 h-36 bg-[#00E5FF]/20 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] bg-gradient-to-r from-transparent via-[#00E5FF] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#00E5FF]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-            <div className="flex justify-between items-start mb-3 relative z-10">
-              <div className="w-9 h-9 rounded-xl bg-[#6324FC]/15 border border-[#6324FC]/30 flex items-center justify-center text-[#6324FC] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(99,36,252,0.6)] group-hover:border-[#6324FC] transition-all duration-300">
-                <CheckCircle2 size={17} />
+              <div className="flex justify-between items-start mb-4 relative z-10">
+                <div className="w-11 h-11 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-600 dark:text-[#00E5FF] group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(0,229,255,0.6)] group-hover:border-[#00E5FF] transition-all duration-300 shadow-sm">
+                  <Clock size={21} />
+                </div>
+                <span className="text-xs font-heading font-bold text-cyan-600 dark:text-[#00E5FF] bg-cyan-500/10 px-2.5 py-1 rounded-lg border border-cyan-500/20 group-hover:border-cyan-500/40 transition-colors">
+                  In Flight
+                </span>
               </div>
-              <span className="text-[10px] font-heading font-bold text-purple-600 dark:text-purple-300 bg-[#6324FC]/15 px-2 py-0.5 rounded-md border border-[#6324FC]/30 group-hover:border-[#6324FC]/50 transition-colors">
-                Verified Log
-              </span>
-            </div>
-            <div className="relative z-10">
-              <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">Lifetime Completed</p>
-              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-[#6324FC] transition-all">
-                {stats.totalCompleted}
-              </p>
-              <p className="text-[10px] font-sans text-secondary mt-1 truncate">Verified historical work records</p>
-            </div>
-          </motion.div>
-
-          {/* Card 4: Lifetime Efficiency */}
-          <motion.div 
-            variants={itemVariants} 
-            className="group glass-card rounded-2xl p-4.5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#F59E0B]/60 hover:shadow-[0_12px_30px_rgba(245,158,11,0.25)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
-          >
-            {/* Radial Hover Spotlight */}
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#F59E0B]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
-            {/* Top Accent Neon Line */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] bg-gradient-to-r from-transparent via-[#F59E0B] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#F59E0B]" />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/[0.02] dark:from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-
-            <div className="flex justify-between items-start mb-3 relative z-10">
-              <div className="w-9 h-9 rounded-xl bg-[#F59E0B]/15 border border-[#F59E0B]/30 flex items-center justify-center text-[#F59E0B] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(245,158,11,0.6)] group-hover:border-[#F59E0B] transition-all duration-300">
-                <TrendingUp size={17} />
+              <div className="relative z-10">
+                <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">In-Flight Today</p>
+                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-cyan-600 dark:group-hover:text-transparent dark:group-hover:bg-clip-text dark:group-hover:bg-gradient-to-r dark:group-hover:from-white dark:group-hover:to-[#00E5FF] transition-all">
+                  {activeTodayTasks.length}
+                </p>
+                <p className="text-xs font-sans text-secondary/80 mt-1.5 truncate">
+                  Active sprint queue awaiting delivery
+                </p>
               </div>
-              <span className="text-[10px] font-heading font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 group-hover:border-amber-500/40 transition-colors">
-                Efficiency
-              </span>
             </div>
-            <div className="relative z-10">
-              <p className="text-[10px] font-heading font-bold text-secondary uppercase tracking-wider">Completion Rate</p>
-              <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-[#F59E0B] transition-all">
-                {stats.completionRate}%
-              </p>
-              <p className="text-[10px] font-sans text-secondary mt-1 truncate">Out of {stats.totalAll} total logged tasks</p>
+
+            {/* Card 3: High Priority Queue */}
+            <div 
+              onClick={() => setActiveTab('today')}
+              className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-rose-500/60 hover:shadow-[0_16px_36px_rgba(244,63,94,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
+            >
+              <div className="absolute -top-10 -right-10 w-36 h-36 bg-rose-500/20 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] bg-gradient-to-r from-transparent via-rose-500 to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#F43F5E]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+              <div className="flex justify-between items-start mb-4 relative z-10">
+                <div className="w-11 h-11 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-500 dark:text-rose-400 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(244,63,94,0.6)] group-hover:border-rose-400 transition-all duration-300 shadow-sm">
+                  <AlertCircle size={21} />
+                </div>
+                <span className={`text-xs font-heading font-bold px-2.5 py-1 rounded-lg border transition-colors ${
+                  highPriorityToday.length > 0
+                    ? 'text-rose-500 dark:text-rose-400 bg-rose-500/10 border-rose-500/20 group-hover:border-rose-500/40 animate-pulse'
+                    : 'text-emerald-500 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+                }`}>
+                  {highPriorityToday.length > 0 ? `${highPriorityToday.length} Urgent` : 'All Clear'}
+                </span>
+              </div>
+              <div className="relative z-10">
+                <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">High Priority Queue</p>
+                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-rose-500 dark:group-hover:text-transparent dark:group-hover:bg-clip-text dark:group-hover:bg-gradient-to-r dark:group-hover:from-white dark:group-hover:to-rose-400 transition-all">
+                  {highPriorityToday.length}
+                </p>
+                <p className="text-xs font-sans text-secondary/80 mt-1.5 truncate">
+                  {highPriorityToday.length > 0 ? 'Critical focus required' : 'No urgent bottlenecks'}
+                </p>
+              </div>
             </div>
-          </motion.div>
+
+            {/* Card 4: Lifetime Completed */}
+            <div 
+              onClick={() => { setActiveTab('history'); setStatusFilter('completed'); }}
+              className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-[#6324FC]/60 hover:shadow-[0_16px_36px_rgba(99,36,252,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
+            >
+              <div className="absolute -top-10 -right-10 w-36 h-36 bg-[#6324FC]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] bg-gradient-to-r from-transparent via-[#6324FC] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#6324FC]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+              <div className="flex justify-between items-start mb-4 relative z-10">
+                <div className="w-11 h-11 rounded-2xl bg-[#6324FC]/15 border border-[#6324FC]/30 flex items-center justify-center text-[#6324FC] group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(99,36,252,0.6)] group-hover:border-[#6324FC] transition-all duration-300 shadow-sm">
+                  <CheckCircle2 size={21} />
+                </div>
+                <span className="text-xs font-heading font-bold text-purple-600 dark:text-purple-300 bg-[#6324FC]/15 px-2.5 py-1 rounded-lg border border-[#6324FC]/30 group-hover:border-[#6324FC]/50 transition-colors">
+                  Verified Log
+                </span>
+              </div>
+              <div className="relative z-10">
+                <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">Lifetime Completed</p>
+                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-[#6324FC] dark:group-hover:text-transparent dark:group-hover:bg-clip-text dark:group-hover:bg-gradient-to-r dark:group-hover:from-white dark:group-hover:to-[#6324FC] transition-all">
+                  {stats.totalCompleted}
+                </p>
+                <p className="text-xs font-sans text-secondary/80 mt-1.5 truncate">
+                  Verified historical work records
+                </p>
+              </div>
+            </div>
+
+            {/* Card 5: Total Pending Backlog */}
+            <div 
+              onClick={() => { setActiveTab('history'); setStatusFilter('pending'); }}
+              className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-violet-500/60 hover:shadow-[0_16px_36px_rgba(139,92,246,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
+            >
+              <div className="absolute -top-10 -right-10 w-36 h-36 bg-violet-500/20 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] bg-gradient-to-r from-transparent via-violet-500 to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#8B5CF6]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+              <div className="flex justify-between items-start mb-4 relative z-10">
+                <div className="w-11 h-11 rounded-2xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center text-violet-600 dark:text-violet-400 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(139,92,246,0.6)] group-hover:border-violet-400 transition-all duration-300 shadow-sm">
+                  <CheckSquare size={21} />
+                </div>
+                <span className="text-xs font-heading font-bold text-violet-600 dark:text-violet-400 bg-violet-500/10 px-2.5 py-1 rounded-lg border border-violet-500/20 group-hover:border-violet-500/40 transition-colors">
+                  Open Backlog
+                </span>
+              </div>
+              <div className="relative z-10">
+                <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">Total Pending Backlog</p>
+                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-violet-600 dark:group-hover:text-transparent dark:group-hover:bg-clip-text dark:group-hover:bg-gradient-to-r dark:group-hover:from-white dark:group-hover:to-violet-400 transition-all">
+                  {stats.totalPending}
+                </p>
+                <p className="text-xs font-sans text-secondary/80 mt-1.5 truncate">
+                  Outstanding backlog items
+                </p>
+              </div>
+            </div>
+
+            {/* Card 6: Lifetime Efficiency */}
+            <div 
+              onClick={() => { setActiveTab('history'); setStatusFilter('all'); }}
+              className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-[#F59E0B]/60 hover:shadow-[0_16px_36px_rgba(245,158,11,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
+            >
+              <div className="absolute -top-10 -right-10 w-36 h-36 bg-[#F59E0B]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] bg-gradient-to-r from-transparent via-[#F59E0B] to-transparent transition-all duration-500 opacity-90 shadow-[0_0_10px_#F59E0B]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+              <div className="flex justify-between items-start mb-4 relative z-10">
+                <div className="w-11 h-11 rounded-2xl bg-[#F59E0B]/15 border border-[#F59E0B]/30 flex items-center justify-center text-[#F59E0B] group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(245,158,11,0.6)] group-hover:border-[#F59E0B] transition-all duration-300 shadow-sm">
+                  <TrendingUp size={21} />
+                </div>
+                <span className="text-xs font-heading font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20 group-hover:border-amber-500/40 transition-colors">
+                  Efficiency
+                </span>
+              </div>
+              <div className="relative z-10">
+                <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">Completion Rate</p>
+                <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-[#F59E0B] dark:group-hover:text-transparent dark:group-hover:bg-clip-text dark:group-hover:bg-gradient-to-r dark:group-hover:from-white dark:group-hover:to-[#F59E0B] transition-all">
+                  {stats.completionRate}%
+                </p>
+                <p className="text-xs font-sans text-secondary/80 mt-1.5 truncate">
+                  Out of {stats.totalAll} total logged tasks
+                </p>
+              </div>
+            </div>
+          </div>
         </motion.div>
 
         {/* ========================================================================= */}
@@ -639,33 +1154,29 @@ export default function TasksClient({
                   className="flex-1 w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-colors"
                 />
 
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <select
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                  <PortalSelect
                     value={quickCategory}
-                    onChange={(e) => setQuickCategory(e.target.value)}
-                    className="bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 text-xs text-slate-900 dark:text-white rounded-xl px-3 py-2.5 outline-none cursor-pointer"
-                  >
-                    {CATEGORIES.filter((c) => c !== 'All').map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setQuickCategory(val)}
+                    options={CATEGORY_OPTIONS}
+                    labelPrefix="Cat"
+                    minWidth={165}
+                    size="sm"
+                  />
 
-                  <select
+                  <PortalSelect
                     value={quickPriority}
-                    onChange={(e) => setQuickPriority(e.target.value as any)}
-                    className="bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 text-xs text-slate-900 dark:text-white rounded-xl px-3 py-2.5 outline-none cursor-pointer"
-                  >
-                    <option value="High">High 🔴</option>
-                    <option value="Medium">Medium 🟡</option>
-                    <option value="Low">Low 🟢</option>
-                  </select>
+                    onChange={(val) => setQuickPriority(val as any)}
+                    options={PRIORITY_OPTIONS}
+                    labelPrefix="Pri"
+                    minWidth={145}
+                    size="sm"
+                  />
 
                   <button
                     type="submit"
                     disabled={!quickTitle.trim() || isSubmittingQuick}
-                    className="px-4 py-2.5 rounded-xl bg-[#6324FC] hover:bg-[#521bd6] disabled:opacity-40 text-white text-xs font-heading font-bold transition-all shrink-0 flex items-center gap-1.5 shadow-[0_0_15px_rgba(99,36,252,0.4)]"
+                    className="px-4 py-2 rounded-xl bg-[#6324FC] hover:bg-[#521bd6] disabled:opacity-40 text-white text-xs font-heading font-bold transition-all shrink-0 flex items-center gap-1.5 shadow-[0_0_15px_rgba(99,36,252,0.4)]"
                   >
                     <Plus size={14} />
                     <span>Add Task</span>
@@ -716,19 +1227,10 @@ export default function TasksClient({
                               <p className="text-xs md:text-sm font-heading font-semibold text-slate-900 dark:text-white group-hover:text-[#6324FC] dark:group-hover:text-[#00E5FF] transition-colors leading-snug">
                                 {task.title}
                               </p>
-                              {task.priority && (
-                                <span
-                                  className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border uppercase shrink-0 ${
-                                    task.priority === 'High'
-                                      ? 'bg-rose-500/10 text-rose-500 dark:text-rose-400 border-rose-500/20'
-                                      : task.priority === 'Medium'
-                                      ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
-                                      : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                                  }`}
-                                >
-                                  {task.priority}
-                                </span>
-                              )}
+                              <InlinePriorityDropdown
+                                currentPriority={task.priority || 'Medium'}
+                                onSelect={(p) => handleUpdatePriority(task, p)}
+                              />
                             </div>
 
                             {task.description && (
@@ -874,16 +1376,16 @@ export default function TasksClient({
             className="space-y-6"
           >
             {/* Search & Filter Controls */}
-            <div className="p-4 rounded-2xl bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 shadow-sm">
+            <div className="p-4 rounded-2xl bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3 shadow-sm">
               {/* Search Bar */}
-              <div className="relative flex-1">
+              <div className="relative flex-1 min-w-[220px]">
                 <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search work history by title, description or tag..."
-                  className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl pl-9 pr-4 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-colors"
+                  className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl pl-9 pr-4 py-2 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-colors"
                 />
                 {searchQuery && (
                   <button
@@ -895,32 +1397,54 @@ export default function TasksClient({
                 )}
               </div>
 
-              {/* Status Filter Toggle */}
-              <div className="flex items-center gap-1 p-0.5 bg-slate-100 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl">
-                <button
-                  onClick={() => setStatusFilter('all')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-heading font-bold transition-all ${
-                    statusFilter === 'all' ? 'bg-[#6324FC] text-white shadow-sm' : 'text-secondary hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  All ({historyTasks.length})
-                </button>
-                <button
-                  onClick={() => setStatusFilter('completed')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-heading font-bold transition-all ${
-                    statusFilter === 'completed' ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30' : 'text-secondary hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  Completed ({stats.totalCompleted})
-                </button>
-                <button
-                  onClick={() => setStatusFilter('pending')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-heading font-bold transition-all ${
-                    statusFilter === 'pending' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30' : 'text-secondary hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  In-Flight ({stats.totalPending})
-                </button>
+              {/* Portal Dropdown Filters */}
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Category Portal Filter */}
+                <PortalSelect
+                  value={selectedCategory}
+                  onChange={(val) => setSelectedCategory(val)}
+                  options={CATEGORY_FILTER_OPTIONS}
+                  labelPrefix="Category"
+                  minWidth={175}
+                  size="sm"
+                />
+
+                {/* Priority Portal Filter */}
+                <PortalSelect
+                  value={priorityFilter}
+                  onChange={(val) => setPriorityFilter(val)}
+                  options={PRIORITY_FILTER_OPTIONS}
+                  labelPrefix="Priority"
+                  minWidth={160}
+                  size="sm"
+                />
+
+                {/* Status Portal Filter */}
+                <PortalSelect
+                  value={statusFilter}
+                  onChange={(val) => setStatusFilter(val as any)}
+                  options={STATUS_FILTER_OPTIONS}
+                  labelPrefix="Status"
+                  minWidth={160}
+                  size="sm"
+                />
+
+                {/* Reset Filters Button */}
+                {(searchQuery || selectedCategory !== 'All' || priorityFilter !== 'All' || statusFilter !== 'all') && (
+                  <button
+                    onClick={() => {
+                      setSearchQuery('');
+                      setSelectedCategory('All');
+                      setPriorityFilter('All');
+                      setStatusFilter('all');
+                    }}
+                    className="px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 dark:text-rose-400 text-xs font-heading font-semibold transition-colors flex items-center gap-1.5"
+                    title="Reset all filters"
+                  >
+                    <RotateCcw size={12} />
+                    <span>Reset</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -1002,19 +1526,10 @@ export default function TasksClient({
                               </div>
 
                               <div className="flex items-center gap-1.5">
-                                {task.priority && (
-                                  <span
-                                    className={`text-[8px] font-mono font-bold px-1.5 py-0.5 rounded border uppercase ${
-                                      task.priority === 'High'
-                                        ? 'bg-rose-500/10 text-rose-500 dark:text-rose-400 border-rose-500/20'
-                                        : task.priority === 'Medium'
-                                        ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
-                                        : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                                    }`}
-                                  >
-                                    {task.priority}
-                                  </span>
-                                )}
+                                <InlinePriorityDropdown
+                                  currentPriority={task.priority || 'Medium'}
+                                  onSelect={(p) => handleUpdatePriority(task, p)}
+                                />
                                 <button
                                   type="button"
                                   onClick={(e) => handleDelete(taskId, e)}
@@ -1143,32 +1658,26 @@ export default function TasksClient({
                       <label className="block text-[10px] font-heading font-bold text-secondary uppercase tracking-widest mb-1.5">
                         Category
                       </label>
-                      <select
+                      <PortalSelect
                         value={modalForm.category}
-                        onChange={(e) => setModalForm({ ...modalForm, category: e.target.value })}
-                        className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white outline-none"
-                      >
-                        {CATEGORIES.filter((c) => c !== 'All').map((cat) => (
-                          <option key={cat} value={cat}>
-                            {cat}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(val) => setModalForm({ ...modalForm, category: val })}
+                        options={CATEGORY_OPTIONS}
+                        minWidth={190}
+                        className="w-full"
+                      />
                     </div>
 
                     <div>
                       <label className="block text-[10px] font-heading font-bold text-secondary uppercase tracking-widest mb-1.5">
                         Priority Level
                       </label>
-                      <select
+                      <PortalSelect
                         value={modalForm.priority}
-                        onChange={(e) => setModalForm({ ...modalForm, priority: e.target.value as any })}
-                        className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white outline-none"
-                      >
-                        <option value="High">High 🔴</option>
-                        <option value="Medium">Medium 🟡</option>
-                        <option value="Low">Low 🟢</option>
-                      </select>
+                        onChange={(val) => setModalForm({ ...modalForm, priority: val as any })}
+                        options={PRIORITY_OPTIONS}
+                        minWidth={190}
+                        className="w-full"
+                      />
                     </div>
                   </div>
 

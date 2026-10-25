@@ -151,6 +151,49 @@ export async function deleteDailyTask(taskId: string) {
 }
 
 /**
+ * Update task attributes (priority, category, title, etc.)
+ */
+export async function updateDailyTask(
+  taskId: string,
+  updates: {
+    title?: string;
+    description?: string;
+    category?: string;
+    priority?: 'High' | 'Medium' | 'Low';
+    dueDate?: string | Date;
+  }
+) {
+  try {
+    const user = await requireWriteAuth();
+    await connectToDatabase();
+
+    const task = await DailyTask.findOneAndUpdate(
+      {
+        _id: new mongoose.Types.ObjectId(taskId),
+        userId: new mongoose.Types.ObjectId(user.id),
+      },
+      { $set: updates },
+      { new: true }
+    ).lean();
+
+    if (!task) {
+      return { success: false, error: 'Task not found' };
+    }
+
+    revalidatePath('/dashboard');
+    revalidatePath('/tasks');
+
+    return {
+      success: true,
+      data: JSON.parse(JSON.stringify(task)),
+    };
+  } catch (error: any) {
+    console.error('updateDailyTask error:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
  * Get Lifetime Task History (Filtered, Searchable, Grouped by Date)
  */
 export async function getAllTaskHistory(params?: {
