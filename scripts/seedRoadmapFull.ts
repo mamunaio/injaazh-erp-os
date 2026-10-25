@@ -1,7 +1,15 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import mongoose from 'mongoose';
 import { RoadmapProject } from '../models/RoadmapProject';
 
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://injaazhos:rXfVzMOVEz2gD7Jx@injaazh-os.kerqqku.mongodb.net/injaazh_os?retryWrites=true&w=majority&appName=Injaazh-OS";
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  console.error('MONGODB_URI is not set in environment!');
+  process.exit(1);
+}
 
 const data = [
   {
@@ -213,7 +221,7 @@ const data = [
 
 async function seed() {
   try {
-    await mongoose.connect(MONGODB_URI);
+    await mongoose.connect(MONGODB_URI as string);
     console.log('Connected to MongoDB');
 
     // Clear existing data

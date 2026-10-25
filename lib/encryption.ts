@@ -1,9 +1,13 @@
 import crypto from 'crypto';
 
 const getEncryptionKey = () => {
-  // Use a dedicated ENCRYPTION_KEY if available, fallback to JWT_SECRET, or fallback to dev key
-  // It must be exactly 32 bytes for aes-256-cbc. We use sha256 to ensure this.
-  const rawKey = process.env.ENCRYPTION_KEY || process.env.JWT_SECRET || 'super-secret-fallback-key-for-dev-and-prod-12345';
+  const rawKey = process.env.ENCRYPTION_KEY || process.env.JWT_SECRET;
+  if (!rawKey) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('ENCRYPTION_KEY or JWT_SECRET must be defined in environment variables.');
+    }
+    return crypto.createHash('sha256').update('dev-encryption-key-local-only').digest('base64').substring(0, 32);
+  }
   return crypto.createHash('sha256').update(String(rawKey)).digest('base64').substring(0, 32);
 };
 
