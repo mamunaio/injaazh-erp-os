@@ -420,7 +420,7 @@ export default function ClientsView({
   // Lock scroll when modal is active
   useScrollLock(isModalOpen);
 
-  const hourlyFloor = settings.hourlyFloorRate || 25;
+  const hourlyFloor = typeof settings.hourlyFloorRate === 'number' ? settings.hourlyFloorRate : 25;
 
   // Calculate actual hours logged for each client
   const getClientHours = useCallback(

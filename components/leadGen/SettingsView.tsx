@@ -68,7 +68,9 @@ export default function SettingsView({
   const [target30DaysHigh, setTarget30DaysHigh] = useState(settings.targetColdEmails30DaysHigh || 500);
   const [targetMrrMonth6, setTargetMrrMonth6] = useState(settings.targetMrrMonth6 || 3000);
   const [targetMrrMonth12, setTargetMrrMonth12] = useState(settings.targetMrrMonth12 || 6000);
-  const [hourlyFloorRate, setHourlyFloorRate] = useState(settings.hourlyFloorRate || 25);
+  const [hourlyFloorRate, setHourlyFloorRate] = useState<number | string>(
+    settings.hourlyFloorRate ?? 25
+  );
   const [reportMonth, setReportMonth] = useState(settings.reportMonth || '2026-10');
 
   const [saving, setSaving] = useState(false);
@@ -455,9 +457,9 @@ export default function SettingsView({
                 </div>
                 <input
                   type="number"
-                  step="0.1"
-                  min="0.1"
-                  max="10"
+                  step="any"
+                  min="0"
+                  max="100"
                   value={maxBounceRate}
                   onChange={(e) => setMaxBounceRate(Number(e.target.value))}
                   className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-black/60 px-3.5 py-2 text-sm text-slate-900 dark:text-white font-mono font-bold focus:border-[#6324FC] focus:outline-none transition"
@@ -493,9 +495,9 @@ export default function SettingsView({
                 </div>
                 <input
                   type="number"
-                  step="0.1"
-                  min="0.1"
-                  max="15"
+                  step="any"
+                  min="0"
+                  max="100"
                   value={minPositiveReplyRate}
                   onChange={(e) => setMinPositiveReplyRate(Number(e.target.value))}
                   className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-black/60 px-3.5 py-2 text-sm text-slate-900 dark:text-white font-mono font-bold focus:border-[#6324FC] focus:outline-none transition"
@@ -533,22 +535,23 @@ export default function SettingsView({
                   <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                   <input
                     type="number"
-                    min="5"
-                    max="500"
+                    step="any"
+                    min="0"
+                    placeholder="e.g. 3.5, 10, 25"
                     value={hourlyFloorRate}
-                    onChange={(e) => setHourlyFloorRate(Number(e.target.value))}
+                    onChange={(e) => setHourlyFloorRate(e.target.value)}
                     className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-black/60 pl-9 pr-3.5 py-2 text-sm text-slate-900 dark:text-white font-mono font-bold focus:border-[#6324FC] focus:outline-none transition"
                   />
                 </div>
-                <div className="flex items-center space-x-1.5 pt-1">
-                  <span className="text-[10px] text-slate-400">Presets:</span>
-                  {[20, 25, 35, 50].map((preset) => (
+                <div className="flex items-center space-x-1.5 pt-1 overflow-x-auto pb-1">
+                  <span className="text-[10px] text-slate-400 whitespace-nowrap">Presets:</span>
+                  {[3.5, 5, 10, 15, 20, 25, 35, 50].map((preset) => (
                     <button
                       key={preset}
                       type="button"
                       onClick={() => setHourlyFloorRate(preset)}
-                      className={`text-[10px] font-mono px-2 py-0.5 rounded-md border transition ${
-                        hourlyFloorRate === preset
+                      className={`text-[10px] font-mono px-2 py-0.5 rounded-md border transition whitespace-nowrap ${
+                        Number(hourlyFloorRate) === preset
                           ? 'border-[#6324FC] bg-[#6324FC]/10 text-[#6324FC] dark:text-[#00E5FF] font-bold'
                           : 'border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/5'
                       }`}
