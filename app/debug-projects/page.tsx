@@ -1,7 +1,14 @@
 import connectToDatabase from '@/lib/mongodb';
 import { Project } from '@/models/Project';
+import { getAuthUser } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 
 export default async function DebugProjectsPage() {
+  const authUser = await getAuthUser();
+  if (!authUser || !['owner', 'admin'].includes(authUser.role)) {
+    redirect('/dashboard');
+  }
+
   let projects: any[] = [];
   let error: string | null = null;
 
@@ -16,7 +23,7 @@ export default async function DebugProjectsPage() {
   return (
     <div className="p-8">
       <h1 className="mb-4">Debug: Projects in Database</h1>
-      
+
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           <strong>Error:</strong> {error}
@@ -25,7 +32,7 @@ export default async function DebugProjectsPage() {
 
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-4">
         <h2 className="mb-2">Total Projects: {projects.length}</h2>
-        
+
         {projects.length === 0 ? (
           <p className="text-gray-500">No projects found in database</p>
         ) : (

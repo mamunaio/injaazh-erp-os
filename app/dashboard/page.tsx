@@ -1,10 +1,14 @@
 import { getDashboardData } from '@/app/actions/dashboardActions';
 import { getDailyIslamicQuote } from '@/app/actions/dailyInsightsActions';
 import DashboardClient from './DashboardClient';
+import { redirect } from 'next/navigation';
 
 export default async function DashboardPage() {
   const result = await getDashboardData();
-  const dashboardData = result.success ? result.data : null;
+  if (!result.success || !result.data) {
+    redirect('/login');
+  }
+  const dashboardData = result.data;
 
   let islamicQuote = null;
 

@@ -2,215 +2,20 @@
 
 import { sendEmail } from '@/lib/email';
 import * as templates from '@/lib/emailTemplates';
+import { requireAdminOrOwnerAuth } from '@/lib/auth';
+import { isValidEmail, isSafeUrl } from '@/lib/emailService';
 
 /**
- * Send welcome email to new user
+ * Validates header fields to prevent SMTP header injection / CRLF splitting
  */
-export async function sendWelcomeEmail(data: {
-  to: string;
-  name: string;
-  loginUrl?: string;
-}) {
-  try {
-    const html = templates.welcomeEmail({
-      name: data.name,
-      loginUrl: data.loginUrl,
-    });
-
-    const result = await sendEmail({
-      to: data.to,
-      subject: 'Welcome to Injaazh ERP! 🎉',
-      html,
-    });
-
-    return result;
-  } catch (error: any) {
-    console.error('❌ Failed to send welcome email:', error);
-    return {
-      success: false,
-      error: error.message || 'Failed to send welcome email',
-    };
-  }
-}
-
-/**
- * Send password reset email
- */
-export async function sendPasswordResetEmail(data: {
-  to: string;
-  name: string;
-  resetUrl: string;
-  expiresIn?: string;
-}) {
-  try {
-    const html = templates.passwordResetEmail({
-      name: data.name,
-      resetUrl: data.resetUrl,
-      expiresIn: data.expiresIn,
-    });
-
-    const result = await sendEmail({
-      to: data.to,
-      subject: 'Reset Your Injaazh ERP Password 🔐',
-      html,
-    });
-
-    return result;
-  } catch (error: any) {
-    console.error('❌ Failed to send password reset email:', error);
-    return {
-      success: false,
-      error: error.message || 'Failed to send password reset email',
-    };
-  }
-}
-
-/**
- * Send new lead notification
- */
-export async function sendNewLeadNotification(data: {
-  to: string;
-  leadName: string;
-  leadEmail: string;
-  leadPhone?: string;
-  source?: string;
-  dashboardUrl?: string;
-}) {
-  try {
-    const html = templates.newLeadNotification({
-      leadName: data.leadName,
-      leadEmail: data.leadEmail,
-      leadPhone: data.leadPhone,
-      source: data.source,
-      dashboardUrl: data.dashboardUrl,
-    });
-
-    const result = await sendEmail({
-      to: data.to,
-      subject: `New Lead: ${data.leadName} 🎯`,
-      html,
-    });
-
-    return result;
-  } catch (error: any) {
-    console.error('❌ Failed to send new lead notification:', error);
-    return {
-      success: false,
-      error: error.message || 'Failed to send new lead notification',
-    };
-  }
-}
-
-/**
- * Send proposal notification
- */
-export async function sendProposalNotification(data: {
-  to: string;
-  clientName: string;
-  proposalTitle: string;
-  amount?: string;
-  viewUrl?: string;
-}) {
-  try {
-    const html = templates.proposalSentEmail({
-      clientName: data.clientName,
-      proposalTitle: data.proposalTitle,
-      amount: data.amount,
-      viewUrl: data.viewUrl,
-    });
-
-    const result = await sendEmail({
-      to: data.to,
-      subject: `Proposal Sent: ${data.proposalTitle} 📄`,
-      html,
-    });
-
-    return result;
-  } catch (error: any) {
-    console.error('❌ Failed to send proposal notification:', error);
-    return {
-      success: false,
-      error: error.message || 'Failed to send proposal notification',
-    };
-  }
-}
-
-/**
- * Send payment received notification
- */
-export async function sendPaymentNotification(data: {
-  to: string;
-  amount: string;
-  currency?: string;
-  clientName?: string;
-  projectName?: string;
-  transactionId?: string;
-  dashboardUrl?: string;
-}) {
-  try {
-    const html = templates.paymentReceivedEmail({
-      amount: data.amount,
-      currency: data.currency,
-      clientName: data.clientName,
-      projectName: data.projectName,
-      transactionId: data.transactionId,
-      dashboardUrl: data.dashboardUrl,
-    });
-
-    const result = await sendEmail({
-      to: data.to,
-      subject: `Payment Received: ${data.currency || '$'}${data.amount} 💰`,
-      html,
-    });
-
-    return result;
-  } catch (error: any) {
-    console.error('❌ Failed to send payment notification:', error);
-    return {
-      success: false,
-      error: error.message || 'Failed to send payment notification',
-    };
-  }
-}
-
-/**
- * Send project status update
- */
-export async function sendProjectStatusEmail(data: {
-  to: string;
-  projectName: string;
-  oldStatus: string;
-  newStatus: string;
-  clientName?: string;
-  projectUrl?: string;
-}) {
-  try {
-    const html = templates.projectStatusEmail({
-      projectName: data.projectName,
-      oldStatus: data.oldStatus,
-      newStatus: data.newStatus,
-      clientName: data.clientName,
-      projectUrl: data.projectUrl,
-    });
-
-    const result = await sendEmail({
-      to: data.to,
-      subject: `Project Update: ${data.projectName} - ${data.newStatus} 📊`,
-      html,
-    });
-
-    return result;
-  } catch (error: any) {
-    console.error('❌ Failed to send project status email:', error);
-    return {
-      success: false,
-      error: error.message || 'Failed to send project status email',
-    };
-  }
+function isSafeHeader(val?: string): boolean {
+  if (!val || typeof val !== 'string') return false;
+  return !/[\r\n]/.test(val) && val.trim().length > 0 && val.trim().length <= 250;
 }
 
 /**
  * Send custom email
+ * Restricted to admin and owner roles.
  */
 export async function sendCustomEmail(data: {
   to: string | string[];
@@ -221,52 +26,147 @@ export async function sendCustomEmail(data: {
   buttonUrl?: string;
 }) {
   try {
+    // 1. Enforce admin or owner authorization
+    await requireAdminOrOwnerAuth();
+
+    // 2. Validate recipients and enforce count limits
+    const rawRecipients = Array.isArray(data.to) ? data.to : [data.to];
+    if (rawRecipients.length === 0 || rawRecipients.length > 20) {
+      return {
+        success: false,
+        error: 'Recipients must be between 1 and 20 email addresses',
+      };
+    }
+
+    const cleanRecipients: string[] = [];
+    for (const r of rawRecipients) {
+      if (!isValidEmail(r)) {
+        return {
+          success: false,
+          error: `Invalid recipient email address format: ${r}`,
+        };
+      }
+      cleanRecipients.push(r.trim());
+    }
+
+    // 3. Validate subject against header injection
+    if (!isSafeHeader(data.subject)) {
+      return {
+        success: false,
+        error: 'Invalid or unsafe email subject header',
+      };
+    }
+
+    // 4. Validate title and content
+    if (!data.title || typeof data.title !== 'string' || data.title.trim().length === 0 || data.title.length > 250) {
+      return {
+        success: false,
+        error: 'Title is required and must not exceed 250 characters',
+      };
+    }
+
+    if (!data.content || typeof data.content !== 'string' || data.content.trim().length === 0 || data.content.length > 50000) {
+      return {
+        success: false,
+        error: 'Content is required and must not exceed 50,000 characters',
+      };
+    }
+
+    // 5. Validate button URL if provided
+    if (data.buttonUrl && !isSafeUrl(data.buttonUrl)) {
+      return {
+        success: false,
+        error: 'Unsafe button URL scheme rejected',
+      };
+    }
+
     const html = templates.customEmail({
-      title: data.title,
-      content: data.content,
-      buttonText: data.buttonText,
-      buttonUrl: data.buttonUrl,
+      title: data.title.trim(),
+      content: data.content.trim(),
+      buttonText: data.buttonText ? data.buttonText.trim().slice(0, 50) : undefined,
+      buttonUrl: data.buttonUrl ? data.buttonUrl.trim() : undefined,
     });
 
     const result = await sendEmail({
-      to: data.to,
-      subject: data.subject,
+      to: cleanRecipients.length === 1 ? cleanRecipients[0] : cleanRecipients,
+      subject: data.subject.trim(),
       html,
     });
 
+    if (!result.success) {
+      return {
+        success: false,
+        error: 'Failed to deliver email. Please verify SMTP settings.',
+      };
+    }
+
     return result;
   } catch (error: any) {
-    console.error('❌ Failed to send custom email:', error);
+    const errorMsg = error?.message || 'Unknown error';
+    console.error('❌ Failed to send custom email:', errorMsg);
+    if (errorMsg.includes('Unauthorized') || errorMsg.includes('Not authenticated')) {
+      return {
+        success: false,
+        error: errorMsg,
+      };
+    }
     return {
       success: false,
-      error: error.message || 'Failed to send custom email',
+      error: 'Failed to send custom email. Please verify SMTP settings.',
     };
   }
 }
 
 /**
  * Send test email
+ * Restricted to admin and owner roles.
  */
 export async function sendTestEmail(data: {
   to: string;
 }) {
   try {
+    // 1. Enforce admin or owner authorization
+    await requireAdminOrOwnerAuth();
+
+    // 2. Validate recipient email
+    if (!data.to || !isValidEmail(data.to)) {
+      return {
+        success: false,
+        error: 'Invalid test recipient email address format',
+      };
+    }
+
+    const cleanRecipient = data.to.trim();
     const html = templates.testEmail({
-      recipientEmail: data.to,
+      recipientEmail: cleanRecipient,
     });
 
     const result = await sendEmail({
-      to: data.to,
+      to: cleanRecipient,
       subject: '✅ SMTP Test Email - Injaazh ERP',
       html,
     });
 
+    if (!result.success) {
+      return {
+        success: false,
+        error: 'Failed to deliver test email. Please verify SMTP settings.',
+      };
+    }
+
     return result;
   } catch (error: any) {
-    console.error('❌ Failed to send test email:', error);
+    const errorMsg = error?.message || 'Unknown error';
+    console.error('❌ Failed to send test email:', errorMsg);
+    if (errorMsg.includes('Unauthorized') || errorMsg.includes('Not authenticated')) {
+      return {
+        success: false,
+        error: errorMsg,
+      };
+    }
     return {
       success: false,
-      error: error.message || 'Failed to send test email',
+      error: 'Failed to send test email. Please verify SMTP settings.',
     };
   }
 }

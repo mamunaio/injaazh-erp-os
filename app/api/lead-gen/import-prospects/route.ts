@@ -2,9 +2,13 @@ import { NextResponse } from 'next/server';
 import * as XLSX from 'xlsx';
 import { createProspect } from '@/lib/leadGenStore';
 import { ProspectStatus, ReplyTag } from '@/types/leadGen';
+import { requireApiWriteAuth } from '@/lib/auth';
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireApiWriteAuth(req);
+    if ('errorResponse' in auth) return auth.errorResponse;
+
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
 

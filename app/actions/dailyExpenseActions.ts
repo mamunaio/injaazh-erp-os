@@ -3,11 +3,16 @@
 import connectToDatabase from '@/lib/mongodb';
 import { DailyExpense } from '@/models/DailyExpense';
 import { revalidatePath } from 'next/cache';
-import { createNotification } from './notificationActions';
-import { requireWriteAuth } from '@/lib/auth';
+import { createNotification } from '@/lib/notificationService';
+import { getAuthUser, requireOwnerAuth } from '@/lib/auth';
 
 export async function getDailyExpenses() {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser || authUser.role !== 'owner') {
+      return [];
+    }
+
     await connectToDatabase();
     const expenses = await DailyExpense.find().sort({ date: -1 }).lean();
     return JSON.parse(JSON.stringify(expenses));
@@ -19,11 +24,11 @@ export async function getDailyExpenses() {
 
 export async function createDailyExpense(data: any) {
   try {
-    await requireWriteAuth();
+    await requireOwnerAuth();
     await connectToDatabase();
-    
+
     const expense = await DailyExpense.create(data);
-    
+
     // Create automated notification
     await createNotification(
       'system',
@@ -31,8 +36,10 @@ export async function createDailyExpense(data: any) {
       '/daily-expenses'
     );
 
-    revalidatePath('/daily-expenses');
-    revalidatePath('/daily-expenses/archive');
+    try {
+      revalidatePath('/daily-expenses');
+      revalidatePath('/daily-expenses/archive');
+    } catch {}
     return { success: true, data: JSON.parse(JSON.stringify(expense)) };
   } catch (error: any) {
     console.error('Error creating daily expense:', error);
@@ -42,16 +49,18 @@ export async function createDailyExpense(data: any) {
 
 export async function updateDailyExpense(id: string, data: any) {
   try {
-    await requireWriteAuth();
+    await requireOwnerAuth();
     await connectToDatabase();
-    
+
     const expense = await DailyExpense.findByIdAndUpdate(id, data, { new: true });
     if (!expense) {
       return { success: false, error: 'Expense not found' };
     }
 
-    revalidatePath('/daily-expenses');
-    revalidatePath('/daily-expenses/archive');
+    try {
+      revalidatePath('/daily-expenses');
+      revalidatePath('/daily-expenses/archive');
+    } catch {}
     return { success: true, data: JSON.parse(JSON.stringify(expense)) };
   } catch (error: any) {
     console.error('Error updating daily expense:', error);
@@ -61,16 +70,18 @@ export async function updateDailyExpense(id: string, data: any) {
 
 export async function deleteDailyExpense(id: string) {
   try {
-    await requireWriteAuth();
+    await requireOwnerAuth();
     await connectToDatabase();
-    
+
     const expense = await DailyExpense.findByIdAndDelete(id);
     if (!expense) {
       return { success: false, error: 'Expense not found' };
     }
 
-    revalidatePath('/daily-expenses');
-    revalidatePath('/daily-expenses/archive');
+    try {
+      revalidatePath('/daily-expenses');
+      revalidatePath('/daily-expenses/archive');
+    } catch {}
     return { success: true };
   } catch (error: any) {
     console.error('Error deleting daily expense:', error);

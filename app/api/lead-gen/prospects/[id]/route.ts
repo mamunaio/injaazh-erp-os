@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server';
 import { updateProspect, deleteProspect } from '@/lib/leadGenStore';
-import { createNotification } from '@/app/actions/notificationActions';
+import { createNotification } from '@/lib/notificationService';
+import { requireApiWriteAuth } from '@/lib/auth';
 
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireApiWriteAuth(req);
+    if ('errorResponse' in auth) return auth.errorResponse;
+
     const { id } = await params;
     const body = await req.json();
     const updated = await updateProspect(id, body);
@@ -33,10 +37,13 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireApiWriteAuth(req);
+    if ('errorResponse' in auth) return auth.errorResponse;
+
     const { id } = await params;
     const deleted = await deleteProspect(id);
     if (!deleted) {

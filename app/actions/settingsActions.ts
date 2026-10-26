@@ -4,10 +4,18 @@ import nodemailer from 'nodemailer';
 import connectToDatabase from '@/lib/mongodb';
 import { SystemSettings } from '@/models/SystemSettings';
 import { encrypt, decrypt } from '@/lib/encryption';
-import { requireWriteAuth } from '@/lib/auth';
+import { getAuthUser, requireWriteAuth } from '@/lib/auth';
 
 export async function getSystemSettings(key: string) {
   try {
+    const user = await getAuthUser();
+    if (!user) {
+      return {
+        success: false,
+        error: 'Unauthorized: Authentication required.',
+      };
+    }
+
     await connectToDatabase();
     const settings = await SystemSettings.findOne({ key }).lean();
     let data = settings ? (settings.value as any) : null;
@@ -31,7 +39,7 @@ export async function saveSystemSettings(key: string, value: any) {
   try {
     await requireWriteAuth();
     await connectToDatabase();
-    
+
     const valueToSave = { ...value };
     if (key === 'smtp' && valueToSave.pass) {
       valueToSave.pass = encrypt(valueToSave.pass);
@@ -65,6 +73,7 @@ export async function testSmtpConnection(settings: {
   fromEmail: string;
 }) {
   try {
+    await requireWriteAuth();
     const transporter = nodemailer.createTransport({
       host: settings.host,
       port: Number(settings.port),

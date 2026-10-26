@@ -27,10 +27,10 @@ import type { IMarketplaceProject } from '@/models/MarketplaceProject';
  * Removes currency symbols ($), commas, and whitespace
  * Returns 0 for empty, undefined, or unparseable values
  * Rounds result to 2 decimal places
- * 
+ *
  * @param budget - Budget string to parse (e.g., "$1,500", "1500.50", undefined)
  * @returns Parsed numeric value rounded to 2 decimals, or 0 if unparseable
- * 
+ *
  * @example
  * parseBudgetAmount("$1,500") // returns 1500
  * parseBudgetAmount("1500.50") // returns 1500.50
@@ -41,13 +41,13 @@ import type { IMarketplaceProject } from '@/models/MarketplaceProject';
  */
 function parseBudgetAmount(budget: string | undefined): number {
   if (!budget) return 0;
-  
+
   // Remove currency symbols ($), commas, and whitespace
   const cleaned = budget.replace(/[$,\s]/g, '');
-  
+
   // Parse to float
   const parsed = parseFloat(cleaned);
-  
+
   // Return 0 if NaN, otherwise round to 2 decimals
   return isNaN(parsed) ? 0 : Math.round(parsed * 100) / 100;
 }
@@ -56,10 +56,10 @@ function parseBudgetAmount(budget: string | undefined): number {
  * Create an automatic income transaction for a completed marketplace project
  * This function is called when a project status changes to "Completed"
  * Errors are logged but not thrown to avoid blocking the status update
- * 
+ *
  * @param project - The marketplace project to create a transaction for
  * @returns Promise<void> - Does not throw errors, logs them instead
- * 
+ *
  * @example
  * await createAutoTransaction(completedProject);
  * // Creates transaction with:
@@ -74,19 +74,19 @@ function parseBudgetAmount(budget: string | undefined): number {
 async function createAutoTransaction(project: IMarketplaceProject): Promise<void> {
   try {
     const amount = parseBudgetAmount(project.budget);
-    
+
     // Check if an auto-transaction already exists for this project (without milestoneId)
     const existingTransaction = await Transaction.findOne({
       projectId: project._id,
       category: 'Project Income',
       milestoneId: { $exists: false }
     });
-    
+
     if (existingTransaction) {
       console.log(`ℹ️ Auto-transaction already exists for project ${project._id}, skipping duplicate creation.`);
       return;
     }
-    
+
     const transaction = new Transaction({
       platform: project.platform,
       type: 'Income',
@@ -96,7 +96,7 @@ async function createAutoTransaction(project: IMarketplaceProject): Promise<void
       description: `Project: ${project.title}`,
       projectId: project._id,
     });
-    
+
     await transaction.save();
     console.log(`✅ Auto-created transaction for project ${project._id}`);
   } catch (error) {
@@ -113,18 +113,21 @@ async function createAutoTransaction(project: IMarketplaceProject): Promise<void
 export async function getMarketplaceProjects(platform?: string) {
   try {
     await connectToDatabase();
-    
+
     // Fetch and sort by deadline ascending (soonest first)
     const query = platform ? { platform: platform.charAt(0).toUpperCase() + platform.slice(1) } : {};
-    
+
     const projects = await MarketplaceProject.find(query)
       .sort({ deadline: 1, createdAt: -1 })
       .lean()
       .exec();
-      
+
     const authUser = await getAuthUser();
+    if (!authUser) {
+      return [];
+    }
     let parsed = JSON.parse(JSON.stringify(projects));
-    
+
     if (authUser && authUser.role === 'admin') {
       parsed = parsed.map((p: any) => {
         if (p.platform === 'Direct') {
@@ -139,7 +142,7 @@ export async function getMarketplaceProjects(platform?: string) {
         return p;
       });
     }
-    
+
     return parsed;
   } catch (error) {
     console.error('Failed to fetch marketplace projects:', error);
@@ -151,9 +154,9 @@ export async function createMarketplaceProject(data: any) {
   try {
     await requireWriteAuth();
     await connectToDatabase();
-    
+
     const newProject = await MarketplaceProject.create(data);
-    
+
     if (newProject.status === 'Completed') {
       try {
         await createAutoTransaction(newProject as any);
@@ -161,10 +164,10 @@ export async function createMarketplaceProject(data: any) {
         console.error(`❌ Failed to auto-create transaction for newly created project ${newProject._id}:`, error);
       }
     }
-    
+
     safeRevalidatePath('/marketplace');
     safeRevalidatePath(`/marketplace/${data.platform?.toLowerCase()}`);
-    
+
     return { success: true, data: JSON.parse(JSON.stringify(newProject)) };
   } catch (error: any) {
     console.error('Failed to create marketplace project:', error);
@@ -177,10 +180,13 @@ export async function getMarketplaceProjectById(id: string) {
     await connectToDatabase();
     const project = await MarketplaceProject.findById(id).lean().exec();
     if (!project) return null;
-    
+
     let parsed = JSON.parse(JSON.stringify(project));
-    
+
     const authUser = await getAuthUser();
+    if (!authUser) {
+      return null;
+    }
     if (authUser && authUser.role === 'admin' && parsed.platform === 'Direct') {
       parsed.title = 'Confidential Direct Project';
       if (parsed.clientDetails) {
@@ -189,7 +195,7 @@ export async function getMarketplaceProjectById(id: string) {
       parsed.notes = 'Confidential';
       parsed.url = '';
     }
-    
+
     return parsed;
   } catch (error) {
     console.error('Failed to fetch marketplace project details:', error);
@@ -201,7 +207,7 @@ export async function updateMarketplaceProject(id: string, data: any) {
   try {
     await requireWriteAuth();
     await connectToDatabase();
-    
+
     // Fetch existing project to get current status before update
     const existingProject = await MarketplaceProject.findById(id).lean().exec();
     if (!existingProject) {
@@ -219,7 +225,7 @@ export async function updateMarketplaceProject(id: string, data: any) {
     if (!updatedProject) {
        return { success: false, error: 'Project not found' };
     }
-    
+
     // Detect if status changed to "Completed"
     const newStatus = updatedProject.status;
     if (oldStatus !== 'Completed' && newStatus === 'Completed') {
@@ -248,7 +254,7 @@ export async function updateMarketplaceProject(id: string, data: any) {
           // Check if this milestone was already Paid in existing project
           const oldMilestone = existingMilestones.find((m: any) => String(m.id) === String(newMilestone.id));
           const wasAlreadyPaid = oldMilestone && oldMilestone.status === 'Paid';
-          
+
           if (!wasAlreadyPaid) {
             // Check if there is already a transaction for this milestone to be safe
             const existingMilestoneTx = await Transaction.findOne({
@@ -256,7 +262,7 @@ export async function updateMarketplaceProject(id: string, data: any) {
               milestoneId: String(newMilestone.id),
               category: 'Project Income'
             });
-            
+
             if (!existingMilestoneTx) {
               try {
                 const amount = Number(newMilestone.amount) || 0;
@@ -271,7 +277,7 @@ export async function updateMarketplaceProject(id: string, data: any) {
                     projectId: existingProject._id,
                     milestoneId: String(newMilestone.id),
                   } as any);
-                  
+
                   await transaction.save();
                   console.log(`✅ Auto-created transaction for milestone ${newMilestone.id} of project ${id}`);
                 }
@@ -283,11 +289,11 @@ export async function updateMarketplaceProject(id: string, data: any) {
         }
       }
     }
-    
+
     safeRevalidatePath('/marketplace');
     safeRevalidatePath(`/marketplace/${updatedProject.platform.toLowerCase()}`);
     safeRevalidatePath(`/marketplace/${updatedProject.platform.toLowerCase()}/${id}`);
-    
+
     return { success: true, data: JSON.parse(JSON.stringify(updatedProject)) };
   } catch (error: any) {
     console.error('Failed to update marketplace project:', error);
@@ -299,14 +305,14 @@ export async function deleteMarketplaceProject(id: string) {
   try {
     await requireWriteAuth();
     await connectToDatabase();
-    
+
     const project = await MarketplaceProject.findById(id).lean().exec();
     if (!project) return { success: false, error: 'Project not found' };
 
     await MarketplaceProject.findByIdAndDelete(id);
-    
+
     safeRevalidatePath(`/marketplace/${project.platform.toLowerCase()}`);
-    
+
     return { success: true };
   } catch (error: any) {
     console.error('Failed to delete marketplace project:', error);
@@ -318,13 +324,13 @@ export async function deleteMarketplaceProject(id: string) {
  * Get project count analytics grouped by platform
  * Aggregates all marketplace projects and returns counts for each platform
  * Returns zero counts for platforms with no projects
- * 
+ *
  * @returns Promise with success status and platform counts
- * 
+ *
  * @example
  * const result = await getProjectAnalytics();
  * // Returns: { success: true, data: { Freelancer: 5, Direct: 3, Upwork: 2, Fiverr: 0 } }
- * 
+ *
  * // On error: { success: false, error: "error message", data: { Freelancer: 0, Direct: 0, Upwork: 0, Fiverr: 0 } }
  */
 export async function getProjectAnalytics(): Promise<{
@@ -338,8 +344,17 @@ export async function getProjectAnalytics(): Promise<{
   error?: string;
 }> {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return {
+        success: false,
+        error: 'Unauthorized: Authentication required.',
+        data: { Freelancer: 0, Direct: 0, Upwork: 0, Fiverr: 0 }
+      };
+    }
+
     await connectToDatabase();
-    
+
     // Aggregate projects by platform
     const analytics = await MarketplaceProject.aggregate([
       {
@@ -349,7 +364,7 @@ export async function getProjectAnalytics(): Promise<{
         }
       }
     ]);
-    
+
     // Transform to object with all platforms (default 0)
     const result = {
       Freelancer: 0,
@@ -357,13 +372,13 @@ export async function getProjectAnalytics(): Promise<{
       Upwork: 0,
       Fiverr: 0
     };
-    
+
     analytics.forEach((item: { _id: string; count: number }) => {
       if (item._id in result) {
         result[item._id as keyof typeof result] = item.count;
       }
     });
-    
+
     return { success: true, data: result };
   } catch (error: any) {
     // Error Handling Strategy: Graceful degradation with default values
@@ -372,8 +387,8 @@ export async function getProjectAnalytics(): Promise<{
     // This allows the UI to display the analytics section with zeros rather than
     // breaking the entire page. Users can retry or continue using other features.
     console.error('❌ Failed to fetch project analytics:', error);
-    return { 
-      success: false, 
+    return {
+      success: false,
       error: error.message || 'Failed to fetch project analytics',
       data: { Freelancer: 0, Direct: 0, Upwork: 0, Fiverr: 0 }
     };
@@ -384,11 +399,11 @@ export async function getProjectAnalytics(): Promise<{
  * Create a transaction manually linked to a marketplace project
  * Validates that the project exists before creating the transaction
  * Revalidates money page and project detail paths after creation
- * 
+ *
  * @param projectId - The ID of the marketplace project to link to
  * @param transactionData - The transaction data to create
  * @returns Promise with success status and created transaction data or error message
- * 
+ *
  * @example
  * const result = await createTransactionFromProject(
  *   "507f1f77bcf86cd799439011",
@@ -401,7 +416,7 @@ export async function getProjectAnalytics(): Promise<{
  *     description: "Payment for project"
  *   }
  * );
- * 
+ *
  * if (result.success) {
  *   console.log("Transaction created:", result.data);
  * } else {
@@ -422,7 +437,7 @@ export async function createTransactionFromProject(
   try {
     await requireWriteAuth();
     await connectToDatabase();
-    
+
     // Error Handling Strategy: Validation before creation
     // We validate that the project exists before attempting to create the transaction.
     // This prevents orphaned transactions and provides clear error messages to users.
@@ -432,19 +447,19 @@ export async function createTransactionFromProject(
     if (!project) {
       return { success: false, error: 'Project not found' };
     }
-    
+
     // Create Transaction with projectId field set
     const transaction = new Transaction({
       ...transactionData,
       projectId: projectId,
     });
-    
+
     await transaction.save();
-    
+
     // Revalidate /money path and project detail paths
     safeRevalidatePath('/money');
     safeRevalidatePath(`/marketplace/${project.platform.toLowerCase()}/${projectId}`);
-    
+
     // Return success response with serialized data
     return { success: true, data: JSON.parse(JSON.stringify(transaction)) };
   } catch (error: any) {

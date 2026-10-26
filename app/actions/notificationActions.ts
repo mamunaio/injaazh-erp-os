@@ -3,9 +3,18 @@
 import connectToDatabase from '@/lib/mongodb';
 import Notification from '@/models/Notification';
 import { revalidatePath } from 'next/cache';
+import { getAuthUser, requireWriteAuth } from '@/lib/auth';
 
 export async function getRecentNotifications() {
   try {
+    const user = await getAuthUser();
+    if (!user) {
+      return {
+        notifications: [],
+        unreadCount: 0
+      };
+    }
+
     await connectToDatabase();
     const [notifications, totalUnread] = await Promise.all([
       Notification.find({})
@@ -14,7 +23,7 @@ export async function getRecentNotifications() {
         .lean(),
       Notification.countDocuments({ isRead: false })
     ]);
-    
+
     // Serialize safely for client components
     const serialized = notifications.map((notif: any) => ({
       _id: notif._id.toString(),
@@ -40,6 +49,7 @@ export async function getRecentNotifications() {
 
 export async function markNotificationAsRead(id: string) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     await Notification.findByIdAndUpdate(id, { isRead: true });
     revalidatePath('/', 'layout');
@@ -52,6 +62,7 @@ export async function markNotificationAsRead(id: string) {
 
 export async function markAllNotificationsAsRead() {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     await Notification.updateMany({ isRead: false }, { isRead: true });
     revalidatePath('/', 'layout');
@@ -64,6 +75,7 @@ export async function markAllNotificationsAsRead() {
 
 export async function clearReadNotifications() {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     await Notification.deleteMany({ isRead: true });
     revalidatePath('/', 'layout');
@@ -73,24 +85,3 @@ export async function clearReadNotifications() {
     return { success: false, error: 'Failed to clear read notifications' };
   }
 }
-
-export async function createNotification(
-  type: 'payment' | 'lead' | 'system' | 'proposal',
-  message: string,
-  link?: string
-) {
-  try {
-    await connectToDatabase();
-    const notif = await Notification.create({
-      type,
-      message,
-      link: link || ''
-    });
-    revalidatePath('/', 'layout');
-    return { success: true, data: JSON.parse(JSON.stringify(notif)) };
-  } catch (error) {
-    console.error('Failed to create notification:', error);
-    return { success: false, error: 'Failed to create notification' };
-  }
-}
-

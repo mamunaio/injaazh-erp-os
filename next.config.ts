@@ -34,10 +34,25 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        source: "/uploads/:path*",
+        headers: [
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            key: "Content-Security-Policy",
+            value: "sandbox; default-src 'none'",
+          },
+          {
+            key: "Content-Disposition",
+            value: "attachment",
+          },
+        ],
+      },
     ];
   },
 };
 
 export default nextConfig;
-
-

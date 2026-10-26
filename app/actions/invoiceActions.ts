@@ -2,16 +2,21 @@
 
 import dbConnect from '@/lib/mongodb';
 import { Invoice } from '@/models/Invoice';
-import { requireWriteAuth } from '@/lib/auth';
+import { getAuthUser, requireWriteAuth } from '@/lib/auth';
 
 export async function getInvoices() {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return { success: false, error: 'Unauthorized: Authentication required.', data: [] };
+    }
+
     await dbConnect();
     const invoices = await Invoice.find({}).sort({ createdAt: -1 }).lean();
-    
+
     // Serialize object IDs
-    return { 
-      success: true, 
+    return {
+      success: true,
       data: JSON.parse(JSON.stringify(invoices))
     };
   } catch (error: any) {
@@ -22,12 +27,17 @@ export async function getInvoices() {
 
 export async function getInvoice(id: string) {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return { success: false, error: 'Unauthorized: Authentication required.' };
+    }
+
     await dbConnect();
     const invoice = await Invoice.findById(id).lean();
     if (!invoice) return { success: false, error: 'Invoice not found' };
-    
-    return { 
-      success: true, 
+
+    return {
+      success: true,
       data: JSON.parse(JSON.stringify(invoice))
     };
   } catch (error: any) {
@@ -49,9 +59,9 @@ export async function createInvoice(data: any) {
     }
 
     const newInvoice = await Invoice.create(data);
-    
-    return { 
-      success: true, 
+
+    return {
+      success: true,
       data: JSON.parse(JSON.stringify(newInvoice)),
       message: 'Invoice created successfully'
     };
@@ -66,11 +76,11 @@ export async function updateInvoice(id: string, data: any) {
     await requireWriteAuth();
     await dbConnect();
     const updated = await Invoice.findByIdAndUpdate(id, data, { new: true }).lean();
-    
+
     if (!updated) return { success: false, error: 'Invoice not found' };
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       data: JSON.parse(JSON.stringify(updated)),
       message: 'Invoice updated successfully'
     };
@@ -85,11 +95,11 @@ export async function deleteInvoice(id: string) {
     await requireWriteAuth();
     await dbConnect();
     const deleted = await Invoice.findByIdAndDelete(id);
-    
+
     if (!deleted) return { success: false, error: 'Invoice not found' };
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       message: 'Invoice deleted successfully'
     };
   } catch (error: any) {

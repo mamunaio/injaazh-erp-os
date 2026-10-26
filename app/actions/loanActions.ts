@@ -5,15 +5,15 @@ import connectToDatabase from '@/lib/mongodb';
 import { PersonalLoan } from '@/models/PersonalLoan';
 import { requireWriteAuth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
-import { createNotification } from './notificationActions';
+import { createNotification } from '@/lib/notificationService';
 
 export async function getPersonalLoans() {
   try {
     const authRes = await getCurrentUser();
     if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
-    
+
     await connectToDatabase();
-    
+
     const isViewer = authRes.data.role === 'viewer';
     const filter = isViewer ? {} : { userId: authRes.data._id };
 
@@ -26,7 +26,7 @@ export async function getPersonalLoans() {
       const payments = Array.isArray(l.payments) ? l.payments : [];
       const sumPayments = payments.reduce((acc: number, p: any) => acc + (p.amount || 0), 0);
       let paidAmount = typeof l.paidAmount === 'number' ? l.paidAmount : sumPayments;
-      
+
       // If legacy status was 'Settled' but paidAmount was 0 and no payments logged, assume full amount was paid
       if (l.status === 'Settled' && paidAmount === 0 && l.amount > 0) {
         paidAmount = l.amount;
@@ -49,7 +49,7 @@ export async function getPersonalLoans() {
         remainingAmount: Math.max(0, l.amount - paidAmount),
       };
     });
-      
+
     return { success: true, data: JSON.parse(JSON.stringify(normalized)) };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -71,7 +71,7 @@ export async function createPersonalLoan(data: {
     await requireWriteAuth();
     const authRes = await getCurrentUser();
     if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
-    
+
     await connectToDatabase();
 
     const initialPaid = data.paidAmount ? Math.max(0, data.paidAmount) : 0;
@@ -83,7 +83,7 @@ export async function createPersonalLoan(data: {
     } else if (data.status) {
       computedStatus = data.status;
     }
-    
+
     const newLoan = await PersonalLoan.create({
       userId: authRes.data._id,
       ...data,
@@ -104,7 +104,7 @@ export async function createPersonalLoan(data: {
       `New ${data.type === 'Lent' ? 'Receivable (Lent)' : 'Payable (Borrowed)'} record of ৳${data.amount.toLocaleString()} with ${data.personName} created.`,
       '/daily-expenses'
     );
-    
+
     revalidatePath('/daily-expenses');
     return { success: true, data: JSON.parse(JSON.stringify(newLoan)) };
   } catch (error: any) {
@@ -127,7 +127,7 @@ export async function updatePersonalLoan(id: string, data: {
     await requireWriteAuth();
     const authRes = await getCurrentUser();
     if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
-    
+
     await connectToDatabase();
 
     const existing = await PersonalLoan.findOne({ _id: id, userId: authRes.data._id });
@@ -142,7 +142,7 @@ export async function updatePersonalLoan(id: string, data: {
     } else if (data.status) {
       computedStatus = data.status;
     }
-    
+
     const updated = await PersonalLoan.findOneAndUpdate(
       { _id: id, userId: authRes.data._id },
       {
@@ -154,7 +154,7 @@ export async function updatePersonalLoan(id: string, data: {
       },
       { new: true }
     ).lean();
-    
+
     revalidatePath('/daily-expenses');
     return { success: true, data: JSON.parse(JSON.stringify(updated)) };
   } catch (error: any) {
@@ -163,19 +163,19 @@ export async function updatePersonalLoan(id: string, data: {
 }
 
 export async function recordLoanRepayment(
-  loanId: string, 
-  paymentData: { 
-    amount: number; 
-    date?: string; 
-    paymentMethod?: string; 
-    note?: string; 
+  loanId: string,
+  paymentData: {
+    amount: number;
+    date?: string;
+    paymentMethod?: string;
+    note?: string;
   }
 ) {
   try {
     await requireWriteAuth();
     const authRes = await getCurrentUser();
     if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
-    
+
     await connectToDatabase();
 
     const loan = await PersonalLoan.findOne({ _id: loanId, userId: authRes.data._id });
@@ -225,7 +225,7 @@ export async function deleteLoanRepayment(loanId: string, paymentId: string) {
     await requireWriteAuth();
     const authRes = await getCurrentUser();
     if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
-    
+
     await connectToDatabase();
 
     const loan = await PersonalLoan.findOne({ _id: loanId, userId: authRes.data._id });
@@ -256,12 +256,12 @@ export async function deletePersonalLoan(id: string) {
     await requireWriteAuth();
     const authRes = await getCurrentUser();
     if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
-    
+
     await connectToDatabase();
-    
+
     const deleted = await PersonalLoan.findOneAndDelete({ _id: id, userId: authRes.data._id });
     if (!deleted) return { success: false, error: 'Loan not found or unauthorized' };
-    
+
     revalidatePath('/daily-expenses');
     return { success: true };
   } catch (error: any) {
@@ -274,14 +274,14 @@ export async function toggleLoanStatus(id: string, currentStatus: string) {
     await requireWriteAuth();
     const authRes = await getCurrentUser();
     if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
-    
+
     await connectToDatabase();
 
     const loan = await PersonalLoan.findOne({ _id: id, userId: authRes.data._id });
     if (!loan) return { success: false, error: 'Record not found' };
-    
+
     const willBeSettled = currentStatus !== 'Settled';
-    
+
     if (willBeSettled) {
       // Mark as fully settled
       loan.status = 'Settled';
@@ -310,4 +310,3 @@ export async function toggleLoanStatus(id: string, currentStatus: string) {
     return { success: false, error: error.message };
   }
 }
-

@@ -9,6 +9,7 @@ export interface IUser extends Document {
   role: 'owner' | 'admin' | 'editor' | 'marketplace_team' | 'viewer';
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
+  tokenVersion: number;
   createdAt: Date;
   updatedAt: Date;
   twoFactorSecret?: string;
@@ -26,6 +27,7 @@ const UserSchema = new Schema<IUser>(
     role: { type: String, enum: ['owner', 'admin', 'editor', 'marketplace_team', 'viewer'], default: 'editor' },
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
+    tokenVersion: { type: Number, default: 0, required: true },
     twoFactorSecret: { type: String, select: false },
     twoFactorEnabled: { type: Boolean, default: false },
     permissions: { type: [String], default: [] },

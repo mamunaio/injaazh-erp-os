@@ -4,8 +4,8 @@ import WelcomeClient from './WelcomeClient';
 
 export default async function WelcomePage() {
   const user = await getCurrentUser();
-  
-  if (user) {
+
+  if (user?.success && user.data) {
     redirect('/dashboard');
   }
 

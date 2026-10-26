@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import { Project } from '@/models/Project';
 import { Transaction } from '@/models/Transaction';
+import { authenticateApiRequest } from '@/lib/auth';
+import { getMobileCorsHeaders } from '@/lib/cors';
 
 function getRelativeTime(date: Date) {
   const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
@@ -16,21 +18,24 @@ function getRelativeTime(date: Date) {
   return `${days} days ago`;
 }
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-};
-
-export async function OPTIONS() {
+export async function OPTIONS(req: Request) {
   return new NextResponse(null, {
     status: 204,
-    headers: CORS_HEADERS,
+    headers: getMobileCorsHeaders(req),
   });
 }
 
-export async function GET() {
+export async function GET(req: Request) {
+  const corsHeaders = getMobileCorsHeaders(req);
   try {
+    const user = await authenticateApiRequest(req);
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Authentication required.' },
+        { status: 401, headers: corsHeaders }
+      );
+    }
+
     await connectToDatabase();
 
     // 1. Fetch Aggregated Metrics
@@ -94,13 +99,13 @@ export async function GET() {
 
     return NextResponse.json(
       { success: true, data: responseData },
-      { headers: CORS_HEADERS }
+      { headers: corsHeaders }
     );
   } catch (error: any) {
     console.error('Mobile dashboard API error:', error);
     return NextResponse.json(
-      { success: false, error: error.message || 'Server error' },
-      { status: 500, headers: CORS_HEADERS }
+      { success: false, error: 'Server error' },
+      { status: 500, headers: corsHeaders }
     );
   }
 }

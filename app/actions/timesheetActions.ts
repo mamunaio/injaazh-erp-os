@@ -1,5 +1,6 @@
 'use server';
 
+import mongoose from 'mongoose';
 import { getCurrentUser } from './authActions';
 import connectToDatabase from '@/lib/mongodb';
 import TimeLog from '@/models/TimeLog';
@@ -10,13 +11,13 @@ export async function getTimeLogs() {
   try {
     const authRes = await getCurrentUser();
     if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized', data: [] };
-    
+
     await connectToDatabase();
-    
+
     const logs = await TimeLog.find({ userId: authRes.data._id })
       .sort({ date: -1, createdAt: -1 })
       .lean();
-      
+
     return { success: true, data: JSON.parse(JSON.stringify(logs)) };
   } catch (error: any) {
     return { success: false, error: error.message, data: [] };
@@ -36,15 +37,15 @@ export async function createTimeLog(data: {
   try {
     const authRes = await getCurrentUser();
     if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
-    
+
     await connectToDatabase();
-    
+
     const logDate = new Date(data.date);
     logDate.setHours(0, 0, 0, 0);
 
     const rate = typeof data.hourlyRate === 'number' && data.hourlyRate >= 0 ? data.hourlyRate : 25;
     const isBillable = data.billable !== false;
-    
+
     const newLog = await TimeLog.create({
       userId: authRes.data._id,
       project: data.project.trim(),
@@ -56,7 +57,7 @@ export async function createTimeLog(data: {
       hourlyRate: rate,
       billable: isBillable,
     });
-    
+
     return { success: true, data: JSON.parse(JSON.stringify(newLog)) };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -76,15 +77,15 @@ export async function updateTimeLog(id: string, data: {
   try {
     const authRes = await getCurrentUser();
     if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
-    
+
     await connectToDatabase();
-    
+
     const logDate = new Date(data.date);
     logDate.setHours(0, 0, 0, 0);
 
     const rate = typeof data.hourlyRate === 'number' && data.hourlyRate >= 0 ? data.hourlyRate : 25;
     const isBillable = data.billable !== false;
-    
+
     const updated = await TimeLog.findOneAndUpdate(
       { _id: id, userId: authRes.data._id },
       {
@@ -99,9 +100,9 @@ export async function updateTimeLog(id: string, data: {
       },
       { new: true }
     ).lean();
-    
+
     if (!updated) return { success: false, error: 'Log not found or unauthorized' };
-    
+
     return { success: true, data: JSON.parse(JSON.stringify(updated)) };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -112,19 +113,19 @@ export async function updateTimeLogRate(id: string, hourlyRate: number) {
   try {
     const authRes = await getCurrentUser();
     if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
-    
+
     await connectToDatabase();
-    
+
     const rate = typeof hourlyRate === 'number' && hourlyRate >= 0 ? hourlyRate : 25;
-    
+
     const updated = await TimeLog.findOneAndUpdate(
       { _id: id, userId: authRes.data._id },
       { hourlyRate: rate },
       { new: true }
     ).lean();
-    
+
     if (!updated) return { success: false, error: 'Log not found or unauthorized' };
-    
+
     return { success: true, data: JSON.parse(JSON.stringify(updated)) };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -135,12 +136,12 @@ export async function deleteTimeLog(id: string) {
   try {
     const authRes = await getCurrentUser();
     if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
-    
+
     await connectToDatabase();
-    
+
     const deleted = await TimeLog.findOneAndDelete({ _id: id, userId: authRes.data._id });
     if (!deleted) return { success: false, error: 'Log not found or unauthorized' };
-    
+
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -181,20 +182,20 @@ export async function getTimesheetKPIs() {
     const authRes = await getCurrentUser();
     if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
     const userId = authRes.data._id;
-    
+
     await connectToDatabase();
 
     // Fetch user's custom saved default rate (fallback 25)
     const defaultRateDoc = await SystemSettings.findOne({ key: `default_hourly_rate_${userId}` }).lean();
-    const userDefaultRate = typeof defaultRateDoc?.value === 'number' && defaultRateDoc.value >= 0 
-      ? defaultRateDoc.value 
+    const userDefaultRate = typeof defaultRateDoc?.value === 'number' && defaultRateDoc.value >= 0
+      ? defaultRateDoc.value
       : 25;
-    
+
     const now = new Date();
-    
+
     // Today (local date as string)
     const todayStr = now.toISOString().slice(0, 10); // YYYY-MM-DD
-    
+
     // This week: Monday as start
     const startOfWeek = new Date(now);
     const dayOfWeek = now.getDay(); // 0=Sun,1=Mon,...
@@ -202,13 +203,13 @@ export async function getTimesheetKPIs() {
     startOfWeek.setDate(now.getDate() + diff);
     startOfWeek.setHours(0, 0, 0, 0);
     const weekStartStr = startOfWeek.toISOString().slice(0, 10);
-    
+
     // This month
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const monthStartStr = startOfMonth.toISOString().slice(0, 10);
-    
+
     const logs = await TimeLog.find({ userId }).lean();
-    
+
     let secondsToday = 0;
     let secondsWeek = 0;
     let secondsMonth = 0;
@@ -217,11 +218,11 @@ export async function getTimesheetKPIs() {
     let totalRateSum = 0;
     let logsCount = 0;
     const projectSet = new Set<string>();
-    
+
     // Chart data for last 7 days
     const chartData: any[] = [];
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    
+
     for (let i = 6; i >= 0; i--) {
       const d = new Date(now);
       d.setDate(d.getDate() - i);
@@ -242,7 +243,7 @@ export async function getTimesheetKPIs() {
       const isBillable = log.billable !== false;
 
       if (log.project) projectSet.add(log.project);
-      
+
       if (logDateStr === todayStr) secondsToday += s;
       if (logDateStr >= weekStartStr) secondsWeek += s;
       if (logDateStr >= monthStartStr) {
@@ -255,7 +256,7 @@ export async function getTimesheetKPIs() {
 
       totalRateSum += rate;
       logsCount++;
-      
+
       // Add to chart by matching date string
       const chartItem = chartData.find(c => c.dateStr === logDateStr);
       if (chartItem) {
@@ -273,12 +274,12 @@ export async function getTimesheetKPIs() {
     chartData.forEach(c => c.max = globalMax);
 
     // Effective rate: if we have billable hours this month, rate = total earnings / billable hours; otherwise average rate
-    const averageRate = billableSecondsMonth > 0 
+    const averageRate = billableSecondsMonth > 0
       ? Number((billableValueMonth / (billableSecondsMonth / 3600)).toFixed(2))
       : (logsCount > 0 ? Number((totalRateSum / logsCount).toFixed(2)) : userDefaultRate);
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       data: {
         today: secondsToday,
         week: secondsWeek,
@@ -306,7 +307,7 @@ export async function getProjectRatesAndList() {
 
     // 1. Fetch from Project collection
     const dbProjects = await Project.find({}).sort({ updatedAt: -1 }).lean();
-    
+
     // 2. Fetch custom saved project rates from SystemSettings
     const settingsDoc = await SystemSettings.findOne({ key: `project_hourly_rates_${userId}` }).lean();
     const savedRates: Record<string, number> = (settingsDoc?.value as Record<string, number>) || {};
@@ -315,7 +316,7 @@ export async function getProjectRatesAndList() {
     const pastLogs = await TimeLog.find({ userId }).sort({ createdAt: -1 }).select('project hourlyRate').lean();
 
     const ratesMap: Record<string, number> = {};
-    const projectsList: Array<{ name: string; rate: number; status?: string }> = [];
+    const projectsList: Array<{ id?: string; name: string; rate: number; status?: string }> = [];
     const seenNames = new Set<string>();
 
     // Priority 1: DB Projects
@@ -323,11 +324,11 @@ export async function getProjectRatesAndList() {
       const name = p.title?.trim();
       if (!name) return;
       seenNames.add(name.toLowerCase());
-      const rate = typeof savedRates[name] === 'number' 
-        ? savedRates[name] 
+      const rate = typeof savedRates[name] === 'number'
+        ? savedRates[name]
         : (typeof p.hourlyRate === 'number' && p.hourlyRate > 0 ? p.hourlyRate : 25);
       ratesMap[name] = rate;
-      projectsList.push({ name, rate, status: p.status || 'In Progress' });
+      projectsList.push({ id: p._id?.toString(), name, rate, status: p.status || 'In Progress' });
     });
 
     // Priority 2: Custom saved rates from SystemSettings not in DB Projects
@@ -367,32 +368,75 @@ export async function getProjectRatesAndList() {
   }
 }
 
-export async function saveProjectHourlyRate(projectName: string, hourlyRate: number) {
+export async function saveProjectHourlyRate(
+  projectName: string,
+  hourlyRate: number,
+  projectId?: string
+) {
   try {
     const authRes = await getCurrentUser();
-    if (!authRes.success || !authRes.data) return { success: false, error: 'Unauthorized' };
-    const userId = authRes.data._id;
+    if (!authRes.success || !authRes.data) {
+      return { success: false, error: 'Unauthorized: Authentication required' };
+    }
+    const user = authRes.data;
+    if (user.role === 'viewer') {
+      return { success: false, error: 'Demo / View-Only Mode: Data modifications are disabled for demo accounts' };
+    }
+    const userId = user._id;
 
-    if (!projectName || !projectName.trim()) {
+    if (!projectName || typeof projectName !== 'string' || !projectName.trim()) {
       return { success: false, error: 'Project name is required' };
     }
 
     const trimmedName = projectName.trim();
-    const rate = typeof hourlyRate === 'number' && hourlyRate >= 0 ? hourlyRate : 25;
+    if (trimmedName.length > 200) {
+      return { success: false, error: 'Project name cannot exceed 200 characters' };
+    }
+
+    if (
+      typeof hourlyRate !== 'number' ||
+      !Number.isFinite(hourlyRate) ||
+      hourlyRate < 0 ||
+      hourlyRate > 10000
+    ) {
+      return { success: false, error: 'Hourly rate must be a valid number between 0 and 10,000' };
+    }
+
+    const rate = Math.round(hourlyRate * 100) / 100;
 
     await connectToDatabase();
 
-    // 1. Update Project in DB if title matches (case-insensitive)
-    await Project.updateMany(
-      { title: new RegExp(`^${trimmedName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') },
-      { hourlyRate: rate }
-    );
+    // FIN-02U-03: When projectId is provided, validate existence and match against projectName before mutations
+    let verifiedProjectId: string | undefined;
+    if (projectId !== undefined && projectId !== null && projectId !== '') {
+      if (!mongoose.Types.ObjectId.isValid(projectId)) {
+        return { success: false, error: 'Invalid project ID format' };
+      }
+      const query = Project.findById(projectId);
+      const targetProject = typeof (query as any)?.select === 'function'
+        ? await (query as any).select('_id title').lean()
+        : await (query as any)?.lean ? await (query as any).lean() : await query;
+      if (!targetProject) {
+        return { success: false, error: 'Project not found' };
+      }
+      const targetTitle = (targetProject.title || (targetProject as any).name || '').trim();
+      if (targetTitle.toLowerCase() !== trimmedName.toLowerCase()) {
+        return {
+          success: false,
+          error: `Project ID does not match the provided project name. Expected "${targetTitle}", got "${trimmedName}"`
+        };
+      }
+      verifiedProjectId = targetProject._id?.toString() || projectId;
+    }
 
-    // 2. Update SystemSettings map
+    // 1. Update personal rate mapping in SystemSettings (scoped strictly to verified userId)
     const key = `project_hourly_rates_${userId}`;
     const existing = await SystemSettings.findOne({ key });
     const currentRates: Record<string, number> = (existing?.value as Record<string, number>) || {};
     currentRates[trimmedName] = rate;
+    if (verifiedProjectId) {
+      currentRates[`id_${verifiedProjectId}`] = rate;
+    }
 
     await SystemSettings.findOneAndUpdate(
       { key },
@@ -400,8 +444,32 @@ export async function saveProjectHourlyRate(projectName: string, hourlyRate: num
       { upsert: true, new: true }
     );
 
-    return { success: true, projectName: trimmedName, rate, rates: currentRates };
+    // 2. Only authorized administrators or owners may propagate the rate to the shared project document.
+    if (user.role === 'admin' || user.role === 'owner') {
+      if (verifiedProjectId) {
+        // Target exact verified project document by ID
+        await Project.findByIdAndUpdate(
+          verifiedProjectId,
+          { $set: { hourlyRate: rate } }
+        );
+      } else {
+        // Fallback: If no projectId provided, check for title ambiguity
+        const matchingProjects = await Project.find({ title: trimmedName }).limit(2).lean();
+        if (matchingProjects.length === 1) {
+          // Exactly one project found by title: safely update by unique ID
+          await Project.findByIdAndUpdate(
+            matchingProjects[0]._id,
+            { $set: { hourlyRate: rate } }
+          );
+        } else if (matchingProjects.length > 1) {
+          // Ambiguous: multiple projects share this title; do not guess which project to update
+          console.warn(`Ambiguous project title: multiple projects share title "${trimmedName}". Shared project document update skipped without projectId.`);
+        }
+      }
+    }
+
+    return { success: true, projectName: trimmedName, projectId: verifiedProjectId, rate, rates: currentRates };
   } catch (error: any) {
-    return { success: false, error: error.message };
+    return { success: false, error: error.message || 'Failed to save project hourly rate' };
   }
 }

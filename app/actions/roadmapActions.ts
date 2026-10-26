@@ -4,10 +4,15 @@ import connectToDatabase from '@/lib/mongodb';
 import { RoadmapProject } from '@/models/RoadmapProject';
 import { roadmapData } from '@/app/roadmap/data';
 import { revalidatePath } from 'next/cache';
-import { requireWriteAuth } from '@/lib/auth';
+import { getAuthUser, requireWriteAuth } from '@/lib/auth';
 
 export async function getRoadmapProjects() {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return { success: false, error: 'Unauthorized: Authentication required.', data: [] };
+    }
+
     await connectToDatabase();
     const projects = await RoadmapProject.find().sort({ orderIndex: 1, createdAt: 1 }).lean();
     return { success: true, data: JSON.parse(JSON.stringify(projects)) };

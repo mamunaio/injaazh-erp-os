@@ -3,17 +3,26 @@
 import connectToDatabase from '@/lib/mongodb';
 import { PersonalDebt } from '@/models/PersonalDebt';
 import { revalidatePath } from 'next/cache';
-import { requireWriteAuth } from '@/lib/auth';
+import { getAuthUser, requireWriteAuth } from '@/lib/auth';
 
 /**
  * Get all personal debts
  */
 export async function getPersonalDebts() {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return {
+        success: false,
+        error: 'Unauthorized: Authentication required.',
+        data: []
+      };
+    }
+
     await connectToDatabase();
-    
+
     const debts = await PersonalDebt.find().sort({ date: -1, createdAt: -1 }).lean();
-    
+
     return {
       success: true,
       data: JSON.parse(JSON.stringify(debts))
@@ -41,7 +50,7 @@ export async function createPersonalDebt(data: {
   try {
     await requireWriteAuth();
     await connectToDatabase();
-    
+
     const newDebt = new PersonalDebt({
       ...data,
       date: new Date(data.date),
@@ -50,10 +59,10 @@ export async function createPersonalDebt(data: {
       paidAmount: 0, // Initially no payment made
       paymentHistory: [], // Empty payment history
     });
-    
+
     await newDebt.save();
     revalidatePath('/daily-expenses');
-    
+
     return {
       success: true,
       data: JSON.parse(JSON.stringify(newDebt))
@@ -74,23 +83,23 @@ export async function updatePersonalDebt(id: string, data: any) {
   try {
     await requireWriteAuth();
     await connectToDatabase();
-    
+
     if (data.date) {
       data.date = new Date(data.date);
     }
-    
+
     const updatedDebt = await PersonalDebt.findByIdAndUpdate(
       id,
       { $set: data },
       { new: true, runValidators: true }
     ).lean();
-    
+
     if (!updatedDebt) {
       return { success: false, error: 'Personal debt not found' };
     }
-    
+
     revalidatePath('/daily-expenses');
-    
+
     return {
       success: true,
       data: JSON.parse(JSON.stringify(updatedDebt))
@@ -111,15 +120,15 @@ export async function deletePersonalDebt(id: string) {
   try {
     await requireWriteAuth();
     await connectToDatabase();
-    
+
     const deletedDebt = await PersonalDebt.findByIdAndDelete(id);
-    
+
     if (!deletedDebt) {
       return { success: false, error: 'Personal debt not found' };
     }
-    
+
     revalidatePath('/daily-expenses');
-    
+
     return {
       success: true,
       message: 'Personal debt deleted successfully'
@@ -140,19 +149,19 @@ export async function settlePersonalDebt(id: string) {
   try {
     await requireWriteAuth();
     await connectToDatabase();
-    
+
     const updatedDebt = await PersonalDebt.findByIdAndUpdate(
       id,
       { $set: { status: 'settled' } },
       { new: true }
     ).lean();
-    
+
     if (!updatedDebt) {
       return { success: false, error: 'Personal debt not found' };
     }
-    
+
     revalidatePath('/daily-expenses');
-    
+
     return {
       success: true,
       data: JSON.parse(JSON.stringify(updatedDebt))
@@ -177,42 +186,42 @@ export async function makePartialPayment(
   try {
     await requireWriteAuth();
     await connectToDatabase();
-    
+
     const debt = await PersonalDebt.findById(id);
-    
+
     if (!debt) {
       return { success: false, error: 'Personal debt not found' };
     }
-    
+
     if (debt.status === 'settled') {
       return { success: false, error: 'This debt is already settled' };
     }
-    
+
     if (paymentAmount <= 0) {
       return { success: false, error: 'Payment amount must be greater than 0' };
     }
-    
+
     if (paymentAmount > debt.amount) {
-      return { 
-        success: false, 
-        error: `Payment amount (৳${paymentAmount}) cannot exceed remaining amount (৳${debt.amount})` 
+      return {
+        success: false,
+        error: `Payment amount (৳${paymentAmount}) cannot exceed remaining amount (৳${debt.amount})`
       };
     }
-    
+
     // Update debt amounts
     const newPaidAmount = (debt.paidAmount || 0) + paymentAmount;
     const newRemainingAmount = debt.amount - paymentAmount;
-    
+
     // Add to payment history
     const paymentRecord = {
       amount: paymentAmount,
       date: new Date(),
       note: paymentNote || '',
     };
-    
+
     // Determine if debt should be settled
     const newStatus = newRemainingAmount === 0 ? 'settled' : 'pending';
-    
+
     const updatedDebt = await PersonalDebt.findByIdAndUpdate(
       id,
       {
@@ -227,14 +236,14 @@ export async function makePartialPayment(
       },
       { new: true, runValidators: true }
     ).lean();
-    
+
     revalidatePath('/daily-expenses');
-    
+
     return {
       success: true,
       data: JSON.parse(JSON.stringify(updatedDebt)),
-      message: newStatus === 'settled' 
-        ? 'Payment recorded and debt fully settled!' 
+      message: newStatus === 'settled'
+        ? 'Payment recorded and debt fully settled!'
         : `Payment of ৳${paymentAmount} recorded successfully. Remaining: ৳${newRemainingAmount}`,
     };
   } catch (error: any) {

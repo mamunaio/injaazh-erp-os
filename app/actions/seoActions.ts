@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import connectToDatabase from '@/lib/mongodb';
 import SeoProject from '@/models/SeoProject';
 import { mockSeoProjects } from '@/lib/mockSeoData';
+import { getAuthUser, requireWriteAuth } from '@/lib/auth';
 
 /**
  * Safe revalidatePath helper
@@ -60,14 +61,19 @@ function serializeSeoProject(p: any) {
  */
 export async function getSeoProjects() {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return { success: false, error: 'Unauthorized: Authentication required.', data: [] };
+    }
+
     await connectToDatabase();
-    
+
     let projects = await SeoProject.find({}).sort({ clientName: 1 }).lean().exec();
-    
+
     // Auto-seed if collection is empty
     if (projects.length === 0) {
       console.log('🌱 Seeding database with mock SEO projects...');
-      
+
       const seedData = mockSeoProjects.map(p => {
         // Strip mock id, Mongoose will auto-generate native ObjectId
         const { id, ...rest } = p;
@@ -76,14 +82,14 @@ export async function getSeoProjects() {
           lastAudited: new Date().toISOString()
         };
       });
-      
+
       await SeoProject.insertMany(seedData);
       projects = await SeoProject.find({}).sort({ clientName: 1 }).lean().exec();
     }
-    
+
     // Serialize for Client Components
     const serialized = projects.map((p: any) => serializeSeoProject(p));
-    
+
     return { success: true, data: serialized };
   } catch (error: any) {
     console.error('❌ Failed to fetch SEO projects:', error);
@@ -98,13 +104,14 @@ export async function getSeoProjects() {
  */
 export async function auditSeoProject(projectId: string) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
-    
+
     const project = await SeoProject.findById(projectId).exec();
     if (!project) {
       return { success: false, error: 'Project not found' };
     }
-    
+
     // Default fallback values
     let performance = 90;
     let accessibility = 90;
@@ -114,24 +121,24 @@ export async function auditSeoProject(projectId: string) {
     let clsVal = 0.05;
     let inpVal = 150;
     let apiSuccess = false;
-    
+
     try {
       // Normalize target URL (ensure https protocol)
       let targetUrl = project.url.trim();
       if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
         targetUrl = `https://${targetUrl}`;
       }
-      
+
       const apiUrl = `https://pagespeedonline.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(targetUrl)}&category=performance&category=accessibility&category=best-practices&category=seo`;
-      
+
       console.log(`🔌 Fetching real Lighthouse data from Google PageSpeed API for: ${targetUrl}`);
       const response = await fetch(apiUrl, { signal: AbortSignal.timeout(12000) }); // 12-second timeout
-      
+
       if (response.ok) {
         const resData = await response.json();
         const categories = resData.lighthouseResult?.categories;
         const audits = resData.lighthouseResult?.audits;
-        
+
         if (categories) {
           performance = Math.round((categories.performance?.score ?? 0.9) * 100);
           accessibility = Math.round((categories.accessibility?.score ?? 0.9) * 100);
@@ -139,16 +146,16 @@ export async function auditSeoProject(projectId: string) {
           seoScore = Math.round((categories.seo?.score ?? 0.9) * 100);
           apiSuccess = true;
         }
-        
+
         if (audits) {
           // LCP (Largest Contentful Paint)
           const lcpAudit = audits['largest-contentful-paint'];
           lcpVal = lcpAudit?.numericValue ? Math.round((lcpAudit.numericValue / 1000) * 10) / 10 : 1.8;
-          
+
           // CLS (Cumulative Layout Shift)
           const clsAudit = audits['cumulative-layout-shift'];
           clsVal = clsAudit?.numericValue ? Math.round(clsAudit.numericValue * 100) / 100 : 0.04;
-          
+
           // INP approximation via Total Blocking Time (TBT)
           const tbtAudit = audits['total-blocking-time'];
           inpVal = tbtAudit?.numericValue ? Math.round(tbtAudit.numericValue) : 120;
@@ -159,49 +166,49 @@ export async function auditSeoProject(projectId: string) {
     } catch (apiError) {
       console.error('⚠️ PageSpeed Insights API call failed, falling back to simulated scores:', apiError);
     }
-    
+
     // If API failed, perform highly realistic variations based on last values
     if (!apiSuccess) {
       performance = Math.min(100, Math.max(30, project.lighthouse.performance + Math.floor(Math.random() * 9) - 4));
       accessibility = Math.min(100, Math.max(30, project.lighthouse.accessibility + Math.floor(Math.random() * 7) - 3));
       bestPractices = Math.min(100, Math.max(30, project.lighthouse.bestPractices + Math.floor(Math.random() * 5) - 2));
       seoScore = Math.min(100, Math.max(30, project.lighthouse.seo + Math.floor(Math.random() * 5) - 2));
-      
+
       lcpVal = Math.max(0.5, Math.round((project.vitals.lcp.value + (Math.random() * 0.8 - 0.4)) * 10) / 10);
       clsVal = Math.max(0.01, Math.round((project.vitals.cls.value + (Math.random() * 0.04 - 0.02)) * 100) / 100);
       inpVal = Math.max(30, Math.round(project.vitals.inp.value + (Math.random() * 40 - 20)));
     }
-    
+
     // Standard Core Web Vitals Gating Thresholds
     const getLcpStatus = (val: number): 'Passed' | 'Needs Improvement' | 'Failed' => {
       if (val <= 2.5) return 'Passed';
       if (val <= 4.0) return 'Needs Improvement';
       return 'Failed';
     };
-    
+
     const getClsStatus = (val: number): 'Passed' | 'Needs Improvement' | 'Failed' => {
       if (val <= 0.1) return 'Passed';
       if (val <= 0.25) return 'Needs Improvement';
       return 'Failed';
     };
-    
+
     const getInpStatus = (val: number): 'Passed' | 'Needs Improvement' | 'Failed' => {
       if (val <= 200) return 'Passed';
       if (val <= 500) return 'Needs Improvement';
       return 'Failed';
     };
-    
+
     // Dynamic AEO metrics simulation
     const chatgptDelta = Math.floor(Math.random() * 15) - 5;
     const chatgptMentions = Math.max(0, project.aeo.chatgptMentions + chatgptDelta);
     const chatgptTrend = chatgptDelta > 0 ? 'up' : (chatgptDelta < 0 ? 'down' : 'flat');
     const chatgptTrendValue = Math.abs(chatgptDelta);
-    
+
     const perplexityDelta = Math.floor(Math.random() * 7) - 2;
     const perplexityScore = Math.min(100, Math.max(0, project.aeo.perplexityScore + perplexityDelta));
     const perplexityTrend = perplexityDelta > 0 ? 'up' : (perplexityDelta < 0 ? 'down' : 'flat');
     const perplexityTrendValue = Math.abs(perplexityDelta);
-    
+
     // Historical trends
     const todayStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const historicalData = project.aeo.historicalData.map((h: any) => ({
@@ -209,7 +216,7 @@ export async function auditSeoProject(projectId: string) {
       chatgpt: h.chatgpt,
       perplexity: h.perplexity
     }));
-    
+
     if (historicalData[historicalData.length - 1]?.date === todayStr) {
       historicalData[historicalData.length - 1] = {
         date: todayStr,
@@ -226,7 +233,7 @@ export async function auditSeoProject(projectId: string) {
         historicalData.shift();
       }
     }
-    
+
     // Apply updates
     project.lighthouse = { performance, accessibility, bestPractices, seo: seoScore };
     project.vitals = {
@@ -244,13 +251,13 @@ export async function auditSeoProject(projectId: string) {
       historicalData
     };
     project.lastAudited = new Date().toISOString();
-    
+
     await project.save();
     console.log(`✅ Audit completed for SEO project ${projectId} (${project.clientName})`);
-    
+
     // Serialize result for client component
     const serialized = serializeSeoProject(project);
-    
+
     safeRevalidatePath('/seo');
     return { success: true, data: serialized };
   } catch (error: any) {
@@ -264,14 +271,15 @@ export async function auditSeoProject(projectId: string) {
  */
 export async function createSeoProject(clientName: string, url: string) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
-    
+
     // Normalize URL
     let targetUrl = url.trim();
     if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
       targetUrl = `https://${targetUrl}`;
     }
-    
+
     const generateHistoricalData = (baseChatGpt: number, basePerplexity: number) => {
       const data = [];
       const today = new Date();
@@ -311,9 +319,9 @@ export async function createSeoProject(clientName: string, url: string) {
     });
 
     await newProject.save();
-    
+
     const serialized = serializeSeoProject(newProject);
-    
+
     safeRevalidatePath('/seo');
     return { success: true, data: serialized };
   } catch (error: any) {
@@ -321,4 +329,3 @@ export async function createSeoProject(clientName: string, url: string) {
     return { success: false, error: error.message || 'Failed to create SEO project' };
   }
 }
-

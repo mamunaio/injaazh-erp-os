@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     }
 
     // Authenticate user
-    const user = await getAuthUser();
+    const user = await getAuthUser(req);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -57,7 +57,7 @@ REAL-TIME INJAAZH ERP DATA SNAPSHOT:
     // Format conversation history
     const contextStr = messages.slice(0, -1).map((m: any) => `${m.role.toUpperCase()}: ${m.content}`).join('\n');
     const lastUserMessage = messages[messages.length - 1].content;
-    
+
     const prompt = `You are the AI Business Copilot & Strategy Advisor for Injaazh Global ERP OS.
 You assist executives and team members with data inquiries, strategic insights, cold outreach email drafting, proposal scoping, and task management.
 

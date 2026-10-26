@@ -7,22 +7,26 @@ import TimeLog from '@/models/TimeLog';
 import { Project } from '@/models/Project';
 import { SystemSettings } from '@/models/SystemSettings';
 import { getAuthUser, requireWriteAuth } from '@/lib/auth';
-import { createNotification } from './notificationActions';
+import { createNotification } from '@/lib/notificationService';
 
 export async function getTransactions() {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return { success: false, error: 'Unauthorized: Authentication required.', data: [] };
+    }
+
     await connectToDatabase();
-    
+
     const transactions = await Transaction.find({})
       .populate('projectId', 'title platform')
       .sort({ date: -1 })
       .lean();
-    const authUser = await getAuthUser();
-    
+
     // Serialize for client - confidential censorship only for non-admin viewers
     const serialized = transactions.map((t: any) => {
       const isConfidential = (!authUser || authUser.role === 'team_member') && t.platform === 'Direct';
-      
+
       return {
         _id: t._id?.toString() || '',
         platform: t.platform || '',
@@ -41,7 +45,7 @@ export async function getTransactions() {
         updatedAt: t.updatedAt ? new Date(t.updatedAt).toISOString() : new Date().toISOString(),
       };
     });
-    
+
     return { success: true, data: serialized };
   } catch (error: any) {
     console.error('❌ Error fetching transactions:', error);
@@ -53,7 +57,7 @@ export async function createTransaction(data: any) {
   try {
     await requireWriteAuth();
     await connectToDatabase();
-    
+
     const transaction = new Transaction({
       platform: data.platform,
       type: data.type,
@@ -62,16 +66,17 @@ export async function createTransaction(data: any) {
       category: data.category || 'Other',
       description: data.description || '',
       projectId: data.projectId ? data.projectId : undefined,
+      projectModel: data.projectModel ? data.projectModel : undefined,
     });
-    
+
     await transaction.save();
-    
+
     await createNotification(
       transaction.type === 'Income' ? 'payment' : 'system',
       `A new ${transaction.type.toLowerCase()} of $${transaction.amount} was recorded.`,
       '/finance'
     );
-    
+
     revalidatePath('/finance');
     revalidatePath('/dashboard');
     return { success: true, data: JSON.parse(JSON.stringify(transaction)) };
@@ -85,23 +90,28 @@ export async function updateTransaction(transactionId: string, data: any) {
   try {
     await requireWriteAuth();
     await connectToDatabase();
-    
+
+    const updatePayload: Record<string, any> = {
+      platform: data.platform,
+      type: data.type,
+      amount: parseFloat(data.amount),
+      date: data.date ? new Date(data.date) : new Date(),
+      category: data.category,
+      description: data.description,
+      projectId: data.projectId ? data.projectId : undefined,
+    };
+    if (data.projectModel) {
+      updatePayload.projectModel = data.projectModel;
+    }
+
     const updated = await Transaction.findByIdAndUpdate(
       transactionId,
-      {
-        platform: data.platform,
-        type: data.type,
-        amount: parseFloat(data.amount),
-        date: data.date ? new Date(data.date) : new Date(),
-        category: data.category,
-        description: data.description,
-        projectId: data.projectId ? data.projectId : undefined,
-      },
+      updatePayload,
       { new: true }
     ).lean();
-    
+
     await createNotification('system', `Transaction for $${updated?.amount} was updated.`, '/finance');
-    
+
     revalidatePath('/finance');
     revalidatePath('/dashboard');
     return { success: true, data: JSON.parse(JSON.stringify(updated)) };
@@ -120,7 +130,7 @@ export async function deleteTransaction(transactionId: string) {
       await createNotification('system', `Transaction for $${transaction.amount} was deleted.`, '/finance');
     }
     await Transaction.findByIdAndDelete(transactionId);
-    
+
     revalidatePath('/finance');
     revalidatePath('/dashboard');
     return { success: true };
@@ -132,32 +142,37 @@ export async function deleteTransaction(transactionId: string) {
 
 export async function getPlatformSummary() {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return { success: false, error: 'Unauthorized: Authentication required.', data: {} };
+    }
+
     await connectToDatabase();
-    
+
     const platforms = ['Freelancer', 'Direct', 'Upwork', 'Fiverr'];
     const summary: any = {};
-    
+
     for (const platform of platforms) {
       const income = await Transaction.aggregate([
         { $match: { platform, type: 'Income' } },
         { $group: { _id: null, total: { $sum: '$amount' } } },
       ]);
-      
+
       const expense = await Transaction.aggregate([
         { $match: { platform, type: 'Expense' } },
         { $group: { _id: null, total: { $sum: '$amount' } } },
       ]);
-      
+
       const incomeTotal = income[0]?.total || 0;
       const expenseTotal = expense[0]?.total || 0;
-      
+
       summary[platform] = {
         income: incomeTotal,
         expense: expenseTotal,
         profit: incomeTotal - expenseTotal,
       };
     }
-    
+
     return { success: true, data: summary };
   } catch (error: any) {
     console.error('❌ Error getting platform summary:', error);
@@ -167,11 +182,16 @@ export async function getPlatformSummary() {
 
 export async function getTimesheetRevenueSummary() {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return { success: false, error: 'Unauthorized: Authentication required.', data: null };
+    }
+
     await connectToDatabase();
-    
+
     // Fetch all billable time logs
     const logs = await TimeLog.find({ billable: { $ne: false } }).sort({ date: -1 }).lean();
-    
+
     // Fetch existing synced transactions to detect already synced items
     const existingSyncTx = await Transaction.find({
       $or: [
@@ -241,7 +261,7 @@ export async function getTimesheetRevenueSummary() {
     const projectBreakdown = Object.values(projectAgg).map(p => {
       const effectiveRate = p.totalSeconds > 0 ? (p.totalEarnings / (p.totalSeconds / 3600)) : 25;
       const hoursStr = (p.totalSeconds / 3600).toFixed(1);
-      const isSynced = Array.from(syncedSignatures).some(sig => 
+      const isSynced = Array.from(syncedSignatures).some(sig =>
         sig.includes(p.project.toLowerCase()) && (sig.includes(`$${p.totalEarnings.toFixed(2)}`) || sig.includes(`${hoursStr}h`))
       );
       return {
@@ -262,10 +282,10 @@ export async function getTimesheetRevenueSummary() {
     };
   } catch (error: any) {
     console.error('❌ Error getting timesheet revenue summary:', error);
-    return { 
-      success: false, 
-      error: error.message, 
-      data: { totalBillableSeconds: 0, totalBillableEarnings: 0, projects: [] } 
+    return {
+      success: false,
+      error: error.message,
+      data: { totalBillableSeconds: 0, totalBillableEarnings: 0, projects: [] }
     };
   }
 }
@@ -281,8 +301,8 @@ export async function syncTimesheetProjectRevenue(data: {
     await connectToDatabase();
 
     let targetPlatform: 'Freelancer' | 'Direct' | 'Upwork' | 'Fiverr' = data.platform || 'Direct';
-    const projDoc = await Project.findOne({ 
-      title: new RegExp(`^${data.projectName.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') 
+    const projDoc = await Project.findOne({
+      title: new RegExp(`^${data.projectName.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i')
     }).lean();
 
     if (projDoc?.platform && ['Upwork', 'Freelancer', 'Fiverr', 'Direct'].includes(projDoc.platform)) {
@@ -319,14 +339,19 @@ export async function syncTimesheetProjectRevenue(data: {
 
 export async function getFinanceProjectsList() {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return { success: false, error: 'Unauthorized: Authentication required.', data: [] };
+    }
+
     await connectToDatabase();
     const projects = await Project.find({})
       .select('title platform budget hourlyRate clientName')
       .sort({ updatedAt: -1 })
       .lean();
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       data: projects.map((p: any) => ({
         _id: p._id.toString(),
         title: p.title,

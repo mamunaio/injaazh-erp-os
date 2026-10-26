@@ -3,6 +3,7 @@
 import connectToDatabase from '@/lib/mongodb';
 import { IslamicInsight } from '@/models/IslamicInsight';
 import { revalidatePath } from 'next/cache';
+import { getAuthUser, requireWriteAuth } from '@/lib/auth';
 
 // Rich Islamic Insights Database (20+ Days Rotation)
 const dailyIslamicInsights = [
@@ -274,10 +275,10 @@ const dailyIslamicInsights = [
 export async function getDailyIslamicQuote() {
   try {
     await connectToDatabase();
-    
+
     // Check if we have any insights in the database
     const totalInsights = await IslamicInsight.countDocuments();
-    
+
     const now = new Date();
     const start = new Date(now.getFullYear(), 0, 0);
     const diff = now.getTime() - start.getTime();
@@ -292,11 +293,11 @@ export async function getDailyIslamicQuote() {
         data: dailyIslamicInsights[index]
       };
     }
-    
+
     // Get the insight based on day order
     const index = dayOfYear % totalInsights;
     const insight = await IslamicInsight.findOne().sort({ dayNumber: 1 }).skip(index);
-    
+
     if (!insight) {
       // Fallback
       return { success: true, data: dailyIslamicInsights[0] };
@@ -323,11 +324,15 @@ export async function getDailyIslamicQuote() {
  */
 export async function getAllIslamicInsights() {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return { success: false, error: 'Unauthorized: Authentication required.' };
+    }
     await connectToDatabase();
     const insights = await IslamicInsight.find().sort({ dayNumber: 1 });
     return { success: true, data: JSON.parse(JSON.stringify(insights)) };
   } catch (error: any) {
-    return { success: false, error: 'Failed to fetch insights' };
+    return { success: false, error: error?.message || 'Failed to fetch insights' };
   }
 }
 
@@ -336,21 +341,22 @@ export async function getAllIslamicInsights() {
  */
 export async function addIslamicInsight(data: any) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
-    
+
     // Auto-assign dayNumber
     const total = await IslamicInsight.countDocuments();
     const newInsight = await IslamicInsight.create({
       ...data,
       dayNumber: data.dayNumber || (total + 1)
     });
-    
+
     revalidatePath('/dashboard');
     revalidatePath('/settings/insights');
     return { success: true, data: JSON.parse(JSON.stringify(newInsight)) };
   } catch (error: any) {
     console.error('Add insight error:', error);
-    return { success: false, error: 'Failed to add insight' };
+    return { success: false, error: error?.message || 'Failed to add insight' };
   }
 }
 
@@ -359,21 +365,22 @@ export async function addIslamicInsight(data: any) {
  */
 export async function deleteIslamicInsight(id: string) {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     await IslamicInsight.findByIdAndDelete(id);
-    
+
     // Reorder remaining insights to prevent gaps in rotation
     const remaining = await IslamicInsight.find().sort({ dayNumber: 1 });
     for (let i = 0; i < remaining.length; i++) {
       remaining[i].dayNumber = i + 1;
       await remaining[i].save();
     }
-    
+
     revalidatePath('/dashboard');
     revalidatePath('/settings/insights');
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: 'Failed to delete insight' };
+    return { success: false, error: error?.message || 'Failed to delete insight' };
   }
 }
 
@@ -382,9 +389,10 @@ export async function deleteIslamicInsight(id: string) {
  */
 export async function seedIslamicInsights() {
   try {
+    await requireWriteAuth();
     await connectToDatabase();
     const existingCount = await IslamicInsight.countDocuments();
-    
+
     if (existingCount > 0) {
       return { success: false, error: 'Database already has insights. Clear them first to seed.' };
     }
@@ -396,12 +404,12 @@ export async function seedIslamicInsights() {
     }));
 
     await IslamicInsight.insertMany(docs);
-    
+
     revalidatePath('/dashboard');
     revalidatePath('/settings/insights');
     return { success: true, message: `Seeded ${docs.length} insights successfully.` };
   } catch (error: any) {
     console.error('Seed error:', error);
-    return { success: false, error: 'Failed to seed insights' };
+    return { success: false, error: error?.message || 'Failed to seed insights' };
   }
 }

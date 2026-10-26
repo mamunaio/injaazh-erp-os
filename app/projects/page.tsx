@@ -21,9 +21,9 @@ export default async function ProjectsPage() {
     getProjectsBoard(),
     getMarketplaceClients()
   ]);
-  
+
   const initialProjects = response.success ? response.data : [];
   const initialClients = clientsResponse.success ? clientsResponse.data : [];
 
-  return <ProjectsClient initialProjects={initialProjects} initialClients={initialClients} />;
+  return <ProjectsClient initialProjects={initialProjects} initialClients={initialClients} userRole={authUser.role} />;
 }

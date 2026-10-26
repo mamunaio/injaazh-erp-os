@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getInvoices, createInvoice } from '@/lib/leadGenStore';
-import { createNotification } from '@/app/actions/notificationActions';
+import { createNotification } from '@/lib/notificationService';
+import { requireApiAuth, requireApiWriteAuth } from '@/lib/auth';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const auth = await requireApiAuth(req);
+    if ('errorResponse' in auth) return auth.errorResponse;
+
     const invoices = await getInvoices();
     return NextResponse.json(invoices);
   } catch (error) {
@@ -13,9 +17,12 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireApiWriteAuth(req);
+    if ('errorResponse' in auth) return auth.errorResponse;
+
     const body = await req.json();
     const newInvoice = await createInvoice(body);
-    
+
     try {
       await createNotification(
         'payment',

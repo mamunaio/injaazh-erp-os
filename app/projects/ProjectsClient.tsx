@@ -3,9 +3,9 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Plus, LayoutGrid, List, Clock, Calendar, Search, Filter, Briefcase, 
-  UserPlus, DownloadCloud, MoreHorizontal, X, Edit2, Trash2, 
-  Activity, StickyNote, AlertTriangle, ArrowUpRight, 
+  Plus, LayoutGrid, List, Clock, Calendar, Search, Filter, Briefcase,
+  UserPlus, DownloadCloud, MoreHorizontal, X, Edit2, Trash2,
+  Activity, StickyNote, AlertTriangle, ArrowUpRight,
   ArrowDownRight, Loader2, PlayCircle, Columns, GitMerge, FileText, CheckCircle,
   Timer, Sparkles, CheckSquare, Zap, Copy, Shield, Users, Layers,
   Globe, ShoppingCart, Flame, ChevronRight, Check, User, ChevronDown, DollarSign
@@ -49,6 +49,7 @@ interface Project {
 interface ProjectsClientProps {
   initialProjects: any[];
   initialClients?: any[];
+  userRole?: string;
 }
 
 type ViewMode = 'grid' | 'list' | 'kanban' | 'timeline';
@@ -80,8 +81,8 @@ const PRIORITY_OPTIONS = [
 ];
 
 const POPULAR_TECH_STACK = [
-  'Next.js', 'React', 'TypeScript', 'TailwindCSS', 'Node.js', 
-  'MongoDB', 'PostgreSQL', 'Laravel', 'Python', 'AWS', 
+  'Next.js', 'React', 'TypeScript', 'TailwindCSS', 'Node.js',
+  'MongoDB', 'PostgreSQL', 'Laravel', 'Python', 'AWS',
   'Docker', 'Figma', 'SEO'
 ];
 
@@ -89,80 +90,80 @@ const TEAM_SUGGESTIONS = [
   'Mamun H.', 'Lead Architect', 'Frontend Lead', 'Backend Dev', 'UI Designer', 'QA Lead'
 ];
 
-const STATUS_CONFIG: Record<string, { 
+const STATUS_CONFIG: Record<string, {
   name: string;
-  color: string; 
+  color: string;
   hexColor: string;
   glowColor: string;
-  bg: string; 
-  border: string; 
-  dot: string; 
-  icon: React.ElementType 
+  bg: string;
+  border: string;
+  dot: string;
+  icon: React.ElementType
 }> = {
-  'Planning': { 
+  'Planning': {
     name: 'Planning',
-    color: 'text-[#00E5FF]', 
+    color: 'text-[#00E5FF]',
     hexColor: '#00E5FF',
     glowColor: 'rgba(0,229,255,0.25)',
-    bg: 'bg-[#00E5FF]/10', 
-    border: 'border-[#00E5FF]/30', 
-    dot: 'bg-[#00E5FF]', 
-    icon: FileText 
+    bg: 'bg-[#00E5FF]/10',
+    border: 'border-[#00E5FF]/30',
+    dot: 'bg-[#00E5FF]',
+    icon: FileText
   },
-  'In Progress': { 
+  'In Progress': {
     name: 'In Progress',
-    color: 'text-[#6324FC]', 
+    color: 'text-[#6324FC]',
     hexColor: '#6324FC',
     glowColor: 'rgba(99,36,252,0.25)',
-    bg: 'bg-[#6324FC]/10', 
-    border: 'border-[#6324FC]/30', 
-    dot: 'bg-[#6324FC]', 
-    icon: PlayCircle 
+    bg: 'bg-[#6324FC]/10',
+    border: 'border-[#6324FC]/30',
+    dot: 'bg-[#6324FC]',
+    icon: PlayCircle
   },
-  'In Review': { 
+  'In Review': {
     name: 'In Review',
-    color: 'text-[#A78BFA]', 
+    color: 'text-[#A78BFA]',
     hexColor: '#A78BFA',
     glowColor: 'rgba(167,139,250,0.25)',
-    bg: 'bg-[#8B5CF6]/10', 
-    border: 'border-[#8B5CF6]/30', 
-    dot: 'bg-[#8B5CF6]', 
-    icon: Activity 
+    bg: 'bg-[#8B5CF6]/10',
+    border: 'border-[#8B5CF6]/30',
+    dot: 'bg-[#8B5CF6]',
+    icon: Activity
   },
-  'Completed': { 
+  'Completed': {
     name: 'Completed',
-    color: 'text-emerald-400', 
+    color: 'text-emerald-400',
     hexColor: '#10B981',
     glowColor: 'rgba(16,185,129,0.25)',
-    bg: 'bg-emerald-500/10', 
-    border: 'border-emerald-500/30', 
-    dot: 'bg-emerald-400', 
-    icon: CheckCircle 
+    bg: 'bg-emerald-500/10',
+    border: 'border-emerald-500/30',
+    dot: 'bg-emerald-400',
+    icon: CheckCircle
   },
-  'On Hold': { 
+  'On Hold': {
     name: 'On Hold',
-    color: 'text-amber-400', 
+    color: 'text-amber-400',
     hexColor: '#F59E0B',
     glowColor: 'rgba(245,158,11,0.25)',
-    bg: 'bg-amber-500/10', 
-    border: 'border-amber-500/30', 
-    dot: 'bg-amber-400', 
-    icon: Clock 
+    bg: 'bg-amber-500/10',
+    border: 'border-amber-500/30',
+    dot: 'bg-amber-400',
+    icon: Clock
   },
-  'Cancelled': { 
+  'Cancelled': {
     name: 'Cancelled',
-    color: 'text-rose-400', 
+    color: 'text-rose-400',
     hexColor: '#EF4444',
     glowColor: 'rgba(239,68,68,0.25)',
-    bg: 'bg-rose-500/10', 
-    border: 'border-rose-500/30', 
-    dot: 'bg-rose-400', 
-    icon: X 
+    bg: 'bg-rose-500/10',
+    border: 'border-rose-500/30',
+    dot: 'bg-rose-400',
+    icon: X
   },
 };
 
-function getStatusConfig(s: string) { 
-  return STATUS_CONFIG[s] ?? STATUS_CONFIG['Planning']; 
+function getStatusConfig(s: string) {
+  return STATUS_CONFIG[s] ?? STATUS_CONFIG['Planning'];
 }
 
 const PRIORITY_CONFIG: Record<string, { color: string; bg: string; border: string }> = {
@@ -172,8 +173,8 @@ const PRIORITY_CONFIG: Record<string, { color: string; bg: string; border: strin
   'Urgent': { color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/30' },
 };
 
-function getPriorityConfig(p?: string) { 
-  return PRIORITY_CONFIG[p || 'Medium'] ?? PRIORITY_CONFIG['Medium']; 
+function getPriorityConfig(p?: string) {
+  return PRIORITY_CONFIG[p || 'Medium'] ?? PRIORITY_CONFIG['Medium'];
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -199,13 +200,13 @@ function fmtCurrency(v?: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v || 0);
 }
 
-function getInitials(name: string) { 
+function getInitials(name: string) {
   if (!name) return '??';
   const parts = name.trim().split(/\s+/);
   if (parts.length >= 2) {
     return (parts[0][0] + parts[1][0]).toUpperCase();
   }
-  return name.substring(0, 2).toUpperCase(); 
+  return name.substring(0, 2).toUpperCase();
 }
 
 const checkOverdue = (deadline?: string, status?: string) => {
@@ -248,25 +249,25 @@ function DroppableColumn({ id, title, items }: { id: string, title: string, item
   const { setNodeRef, isOver } = useDroppable({ id });
   const conf = getStatusConfig(title);
   const Icon = conf.icon;
-  
+
   return (
     <div className="flex flex-col w-[320px] shrink-0 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl overflow-hidden shadow-md dark:shadow-lg">
       {/* Header */}
       <div className={`p-4 border-b border-black/10 dark:border-white/10 flex items-center justify-between bg-slate-50 dark:bg-white/[0.02] ${isOver ? 'bg-[#6324FC]/10' : ''} transition-colors relative`}>
-        <div 
+        <div
           className="absolute top-0 left-0 right-0 h-[2px]"
-          style={{ 
+          style={{
             backgroundImage: `linear-gradient(to right, transparent, ${conf.hexColor}, transparent)`,
             boxShadow: `0 0 10px ${conf.hexColor}`
           }}
         />
         <div className="flex items-center gap-2.5">
-          <div 
+          <div
             className="w-8 h-8 rounded-xl flex items-center justify-center border"
-            style={{ 
+            style={{
               backgroundColor: `${conf.hexColor}15`,
               borderColor: `${conf.hexColor}35`,
-              color: conf.hexColor 
+              color: conf.hexColor
             }}
           >
             <Icon size={14} />
@@ -277,10 +278,10 @@ function DroppableColumn({ id, title, items }: { id: string, title: string, item
           {items.length}
         </span>
       </div>
-      
+
       {/* Body */}
-      <div 
-        ref={setNodeRef} 
+      <div
+        ref={setNodeRef}
         className={`p-3 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-3 min-h-[200px] max-h-[calc(100vh-320px)] transition-colors ${
           isOver ? 'bg-[#6324FC]/5 ring-1 ring-[#6324FC]/30' : ''
         }`}
@@ -301,30 +302,30 @@ function DroppableColumn({ id, title, items }: { id: string, title: string, item
 function SortableProjectCard({ project }: { project: Project }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: project._id, data: project });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.35 : 1 };
-  
+
   const conf = getStatusConfig(project.status);
   const health = getProjectHealth(project);
   const cleanTitle = project.title.replace(/\s*-\s*Project\s*$/i, '');
   const isComplete = project.progress === 100 || project.status === 'Completed';
 
   return (
-    <div 
-      ref={setNodeRef} 
-      style={style} 
-      {...attributes} 
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
       {...listeners}
       className="group glass-card rounded-2xl p-4 flex flex-col gap-3 cursor-grab active:cursor-grabbing relative overflow-hidden transition-all duration-300 hover:-translate-y-1 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/25 shadow-sm dark:shadow-md select-none"
     >
       {/* Radial Hover Spotlight */}
-      <div 
+      <div
         className="absolute -top-10 -right-10 w-28 h-28 blur-[30px] rounded-full opacity-20 dark:opacity-30 group-hover:opacity-90 group-hover:scale-150 transition-all duration-500 pointer-events-none"
         style={{ backgroundColor: conf.hexColor }}
       />
 
       {/* Top Accent Neon Line - Expands on hover */}
-      <div 
+      <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-10 group-hover:w-full h-[2px] transition-all duration-500 opacity-80 group-hover:opacity-100"
-        style={{ 
+        style={{
           backgroundImage: `linear-gradient(to right, transparent, ${conf.hexColor}, transparent)`,
           boxShadow: `0 0 10px ${conf.hexColor}`
         }}
@@ -342,7 +343,7 @@ function SortableProjectCard({ project }: { project: Project }) {
           {health.label}
         </span>
       </div>
-      
+
       {/* Client & Deadline */}
       <div className="relative z-10 flex items-center justify-between text-[10px] font-mono text-secondary">
         {project.clientName ? (
@@ -355,7 +356,7 @@ function SortableProjectCard({ project }: { project: Project }) {
         ) : (
           <span className="text-secondary/60 italic">Internal</span>
         )}
-        
+
         {project.deadline && (
           <span className={`flex items-center gap-1 ${health.label === 'Overdue' ? 'text-rose-500 dark:text-rose-400 font-bold' : 'text-secondary'}`}>
             <Calendar size={10} /> {fmtShortDate(project.deadline)}
@@ -370,16 +371,16 @@ function SortableProjectCard({ project }: { project: Project }) {
           <span className="text-slate-900 dark:text-white font-bold">{project.progress || 0}%</span>
         </div>
         <div className="h-1.5 w-full bg-slate-100 dark:bg-[#060608] rounded-full overflow-hidden border border-black/5 dark:border-white/5">
-          <div 
+          <div
             className="h-full rounded-full transition-all duration-300"
-            style={{ 
+            style={{
               width: `${project.progress || 0}%`,
               backgroundColor: isComplete ? '#10B981' : conf.hexColor
             }}
           />
         </div>
       </div>
-      
+
       {/* Footer: Timer & Assignees */}
       <div className="relative z-10 flex items-center justify-between pt-2 border-t border-black/5 dark:border-white/5">
         <button
@@ -397,9 +398,9 @@ function SortableProjectCard({ project }: { project: Project }) {
         {(project.assignees || []).length > 0 ? (
           <div className="flex -space-x-1.5">
             {(project.assignees || []).slice(0, 3).map((a, i) => (
-              <div 
-                key={i} 
-                className="w-5 h-5 rounded-full bg-purple-500/15 dark:bg-[#6324FC]/20 text-[#6324FC] dark:text-[#00E5FF] border border-black/10 dark:border-white/10 flex items-center justify-center text-[7px] font-bold shadow-sm" 
+              <div
+                key={i}
+                className="w-5 h-5 rounded-full bg-purple-500/15 dark:bg-[#6324FC]/20 text-[#6324FC] dark:text-[#00E5FF] border border-black/10 dark:border-white/10 flex items-center justify-center text-[7px] font-bold shadow-sm"
                 title={a}
               >
                 {getInitials(a)}
@@ -415,10 +416,11 @@ function SortableProjectCard({ project }: { project: Project }) {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function ProjectsClient({ initialProjects = [], initialClients = [] }: ProjectsClientProps) {
+export default function ProjectsClient({ initialProjects = [], initialClients = [], userRole }: ProjectsClientProps) {
   const router = useRouter();
   const { confirm } = useConfirm();
-  
+  const canDelete = userRole === 'admin' || userRole === 'owner';
+
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [clients, setClients] = useState<any[]>(initialClients);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
@@ -429,7 +431,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('Active');
   const [priorityFilter, setPriorityFilter] = useState<string>('All');
-  
+
   // Modals & Panels
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -446,8 +448,8 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
   // Custom Tech Input
   const [customTechInput, setCustomTechInput] = useState('');
 
-  useEffect(() => { 
-    setProjects(initialProjects); 
+  useEffect(() => {
+    setProjects(initialProjects);
   }, [initialProjects]);
 
   useEffect(() => {
@@ -465,7 +467,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const filteredClientsList = clients.filter(c => 
+  const filteredClientsList = clients.filter(c =>
     c.name?.toLowerCase().includes(clientSearch.toLowerCase()) ||
     (c.company && c.company.toLowerCase().includes(clientSearch.toLowerCase()))
   );
@@ -474,9 +476,9 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
     if (!clientSearch.trim() || isCreatingClient) return;
     setIsCreatingClient(true);
     try {
-      const res = await createMarketplaceClient({ 
-        name: clientSearch.trim(), 
-        platform: formData.platform === 'Internal' ? 'Direct' : (formData.platform || 'Freelancer') 
+      const res = await createMarketplaceClient({
+        name: clientSearch.trim(),
+        platform: formData.platform === 'Internal' ? 'Direct' : (formData.platform || 'Freelancer')
       });
       if (res.success && res.data) {
         setClients([res.data, ...clients]);
@@ -497,7 +499,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
     const currentStack: string[] = Array.isArray(formData.techStack)
       ? formData.techStack
       : (formData.techStack || '').split(',').map((s: string) => s.trim()).filter(Boolean);
-      
+
     let nextStack: string[];
     if (currentStack.includes(tech)) {
       nextStack = currentStack.filter((t: string) => t !== tech);
@@ -526,7 +528,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
     const currentAssignees: string[] = Array.isArray(formData.assignees)
       ? formData.assignees
       : (formData.assignees || '').split(',').map((s: string) => s.trim()).filter(Boolean);
-      
+
     let nextAssignees: string[];
     if (currentAssignees.includes(name)) {
       nextAssignees = currentAssignees.filter((a: string) => a !== name);
@@ -609,20 +611,20 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
     if (Number(formData.progress) === 100 && autoStatus !== 'Completed') {
       autoStatus = 'Completed';
     }
-    
+
     const payload = {
       ...formData,
       status: autoStatus,
       clientName: formData.clientName || clientSearch || undefined,
-      assignees: Array.isArray(formData.assignees) 
-        ? formData.assignees 
+      assignees: Array.isArray(formData.assignees)
+        ? formData.assignees
         : (formData.assignees || '').split(',').map((s: string) => s.trim()).filter(Boolean),
       techStack: Array.isArray(formData.techStack)
         ? formData.techStack
         : (formData.techStack || '').split(',').map((s: string) => s.trim()).filter(Boolean),
       budget: formData.budget ? Number(formData.budget) : undefined
     };
-    
+
     if (payload.platform === '') delete payload.platform;
     if (payload.deadline === '') payload.deadline = null;
     if (payload.startDate === '') payload.startDate = null;
@@ -663,6 +665,10 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
 
   const handleDelete = async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
+    if (!canDelete) {
+      toast.error('Unauthorized: Deleting projects requires admin or owner role');
+      return;
+    }
     const isConfirmed = await confirm({
       title: 'Delete Project?',
       message: 'Are you sure you want to delete this project? This action cannot be undone.',
@@ -676,9 +682,13 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
       if (res.success) {
         setProjects(prev => prev.filter(p => p._id !== id));
         if (selectedProject?._id === id) setSelectedProject(null);
-        toast.success('Project deleted');
+        if (res.warning) {
+          toast(res.warning, { icon: '⚠️' });
+        } else {
+          toast.success('Project deleted');
+        }
       } else {
-        toast.error('Error deleting project');
+        toast.error(res.error || 'Error deleting project');
       }
     } catch {
       toast.error('Failed to delete project');
@@ -686,12 +696,12 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
   };
 
   const openAdd = () => {
-    setFormData({ 
-      title: '', 
-      status: 'Planning', 
-      priority: 'Medium', 
-      progress: 0, 
-      assignees: ['Mamun H.'], 
+    setFormData({
+      title: '',
+      status: 'Planning',
+      priority: 'Medium',
+      progress: 0,
+      assignees: ['Mamun H.'],
       techStack: ['Next.js', 'React', 'MongoDB'],
       clientName: '',
       platform: 'Freelancer',
@@ -708,8 +718,8 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
 
   const openPanel = (p: Project) => {
     setSelectedProject(p);
-    setFormData({ 
-      ...p, 
+    setFormData({
+      ...p,
       assignees: Array.isArray(p.assignees) ? p.assignees : (p.assignees || []).join(', ').split(', ').filter(Boolean),
       techStack: Array.isArray(p.techStack) ? p.techStack : (p.techStack || []).join(', ').split(', ').filter(Boolean)
     });
@@ -762,59 +772,59 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
   const completionRate = totalCount > 0 ? Math.round((compCount / totalCount) * 100) : 0;
 
   const kpis = [
-    { 
-      id: 'Active', 
-      label: 'Active Operations', 
-      value: activeCount, 
-      color: '#00E5FF', 
-      icon: PlayCircle, 
+    {
+      id: 'Active',
+      label: 'Active Operations',
+      value: activeCount,
+      color: '#00E5FF',
+      icon: PlayCircle,
       badge: 'In Flight',
-      subtitle: 'In-flight sprints & reviews' 
+      subtitle: 'In-flight sprints & reviews'
     },
-    { 
-      id: 'Monetized', 
-      label: 'Pipeline Contract Value', 
-      value: fmtCurrency(totalBudget), 
-      color: '#10B981', 
-      icon: DollarSign, 
+    {
+      id: 'Monetized',
+      label: 'Pipeline Contract Value',
+      value: fmtCurrency(totalBudget),
+      color: '#10B981',
+      icon: DollarSign,
       badge: `${projects.filter(p => (p.budget || 0) > 0).length} Contracts`,
-      subtitle: 'Total portfolio volume' 
+      subtitle: 'Total portfolio volume'
     },
-    { 
-      id: 'Completed', 
-      label: 'Delivered Projects', 
-      value: compCount, 
-      color: '#6324FC', 
-      icon: CheckCircle, 
+    {
+      id: 'Completed',
+      label: 'Delivered Projects',
+      value: compCount,
+      color: '#6324FC',
+      icon: CheckCircle,
       badge: `${completionRate}% Done`,
-      subtitle: 'Completed deliverables' 
+      subtitle: 'Completed deliverables'
     },
-    { 
-      id: 'Overdue', 
-      label: 'Overdue / At-Risk', 
-      value: overdueCount, 
-      color: '#EF4444', 
-      icon: AlertTriangle, 
+    {
+      id: 'Overdue',
+      label: 'Overdue / At-Risk',
+      value: overdueCount,
+      color: '#EF4444',
+      icon: AlertTriangle,
       badge: overdueCount > 0 ? `${overdueCount} Alerts` : 'All On Track',
-      subtitle: overdueCount > 0 ? 'Urgent intervention needed' : 'Zero overdue milestones' 
+      subtitle: overdueCount > 0 ? 'Urgent intervention needed' : 'Zero overdue milestones'
     },
-    { 
-      id: 'On Hold', 
-      label: 'On Hold / Paused', 
-      value: onHoldCount, 
-      color: '#F59E0B', 
-      icon: Clock, 
+    {
+      id: 'On Hold',
+      label: 'On Hold / Paused',
+      value: onHoldCount,
+      color: '#F59E0B',
+      icon: Clock,
       badge: 'Paused',
-      subtitle: 'Awaiting client or assets' 
+      subtitle: 'Awaiting client or assets'
     },
-    { 
-      id: 'All', 
-      label: 'Total Pipeline', 
-      value: totalCount, 
-      color: '#8B5CF6', 
-      icon: Layers, 
+    {
+      id: 'All',
+      label: 'Total Pipeline',
+      value: totalCount,
+      color: '#8B5CF6',
+      icon: Layers,
       badge: 'All Stages',
-      subtitle: 'Enterprise operations roster' 
+      subtitle: 'Enterprise operations roster'
     },
   ];
 
@@ -823,7 +833,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#060608] text-slate-900 dark:text-white p-4 md:p-8 pt-6 pb-24 font-sans selection:bg-[#6324FC] selection:text-white">
       <Toaster position="top-right" />
-      
+
       {/* Ambient background glows */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-1/6 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-[#6324FC]/10 rounded-full blur-[140px]" />
@@ -856,7 +866,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
           {/* Quick Action Controls */}
           <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
             {/* Command shortcut button */}
-            <button 
+            <button
               type="button"
               onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
               className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 text-secondary hover:text-slate-900 dark:hover:text-white text-xs font-heading font-semibold transition-all group"
@@ -867,7 +877,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
             </button>
 
             {/* AI Copilot Dispatch */}
-            <button 
+            <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent('open-ai-chat', { detail: { initialPrompt: 'Review my active projects and highlight urgent deadlines or bottlenecks' } }))}
               className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[#6324FC]/10 border border-[#6324FC]/30 hover:border-[#6324FC] text-slate-800 dark:text-[#edeae2] text-xs font-heading font-semibold transition-all hover:shadow-[0_0_15px_rgba(99,36,252,0.3)] shadow-sm"
@@ -877,27 +887,27 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
             </button>
 
             {/* + New Project Laser Beam CTA (Symmetrically Calibrated Clockwise Single Stream) */}
-            <button 
+            <button
               type="button"
               onClick={openAdd}
               className="h-9 group relative p-[2px] rounded-xl overflow-hidden flex items-center justify-center cursor-pointer transition-all duration-300 active:scale-95 shadow-[0_0_20px_rgba(99,36,252,0.35)] hover:shadow-[0_0_35px_rgba(0,229,255,0.5),0_0_20px_rgba(236,72,153,0.35)]"
             >
               {/* Perfectly Centered Square Conic Glow Aura (Uniform Distance on All 4 Sides) */}
-              <span 
-                className="absolute top-1/2 left-1/2 w-[450%] aspect-square -translate-x-1/2 -translate-y-1/2 animate-[spin_3s_linear_infinite] blur-[8px] opacity-85 pointer-events-none" 
+              <span
+                className="absolute top-1/2 left-1/2 w-[450%] aspect-square -translate-x-1/2 -translate-y-1/2 animate-[spin_3s_linear_infinite] blur-[8px] opacity-85 pointer-events-none"
                 style={{
                   background: 'conic-gradient(from 0deg, transparent 0deg, transparent 60deg, #00e5ff 110deg, #6324fc 140deg, #ec4899 170deg, transparent 210deg, transparent 360deg)'
                 }}
               />
-              
+
               {/* Crisp Symmetrical Single Laser Beam Stream (Clockwise: Left to Right Loop) */}
-              <span 
-                className="absolute top-1/2 left-1/2 w-[450%] aspect-square -translate-x-1/2 -translate-y-1/2 animate-[spin_3s_linear_infinite] opacity-100 pointer-events-none" 
+              <span
+                className="absolute top-1/2 left-1/2 w-[450%] aspect-square -translate-x-1/2 -translate-y-1/2 animate-[spin_3s_linear_infinite] opacity-100 pointer-events-none"
                 style={{
                   background: 'conic-gradient(from 0deg, transparent 0deg, transparent 60deg, #00e5ff 110deg, #6324fc 140deg, #ec4899 170deg, transparent 210deg, transparent 360deg)'
                 }}
               />
-              
+
               {/* Inner High-Contrast Surface: Concentric 10px radius matching outer 12px minus 2px */}
               <div className="relative z-10 w-full h-full px-3.5 rounded-[10px] bg-white dark:bg-[#0a0a0d] group-hover:bg-slate-50 dark:group-hover:bg-[#121218] text-slate-900 dark:text-white font-heading font-bold text-xs flex items-center gap-2 transition-all">
                 <Briefcase size={14} className="text-[#00E5FF] group-hover:rotate-6 group-hover:scale-110 drop-shadow-[0_0_6px_#00E5FF] transition-transform duration-300" />
@@ -1011,7 +1021,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
           {/* ── Filter Bar & View Switcher ──────────────────────────────────── */}
           <div className="p-4 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl space-y-3.5 shadow-sm dark:shadow-lg">
             <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-              
+
               {/* View Switcher Tabs */}
               <div className="flex items-center bg-slate-100 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl p-1 overflow-x-auto scrollbar-none">
                 {[
@@ -1025,8 +1035,8 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                     type="button"
                     onClick={() => setViewMode(v.id as ViewMode)}
                     className={`relative flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-heading font-bold transition-all whitespace-nowrap ${
-                      viewMode === v.id 
-                        ? 'text-white bg-[#6324FC] shadow-[0_0_12px_rgba(99,36,252,0.5)]' 
+                      viewMode === v.id
+                        ? 'text-white bg-[#6324FC] shadow-[0_0_12px_rgba(99,36,252,0.5)]'
                         : 'text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/5'
                     }`}
                   >
@@ -1038,7 +1048,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
 
               {/* Search & Filters */}
               <div className="flex flex-wrap items-center gap-2.5 flex-1 max-w-2xl justify-end">
-                
+
                 {/* Search Box */}
                 <div className="relative flex-1 min-w-[200px] group">
                   <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary group-focus-within:text-[#6324FC] dark:group-focus-within:text-[#00E5FF] transition-colors pointer-events-none" />
@@ -1050,7 +1060,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                     className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 focus:border-[#6324FC] rounded-xl pl-10 pr-9 py-2 text-xs text-slate-900 dark:text-white placeholder:text-secondary outline-none transition-all shadow-inner"
                   />
                   {searchQuery && (
-                    <button 
+                    <button
                       onClick={() => setSearchQuery('')}
                       className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                     >
@@ -1112,7 +1122,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
 
         {/* ── Main Content Area ────────────────────────────────────────────── */}
         {filteredProjects.length === 0 ? (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="p-12 md:p-16 rounded-3xl bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 text-center flex flex-col items-center justify-center shadow-md dark:shadow-xl"
@@ -1135,14 +1145,14 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
           </motion.div>
         ) : (
           <AnimatePresence mode="wait">
-            
+
             {/* ── 1. GRID VIEW (STANDARDIZED LUXURY PROJECT CARDS) ── */}
             {viewMode === 'grid' && (
-              <motion.div 
-                key="grid" 
+              <motion.div
+                key="grid"
                 variants={containerVariants}
-                initial="hidden" 
-                animate="show" 
+                initial="hidden"
+                animate="show"
                 exit={{ opacity: 0 }}
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
               >
@@ -1161,15 +1171,15 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                       className="group glass-card rounded-2xl p-5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/25 shadow-sm dark:shadow-lg"
                     >
                       {/* Radial Hover Spotlight */}
-                      <div 
+                      <div
                         className="absolute -top-10 -right-10 w-32 h-32 blur-[35px] rounded-full opacity-20 dark:opacity-35 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none"
                         style={{ backgroundColor: conf.hexColor }}
                       />
 
                       {/* Top Accent Neon Line - Expands on hover */}
-                      <div 
+                      <div
                         className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] transition-all duration-500 opacity-90"
-                        style={{ 
+                        style={{
                           backgroundImage: `linear-gradient(to right, transparent, ${conf.hexColor}, transparent)`,
                           boxShadow: `0 0 10px ${conf.hexColor}`
                         }}
@@ -1182,7 +1192,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                       <div className="relative z-10">
                         <div className="flex items-start justify-between gap-3 mb-3.5">
                           <div className="flex items-center gap-3 min-w-0">
-                            <div 
+                            <div
                               className="w-10 h-10 rounded-xl flex items-center justify-center font-heading font-extrabold text-xs shrink-0 shadow-sm transition-all duration-300 group-hover:scale-110 border"
                               style={{
                                 backgroundColor: `${conf.hexColor}15`,
@@ -1245,9 +1255,9 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                             <span className="text-slate-900 dark:text-white font-bold">{p.progress || 0}%</span>
                           </div>
                           <div className="h-1.5 w-full bg-slate-100 dark:bg-[#060608] rounded-full overflow-hidden border border-black/5 dark:border-white/5">
-                            <div 
+                            <div
                               className="h-full rounded-full transition-all duration-300"
-                              style={{ 
+                              style={{
                                 width: `${p.progress || 0}%`,
                                 backgroundColor: isComplete ? '#10B981' : conf.hexColor
                               }}
@@ -1288,8 +1298,8 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                           {(p.assignees || []).length > 0 ? (
                             <div className="flex -space-x-1.5">
                               {(p.assignees || []).slice(0, 3).map((a, j) => (
-                                <div 
-                                  key={j} 
+                                <div
+                                  key={j}
                                   className="w-6 h-6 rounded-full bg-purple-500/15 dark:bg-[#6324FC]/20 text-[#6324FC] dark:text-[#00E5FF] border border-black/10 dark:border-white/10 flex items-center justify-center text-[8px] font-bold shadow-sm"
                                   title={a}
                                 >
@@ -1311,10 +1321,10 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
 
             {/* ── 2. LIST VIEW (TELEMETRY DATA TABLE) ── */}
             {viewMode === 'list' && (
-              <motion.div 
-                key="list" 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
+              <motion.div
+                key="list"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="overflow-hidden bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl shadow-sm dark:shadow-xl"
               >
@@ -1353,7 +1363,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                           >
                             <td className="pl-5 pr-4 py-3.5">
                               <div className="flex items-center gap-3">
-                                <div 
+                                <div
                                   className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border"
                                   style={{
                                     backgroundColor: `${conf.hexColor}15`,
@@ -1383,12 +1393,12 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                             <td className="pr-4 py-3.5">
                               <div className="flex items-center gap-2.5 max-w-[120px]">
                                 <div className="flex-1 h-1.5 bg-slate-100 dark:bg-[#060608] rounded-full overflow-hidden border border-black/5 dark:border-white/5">
-                                  <div 
-                                    className="h-full rounded-full" 
-                                    style={{ 
+                                  <div
+                                    className="h-full rounded-full"
+                                    style={{
                                       width: `${p.progress || 0}%`,
                                       backgroundColor: conf.hexColor
-                                    }} 
+                                    }}
                                   />
                                 </div>
                                 <span className="text-[10px] font-mono font-bold text-slate-900 dark:text-white">{p.progress || 0}%</span>
@@ -1431,14 +1441,16 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                                 >
                                   <Edit2 size={12} />
                                 </button>
-                                <button
-                                  type="button"
-                                  onClick={(e) => handleDelete(p._id, e)}
-                                  className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-rose-500/20 text-secondary hover:text-rose-500 dark:hover:text-rose-400 transition-colors"
-                                  title="Delete Project"
-                                >
-                                  <Trash2 size={12} />
-                                </button>
+                                {canDelete && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => handleDelete(p._id, e)}
+                                    className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-rose-500/20 text-secondary hover:text-rose-500 dark:hover:text-rose-400 transition-colors"
+                                    title="Delete Project"
+                                  >
+                                    <Trash2 size={12} />
+                                  </button>
+                                )}
                               </div>
                             </td>
                           </motion.tr>
@@ -1452,18 +1464,18 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
 
             {/* ── 3. KANBAN VIEW (DND KIT SPRINT COLUMNS) ── */}
             {viewMode === 'kanban' && (
-              <motion.div 
-                key="kanban" 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
-                exit={{ opacity: 0 }} 
+              <motion.div
+                key="kanban"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 className="pb-4"
               >
-                <DndContext 
-                  sensors={sensors} 
-                  collisionDetection={closestCorners} 
-                  onDragStart={onDragStart} 
-                  onDragOver={onDragOver} 
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCorners}
+                  onDragStart={onDragStart}
+                  onDragOver={onDragOver}
                   onDragEnd={onDragEnd}
                 >
                   <div className="flex gap-4 overflow-x-auto scrollbar-thin scrollbar-thumb-black/10 dark:scrollbar-thumb-white/10 pb-4">
@@ -1482,10 +1494,10 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
 
             {/* ── 4. TIMELINE VIEW ── */}
             {viewMode === 'timeline' && (
-              <motion.div 
-                key="timeline" 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
+              <motion.div
+                key="timeline"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl p-6 shadow-sm dark:shadow-xl space-y-6"
               >
@@ -1505,18 +1517,18 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                       return (
                         <div key={p._id} onClick={() => openPanel(p)} className="flex items-start gap-4 group cursor-pointer">
                           <div className="flex flex-col items-center pt-2">
-                            <div 
+                            <div
                               className={`w-3.5 h-3.5 rounded-full border-2 transition-all ${
-                                overdue 
-                                  ? 'bg-rose-500 border-rose-500/40 shadow-[0_0_8px_#EF4444]' 
+                                overdue
+                                  ? 'bg-rose-500 border-rose-500/40 shadow-[0_0_8px_#EF4444]'
                                   : 'bg-[#6324FC] border-[#6324FC]/40 shadow-[0_0_8px_#6324FC]'
-                              }`} 
+                              }`}
                             />
                             {i !== arr.length - 1 && (
                               <div className="w-px h-16 bg-black/10 dark:bg-white/10 mt-2 group-hover:bg-[#6324FC] transition-colors" />
                             )}
                           </div>
-                          
+
                           <div className="flex-1 bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 group-hover:border-black/20 dark:group-hover:border-white/20 rounded-xl p-4 transition-all flex items-center justify-between gap-4">
                             <div>
                               <h4 className="text-xs font-heading font-extrabold text-slate-900 dark:text-white group-hover:text-[#6324FC] dark:group-hover:text-[#00E5FF] transition-colors">
@@ -1555,12 +1567,12 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
           {(isAddOpen || selectedProject) && (
             <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
               {/* Backdrop */}
-              <motion.div 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
-                exit={{ opacity: 0 }} 
-                className="fixed inset-0 bg-black/85 backdrop-blur-xl" 
-                onClick={() => { setIsAddOpen(false); setSelectedProject(null); }} 
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/85 backdrop-blur-xl"
+                onClick={() => { setIsAddOpen(false); setSelectedProject(null); }}
               />
 
               {/* Modal Box */}
@@ -1573,9 +1585,9 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Dynamic Top Glow Line matching chosen Platform */}
-                <div 
+                <div
                   className="absolute top-0 left-0 right-0 h-[2.5px] z-20 transition-all duration-300"
-                  style={{ 
+                  style={{
                     backgroundImage: `linear-gradient(to right, transparent, ${currentPlatformObj.color}, transparent)`,
                     boxShadow: `0 0 15px ${currentPlatformObj.color}`
                   }}
@@ -1584,7 +1596,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                 {/* Modal Header */}
                 <div className="p-5 md:p-6 border-b border-black/10 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-3.5">
-                    <div 
+                    <div
                       className="w-11 h-11 rounded-xl flex items-center justify-center shadow-md shrink-0 transition-all duration-300 border"
                       style={{
                         backgroundColor: `${currentPlatformObj.color}15`,
@@ -1600,7 +1612,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                         <h2 className="text-lg md:text-xl font-heading font-extrabold text-slate-900 dark:text-white tracking-tight">
                           {isAddOpen ? `New ${currentPlatformObj.name} Project` : 'Edit Project Pipeline'}
                         </h2>
-                        <span 
+                        <span
                           className="text-[9px] font-mono font-bold px-2 py-0.5 rounded uppercase"
                           style={{
                             backgroundColor: `${currentPlatformObj.color}15`,
@@ -1618,7 +1630,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    {selectedProject && !isAddOpen && (
+                    {canDelete && selectedProject && !isAddOpen && (
                       <button
                         type="button"
                         onClick={(e) => handleDelete(selectedProject._id, e)}
@@ -1628,8 +1640,8 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                         <Trash2 size={16} />
                       </button>
                     )}
-                    <button 
-                      onClick={() => { setIsAddOpen(false); setSelectedProject(null); }} 
+                    <button
+                      onClick={() => { setIsAddOpen(false); setSelectedProject(null); }}
                       className="p-2 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-rose-500/20 text-secondary hover:text-rose-500 dark:hover:text-rose-400 border border-black/5 dark:border-white/5 hover:border-rose-500/30 transition-colors"
                     >
                       <X size={16} />
@@ -1639,7 +1651,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
 
                 {/* Modal Body Form */}
                 <form id="project-edit-form" onSubmit={handleSaveProject} className="p-5 md:p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1">
-                  
+
                   {/* Channel / Platform Selector Buttons */}
                   <div>
                     <label className="block text-[10px] font-heading font-bold text-secondary uppercase tracking-widest mb-1.5">
@@ -1655,8 +1667,8 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                             type="button"
                             onClick={() => setFormData({ ...formData, platform: plat.id })}
                             className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-heading font-bold transition-all border ${
-                              isSelected 
-                                ? 'bg-[#6324FC]/10 text-[#6324FC] dark:text-white dark:bg-white/10 border-purple-500/40 shadow-sm' 
+                              isSelected
+                                ? 'bg-[#6324FC]/10 text-[#6324FC] dark:text-white dark:bg-white/10 border-purple-500/40 shadow-sm'
                                 : 'bg-slate-50 dark:bg-[#060608] text-secondary hover:text-slate-900 dark:hover:text-white border-black/10 dark:border-white/5 hover:border-black/20 dark:hover:border-white/15'
                             }`}
                             style={{
@@ -1698,8 +1710,8 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                     </label>
                     <div className="relative">
                       <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary pointer-events-none" />
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         value={showClientDropdown ? clientSearch : (formData.clientName || clientSearch)}
                         onChange={e => {
                           setClientSearch(e.target.value);
@@ -1738,7 +1750,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                             <div className="p-3 text-center">
                               <p className="text-xs text-secondary mb-2">No client found matching "{clientSearch}"</p>
                               {clientSearch.trim() && (
-                                <button 
+                                <button
                                   type="button"
                                   onClick={handleCreateClientOnTheFly}
                                   disabled={isCreatingClient}
@@ -1756,7 +1768,7 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
 
                   {/* Status & Priority Interactive Pills */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                    
+
                     {/* Status Pills */}
                     <div>
                       <label className="block text-[10px] font-heading font-bold text-secondary uppercase tracking-widest mb-1.5">
@@ -1772,8 +1784,8 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                               type="button"
                               onClick={() => setFormData({ ...formData, status: st.id })}
                               className={`flex items-center justify-center gap-1 px-2 py-2 rounded-xl text-[11px] font-heading font-bold transition-all border ${
-                                isSelected 
-                                  ? `${st.bg} ${st.border} text-slate-900 dark:text-white shadow-sm` 
+                                isSelected
+                                  ? `${st.bg} ${st.border} text-slate-900 dark:text-white shadow-sm`
                                   : 'bg-slate-50 dark:bg-[#060608] text-secondary hover:text-slate-900 dark:hover:text-white border-black/10 dark:border-white/5'
                               }`}
                               style={{
@@ -1803,8 +1815,8 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                               type="button"
                               onClick={() => setFormData({ ...formData, priority: pr.id })}
                               className={`flex items-center justify-center py-2 rounded-xl text-[11px] font-heading font-bold transition-all border ${
-                                isSelected 
-                                  ? `${pr.bg} ${pr.border} text-slate-900 dark:text-white shadow-sm` 
+                                isSelected
+                                  ? `${pr.bg} ${pr.border} text-slate-900 dark:text-white shadow-sm`
                                   : 'bg-slate-50 dark:bg-[#060608] text-secondary hover:text-slate-900 dark:hover:text-white border-black/10 dark:border-white/5'
                               }`}
                               style={{
@@ -1922,8 +1934,8 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                             type="button"
                             onClick={() => toggleTechStackTag(tech)}
                             className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold transition-all border ${
-                              isSelected 
-                                ? 'bg-[#6324FC]/10 text-[#6324FC] dark:bg-[#6324FC]/20 dark:text-[#00E5FF] border-[#6324FC]/40 dark:border-[#6324FC]/50 shadow-sm' 
+                              isSelected
+                                ? 'bg-[#6324FC]/10 text-[#6324FC] dark:bg-[#6324FC]/20 dark:text-[#00E5FF] border-[#6324FC]/40 dark:border-[#6324FC]/50 shadow-sm'
                                 : 'bg-slate-50 dark:bg-[#060608] text-secondary hover:text-slate-900 dark:hover:text-white border-black/10 dark:border-white/5 hover:border-black/20 dark:hover:border-white/15'
                             }`}
                           >
@@ -1947,12 +1959,12 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                     {Array.isArray(formData.techStack) && formData.techStack.length > 0 && (
                       <div className="flex items-center gap-1.5 flex-wrap mt-2">
                         {formData.techStack.map((t: string) => (
-                          <span 
+                          <span
                             key={t}
                             className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-slate-100 dark:bg-white/10 border border-black/10 dark:border-white/15 text-[10px] font-mono text-slate-900 dark:text-white"
                           >
                             <span>{t}</span>
-                            <button 
+                            <button
                               type="button"
                               onClick={() => toggleTechStackTag(t)}
                               className="text-secondary hover:text-rose-500 dark:hover:text-rose-400 ml-0.5"
@@ -1986,8 +1998,8 @@ export default function ProjectsClient({ initialProjects = [], initialClients = 
                             type="button"
                             onClick={() => toggleAssignee(name)}
                             className={`px-2.5 py-1 rounded-lg text-[10px] font-heading font-bold transition-all border flex items-center gap-1 ${
-                              isSelected 
-                                ? 'bg-purple-500/15 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300 border-purple-500/40 dark:border-purple-500/50 shadow-sm' 
+                              isSelected
+                                ? 'bg-purple-500/15 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300 border-purple-500/40 dark:border-purple-500/50 shadow-sm'
                                 : 'bg-slate-50 dark:bg-[#060608] text-secondary hover:text-slate-900 dark:hover:text-white border-black/10 dark:border-white/5 hover:border-black/20 dark:hover:border-white/15'
                             }`}
                           >

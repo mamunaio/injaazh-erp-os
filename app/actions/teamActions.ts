@@ -3,6 +3,7 @@
 import connectToDatabase from '@/lib/mongodb';
 import User from '@/models/User';
 import { getAuthUser, requireWriteAuth } from '@/lib/auth';
+import { sendWelcomeEmail } from '@/lib/emailService';
 
 // Middleware helper to check if logged in user is admin
 async function requireAdmin() {
@@ -31,7 +32,7 @@ export async function getTeamMembers() {
   try {
     await requireAdmin();
     await connectToDatabase();
-    
+
     const members = await User.find({}).select('-password').sort({ createdAt: -1 }).lean();
     return {
       success: true,
@@ -65,6 +66,17 @@ export async function createTeamMember(data: { name: string; email: string; pass
       role: role || 'editor',
       permissions: []
     });
+
+    const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    try {
+      await sendWelcomeEmail({
+        to: newMember.email,
+        name: newMember.name,
+        loginUrl: `${baseUrl}/login`,
+      });
+    } catch (emailErr: any) {
+      console.error('Failed to send welcome email:', emailErr?.message || 'Email dispatch failed');
+    }
 
     return {
       success: true,

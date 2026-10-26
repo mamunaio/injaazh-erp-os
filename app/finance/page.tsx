@@ -1,9 +1,9 @@
-import { 
-  getTransactions, 
-  getPlatformSummary, 
-  getTimesheetRevenueSummary, 
-  getFinanceProjectsList, 
-  getExchangeRate 
+import {
+  getTransactions,
+  getPlatformSummary,
+  getTimesheetRevenueSummary,
+  getFinanceProjectsList,
+  getExchangeRate
 } from '@/app/actions/transactionActions';
 import { getProjectAnalytics } from '@/app/actions/marketplaceActions';
 import FinanceClient from './FinanceClient';
@@ -19,8 +19,8 @@ export default async function FinancePage() {
   }
 
   const [
-    transactionsResult, 
-    summaryResult, 
+    transactionsResult,
+    summaryResult,
     analyticsResult,
     timesheetResult,
     projectsResult,
@@ -36,17 +36,17 @@ export default async function FinancePage() {
 
   const transactions = transactionsResult.success ? transactionsResult.data : [];
   const platformSummary = summaryResult.success ? summaryResult.data : {};
-  const projectAnalytics = analyticsResult.success 
-    ? analyticsResult.data 
+  const projectAnalytics = analyticsResult.success
+    ? analyticsResult.data
     : { Freelancer: 0, Direct: 0, Upwork: 0, Fiverr: 0 };
-  const timesheetSummary = timesheetResult.success 
-    ? timesheetResult.data 
+  const timesheetSummary = timesheetResult.success && timesheetResult.data
+    ? timesheetResult.data
     : { totalBillableSeconds: 0, totalBillableEarnings: 0, projects: [] };
   const projectsList = projectsResult.success ? projectsResult.data : [];
   const initialExchangeRate = fxResult.success ? fxResult.rate : 122;
 
   return (
-    <FinanceClient 
+    <FinanceClient
       initialTransactions={transactions}
       platformSummary={platformSummary}
       projectAnalytics={projectAnalytics}

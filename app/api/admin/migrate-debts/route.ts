@@ -1,14 +1,26 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import { PersonalDebt } from '@/models/PersonalDebt';
+import { requireApiWriteAuth, apiForbiddenResponse } from '@/lib/auth';
 
-export async function POST() {
+export async function POST(req: Request) {
+  // Handler-level defense-in-depth authorization
+  const auth = await requireApiWriteAuth(req);
+  if ('errorResponse' in auth) {
+    return auth.errorResponse;
+  }
+
+  // Require admin or owner role
+  if (auth.user.role !== 'admin' && auth.user.role !== 'owner') {
+    return apiForbiddenResponse('Administrative privileges required. Only owner or admin accounts can perform debt maintenance.');
+  }
+
   try {
     console.log('🔄 Starting debt migration...');
-    
+
     await connectToDatabase();
     console.log('✅ Connected to database');
-    
+
     // Find all debts that don't have originalAmount field
     const debtsToMigrate = await PersonalDebt.find({
       $or: [
@@ -17,9 +29,9 @@ export async function POST() {
         { paymentHistory: { $exists: false } }
       ]
     });
-    
+
     console.log(`📊 Found ${debtsToMigrate.length} debts to migrate`);
-    
+
     if (debtsToMigrate.length === 0) {
       return NextResponse.json({
         success: true,
@@ -30,11 +42,11 @@ export async function POST() {
         details: []
       });
     }
-    
+
     let successCount = 0;
     let errorCount = 0;
     const details: string[] = [];
-    
+
     for (const debt of debtsToMigrate) {
       try {
         await PersonalDebt.findByIdAndUpdate(
@@ -56,12 +68,12 @@ export async function POST() {
         console.error(`❌ Error migrating debt ${debt._id}:`, error);
       }
     }
-    
+
     console.log('\n📈 Migration Summary:');
     console.log(`   ✅ Successfully migrated: ${successCount}`);
     console.log(`   ❌ Failed: ${errorCount}`);
     console.log(`   📊 Total processed: ${debtsToMigrate.length}`);
-    
+
     return NextResponse.json({
       success: true,
       successCount,
@@ -69,7 +81,7 @@ export async function POST() {
       totalProcessed: debtsToMigrate.length,
       details
     });
-    
+
   } catch (error: any) {
     console.error('❌ Migration failed:', error);
     return NextResponse.json({

@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Clock, Plus, Calendar, DollarSign, Activity, Edit3, Trash2, Search, X, 
+import {
+  Clock, Plus, Calendar, DollarSign, Activity, Edit3, Trash2, Search, X,
   Loader2, ChevronLeft, ChevronRight, Filter, Download, Sparkles, TrendingUp,
   Flame, CheckCircle2, RotateCcw, Check, ArrowUpRight, Tag, HelpCircle,
   Play, Pause, Square, Zap, Sliders, Briefcase, RefreshCw, AlertCircle
@@ -32,6 +32,7 @@ export interface TimeLogItem {
 }
 
 export interface ProjectRateItem {
+  id?: string;
   name: string;
   rate: number;
   status?: string;
@@ -270,14 +271,14 @@ function PortalSelect({
 // ─── Main Timesheets Client ───────────────────────────────────────────────────
 export default function TimesheetsClient({ user, initialLogs, initialKpis, initialProjectRates }: TimesheetsClientProps) {
   const [logs, setLogs] = useState<TimeLogItem[]>(initialLogs || []);
-  const [kpis, setKpis] = useState<any>(initialKpis || { 
-    today: 0, 
-    week: 0, 
-    month: 0, 
-    billableValue: 0, 
-    averageRate: 25, 
-    uniqueProjectsCount: 0, 
-    chartData: [] 
+  const [kpis, setKpis] = useState<any>(initialKpis || {
+    today: 0,
+    week: 0,
+    month: 0,
+    billableValue: 0,
+    averageRate: 25,
+    uniqueProjectsCount: 0,
+    chartData: []
   });
   const { confirm } = useConfirm();
 
@@ -355,7 +356,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
           setIsTimerRunning(true);
           setIsTimerPaused(!!data.isTimerPaused);
           setTimerStartTime(data.startTime);
-          
+
           if (data.isTimerPaused) {
             setTimerElapsedSeconds(data.elapsedSeconds || 0);
           } else {
@@ -413,8 +414,8 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
 
   const handleSelectTimerProject = (projName: string) => {
     setTimerProject(projName);
-    const preSetRate = projectRates[projName] !== undefined 
-      ? projectRates[projName] 
+    const preSetRate = projectRates[projName] !== undefined
+      ? projectRates[projName]
       : defaultRate;
     setTimerRate(preSetRate);
   };
@@ -485,7 +486,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
     const durationSeconds = Math.max(60, timerElapsedSeconds);
     const startDate = timerStartTime ? new Date(timerStartTime) : new Date(Date.now() - timerElapsedSeconds * 1000);
     const endDate = new Date();
-    
+
     const startTimeStr = format(startDate, 'HH:mm');
     const endTimeStr = format(endDate, 'HH:mm');
     const dateStr = format(startDate, 'yyyy-MM-dd');
@@ -539,9 +540,9 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
   };
 
   // Project Rates Server Action handler
-  const handleSaveProjectRate = async (projectName: string, rate: number) => {
+  const handleSaveProjectRate = async (projectName: string, rate: number, projectId?: string) => {
     setIsSavingProjectRate(true);
-    const res = await saveProjectHourlyRate(projectName, rate);
+    const res = await saveProjectHourlyRate(projectName, rate, projectId);
     if (res.success) {
       toast.success(`Pre-set rate for "${projectName}" set to $${rate}/hr`);
       setProjectRates(prev => ({ ...prev, [projectName]: rate }));
@@ -577,17 +578,17 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
   const [isModalOpen, setIsModalOpen] = useState(false);
   useScrollLock(isModalOpen);
   const [editingLogId, setEditingLogId] = useState<string | null>(null);
-  
+
   // Time Entry Mode: 'duration' (direct hours & custom minutes) or 'range' (start & end time)
   const [timeEntryMode, setTimeEntryMode] = useState<'duration' | 'range'>('duration');
 
   const [saveAsDefaultRateForProject, setSaveAsDefaultRateForProject] = useState(false);
 
-  const [formData, setFormData] = useState({ 
-    project: '', 
-    task: '', 
-    date: format(new Date(), 'yyyy-MM-dd'), 
-    startTime: '09:00', 
+  const [formData, setFormData] = useState({
+    project: '',
+    task: '',
+    date: format(new Date(), 'yyyy-MM-dd'),
+    startTime: '09:00',
     endTime: '10:00',
     durationHours: 1,
     durationMinutes: 0,
@@ -685,7 +686,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
 
   // All Available Projects (DB Projects + Logged Projects with pre-set rates)
   const allAvailableProjects = useMemo(() => {
-    const map = new Map<string, { name: string; rate: number; status?: string }>();
+    const map = new Map<string, { id?: string; name: string; rate: number; status?: string }>();
     projectsList.forEach(p => {
       if (p.name) {
         const rate = projectRates[p.name] !== undefined ? projectRates[p.name] : p.rate || defaultRate;
@@ -694,8 +695,8 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
     });
     logs.forEach(l => {
       if (l.project && !map.has(l.project.toLowerCase())) {
-        const rate = projectRates[l.project] !== undefined 
-          ? projectRates[l.project] 
+        const rate = projectRates[l.project] !== undefined
+          ? projectRates[l.project]
           : (typeof l.hourlyRate === 'number' ? l.hourlyRate : defaultRate);
         map.set(l.project.toLowerCase(), {
           name: l.project,
@@ -767,15 +768,15 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
     setTimeEntryMode('duration');
     setSaveAsDefaultRateForProject(false);
     const initialProj = allAvailableProjects.length > 0 ? allAvailableProjects[0].name : '';
-    const initialRate = initialProj && projectRates[initialProj] !== undefined 
-      ? projectRates[initialProj] 
+    const initialRate = initialProj && projectRates[initialProj] !== undefined
+      ? projectRates[initialProj]
       : defaultRate;
 
-    setFormData({ 
-      project: initialProj, 
-      task: '', 
-      date: format(new Date(), 'yyyy-MM-dd'), 
-      startTime: '09:00', 
+    setFormData({
+      project: initialProj,
+      task: '',
+      date: format(new Date(), 'yyyy-MM-dd'),
+      startTime: '09:00',
       endTime: '10:00',
       durationHours: 1,
       durationMinutes: 0,
@@ -793,15 +794,15 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
     const totalMins = Math.round(totalSecs / 60);
     const h = Math.floor(totalMins / 60);
     const m = totalMins % 60;
-    const effectiveRate = typeof log.hourlyRate === 'number' 
-      ? log.hourlyRate 
+    const effectiveRate = typeof log.hourlyRate === 'number'
+      ? log.hourlyRate
       : (projectRates[log.project] !== undefined ? projectRates[log.project] : defaultRate);
 
-    setFormData({ 
-      project: log.project, 
-      task: log.task, 
-      date: format(new Date(log.date), 'yyyy-MM-dd'), 
-      startTime: log.startTime || '09:00', 
+    setFormData({
+      project: log.project,
+      task: log.task,
+      date: format(new Date(log.date), 'yyyy-MM-dd'),
+      startTime: log.startTime || '09:00',
       endTime: log.endTime || '10:00',
       durationHours: h,
       durationMinutes: m,
@@ -858,18 +859,18 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
 
     setIsSubmitting(true);
     const rate = typeof formData.hourlyRate === 'number' && formData.hourlyRate >= 0 ? formData.hourlyRate : defaultRate;
-    
+
     // Auto-save project rate if requested
     if (saveAsDefaultRateForProject && formData.project.trim()) {
       handleSaveProjectRate(formData.project.trim(), rate);
     }
 
-    const payload = { 
-      project: formData.project.trim(), 
-      task: formData.task.trim(), 
-      date: formData.date, 
-      startTime: formData.startTime || '09:00', 
-      endTime: calculatedEndTime || '10:00', 
+    const payload = {
+      project: formData.project.trim(),
+      task: formData.task.trim(),
+      date: formData.date,
+      startTime: formData.startTime || '09:00',
+      endTime: calculatedEndTime || '10:00',
       durationSeconds,
       hourlyRate: rate,
       billable: formData.billable,
@@ -877,21 +878,21 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
 
     if (editingLogId) {
       const res = await updateTimeLog(editingLogId, payload);
-      if (res.success && res.data) { 
-        toast.success(`Time log and rate ($${rate}/hr) updated!`); 
-        setLogs(logs.map(l => l._id === editingLogId ? res.data : l)); 
-        refreshKpis(); 
-        setIsModalOpen(false); 
+      if (res.success && res.data) {
+        toast.success(`Time log and rate ($${rate}/hr) updated!`);
+        setLogs(logs.map(l => l._id === editingLogId ? res.data : l));
+        refreshKpis();
+        setIsModalOpen(false);
       } else {
         toast.error(res.error || 'Failed to update log');
       }
     } else {
       const res = await createTimeLog(payload);
-      if (res.success && res.data) { 
-        toast.success(`Logged ${formatTimeSeconds(durationSeconds)} @ $${rate}/hr!`); 
-        setLogs([res.data, ...logs]); 
-        refreshKpis(); 
-        setIsModalOpen(false); 
+      if (res.success && res.data) {
+        toast.success(`Logged ${formatTimeSeconds(durationSeconds)} @ $${rate}/hr!`);
+        setLogs([res.data, ...logs]);
+        refreshKpis();
+        setIsModalOpen(false);
       } else {
         toast.error(res.error || 'Failed to log time');
       }
@@ -900,19 +901,19 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
   };
 
   const handleDelete = async (id: string) => {
-    const isConfirmed = await confirm({ 
+    const isConfirmed = await confirm({
       title: 'Delete Time Log Entry?',
-      message: 'Are you sure you want to delete this recorded time log and its billable hours?', 
+      message: 'Are you sure you want to delete this recorded time log and its billable hours?',
       variant: 'danger',
       confirmText: 'Delete Entry'
     });
     if (!isConfirmed) return;
 
     const res = await deleteTimeLog(id);
-    if (res.success) { 
-      toast.success('Log entry deleted'); 
-      setLogs(logs.filter(l => l._id !== id)); 
-      refreshKpis(); 
+    if (res.success) {
+      toast.success('Log entry deleted');
+      setLogs(logs.filter(l => l._id !== id));
+      refreshKpis();
     } else {
       toast.error('Failed to delete log');
     }
@@ -987,8 +988,8 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
       const dateStr = format(d, 'yyyy-MM-dd');
       const monthStr = format(d, 'yyyy-MM');
       const s = l.durationSeconds || 0;
-      const rate = typeof l.hourlyRate === 'number' && l.hourlyRate >= 0 
-        ? l.hourlyRate 
+      const rate = typeof l.hourlyRate === 'number' && l.hourlyRate >= 0
+        ? l.hourlyRate
         : (l.project && projectRates[l.project] !== undefined ? projectRates[l.project] : defaultRate);
       const isBillable = l.billable !== false;
 
@@ -1011,7 +1012,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
       }
     });
 
-    const effectiveAverageRate = billableSecondsMonth > 0 
+    const effectiveAverageRate = billableSecondsMonth > 0
       ? (billableValueMonth / (billableSecondsMonth / 3600))
       : (totalLogsInMonth > 0 ? (sumRatesInMonth / totalLogsInMonth) : defaultRate);
 
@@ -1104,7 +1105,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
           {/* Quick Action Controls */}
           <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
             {/* Command shortcut button */}
-            <button 
+            <button
               type="button"
               onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
               className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 text-secondary hover:text-slate-900 dark:hover:text-white text-xs font-heading font-semibold transition-all group"
@@ -1126,7 +1127,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
             </button>
 
             {/* AI Copilot Dispatch */}
-            <button 
+            <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent('open-ai-chat', { detail: { initialPrompt: 'Analyze my timesheet hours, weekly billable efficiency, and client revenue run rate' } }))}
               className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[#6324FC]/10 border border-[#6324FC]/30 hover:border-[#6324FC] text-slate-800 dark:text-[#edeae2] text-xs font-heading font-semibold transition-all hover:shadow-[0_0_15px_rgba(99,36,252,0.3)] shadow-sm"
@@ -1136,19 +1137,19 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
             </button>
 
             {/* + Log Time Manually Laser Beam CTA */}
-            <button 
+            <button
               type="button"
               onClick={openModalForNew}
               className="h-9 group relative p-[2px] rounded-xl overflow-hidden flex items-center justify-center cursor-pointer transition-all duration-300 active:scale-95 shadow-[0_0_20px_rgba(99,36,252,0.35)] hover:shadow-[0_0_35px_rgba(0,229,255,0.5),0_0_20px_rgba(236,72,153,0.35)]"
             >
-              <span 
-                className="absolute top-1/2 left-1/2 w-[450%] aspect-square -translate-x-1/2 -translate-y-1/2 animate-[spin_3s_linear_infinite] blur-[8px] opacity-85 pointer-events-none" 
+              <span
+                className="absolute top-1/2 left-1/2 w-[450%] aspect-square -translate-x-1/2 -translate-y-1/2 animate-[spin_3s_linear_infinite] blur-[8px] opacity-85 pointer-events-none"
                 style={{
                   background: 'conic-gradient(from 0deg, transparent 0deg, transparent 60deg, #00e5ff 110deg, #6324fc 140deg, #ec4899 170deg, transparent 210deg, transparent 360deg)'
                 }}
               />
-              <span 
-                className="absolute top-1/2 left-1/2 w-[450%] aspect-square -translate-x-1/2 -translate-y-1/2 animate-[spin_3s_linear_infinite] opacity-100 pointer-events-none" 
+              <span
+                className="absolute top-1/2 left-1/2 w-[450%] aspect-square -translate-x-1/2 -translate-y-1/2 animate-[spin_3s_linear_infinite] opacity-100 pointer-events-none"
                 style={{
                   background: 'conic-gradient(from 0deg, transparent 0deg, transparent 60deg, #00e5ff 110deg, #6324fc 140deg, #ec4899 170deg, transparent 210deg, transparent 360deg)'
                 }}
@@ -1198,7 +1199,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
               </div>
 
               <span className="text-xs text-secondary hidden sm:inline">
-                {isTimerRunning 
+                {isTimerRunning
                   ? `Active Session: ${timerProject || 'Untitled'}`
                   : 'Track live hours with automatic project-specific hourly billing rates'}
               </span>
@@ -1351,7 +1352,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 lg:gap-5">
             {/* Card 1: Today's Hours */}
-            <div 
+            <div
               className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-[#6324FC]/60 hover:shadow-[0_16px_36px_rgba(99,36,252,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
             >
               <div className="absolute -top-10 -right-10 w-36 h-36 bg-[#6324FC]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
@@ -1378,7 +1379,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
             </div>
 
             {/* Card 2: Weekly Velocity */}
-            <div 
+            <div
               className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-[#00E5FF]/60 hover:shadow-[0_16px_36px_rgba(0,229,255,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
             >
               <div className="absolute -top-10 -right-10 w-36 h-36 bg-[#00E5FF]/20 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
@@ -1405,7 +1406,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
             </div>
 
             {/* Card 3: Monthly Total Hours */}
-            <div 
+            <div
               className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-[#F59E0B]/60 hover:shadow-[0_16px_36px_rgba(245,158,11,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
             >
               <div className="absolute -top-10 -right-10 w-36 h-36 bg-[#F59E0B]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
@@ -1432,7 +1433,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
             </div>
 
             {/* Card 4: Monthly Billable Value */}
-            <div 
+            <div
               className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-[#10B981]/60 hover:shadow-[0_16px_36px_rgba(16,185,129,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
             >
               <div className="absolute -top-10 -right-10 w-36 h-36 bg-[#10B981]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
@@ -1459,7 +1460,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
             </div>
 
             {/* Card 5: Average Hourly Rate */}
-            <div 
+            <div
               onClick={() => {
                 setTempDefaultRateInput(defaultRate.toString());
                 setIsEditingDefaultRate(true);
@@ -1491,7 +1492,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
             </div>
 
             {/* Card 6: Active Projects Tracked */}
-            <div 
+            <div
               className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-[#EC4899]/60 hover:shadow-[0_16px_36px_rgba(236,72,153,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
             >
               <div className="absolute -top-10 -right-10 w-36 h-36 bg-[#EC4899]/25 blur-[35px] rounded-full opacity-40 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500 pointer-events-none" />
@@ -1601,15 +1602,15 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
                 <div className="relative min-w-[180px] max-w-xs flex-1">
                   <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary" />
                   <input
-                    type="text" 
-                    placeholder="Search task or project..." 
+                    type="text"
+                    placeholder="Search task or project..."
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                     className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 text-slate-900 dark:text-white text-xs rounded-xl pl-8 pr-7 py-2 focus:outline-none focus:border-[#6324FC] transition-colors placeholder:text-secondary"
                   />
                   {searchQuery && (
-                    <button 
-                      onClick={() => setSearchQuery('')} 
+                    <button
+                      onClick={() => setSearchQuery('')}
                       className="absolute right-2.5 top-1/2 -translate-y-1/2 text-secondary hover:text-slate-900 dark:hover:text-white"
                     >
                       <X size={11} />
@@ -1785,7 +1786,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
                             {editingRateLogId === log._id ? (
                               <div className="inline-flex items-center gap-1 bg-white dark:bg-[#060608] border border-[#6324FC] rounded-lg p-1 shadow-sm">
                                 <span className="text-[10px] font-mono font-bold text-secondary">$</span>
-                                <input 
+                                <input
                                   type="number"
                                   min="0"
                                   step="any"
@@ -1848,15 +1849,15 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
                           {/* Actions */}
                           <td className="px-5 py-3.5 text-right">
                             <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button 
-                                onClick={() => openModalForEdit(log)} 
+                              <button
+                                onClick={() => openModalForEdit(log)}
                                 className="p-1.5 text-secondary hover:text-[#6324FC] dark:hover:text-[#00E5FF] rounded-lg transition-colors hover:bg-black/5 dark:hover:bg-white/5"
                                 title="Edit log & rate"
                               >
                                 <Edit3 size={13} />
                               </button>
-                              <button 
-                                onClick={() => handleDelete(log._id)} 
+                              <button
+                                onClick={() => handleDelete(log._id)}
                                 className="p-1.5 text-secondary hover:text-rose-500 rounded-lg transition-colors hover:bg-rose-500/10"
                                 title="Delete log"
                               >
@@ -1919,13 +1920,13 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
                 {searchQuery ? 'No matching logs found' : `No logs recorded for ${formatMonthLabel(selectedMonth)}`}
               </h3>
               <p className="text-xs text-secondary max-w-sm mb-4 leading-relaxed">
-                {searchQuery 
-                  ? 'Try a different search keyword or reset the filter criteria.' 
+                {searchQuery
+                  ? 'Try a different search keyword or reset the filter criteria.'
                   : 'Log your work hours manually to start calculating client billable revenue.'}
               </p>
               {!searchQuery && (
-                <button 
-                  onClick={openModalForNew} 
+                <button
+                  onClick={openModalForNew}
                   className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-heading font-bold text-xs bg-[#6324FC] text-white hover:bg-[#521bd6] shadow-[0_0_15px_rgba(99,36,252,0.4)] transition-all"
                 >
                   <Plus size={14} /> Log Time Manually
@@ -1944,15 +1945,15 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="absolute inset-0 bg-black/70 backdrop-blur-md"
               onClick={() => setIsModalOpen(false)}
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }} 
-              animate={{ opacity: 1, scale: 1, y: 0 }} 
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               className="relative w-full max-w-lg bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/15 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] z-10"
             >
@@ -1971,9 +1972,9 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
                     </p>
                   </div>
                 </div>
-                <button 
-                  type="button" 
-                  onClick={() => setIsModalOpen(false)} 
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
                   className="p-1.5 text-secondary hover:text-slate-900 dark:hover:text-white bg-slate-50 dark:bg-white/5 rounded-xl border border-black/5 dark:border-white/5 transition-colors"
                 >
                   <X size={15} />
@@ -1995,14 +1996,14 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
                     )}
                   </div>
                   <div className="relative">
-                    <input 
-                      type="text" 
-                      value={formData.project} 
-                      onChange={e => handleSelectModalProject(e.target.value)} 
-                      className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#6324FC] transition-colors placeholder:text-secondary font-medium" 
-                      placeholder="e.g. Upwork Milestone 2 or Acme Corp Redesign" 
+                    <input
+                      type="text"
+                      value={formData.project}
+                      onChange={e => handleSelectModalProject(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#6324FC] transition-colors placeholder:text-secondary font-medium"
+                      placeholder="e.g. Upwork Milestone 2 or Acme Corp Redesign"
                       list="manual-modal-projects-datalist"
-                      required 
+                      required
                     />
                     <datalist id="manual-modal-projects-datalist">
                       {allAvailableProjects.map(p => (
@@ -2038,13 +2039,13 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
                   <label className="block text-[10px] font-heading font-bold text-secondary mb-1.5 uppercase tracking-widest">
                     Task Deliverable Description *
                   </label>
-                  <input 
-                    type="text" 
-                    value={formData.task} 
-                    onChange={e => setFormData({...formData, task: e.target.value})} 
-                    className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#6324FC] transition-colors placeholder:text-secondary" 
-                    placeholder="e.g. Implemented responsive UI & Backend API auth" 
-                    required 
+                  <input
+                    type="text"
+                    value={formData.task}
+                    onChange={e => setFormData({...formData, task: e.target.value})}
+                    className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#6324FC] transition-colors placeholder:text-secondary"
+                    placeholder="e.g. Implemented responsive UI & Backend API auth"
+                    required
                   />
                 </div>
 
@@ -2057,9 +2058,9 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
                     selected={new Date(formData.date + 'T00:00:00')}
                     onChange={(date: Date | null) => setFormData({...formData, date: date ? format(date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')})}
                     className="w-full bg-slate-50 dark:bg-[#060608] border border-black/10 dark:border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#6324FC] transition-colors"
-                    dateFormat="MMMM d, yyyy" 
-                    required 
-                    popperPlacement="bottom-start" 
+                    dateFormat="MMMM d, yyyy"
+                    required
+                    popperPlacement="bottom-start"
                     popperClassName="z-[70]"
                     renderCustomHeader={({ date, decreaseMonth, increaseMonth, prevMonthButtonDisabled, nextMonthButtonDisabled }) => (
                       <div className="flex justify-between items-center mb-3 px-2">
@@ -2115,7 +2116,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
                             Hours (ঘণ্টা)
                           </label>
                           <div className="relative">
-                            <input 
+                            <input
                               type="number"
                               min="0"
                               max="24"
@@ -2141,7 +2142,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
                             <span className="text-[9px] text-[#6324FC] dark:text-[#00E5FF] font-mono lowercase">0-59 mins</span>
                           </label>
                           <div className="relative">
-                            <input 
+                            <input
                               type="number"
                               min="0"
                               max="1440"
@@ -2208,26 +2209,26 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
                           <label className="block text-[10px] font-heading font-bold text-secondary mb-1 uppercase tracking-widest">
                             Start Time (যেকোনো মিনিট) *
                           </label>
-                          <input 
-                            type="time" 
+                          <input
+                            type="time"
                             step="60"
-                            value={formData.startTime} 
+                            value={formData.startTime}
                             onChange={(e) => updateFromTimeRange(e.target.value, formData.endTime)}
                             className="w-full bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#6324FC] transition-colors"
-                            required 
+                            required
                           />
                         </div>
                         <div>
                           <label className="block text-[10px] font-heading font-bold text-secondary mb-1 uppercase tracking-widest">
                             End Time (যেকোনো মিনিট) *
                           </label>
-                          <input 
-                            type="time" 
+                          <input
+                            type="time"
                             step="60"
-                            value={formData.endTime} 
+                            value={formData.endTime}
                             onChange={(e) => updateFromTimeRange(formData.startTime, e.target.value)}
                             className="w-full bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#6324FC] transition-colors"
-                            required 
+                            required
                           />
                         </div>
                       </div>
@@ -2364,16 +2365,16 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
 
                 {/* Footer Buttons */}
                 <div className="pt-3 border-t border-black/5 dark:border-white/10 flex justify-end gap-2.5">
-                  <button 
-                    type="button" 
-                    onClick={() => setIsModalOpen(false)} 
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
                     className="px-4 py-2 rounded-xl font-heading font-bold text-xs bg-slate-100 dark:bg-white/5 text-secondary hover:text-slate-900 dark:hover:text-white transition-all"
                   >
                     Cancel
                   </button>
-                  <button 
-                    type="submit" 
-                    disabled={isSubmitting} 
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
                     className="flex items-center gap-1.5 px-5 py-2 rounded-xl font-heading font-bold text-xs bg-[#6324FC] hover:bg-[#521bd6] text-white shadow-[0_0_15px_rgba(99,36,252,0.4)] disabled:opacity-50 transition-all"
                   >
                     {isSubmitting && <Loader2 size={13} className="animate-spin" />}
@@ -2422,9 +2423,9 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
                     </p>
                   </div>
                 </div>
-                <button 
-                  type="button" 
-                  onClick={() => setIsProjectRatesModalOpen(false)} 
+                <button
+                  type="button"
+                  onClick={() => setIsProjectRatesModalOpen(false)}
                   className="p-1.5 text-secondary hover:text-slate-900 dark:hover:text-white bg-slate-50 dark:bg-white/5 rounded-xl border border-black/5 dark:border-white/5 transition-colors"
                 >
                   <X size={15} />
@@ -2520,7 +2521,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
                                 <button
                                   key={r}
                                   type="button"
-                                  onClick={() => handleSaveProjectRate(p.name, r)}
+                                  onClick={() => handleSaveProjectRate(p.name, r, p.id)}
                                   className={`px-1.5 py-0.5 rounded text-[10px] font-mono transition-all ${
                                     currentRate === r
                                       ? 'bg-emerald-500 text-white font-bold'
@@ -2550,7 +2551,7 @@ export default function TimesheetsClient({ user, initialLogs, initialKpis, initi
                               </div>
                               <button
                                 type="button"
-                                onClick={() => handleSaveProjectRate(p.name, currentRate)}
+                                onClick={() => handleSaveProjectRate(p.name, currentRate, p.id)}
                                 disabled={isSavingProjectRate}
                                 className="px-2.5 py-1 rounded-lg text-xs font-heading font-bold bg-[#6324FC] hover:bg-[#521bd6] text-white transition-colors"
                               >

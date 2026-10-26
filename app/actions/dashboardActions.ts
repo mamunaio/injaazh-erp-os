@@ -6,9 +6,19 @@ import { Transaction } from '@/models/Transaction';
 import MarketplaceProject from '@/models/MarketplaceProject';
 import SeoProject from '@/models/SeoProject';
 import DailyTask from '@/models/DailyTask';
+import { getAuthUser } from '@/lib/auth';
 
 export async function getDashboardData() {
   try {
+    const user = await getAuthUser();
+    if (!user) {
+      return {
+        success: false,
+        error: 'Unauthorized: Authentication required.',
+        data: null,
+      };
+    }
+
     await connectToDatabase();
 
     // Fetch all data in parallel
@@ -39,7 +49,7 @@ export async function getDashboardData() {
     const allUnifiedProjects = [...projects, ...uniqueMarketplaceProjects];
 
     const totalProjects = allUnifiedProjects.length;
-    const activeProjects = allUnifiedProjects.filter((p: any) => 
+    const activeProjects = allUnifiedProjects.filter((p: any) =>
       p.status === 'In Progress' || p.status === 'Planning' || p.status === 'In Review'
     ).length;
 
@@ -64,8 +74,8 @@ export async function getDashboardData() {
       .filter((t: any) => {
         const date = new Date(t.date);
         const now = new Date();
-        return t.type === 'Income' && 
-               date.getMonth() === now.getMonth() && 
+        return t.type === 'Income' &&
+               date.getMonth() === now.getMonth() &&
                date.getFullYear() === now.getFullYear();
       })
       .reduce((sum: number, t: any) => sum + t.amount, 0);
@@ -74,8 +84,8 @@ export async function getDashboardData() {
       .filter((t: any) => {
         const date = new Date(t.date);
         const now = new Date();
-        return (t.type === 'Expense' || t.type === 'expense') && 
-               date.getMonth() === now.getMonth() && 
+        return (t.type === 'Expense' || t.type === 'expense') &&
+               date.getMonth() === now.getMonth() &&
                date.getFullYear() === now.getFullYear();
       })
       .reduce((sum: number, t: any) => sum + (parseFloat(t.amount) || 0), 0);
@@ -85,14 +95,14 @@ export async function getDashboardData() {
         const date = new Date(t.date);
         const now = new Date();
         const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        return t.type === 'Income' && 
-               date.getMonth() === lastMonth.getMonth() && 
+        return t.type === 'Income' &&
+               date.getMonth() === lastMonth.getMonth() &&
                date.getFullYear() === lastMonth.getFullYear();
       })
       .reduce((sum: number, t: any) => sum + t.amount, 0);
 
-    const monthlyGrowth = lastMonthIncome === 0 
-      ? (thisMonthIncome > 0 ? 100 : 0) 
+    const monthlyGrowth = lastMonthIncome === 0
+      ? (thisMonthIncome > 0 ? 100 : 0)
       : Math.round(((thisMonthIncome - lastMonthIncome) / lastMonthIncome) * 100);
 
     // Pending marketplace milestone value
@@ -117,7 +127,7 @@ export async function getDashboardData() {
     // Get upcoming deadlines (projects with deadline in next 7 days)
     const now = new Date();
     const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    
+
     // Combine regular projects and marketplace projects for upcoming deadlines
     const regularProjectDeadlines = projects
       .filter((p: any) => {
@@ -188,13 +198,13 @@ export async function getDashboardData() {
 
     // Project status distribution
     const projectStatusDistribution = {
-      Planning: projects.filter((p: any) => p.status === 'Planning').length + 
+      Planning: projects.filter((p: any) => p.status === 'Planning').length +
                 marketplaceProjects.filter((mp: any) => mp.status === 'Planning').length,
-      'In Progress': projects.filter((p: any) => p.status === 'In Progress').length + 
+      'In Progress': projects.filter((p: any) => p.status === 'In Progress').length +
                      marketplaceProjects.filter((mp: any) => mp.status === 'In Progress').length,
-      'In Review': projects.filter((p: any) => p.status === 'In Review').length + 
+      'In Review': projects.filter((p: any) => p.status === 'In Review').length +
                    marketplaceProjects.filter((mp: any) => mp.status === 'In Review').length,
-      Completed: projects.filter((p: any) => p.status === 'Completed').length + 
+      Completed: projects.filter((p: any) => p.status === 'Completed').length +
                  marketplaceProjects.filter((mp: any) => mp.status === 'Completed').length,
     };
 
@@ -216,10 +226,10 @@ export async function getDashboardData() {
           }
         });
       }
-      
+
       const budgetValue = mp.budget ? parseFloat(mp.budget.replace(/[^0-9.-]+/g, '')) : 0;
       const earned = paidMilestonesSum > 0 ? paidMilestonesSum : (mp.status === 'Completed' ? budgetValue : 0);
-      
+
       if (earned > 0) {
         milestonePlatformIncome[mp.platform] = (milestonePlatformIncome[mp.platform] || 0) + earned;
       }
@@ -248,13 +258,13 @@ export async function getDashboardData() {
       const date = new Date(trendEndDate);
       date.setDate(date.getDate() - i);
       const dayKey = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      
+
       const dayIncome = transactions
         .filter((t: any) => {
           const tDate = new Date(t.date);
-          return (t.type === 'Income' || t.type === 'income') && 
+          return (t.type === 'Income' || t.type === 'income') &&
                  tDate.getDate() === date.getDate() &&
-                 tDate.getMonth() === date.getMonth() && 
+                 tDate.getMonth() === date.getMonth() &&
                  tDate.getFullYear() === date.getFullYear();
         })
         .reduce((sum: number, t: any) => sum + (parseFloat(t.amount) || 0), 0);
@@ -262,15 +272,15 @@ export async function getDashboardData() {
       const dayExpense = transactions
         .filter((t: any) => {
           const tDate = new Date(t.date);
-          return (t.type === 'Expense' || t.type === 'expense') && 
+          return (t.type === 'Expense' || t.type === 'expense') &&
                  tDate.getDate() === date.getDate() &&
-                 tDate.getMonth() === date.getMonth() && 
+                 tDate.getMonth() === date.getMonth() &&
                  tDate.getFullYear() === date.getFullYear();
         })
         .reduce((sum: number, t: any) => sum + (parseFloat(t.amount) || 0), 0);
-      
-      revenueTrend30Days.push({ 
-        dateStr: dayKey, 
+
+      revenueTrend30Days.push({
+        dateStr: dayKey,
         Income: Math.round(dayIncome * 100) / 100,
         Expense: Math.round(dayExpense * 100) / 100,
         Net: Math.round((dayIncome - dayExpense) * 100) / 100
@@ -283,12 +293,12 @@ export async function getDashboardData() {
       const date = new Date();
       date.setMonth(date.getMonth() - i);
       const monthKey = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-      
+
       const monthIncome = transactions
         .filter((t: any) => {
           const tDate = new Date(t.date);
-          return (t.type === 'Income' || t.type === 'income') && 
-                 tDate.getMonth() === date.getMonth() && 
+          return (t.type === 'Income' || t.type === 'income') &&
+                 tDate.getMonth() === date.getMonth() &&
                  tDate.getFullYear() === date.getFullYear();
         })
         .reduce((sum: number, t: any) => sum + (parseFloat(t.amount) || 0), 0);
@@ -296,14 +306,14 @@ export async function getDashboardData() {
       const monthExpense = transactions
         .filter((t: any) => {
           const tDate = new Date(t.date);
-          return (t.type === 'Expense' || t.type === 'expense') && 
-                 tDate.getMonth() === date.getMonth() && 
+          return (t.type === 'Expense' || t.type === 'expense') &&
+                 tDate.getMonth() === date.getMonth() &&
                  tDate.getFullYear() === date.getFullYear();
         })
         .reduce((sum: number, t: any) => sum + (parseFloat(t.amount) || 0), 0);
-      
-      revenueTrend6Months.push({ 
-        dateStr: monthKey, 
+
+      revenueTrend6Months.push({
+        dateStr: monthKey,
         Income: Math.round(monthIncome * 100) / 100,
         Expense: Math.round(monthExpense * 100) / 100,
         Net: Math.round((monthIncome - monthExpense) * 100) / 100
@@ -315,12 +325,12 @@ export async function getDashboardData() {
     for (let i = 0; i < 12; i++) {
       const date = new Date(new Date().getFullYear(), i, 1);
       const monthKey = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-      
+
       const monthIncome = transactions
         .filter((t: any) => {
           const tDate = new Date(t.date);
-          return (t.type === 'Income' || t.type === 'income') && 
-                 tDate.getMonth() === date.getMonth() && 
+          return (t.type === 'Income' || t.type === 'income') &&
+                 tDate.getMonth() === date.getMonth() &&
                  tDate.getFullYear() === date.getFullYear();
         })
         .reduce((sum: number, t: any) => sum + (parseFloat(t.amount) || 0), 0);
@@ -328,14 +338,14 @@ export async function getDashboardData() {
       const monthExpense = transactions
         .filter((t: any) => {
           const tDate = new Date(t.date);
-          return (t.type === 'Expense' || t.type === 'expense') && 
-                 tDate.getMonth() === date.getMonth() && 
+          return (t.type === 'Expense' || t.type === 'expense') &&
+                 tDate.getMonth() === date.getMonth() &&
                  tDate.getFullYear() === date.getFullYear();
         })
         .reduce((sum: number, t: any) => sum + (parseFloat(t.amount) || 0), 0);
-      
-      revenueTrendYear.push({ 
-        dateStr: monthKey, 
+
+      revenueTrendYear.push({
+        dateStr: monthKey,
         Income: Math.round(monthIncome * 100) / 100,
         Expense: Math.round(monthExpense * 100) / 100,
         Net: Math.round((monthIncome - monthExpense) * 100) / 100
@@ -453,11 +463,11 @@ export async function getDashboardData() {
     let aiInsights = "Based on your activity, here is what you should focus on today. ";
     if (todayTasks.length > 0) aiInsights += `You have ${todayTasks.length} task${todayTasks.length > 1 ? 's' : ''} due today. `;
     else aiInsights += "You have no tasks due today. ";
-    
+
     if (upcomingMeetings.length > 0) aiInsights += `Prepare for your ${upcomingMeetings.length} upcoming meeting${upcomingMeetings.length > 1 ? 's' : ''}. `;
-    
+
     if (pendingMilestoneValue > 0) aiInsights += `You have $${pendingMilestoneValue.toLocaleString()} in pending milestones to deliver across your marketplace projects. `;
-    
+
     if (thisMonthIncome > 0) aiInsights += `Great job generating $${thisMonthIncome.toLocaleString()} in revenue this month! Keep up the momentum.`;
     else aiInsights += `Stay proactive on your marketplace deliverables to unlock milestone payments.`;
 

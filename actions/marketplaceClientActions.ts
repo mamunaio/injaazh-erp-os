@@ -3,16 +3,20 @@
 import dbConnect from '@/lib/mongodb';
 import MarketplaceClient from '@/models/MarketplaceClient';
 import { revalidatePath } from 'next/cache';
-import { getAuthUser } from '@/lib/auth';
+import { getAuthUser, requireWriteAuth } from '@/lib/auth';
 
 export async function getMarketplaceClients() {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return { success: false, error: 'Unauthorized: Authentication required.', data: [] };
+    }
+
     await dbConnect();
     const clients = await MarketplaceClient.find().sort({ createdAt: -1 });
-    const authUser = await getAuthUser();
-    
+
     let parsed = JSON.parse(JSON.stringify(clients));
-    if (authUser && authUser.role === 'admin') {
+    if (authUser.role === 'admin') {
       parsed = parsed.map((c: any) => {
         if (c.platform === 'Direct') {
           return {
@@ -27,7 +31,7 @@ export async function getMarketplaceClients() {
         return c;
       });
     }
-    
+
     return { success: true, data: parsed };
   } catch (error: any) {
     console.error('Error fetching marketplace clients:', error);
@@ -37,23 +41,27 @@ export async function getMarketplaceClients() {
 
 export async function getMarketplaceClientById(id: string) {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return { success: false, error: 'Unauthorized: Authentication required.', data: null };
+    }
+
     await dbConnect();
     const client = await MarketplaceClient.findById(id);
     if (!client) {
       return { success: false, error: 'Client not found' };
     }
-    
+
     let parsed = JSON.parse(JSON.stringify(client));
-    const authUser = await getAuthUser();
-    
-    if (authUser && authUser.role === 'admin' && parsed.platform === 'Direct') {
+
+    if (authUser.role === 'admin' && parsed.platform === 'Direct') {
       parsed.name = 'Confidential Client';
       parsed.company = parsed.company ? 'Confidential Company' : parsed.company;
       parsed.email = parsed.email ? 'hidden@example.com' : parsed.email;
       parsed.profileLink = '';
       parsed.notes = 'Confidential';
     }
-    
+
     return { success: true, data: parsed };
   } catch (error: any) {
     console.error('Error fetching client by id:', error);
@@ -63,14 +71,15 @@ export async function getMarketplaceClientById(id: string) {
 
 export async function createMarketplaceClient(data: any) {
   try {
+    await requireWriteAuth();
     await dbConnect();
     const newClient = await MarketplaceClient.create(data);
-    
+
     // Revalidate paths that might display this data
     revalidatePath('/marketplace');
     revalidatePath('/marketplace/clients');
     revalidatePath('/marketplace/[platform]', 'page');
-    
+
     return { success: true, data: JSON.parse(JSON.stringify(newClient)) };
   } catch (error: any) {
     console.error('Error creating client:', error);
@@ -80,9 +89,10 @@ export async function createMarketplaceClient(data: any) {
 
 export async function updateMarketplaceClient(id: string, data: any) {
   try {
+    await requireWriteAuth();
     await dbConnect();
     const updatedClient = await MarketplaceClient.findByIdAndUpdate(id, data, { new: true, runValidators: true });
-    
+
     if (!updatedClient) {
       return { success: false, error: 'Client not found' };
     }
@@ -100,9 +110,10 @@ export async function updateMarketplaceClient(id: string, data: any) {
 
 export async function deleteMarketplaceClient(id: string) {
   try {
+    await requireWriteAuth();
     await dbConnect();
     const deletedClient = await MarketplaceClient.findByIdAndDelete(id);
-    
+
     if (!deletedClient) {
       return { success: false, error: 'Client not found' };
     }

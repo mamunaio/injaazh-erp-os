@@ -2,95 +2,83 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
+import { generateAuthToken, createDbSession } from '@/lib/auth';
+import { getMobileCorsHeaders } from '@/lib/cors';
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-};
-
-export async function OPTIONS() {
+export async function OPTIONS(req: Request) {
   return new NextResponse(null, {
     status: 204,
-    headers: CORS_HEADERS,
+    headers: getMobileCorsHeaders(req),
   });
 }
 
 export async function POST(req: Request) {
+  const corsHeaders = getMobileCorsHeaders(req);
   try {
-    const { email, password } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const { email, password } = body;
 
     if (!email || !password) {
       return NextResponse.json(
         { success: false, error: 'Email and password are required' },
-        { status: 400, headers: CORS_HEADERS }
+        { status: 400, headers: corsHeaders }
       );
     }
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    // 1. Try to validate with DB if available
-    try {
-      await connectToDatabase();
-      const user = await User.findOne({ email: normalizedEmail }).select('+password');
-      
-      if (user && user.password) {
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (isMatch) {
-          // Generate a simple mock token
-          const mockToken = `injaazh_jwt_token_${user._id}_${Date.now()}`;
-          return NextResponse.json(
-            {
-              success: true,
-              data: {
-                token: mockToken,
-                user: {
-                  id: user._id,
-                  name: user.name,
-                  email: user.email,
-                  role: user.role,
-                  image: user.image || null,
-                }
-              }
-            },
-            { headers: CORS_HEADERS }
-          );
-        }
-      }
-    } catch (dbError) {
-      console.warn('DB authentication fallback triggered:', dbError);
-    }
+    await connectToDatabase();
+    const user = await User.findOne({ email: normalizedEmail }).select('+password');
 
-    // 2. Dummy credentials fallback for testing (admin@injaazh.com / admin123)
-    if (normalizedEmail === 'admin@injaazh.com' && password === 'admin123') {
-      const mockToken = `injaazh_jwt_token_dummy_admin_${Date.now()}`;
+    if (!user || !user.password) {
       return NextResponse.json(
-        {
-          success: true,
-          data: {
-            token: mockToken,
-            user: {
-              id: 'dummy_admin_id',
-              name: 'Injaazh Admin',
-              email: 'admin@injaazh.com',
-              role: 'admin',
-              image: null
-            }
-          }
-        },
-        { headers: CORS_HEADERS }
+        { success: false, error: 'Invalid email or password' },
+        { status: 401, headers: corsHeaders }
       );
     }
 
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid email or password' },
+        { status: 401, headers: corsHeaders }
+      );
+    }
+
+    // Create DB Session and sign real 30-day JWT token
+    const sessionId = await createDbSession(user._id.toString(), req);
+    const token = await generateAuthToken(
+      {
+        id: user._id.toString(),
+        email: user.email,
+        role: user.role,
+        sessionId,
+        tokenVersion: user.tokenVersion ?? 0,
+      },
+      true
+    );
+
     return NextResponse.json(
-      { success: false, error: 'Invalid email or password' },
-      { status: 401, headers: CORS_HEADERS }
+      {
+        success: true,
+        data: {
+          token,
+          user: {
+            id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            image: user.image || null,
+          },
+        },
+      },
+      { headers: corsHeaders }
     );
   } catch (error: any) {
     console.error('Mobile Auth API Error:', error);
     return NextResponse.json(
-      { success: false, error: error.message || 'Internal server error' },
-      { status: 500, headers: CORS_HEADERS }
+      { success: false, error: 'Internal server error' },
+      { status: 500, headers: corsHeaders }
     );
   }
 }

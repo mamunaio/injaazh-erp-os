@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
 import * as XLSX from 'xlsx';
 import { getLeadGenFullState } from '@/lib/leadGenStore';
+import { requireApiAuth } from '@/lib/auth';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const auth = await requireApiAuth(req);
+    if ('errorResponse' in auth) return auth.errorResponse;
+
     const state = await getLeadGenFullState();
 
     // Create workbook

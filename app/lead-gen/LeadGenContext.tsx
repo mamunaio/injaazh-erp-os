@@ -656,11 +656,21 @@ export function LeadGenProvider({ children }: { children: React.ReactNode }) {
   };
 
   const handleResetDatabase = async () => {
-    const res = await fetch('/api/lead-gen/seed', { method: 'POST' });
+    const res = await fetch('/api/lead-gen/seed', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        confirmWipe: true,
+        confirmationPhrase: 'CONFIRM_SEED_RESET',
+      }),
+    });
     if (res.ok) {
       fetchState(true);
       notify.delete('Database reset to defaults');
       notify.triggerRefresh();
+    } else {
+      const errData = await res.json().catch(() => ({}));
+      notify.error(errData.error || 'Failed to reset database');
     }
   };
 

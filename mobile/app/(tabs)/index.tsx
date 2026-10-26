@@ -1,15 +1,16 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { 
-  SafeAreaView, 
-  ScrollView, 
-  View, 
-  Text, 
-  TouchableOpacity, 
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import {
+  SafeAreaView,
+  ScrollView,
+  View,
+  Text,
+  TouchableOpacity,
   Dimensions,
   Animated,
   ActivityIndicator
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { useAuth } from '../../context/AuthContext';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.42;
@@ -63,15 +64,41 @@ function PulseView({ className, style, children }: { className?: string; style?:
 }
 
 export default function MobileDashboard() {
+  const { userToken, isLoading: isAuthLoading, signOut } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isFetchingRef = useRef(false);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
+    // 1. Do not fetch until authentication bootstrap has completed and usable token is available
+    if (isAuthLoading || !userToken) {
+      return;
+    }
+
+    // 2. Prevent duplicate concurrent requests during initialization
+    if (isFetchingRef.current) {
+      return;
+    }
+    isFetchingRef.current = true;
     setIsLoading(true);
     setError(null);
+
     try {
-      const response = await fetch(`${API_BASE_URL}/api/mobile/dashboard`);
+      const response = await fetch(`${API_BASE_URL}/api/mobile/dashboard`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userToken}`,
+        },
+      });
+
+      // 3. Handle confirmed 401 caused by expired or revoked session
+      if (response.status === 401) {
+        setError('Session expired or revoked. Please log in again.');
+        await signOut();
+        return;
+      }
+
       const json = await response.json();
       if (json.success) {
         setData(json.data);
@@ -83,45 +110,48 @@ export default function MobileDashboard() {
       setError('Could not connect to the backend server. Verify API_BASE_URL and network.');
     } finally {
       setIsLoading(false);
+      isFetchingRef.current = false;
     }
-  };
+  }, [userToken, isAuthLoading, signOut]);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
+    if (!isAuthLoading && userToken) {
+      fetchDashboardData();
+    }
+  }, [userToken, isAuthLoading, fetchDashboardData]);
 
   const stats = [
-    { 
-      title: 'Total Income', 
-      value: data?.totalIncome || '$0', 
-      change: 'All Time', 
-      icon: 'dollar-sign' as const, 
+    {
+      title: 'Total Income',
+      value: data?.totalIncome || '$0',
+      change: 'All Time',
+      icon: 'dollar-sign' as const,
       color: '#10b981',
-      badge: 'bg-emerald-500/10 text-emerald-400' 
+      badge: 'bg-emerald-500/10 text-emerald-400'
     },
-    { 
-      title: 'Active Projects', 
-      value: data ? String(data.activeProjects) : '0', 
-      change: 'In Progress', 
-      icon: 'briefcase' as const, 
+    {
+      title: 'Active Projects',
+      value: data ? String(data.activeProjects) : '0',
+      change: 'In Progress',
+      icon: 'briefcase' as const,
       color: '#3b82f6',
-      badge: 'bg-blue-500/10 text-blue-400' 
+      badge: 'bg-blue-500/10 text-blue-400'
     },
-    { 
-      title: 'Active Leads', 
-      value: data ? String(data.totalLeads) : '0', 
-      change: 'Outreach', 
-      icon: 'users' as const, 
+    {
+      title: 'Active Leads',
+      value: data ? String(data.totalLeads) : '0',
+      change: 'Outreach',
+      icon: 'users' as const,
       color: '#f59e0b',
-      badge: 'bg-amber-500/10 text-amber-400' 
+      badge: 'bg-amber-500/10 text-amber-400'
     },
-    { 
-      title: 'System Health', 
-      value: '100%', 
-      change: 'Operational', 
-      icon: 'heart' as const, 
+    {
+      title: 'System Health',
+      value: '100%',
+      change: 'Operational',
+      icon: 'heart' as const,
       color: '#a855f7',
-      badge: 'bg-purple-500/10 text-purple-400' 
+      badge: 'bg-purple-500/10 text-purple-400'
     },
   ];
 
@@ -142,9 +172,9 @@ export default function MobileDashboard() {
             </Text>
           </View>
         </View>
-        
+
         <View className="flex-row items-center gap-2">
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={fetchDashboardData}
             className="p-2 bg-slate-900/80 border border-slate-800 rounded-xl active:opacity-75"
           >
@@ -157,8 +187,8 @@ export default function MobileDashboard() {
         </View>
       </View>
 
-      <ScrollView 
-        className="flex-1 px-5" 
+      <ScrollView
+        className="flex-1 px-5"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 30 }}
       >
@@ -176,7 +206,7 @@ export default function MobileDashboard() {
               <Text className="text-sm font-bold text-rose-400">Connection Error</Text>
             </View>
             <Text className="text-xs text-slate-400 leading-5 mb-3">{error}</Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={fetchDashboardData}
               className="bg-rose-500/20 border border-rose-500/30 rounded-xl py-2 px-4 self-start active:opacity-75"
             >
@@ -196,8 +226,8 @@ export default function MobileDashboard() {
             /* Skeleton Loading for horizontal stats */
             <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row -mx-5 px-5">
               {[1, 2, 3, 4].map((i) => (
-                <View 
-                  key={i} 
+                <View
+                  key={i}
                   style={{ width: CARD_WIDTH }}
                   className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 mr-4 flex-col justify-between"
                 >
@@ -214,20 +244,20 @@ export default function MobileDashboard() {
             </ScrollView>
           ) : (
             /* Stats success UI */
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false} 
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
               className="flex-row -mx-5 px-5"
             >
               {stats.map((stat, index) => (
-                <View 
+                <View
                   key={index}
                   style={{ width: CARD_WIDTH }}
                   className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 mr-4 flex-col justify-between"
                 >
                   <View className="flex-row justify-between items-center mb-4">
-                    <View 
-                      style={{ backgroundColor: `${stat.color}15` }} 
+                    <View
+                      style={{ backgroundColor: `${stat.color}15` }}
                       className="p-2 rounded-xl"
                     >
                       <Feather name={stat.icon} size={16} color={stat.color} />
@@ -256,8 +286,8 @@ export default function MobileDashboard() {
               { label: 'Create Project', icon: 'folder-plus' as const, bg: 'bg-blue-500/10 border-blue-500/20 text-blue-400' },
               { label: 'Reports', icon: 'file-text' as const, bg: 'bg-teal-500/10 border-teal-500/20 text-teal-400' }
             ].map((action, i) => (
-              <TouchableOpacity 
-                key={i} 
+              <TouchableOpacity
+                key={i}
                 style={{ width: '48%' }}
                 className={`flex-row items-center gap-3 p-3.5 border rounded-xl active:opacity-75 ${action.bg.split(' ')[0]} ${action.bg.split(' ')[1]}`}
               >
@@ -276,12 +306,12 @@ export default function MobileDashboard() {
               <Text className="text-xs font-bold text-indigo-400">See History</Text>
             </TouchableOpacity>
           </View>
-          
+
           {isLoading ? (
             /* Skeleton Loading list */
             <View className="space-y-2.5">
               {[1, 2, 3].map((i) => (
-                <View 
+                <View
                   key={i}
                   className="bg-slate-900/40 border border-slate-800/50 rounded-2xl p-4 flex-row items-center justify-between mb-2.5"
                 >
@@ -303,12 +333,12 @@ export default function MobileDashboard() {
             /* Success UI list */
             <View className="space-y-2.5">
               {data.recentActivity.map((act) => (
-                <View 
+                <View
                   key={act.id}
                   className="bg-slate-900/40 border border-slate-800/50 rounded-2xl p-4 flex-row items-center justify-between mb-2.5"
                 >
                   <View className="flex-row items-center flex-1 pr-3">
-                    <View 
+                    <View
                       style={{ backgroundColor: `${act.color}12` }}
                       className="w-10 h-10 rounded-xl items-center justify-center mr-3.5"
                     >
@@ -325,7 +355,7 @@ export default function MobileDashboard() {
                   </View>
                   <View className="items-end">
                     {act.amount ? (
-                      <Text 
+                      <Text
                         style={{ color: act.amount.startsWith('+') ? '#10b981' : '#f43f5e' }}
                         className="text-xs font-extrabold"
                       >
