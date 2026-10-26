@@ -160,7 +160,7 @@ All scripts require the following environment variables (loaded from `.env.local
 
 Example `.env.local`:
 ```env
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority
+MONGODB_URI="mongodb+srv://<username>:<password>@cluster.mongodb.net/injaazh_os?retryWrites=true&w=majority"
 ```
 
 ## Troubleshooting

@@ -152,7 +152,7 @@ Create a `.env.local` file in the root directory:
 
 ```env
 # Database
-MONGODB_URI="mongodb+srv://<username>:<password>@cluster0.mongodb.net/injaazh-erp?retryWrites=true&w=majority"
+MONGODB_URI="mongodb+srv://<username>:<password>@cluster0.mongodb.net/injaazh_os?retryWrites=true&w=majority"
 
 # Authentication & Session
 JWT_SECRET="your-super-secret-jwt-key"

@@ -155,7 +155,7 @@ export default function SettingsView({
   };
 
   const copyMongoSnippet = () => {
-    const snippet = `MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.abcde.mongodb.net/hvac_leadgen?retryWrites=true&w=majority`;
+    const snippet = `MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.abcde.mongodb.net/injaazh_os?retryWrites=true&w=majority`;
     navigator.clipboard.writeText(snippet);
     setCopiedSnippet(true);
     setTimeout(() => setCopiedSnippet(false), 2000);
@@ -843,7 +843,7 @@ export default function SettingsView({
                 <li>
                   Add your connection string:
                   <pre className="mt-2 p-3.5 rounded-xl bg-slate-900 text-emerald-400 font-mono text-xs overflow-x-auto border border-slate-800">
-                    MONGODB_URI=mongodb+srv://&lt;username&gt;:&lt;password&gt;@cluster0.abcde.mongodb.net/hvac_leadgen?retryWrites=true&amp;w=majority
+                    MONGODB_URI=mongodb+srv://&lt;username&gt;:&lt;password&gt;@cluster0.abcde.mongodb.net/injaazh_os?retryWrites=true&amp;w=majority
                   </pre>
                 </li>
                 <li>
