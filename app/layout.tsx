@@ -5,7 +5,7 @@ import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import AppLayoutWrapper from "@/components/layout/AppLayoutWrapper";
 import CommandCenter from "@/components/layout/CommandCenter";
 import WorkTimeTracker from "@/components/layout/WorkTimeTracker";
-import { Toaster } from "react-hot-toast";
+import GlobalToaster from "@/components/ui/GlobalToaster";
 import { getCurrentUser } from "@/app/actions/authActions";
 import ChatWidget from "@/components/ui/ChatWidget";
 
@@ -100,27 +100,7 @@ export default async function RootLayout({
               </>
             )}
           </AppLayoutWrapper>
-          <Toaster 
-            position="top-right"
-            toastOptions={{
-              style: {
-                background: '#0d0f17',
-                color: '#f1f5f9',
-                border: '1px solid rgba(99, 36, 252, 0.3)',
-                borderRadius: '12px',
-                padding: '12px 18px',
-                fontSize: '13px',
-                fontWeight: 600,
-                boxShadow: '0 20px 45px -10px rgba(0,0,0,0.7), 0 0 20px rgba(99,36,252,0.15)',
-              },
-              success: {
-                iconTheme: { primary: '#10B981', secondary: '#07080b' },
-              },
-              error: {
-                iconTheme: { primary: '#F43F5E', secondary: '#07080b' },
-              },
-            }}
-          />
+          <GlobalToaster />
         </ThemeProvider>
       </body>
     </html>

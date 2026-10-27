@@ -8,7 +8,7 @@ import { ArrowLeft, Clock, Briefcase, ShoppingCart, Globe, Users, CheckCircle2, 
 import EditMarketplaceProjectModal from '@/components/EditMarketplaceProjectModal';
 import { getMarketplaceProjectById, updateMarketplaceProject, deleteMarketplaceProject } from '@/app/actions/marketplaceActions';
 import DatePicker from '@/components/ui/DatePicker';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 
 const INITIAL_TASKS = [
   { id: 1, title: 'Project Kickoff & Discovery Call', completed: true },

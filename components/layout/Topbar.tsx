@@ -44,9 +44,10 @@ export default function Topbar() {
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const prevUnreadCountRef = useRef(-1);
+  const seenNotificationIds = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    // Fetch notifications from server
+    // Fetch notifications from server with deterministic deduplication
     const fetchNotifs = async () => {
       try {
         const res = await getRecentNotifications();
@@ -56,16 +57,30 @@ export default function Topbar() {
         setNotifications(list);
         setUnreadCount(count);
         
-        if (prevUnreadCountRef.current !== -1 && count > prevUnreadCountRef.current) {
-          const newNotifs = list.filter((n: any) => !n.isRead);
-          if (newNotifs.length > 0) {
-            const newest = newNotifs[0];
-            // Only trigger alert sound/toast if NOT already emitted locally at T=0
-            if (!notify.isRecentlyEmitted(newest.message)) {
-              notify.notification(`New: ${newest.message}`);
+        if (prevUnreadCountRef.current === -1) {
+          // Initial mount: record existing notification IDs so page refresh never replays popups
+          list.forEach((n: any) => {
+            if (n._id) seenNotificationIds.current.add(n._id);
+          });
+        } else if (count > prevUnreadCountRef.current) {
+          // Identify unread notifications that arrived from external sources and have not been alerted
+          const incomingUnread = list.filter((n: any) => !n.isRead && !seenNotificationIds.current.has(n._id));
+
+          incomingUnread.forEach((n: any) => {
+            seenNotificationIds.current.add(n._id);
+            // Suppress alert if already triggered locally by mutation response or instant notification
+            const isEmittedLocally = notify.isRecentlyEmitted(n._id) || notify.isRecentlyEmitted(n.message);
+            if (!isEmittedLocally) {
+              notify.notification(`New: ${n.message}`);
             }
-          }
+          });
         }
+
+        // Keep seenNotificationIds populated
+        list.forEach((n: any) => {
+          if (n._id) seenNotificationIds.current.add(n._id);
+        });
+
         prevUnreadCountRef.current = count;
       } catch (err) {
         console.error('Failed to fetch notifications:', err);
@@ -84,13 +99,17 @@ export default function Topbar() {
       if (!detail || !detail.message) return;
 
       const optimisticItem = {
-        _id: 'opt-' + Date.now(),
+        _id: detail.id || 'opt-' + Date.now(),
         type: detail.type || 'system',
         message: detail.message,
         link: detail.link || '',
         isRead: false,
         createdAt: new Date().toISOString()
       };
+
+      seenNotificationIds.current.add(optimisticItem._id);
+      notify.markEmitted(optimisticItem._id);
+      notify.markEmitted(optimisticItem.message);
 
       setNotifications(prev => [optimisticItem, ...prev]);
       setUnreadCount(prev => prev + 1);

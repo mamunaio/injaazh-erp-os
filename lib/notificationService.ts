@@ -10,8 +10,39 @@ import connectToDatabase from '@/lib/mongodb';
 import Notification from '@/models/Notification';
 import { revalidatePath } from 'next/cache';
 
+import mongoose from 'mongoose';
+
 const ALLOWED_TYPES = ['payment', 'lead', 'system', 'proposal'] as const;
 type NotificationType = typeof ALLOWED_TYPES[number];
+
+const ALLOWED_ROLES = ['owner', 'admin', 'editor', 'marketplace_team', 'viewer'] as const;
+export type UserRole = typeof ALLOWED_ROLES[number];
+
+export interface CreateNotificationOptions {
+  userId?: string | mongoose.Types.ObjectId | null;
+  targetRoles?: UserRole[];
+  createdBy?: string | mongoose.Types.ObjectId | null;
+}
+
+/**
+ * Returns default authorized roles based on notification category
+ */
+export function getDefaultRolesForType(type: NotificationType): UserRole[] {
+  switch (type) {
+    case 'payment':
+      // Financial transactions restricted strictly to owner and admin
+      return ['owner', 'admin'];
+    case 'system':
+      // System management events restricted to owner and admin
+      return ['owner', 'admin'];
+    case 'proposal':
+      return ['owner', 'admin', 'editor', 'marketplace_team'];
+    case 'lead':
+      return ['owner', 'admin', 'editor', 'marketplace_team'];
+    default:
+      return ['owner', 'admin'];
+  }
+}
 
 /**
  * Validates link URL safety
@@ -35,7 +66,8 @@ function isSafeLink(link?: string): boolean {
 export async function createNotification(
   type: NotificationType,
   message: string,
-  link?: string
+  link?: string,
+  options?: CreateNotificationOptions
 ) {
   try {
     // Validate type
@@ -58,11 +90,40 @@ export async function createNotification(
       return { success: false, error: 'Unsafe notification link rejected' };
     }
 
+    // Determine target roles
+    const targetRoles: UserRole[] = options?.targetRoles && options.targetRoles.length > 0
+      ? options.targetRoles.filter(r => ALLOWED_ROLES.includes(r))
+      : getDefaultRolesForType(type);
+
+    let parsedUserId: any = null;
+    if (options?.userId) {
+      if (mongoose.Types.ObjectId.isValid(options.userId.toString())) {
+        parsedUserId = new mongoose.Types.ObjectId(options.userId.toString());
+      } else {
+        parsedUserId = options.userId;
+      }
+    }
+
+    let parsedCreatedBy: any = null;
+    if (options?.createdBy) {
+      if (mongoose.Types.ObjectId.isValid(options.createdBy.toString())) {
+        parsedCreatedBy = new mongoose.Types.ObjectId(options.createdBy.toString());
+      } else {
+        parsedCreatedBy = options.createdBy;
+      }
+    }
+
     await connectToDatabase();
     const notif = await Notification.create({
       type,
       message: cleanMessage,
-      link: link ? link.trim() : ''
+      link: link ? link.trim() : '',
+      userId: parsedUserId,
+      targetRoles,
+      createdBy: parsedCreatedBy,
+      readBy: [],
+      dismissedBy: [],
+      isRead: false
     });
 
     try {

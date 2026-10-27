@@ -102,7 +102,8 @@ export async function createPersonalLoan(data: {
     await createNotification(
       'system',
       `New ${data.type === 'Lent' ? 'Receivable (Lent)' : 'Payable (Borrowed)'} record of ৳${data.amount.toLocaleString()} with ${data.personName} created.`,
-      '/daily-expenses'
+      '/daily-expenses',
+      { targetRoles: ['owner'] }
     );
 
     revalidatePath('/daily-expenses');
@@ -210,7 +211,8 @@ export async function recordLoanRepayment(
     await createNotification(
       'system',
       `Partial installment payment of ৳${paymentAmount.toLocaleString()} recorded for ${loan.personName}. Remaining: ৳${Math.max(0, loan.amount - totalPaid).toLocaleString()}.`,
-      '/daily-expenses'
+      '/daily-expenses',
+      { targetRoles: ['owner'] }
     );
 
     revalidatePath('/daily-expenses');

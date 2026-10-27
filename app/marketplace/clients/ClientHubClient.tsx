@@ -22,7 +22,7 @@ import { createMarketplaceProject } from '@/app/actions/marketplaceActions';
 import { countryToTimezoneMap } from '@/lib/countryToTimezone';
 import { useUser } from '@/components/layout/UserContext';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import CreateMarketplaceProjectModal from '@/components/CreateMarketplaceProjectModal';
 import { useScrollLock } from '@/lib/useScrollLock';
 
@@ -456,7 +456,6 @@ export default function ClientHubClient({ initialClients = [], allProjects = [] 
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#060608] text-slate-900 dark:text-white p-4 md:p-8 pt-6 pb-24 font-sans selection:bg-[#6324FC] selection:text-white">
-      <Toaster position="top-right" />
       
       {/* Ambient background glows */}
       <div className="fixed inset-0 pointer-events-none z-0">

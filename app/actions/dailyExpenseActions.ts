@@ -29,11 +29,12 @@ export async function createDailyExpense(data: any) {
 
     const expense = await DailyExpense.create(data);
 
-    // Create automated notification
+    // Create automated notification (strictly owner-restricted)
     await createNotification(
       'system',
       `A new expense of $${data.amount} has been added under ${data.category}.`,
-      '/daily-expenses'
+      '/daily-expenses',
+      { targetRoles: ['owner'] }
     );
 
     try {

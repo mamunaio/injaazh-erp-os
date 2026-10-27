@@ -21,7 +21,7 @@ export async function PUT(
     if (body.status === 'Won') {
       try {
         await createNotification(
-          'payment',
+          'lead',
           `🎉 Deal Won! ${updated.company} converted to active client`,
           '/lead-gen/clients'
         );

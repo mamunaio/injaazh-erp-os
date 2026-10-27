@@ -7,7 +7,7 @@ import { useTheme } from 'next-themes';
 import TwoFactorSetupModal from '@/components/TwoFactorSetupModal';
 import { checkTwoFactorStatus } from '@/app/actions/twoFactorActions';
 import { 
-  User, Bell, ShieldCheck, Key, AlertTriangle, Save, Play, Volume2, MonitorSmartphone, LogOut,
+  User, Bell, ShieldCheck, Key, AlertTriangle, Save, Play, Volume2, Volume1, VolumeX, MonitorSmartphone, LogOut,
   Download, Trash2, Eye, EyeOff, Activity, CreditCard, Mail, CheckCircle, Send, Users,
   Building2, Briefcase, Lock, Palette, Blocks, HardDrive, History, RefreshCcw, Info, CheckCircle2,
   Lightbulb, Clock, Camera, Moon, Sun, Monitor, Check, PanelLeft, PanelLeftClose, Plus, ChevronRight,
@@ -22,7 +22,7 @@ import { getTeamMembers, createTeamMember, updateTeamMemberRole, deleteTeamMembe
 import { getActiveSessions, revokeSession } from '@/app/actions/sessionActions';
 import AiKeysManager from './AiKeysManager';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
-import { sounds } from '@/lib/sound';
+import { sounds, soundSettings, SoundCategory } from '@/lib/sound';
 
 const MOCK_ROLES = [
   { id: 'owner', name: 'Owner', description: 'Full access to all settings, billing, and team management.', users: 1, isSystem: true },
@@ -346,16 +346,10 @@ export default function SettingsClient() {
     }
   }, [activeTab, user?.role]);
   
-  // Notification States
-  const [masterSound, setMasterSound] = useState(true);
-  const [soundSettings, setSoundSettings] = useState({ 
-    systemBoot: true,
-    paymentReceived: true,
-    expenseLogged: true,
-    itemDeleted: true,
-    emailSent: true,
-    errorAlert: true
-  });
+  // Notification & Sound States
+  const [masterSound, setMasterSound] = useState(!soundSettings.isMasterMuted());
+  const [masterVolume, setMasterVolume] = useState(soundSettings.getMasterVolume());
+  const [soundCategories, setSoundCategories] = useState<Record<string, boolean>>(() => soundSettings.getSoundSettings().events);
   const [soundVariants, setSoundVariants] = useState<Record<string, string>>({
     systemBoot: 'login1',
     paymentReceived: 'income1',
@@ -367,25 +361,87 @@ export default function SettingsClient() {
   const [openSoundDropdown, setOpenSoundDropdown] = useState<string | null>(null);
 
   useEffect(() => {
+    const syncFromManager = () => {
+      const current = soundSettings.getSoundSettings();
+      setMasterSound(!current.masterMute);
+      setMasterVolume(current.masterVolume);
+      setSoundCategories(current.events);
+    };
+
+    syncFromManager();
+
     if (typeof window !== 'undefined') {
       setSoundVariants({
         systemBoot: localStorage.getItem('sound_systemBoot') || 'login1',
+        notification: localStorage.getItem('sound_notification') || 'notification',
+        edit: localStorage.getItem('sound_edit') || localStorage.getItem('sound_newLead') || 'edit1',
+        success: localStorage.getItem('sound_success') || localStorage.getItem('sound_leadConverted') || 'success1',
         paymentReceived: localStorage.getItem('sound_paymentReceived') || 'income1',
         expenseLogged: localStorage.getItem('sound_expenseLogged') || 'expense1',
         itemDeleted: localStorage.getItem('sound_itemDeleted') || 'delete1',
         emailSent: localStorage.getItem('sound_emailSent') || 'mailSend1',
-        errorAlert: localStorage.getItem('sound_errorAlert') || 'error1'
+        errorAlert: localStorage.getItem('sound_errorAlert') || 'error1',
+        uiClicks: localStorage.getItem('sound_uiClicks') || 'click'
       });
     }
+
+    const unsubscribe = soundSettings.subscribeSoundSettings(syncFromManager);
+    return unsubscribe;
   }, []);
+
+  const handleMasterSoundToggle = () => {
+    const nextMasterActive = !masterSound;
+    setMasterSound(nextMasterActive);
+    soundSettings.setMasterMute(!nextMasterActive);
+  };
+
+  const handleMasterVolumeChange = (newVol: number) => {
+    setMasterVolume(newVol);
+    soundSettings.setMasterVolume(newVol);
+  };
+
+  const handleSoundCategoryToggle = (category: SoundCategory) => {
+    const nextVal = !soundCategories[category];
+    setSoundCategories(prev => ({ ...prev, [category]: nextVal }));
+    soundSettings.setCategoryEnabled(category, nextVal);
+  };
 
   const handleSoundVariantChange = (itemKey: string, variantKey: string) => {
     setSoundVariants(prev => ({ ...prev, [itemKey]: variantKey }));
-    localStorage.setItem(`sound_${itemKey}`, variantKey);
-    if (masterSound) {
-      if ((sounds as any)[variantKey]) (sounds as any)[variantKey]();
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`sound_${itemKey}`, variantKey);
+      // Maintain legacy setting-key compatibility without resetting preferences
+      if (itemKey === 'edit') {
+        localStorage.setItem('sound_newLead', variantKey);
+      } else if (itemKey === 'success') {
+        localStorage.setItem('sound_leadConverted', variantKey);
+      }
+    }
+    const category = (itemKey === 'edit' || itemKey === 'success') ? 'notification' : (itemKey as SoundCategory);
+    if (!soundSettings.isMasterMuted() && soundSettings.isCategoryEnabled(category)) {
+      if ((sounds as any)[variantKey]) {
+        (sounds as any)[variantKey]();
+      }
     }
     setOpenSoundDropdown(null);
+  };
+
+  const handlePreviewSound = (itemKey: string) => {
+    if (soundSettings.isMasterMuted()) {
+      toast.error("Master sound is muted");
+      return;
+    }
+    const category = (itemKey === 'edit' || itemKey === 'success') ? 'notification' : (itemKey as SoundCategory);
+    if (!soundSettings.isCategoryEnabled(category)) {
+      toast.error("This sound category is muted");
+      return;
+    }
+    const variant = soundVariants[itemKey] || itemKey;
+    if (variant && (sounds as any)[variant]) {
+      (sounds as any)[variant]();
+    } else if ((sounds as any)[itemKey]) {
+      (sounds as any)[itemKey]();
+    }
   };
 
   const [dangerConfirm, setDangerConfirm] = useState('');
@@ -560,10 +616,8 @@ export default function SettingsClient() {
     }
   };
 
-  const handleSoundToggle = (key: keyof typeof soundSettings) => {
-    setSoundSettings(prev => ({ ...prev, [key]: !prev[key] }));
-    triggerChange();
-    if (!soundSettings[key] && masterSound) playSound('pop');
+  const handleSoundToggle = (key: SoundCategory) => {
+    handleSoundCategoryToggle(key);
   };
 
   const currentTabObj = TABS.find(t => t.id === activeTab || (t.id === 'api_keys' && activeTab === 'api'));
@@ -923,107 +977,238 @@ export default function SettingsClient() {
                 {/* ── NOTIFICATIONS & SOUNDS ── */}
                 {activeTab === 'notifications' && (
                   <GlassCard accentColor="#10B981" glowColor="rgba(16,185,129,0.18)">
-                    <div className="border-b border-black/10 dark:border-white/10 pb-6 mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="border-b border-black/10 dark:border-white/10 pb-6 mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                       <div>
                         <h2 className="text-xl font-heading font-bold mb-1 text-slate-900 dark:text-white">Notifications & Sound Studio</h2>
                         <p className="text-xs text-secondary">Tune real-time audio chimes, alerts, and operational event sounds.</p>
                       </div>
                       
-                      <label className="flex items-center gap-3 cursor-pointer bg-slate-50 dark:bg-[#060608] px-4 py-2 rounded-2xl border border-black/10 dark:border-white/10 shadow-xs hover:border-[#10B981]/40 transition-colors">
-                        <Volume2 size={16} className={masterSound ? 'text-emerald-500' : 'text-secondary'} />
-                        <span className="text-[10px] font-heading font-bold uppercase tracking-widest text-secondary">Master Sound</span>
-                        <div className="relative">
-                          <input 
-                            type="checkbox" 
-                            className="sr-only" 
-                            checked={masterSound} 
-                            onChange={() => { 
-                              setMasterSound(!masterSound); 
-                              if (!masterSound && (sounds as any)[soundVariants['paymentReceived']]) {
-                                (sounds as any)[soundVariants['paymentReceived']]();
-                              } 
-                              triggerChange(); 
-                            }} 
-                          />
-                          <div className={`block w-9 h-5 rounded-full transition-colors ${masterSound ? 'bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)]' : 'bg-slate-200 dark:bg-white/10'}`}></div>
-                          <div className={`absolute left-0.5 top-0.5 bg-white w-4 h-4 rounded-full transition-transform ${masterSound ? 'transform translate-x-4' : ''}`}></div>
+                      <div className="flex flex-wrap items-center gap-3">
+                        {/* Master Volume Slider */}
+                        <div className={`flex items-center gap-3 bg-slate-50 dark:bg-[#060608] px-4 py-2 rounded-2xl border border-black/10 dark:border-white/10 shadow-xs transition-opacity ${!masterSound ? 'opacity-50' : ''}`}>
+                          {masterSound ? (
+                            masterVolume > 50 ? (
+                              <Volume2 size={16} className="text-emerald-500 shrink-0" />
+                            ) : (
+                              <Volume1 size={16} className="text-emerald-500 shrink-0" />
+                            )
+                          ) : (
+                            <VolumeX size={16} className="text-secondary shrink-0" />
+                          )}
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-heading font-bold uppercase tracking-widest text-secondary hidden sm:inline">Volume</span>
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              step="1"
+                              value={masterVolume}
+                              disabled={!masterSound}
+                              onChange={(e) => handleMasterVolumeChange(Number(e.target.value))}
+                              className="w-24 sm:w-28 h-1.5 bg-slate-200 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-emerald-500 disabled:cursor-not-allowed"
+                              aria-label="Master Volume"
+                            />
+                            <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 w-9 text-right">
+                              {masterVolume}%
+                            </span>
+                          </div>
                         </div>
-                      </label>
+
+                        {/* Master Sound Toggle */}
+                        <label className="flex items-center gap-3 cursor-pointer bg-slate-50 dark:bg-[#060608] px-4 py-2 rounded-2xl border border-black/10 dark:border-white/10 shadow-xs hover:border-[#10B981]/40 transition-colors">
+                          <Volume2 size={16} className={masterSound ? 'text-emerald-500' : 'text-secondary'} />
+                          <span className="text-[10px] font-heading font-bold uppercase tracking-widest text-secondary">Master Sound</span>
+                          <div className="relative">
+                            <input
+                              type="checkbox"
+                              className="sr-only"
+                              checked={masterSound}
+                              onChange={handleMasterSoundToggle}
+                            />
+                            <div className={`block w-9 h-5 rounded-full transition-colors ${masterSound ? 'bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)]' : 'bg-slate-200 dark:bg-white/10'}`}></div>
+                            <div className={`absolute left-0.5 top-0.5 bg-white w-4 h-4 rounded-full transition-transform ${masterSound ? 'transform translate-x-4' : ''}`}></div>
+                          </div>
+                        </label>
+                      </div>
                     </div>
 
                     <div className="space-y-3">
                       {[
-                        { id: 'systemBoot', label: 'System Boot / Login', desc: 'Plays a welcoming executive harmonic chord upon successful authentication.', variants: [{val: 'login1', name: 'Classic Chord'}, {val: 'login2', name: 'Modern Ascending'}, {val: 'login3', name: 'Minimal Chime'}] },
-                        { id: 'paymentReceived', label: 'Revenue & Income Logged', desc: 'Plays a distinct coin cascade when client deposits or invoices are booked.', variants: [{val: 'income1', name: 'Coin Drop'}, {val: 'income2', name: 'Synth Cash'}, {val: 'income3', name: 'Rich Chime'}] },
-                        { id: 'expenseLogged', label: 'Operational Expense Burn', desc: 'Plays a controlled tactile thud when a daily expense record is saved.', variants: [{val: 'expense1', name: 'Low Thud'}, {val: 'expense2', name: 'Double Tap'}, {val: 'expense3', name: 'Deep Saw'}] },
-                        { id: 'itemDeleted', label: 'Destructive / Delete Event', desc: 'Plays a deep pop and vibration feedback when records are deleted.', variants: [{val: 'delete1', name: 'Deep Pop'}, {val: 'delete2', name: 'Saw Snap'}, {val: 'delete3', name: 'Double Pluck'}] },
-                        { id: 'emailSent', label: 'Email Outreach Dispatched', desc: 'Plays an airy aerodynamic swoosh when client emails are broadcast.', variants: [{val: 'mailSend1', name: 'Air Swoosh'}, {val: 'mailSend2', name: 'Digital Swoosh'}, {val: 'mailSend3', name: 'Long Swoosh'}] },
-                        { id: 'errorAlert', label: 'Security & Error Alerts', desc: 'Plays a high-priority warning frequency when validation fails.', variants: [{val: 'error1', name: 'Harsh Buzz'}, {val: 'error2', name: 'Double Buzz'}, {val: 'error3', name: 'Discordant Chord'}] },
-                      ].map(item => (
-                        <div 
-                          key={item.id} 
-                          className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${soundSettings[item.id as keyof typeof soundSettings] && masterSound ? 'bg-slate-50/70 dark:bg-[#060608]/70 border-[#10B981]/30 shadow-[0_0_15px_rgba(16,185,129,0.06)]' : 'bg-slate-50 dark:bg-[#060608] border-black/10 dark:border-white/10'}`}
-                        >
-                          <div className="flex items-center gap-3.5">
-                            <button 
-                              onClick={() => masterSound ? (sounds as any)[soundVariants[item.id]]?.() : toast.error("Master sound muted")} 
-                              className="w-10 h-10 rounded-xl bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 flex items-center justify-center text-secondary hover:text-emerald-500 hover:border-emerald-500/30 transition-all shadow-xs cursor-pointer group/btn" 
-                              title="Preview Sound"
-                            >
-                              <Play size={14} className="ml-0.5 group-hover/btn:scale-110 transition-transform" />
-                            </button>
-                            <div>
-                              <h4 className="font-heading font-bold text-xs text-slate-900 dark:text-white flex items-center gap-2">
-                                {item.label}
-                              </h4>
-                              <p className="text-[11px] text-secondary mt-0.5">{item.desc}</p>
-                              
-                              <div className="relative mt-2">
-                                <button
-                                  onClick={() => setOpenSoundDropdown(openSoundDropdown === item.id ? null : item.id)}
-                                  className="flex items-center justify-between w-48 px-3 py-1.5 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-xl focus:outline-none focus:border-emerald-500 text-slate-900 dark:text-white text-[11px] font-heading font-bold transition-all shadow-2xs"
-                                >
-                                  <span>{item.variants.find(v => v.val === soundVariants[item.id])?.name || 'Select Sound'}</span>
-                                  <ChevronRight className={`w-3.5 h-3.5 text-secondary transition-transform ${openSoundDropdown === item.id ? 'rotate-90' : ''}`} />
-                                </button>
-                                
-                                <AnimatePresence>
-                                  {openSoundDropdown === item.id && (
-                                    <motion.div
-                                      initial={{ opacity: 0, y: -5 }}
-                                      animate={{ opacity: 1, y: 0 }}
-                                      exit={{ opacity: 0, y: -5 }}
-                                      className="absolute z-20 w-48 mt-1.5 bg-white dark:bg-[#0a0a0d] backdrop-blur-xl border border-black/10 dark:border-white/10 rounded-xl shadow-xl overflow-hidden p-1"
-                                    >
-                                      {item.variants.map(v => (
-                                        <button 
-                                          key={v.val} 
-                                          onClick={() => handleSoundVariantChange(item.id, v.val)} 
-                                          className={`w-full text-left px-3 py-1.5 text-[11px] font-heading font-bold rounded-lg transition-colors ${soundVariants[item.id] === v.val ? 'bg-emerald-500/10 text-emerald-500' : 'hover:bg-black/[0.04] dark:hover:bg-white/[0.04] text-slate-700 dark:text-slate-300'}`}
-                                        >
-                                          {v.name}
-                                        </button>
-                                      ))}
-                                    </motion.div>
-                                  )}
-                                </AnimatePresence>
+                        {
+                          id: 'notification',
+                          category: 'notification',
+                          label: 'System Notifications & Alerts',
+                          desc: 'Plays a delicate crystal glass chime for incoming notifications and push alerts.',
+                          variants: [{ val: 'notification', name: 'Crystal Glass Chime' }]
+                        },
+                        {
+                          id: 'edit',
+                          category: 'notification',
+                          label: 'Data Edit & Inline Save',
+                          desc: 'Plays a tactile rosewood marimba tap when modifying or updating records.',
+                          variants: [
+                            { val: 'edit1', name: 'Double Tap' },
+                            { val: 'edit2', name: 'Rosewood Pluck' },
+                            { val: 'edit3', name: 'Kalimba Duo' }
+                          ]
+                        },
+                        {
+                          id: 'success',
+                          category: 'notification',
+                          label: 'Action Success Confirmation',
+                          desc: 'Plays an elegant ascending crystal glass confirmation upon operation completion.',
+                          variants: [
+                            { val: 'success1', name: 'Crystal Arpeggio' },
+                            { val: 'success2', name: 'Warm Trio' },
+                            { val: 'success3', name: 'Glass Shimmer' }
+                          ]
+                        },
+                        {
+                          id: 'systemBoot',
+                          category: 'systemBoot',
+                          label: 'System Boot / Login',
+                          desc: 'Plays a welcoming executive harmonic swell upon successful authentication.',
+                          variants: [
+                            { val: 'login1', name: 'Classic Swell' },
+                            { val: 'login2', name: 'Ascending Glow' },
+                            { val: 'login3', name: 'Minimal Chime' }
+                          ]
+                        },
+                        {
+                          id: 'paymentReceived',
+                          category: 'paymentReceived',
+                          label: 'Revenue & Income Logged',
+                          desc: 'Plays a refined metallic chime when client deposits or invoices are booked.',
+                          variants: [
+                            { val: 'income1', name: 'Boutique Coin' },
+                            { val: 'income2', name: 'Velvet Cash' },
+                            { val: 'income3', name: 'Sterling Chime' }
+                          ]
+                        },
+                        {
+                          id: 'expenseLogged',
+                          category: 'expenseLogged',
+                          label: 'Operational Expense Burn',
+                          desc: 'Plays a soft, low-frequency wooden tone when an expense record is saved.',
+                          variants: [
+                            { val: 'expense1', name: 'Wooden Thud' },
+                            { val: 'expense2', name: 'Double Tap' },
+                            { val: 'expense3', name: 'Resonant Knock' }
+                          ]
+                        },
+                        {
+                          id: 'itemDeleted',
+                          category: 'itemDeleted',
+                          label: 'Destructive / Delete Event',
+                          desc: 'Plays an organic wooden pop when records are deleted.',
+                          variants: [
+                            { val: 'delete1', name: 'Hollow Pop' },
+                            { val: 'delete2', name: 'Acoustic Snap' },
+                            { val: 'delete3', name: 'Soft Tap' }
+                          ]
+                        },
+                        {
+                          id: 'emailSent',
+                          category: 'emailSent',
+                          label: 'Email Outreach Dispatched',
+                          desc: 'Plays a soft filtered air-sweep effect when client outreach is dispatched.',
+                          variants: [
+                            { val: 'mailSend1', name: 'Air Sweep' },
+                            { val: 'mailSend2', name: 'Digital Breeze' },
+                            { val: 'mailSend3', name: 'Shimmer Sweep' }
+                          ]
+                        },
+                        {
+                          id: 'errorAlert',
+                          category: 'errorAlert',
+                          label: 'Security & Error Alerts',
+                          desc: 'Plays a gentle dual-tone acoustic warning without harsh buzzing.',
+                          variants: [
+                            { val: 'error1', name: 'Gentle Warning' },
+                            { val: 'error2', name: 'Pulsed Notice' },
+                            { val: 'error3', name: 'Warm Minor' }
+                          ]
+                        },
+                        {
+                          id: 'uiClicks',
+                          category: 'uiClicks',
+                          label: 'Tactile Dock & Button Feedback',
+                          desc: 'Subtle micro-switch clicks and dock hover ticks for physical interface feedback.',
+                          variants: [
+                            { val: 'click', name: 'Mechanical Switch' },
+                            { val: 'pop', name: 'Dock Hover Tick' }
+                          ]
+                        }
+                      ].map(item => {
+                        const itemCat = (item.category || item.id) as SoundCategory;
+                        const isCatEnabled = soundCategories[itemCat] ?? true;
+                        return (
+                          <div
+                            key={item.id}
+                            className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${isCatEnabled && masterSound ? 'bg-slate-50/70 dark:bg-[#060608]/70 border-[#10B981]/30 shadow-[0_0_15px_rgba(16,185,129,0.06)]' : 'bg-slate-50 dark:bg-[#060608] border-black/10 dark:border-white/10'}`}
+                          >
+                            <div className="flex items-center gap-3.5">
+                              <button
+                                onClick={() => handlePreviewSound(item.id)}
+                                className="w-10 h-10 rounded-xl bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 flex items-center justify-center text-secondary hover:text-emerald-500 hover:border-emerald-500/30 transition-all shadow-xs cursor-pointer group/btn"
+                                title="Preview Sound"
+                                aria-label={`Preview ${item.label}`}
+                              >
+                                <Play size={14} className="ml-0.5 group-hover/btn:scale-110 transition-transform" />
+                              </button>
+                              <div>
+                                <h4 className="font-heading font-bold text-xs text-slate-900 dark:text-white flex items-center gap-2">
+                                  {item.label}
+                                </h4>
+                                <p className="text-[11px] text-secondary mt-0.5">{item.desc}</p>
+
+                                <div className="relative mt-2">
+                                  <button
+                                    onClick={() => setOpenSoundDropdown(openSoundDropdown === item.id ? null : item.id)}
+                                    className="flex items-center justify-between w-48 px-3 py-1.5 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-xl focus:outline-none focus:border-emerald-500 text-slate-900 dark:text-white text-[11px] font-heading font-bold transition-all shadow-2xs"
+                                  >
+                                    <span>{item.variants.find(v => v.val === soundVariants[item.id])?.name || item.variants[0]?.name || 'Select Sound'}</span>
+                                    <ChevronRight className={`w-3.5 h-3.5 text-secondary transition-transform ${openSoundDropdown === item.id ? 'rotate-90' : ''}`} />
+                                  </button>
+
+                                  <AnimatePresence>
+                                    {openSoundDropdown === item.id && (
+                                      <motion.div
+                                        initial={{ opacity: 0, y: -5 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -5 }}
+                                        className="absolute z-20 w-48 mt-1.5 bg-white dark:bg-[#0a0a0d] backdrop-blur-xl border border-black/10 dark:border-white/10 rounded-xl shadow-xl overflow-hidden p-1"
+                                      >
+                                        {item.variants.map(v => (
+                                          <button
+                                            key={v.val}
+                                            onClick={() => handleSoundVariantChange(item.id, v.val)}
+                                            className={`w-full text-left px-3 py-1.5 text-[11px] font-heading font-bold rounded-lg transition-colors ${(soundVariants[item.id] || item.variants[0].val) === v.val ? 'bg-emerald-500/10 text-emerald-500' : 'hover:bg-black/[0.04] dark:hover:bg-white/[0.04] text-slate-700 dark:text-slate-300'}`}
+                                          >
+                                            {v.name}
+                                          </button>
+                                        ))}
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
                               </div>
                             </div>
-                          </div>
 
-                          <label className="relative cursor-pointer ml-4">
-                            <input 
-                              type="checkbox" 
-                              className="sr-only" 
-                              disabled={!masterSound} 
-                              checked={soundSettings[item.id as keyof typeof soundSettings]} 
-                              onChange={() => handleSoundToggle(item.id as keyof typeof soundSettings)} 
-                            />
-                            <div className={`block w-9 h-5 rounded-full transition-colors ${!masterSound ? 'bg-slate-200 dark:bg-white/10 opacity-50' : soundSettings[item.id as keyof typeof soundSettings] ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : 'bg-slate-200 dark:bg-white/10'}`}></div>
-                            <div className={`absolute left-0.5 top-0.5 bg-white w-4 h-4 rounded-full transition-transform ${!masterSound ? 'opacity-50' : ''} ${soundSettings[item.id as keyof typeof soundSettings] ? 'transform translate-x-4' : ''}`}></div>
-                          </label>
-                        </div>
-                      ))}
+                            <label className="relative cursor-pointer ml-4">
+                              <input
+                                type="checkbox"
+                                className="sr-only"
+                                disabled={!masterSound}
+                                checked={isCatEnabled}
+                                onChange={() => handleSoundCategoryToggle(itemCat)}
+                              />
+                              <div className={`block w-9 h-5 rounded-full transition-colors ${!masterSound ? 'bg-slate-200 dark:bg-white/10 opacity-50' : isCatEnabled ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : 'bg-slate-200 dark:bg-white/10'}`}></div>
+                              <div className={`absolute left-0.5 top-0.5 bg-white w-4 h-4 rounded-full transition-transform ${!masterSound ? 'opacity-50' : ''} ${isCatEnabled ? 'transform translate-x-4' : ''}`}></div>
+                            </label>
+                          </div>
+                        );
+                      })}
                     </div>
                   </GlassCard>
                 )}

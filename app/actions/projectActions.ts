@@ -387,7 +387,9 @@ export async function createProject(data: any) {
     const newProject = new Project(validated);
     await newProject.save();
 
-    await createNotification('system', `Project "${newProject.title}" was created.`, '/projects');
+    await createNotification('system', `Project "${newProject.title}" was created.`, '/projects', {
+      targetRoles: ['owner', 'admin', 'editor']
+    });
 
     // Automatically log platform fee as a Finance Transaction if > 0
     if (newProject.platformFee && newProject.platformFee > 0) {
@@ -858,7 +860,9 @@ export async function updateProject(projectId: string, updateData: UpdateProject
       }
     }
 
-    await createNotification('system', `Project "${updatedProject?.title}" was updated.`, '/projects');
+    await createNotification('system', `Project "${updatedProject?.title}" was updated.`, '/projects', {
+      targetRoles: ['owner', 'admin', 'editor']
+    });
 
     revalidatePath('/projects');
     return { success: true, data: JSON.parse(JSON.stringify(updatedProject)) };
@@ -882,7 +886,9 @@ export async function deleteProject(projectId: string) {
       return { success: false, error: 'Project not found' };
     }
 
-    await createNotification('system', `Project "${project.title}" was deleted.`, '/projects');
+    await createNotification('system', `Project "${project.title}" was deleted.`, '/projects', {
+      targetRoles: ['owner', 'admin', 'editor']
+    });
 
     // Primary deletion must succeed
     await Project.findByIdAndDelete(projectId);

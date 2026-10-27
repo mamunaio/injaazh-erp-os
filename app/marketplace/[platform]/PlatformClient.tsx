@@ -33,7 +33,7 @@ import {
 } from 'lucide-react';
 import CreateMarketplaceProjectModal from '@/components/CreateMarketplaceProjectModal';
 import { getMarketplaceProjects, createMarketplaceProject } from '@/app/actions/marketplaceActions';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 
 export default function PlatformClient({ platform }: { platform: string }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -223,7 +223,6 @@ export default function PlatformClient({ platform }: { platform: string }) {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#060608] text-slate-900 dark:text-white p-4 md:p-8 pt-6 pb-24 font-sans selection:bg-[#6324FC] selection:text-white relative overflow-hidden">
-      <Toaster position="top-right" />
 
       {/* Ambient background glows */}
       <div className="fixed inset-0 pointer-events-none z-0">
