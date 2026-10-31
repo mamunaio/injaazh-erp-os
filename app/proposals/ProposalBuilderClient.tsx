@@ -14,6 +14,16 @@ import html2canvas from 'html2canvas-pro';
 import toast from 'react-hot-toast';
 import { createProposal, updateProposal } from '@/app/actions/proposalActions';
 import { INJAAZH_LOGO_BASE64, INJAAZH_EMBLEM_BASE64 } from '@/lib/brandLogo';
+import CustomSelect, { CustomSelectOption } from '@/components/ui/CustomSelect';
+
+const CURRENCY_OPTIONS: CustomSelectOption[] = [
+  { value: '$', label: 'USD ($)' },
+  { value: '৳', label: 'BDT (৳)' },
+  { value: '€', label: 'EUR (€)' },
+  { value: '£', label: 'GBP (£)' },
+  { value: 'AED', label: 'AED' },
+  { value: 'SAR', label: 'SAR' },
+];
 
 const BRANDING = {
   name: 'Injaazh Global',
@@ -333,18 +343,12 @@ export default function ProposalBuilderClient({ initialData }: { initialData?: a
 
               <div>
                 <label className={labelClass}>Currency</label>
-                <select
-                  className={inputClass}
+                <CustomSelect
                   value={formData.currency}
-                  onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                >
-                  <option value="$">USD ($)</option>
-                  <option value="৳">BDT (৳)</option>
-                  <option value="€">EUR (€)</option>
-                  <option value="£">GBP (£)</option>
-                  <option value="AED">AED</option>
-                  <option value="SAR">SAR</option>
-                </select>
+                  onChange={(val) => setFormData({ ...formData, currency: val })}
+                  options={CURRENCY_OPTIONS}
+                  size="md"
+                />
               </div>
             </div>
 

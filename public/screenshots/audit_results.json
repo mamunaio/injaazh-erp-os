@@ -1,0 +1,62 @@
+[
+  {
+    "name": "Proposals Hub",
+    "url": "http://localhost:3000/proposals",
+    "currentUrl": "http://localhost:3000/proposals",
+    "status": 200,
+    "pageErrors": [],
+    "pass": true,
+    "screenshot": "audit-01-proposals.png"
+  },
+  {
+    "name": "Requirements Hub",
+    "url": "http://localhost:3000/requirements",
+    "currentUrl": "http://localhost:3000/requirements",
+    "status": 200,
+    "pageErrors": [],
+    "pass": true,
+    "screenshot": "audit-02-requirements.png"
+  },
+  {
+    "name": "Requirements Edit Form",
+    "url": "http://localhost:3000/requirements/6ae5d565e35aee041e565466/edit",
+    "currentUrl": "http://localhost:3000/requirements/6ae5d565e35aee041e565466/edit",
+    "status": 200,
+    "pageErrors": [],
+    "pass": true,
+    "screenshot": "audit-03-requirement-builder.png"
+  },
+  {
+    "name": "SEO Management Hub",
+    "url": "http://localhost:3000/seo",
+    "currentUrl": "http://localhost:3000/seo",
+    "status": 200,
+    "pageErrors": [],
+    "pass": true,
+    "screenshot": "audit-04-seo-hub.png"
+  },
+  {
+    "name": "SEO Workspace & Tasks",
+    "url": "http://localhost:3000/seo/hector-rivera-photography/manage",
+    "currentUrl": "http://localhost:3000/seo/hector-rivera-photography/manage",
+    "status": 200,
+    "pageErrors": [],
+    "pass": true,
+    "screenshot": "audit-05-seo-workspace.png"
+  },
+  {
+    "name": "SEO Keyword Mapping Tab",
+    "url": "http://localhost:3000/seo/hector-rivera-photography/manage",
+    "currentUrl": "http://localhost:3000/seo/hector-rivera-photography/manage",
+    "status": 200,
+    "pageErrors": [],
+    "pass": true,
+    "screenshot": "audit-06-seo-keyword-mapping.png"
+  },
+  {
+    "name": "Legacy ObjectId 307 Redirect",
+    "url": "http://localhost:3000/seo/6ae5ee82714305c51d08e935/manage",
+    "currentUrl": "http://localhost:3000/seo/hector-rivera-photography/manage",
+    "pass": true
+  }
+]

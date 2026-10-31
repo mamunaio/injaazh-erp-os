@@ -9,6 +9,19 @@ import {
   FileCode2, Loader2, Clock, Eye, AlertCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import CustomSelect, { CustomSelectOption } from '@/components/ui/CustomSelect';
+
+const SPEC_PRIORITY_OPTIONS: CustomSelectOption[] = [
+  { value: 'Must Have', label: 'Must Have', color: '#EC4899' },
+  { value: 'Should Have', label: 'Should Have', color: '#F59E0B' },
+  { value: 'Nice to Have', label: 'Nice to Have', color: '#10B981' },
+];
+
+const SPEC_STATUS_OPTIONS: CustomSelectOption[] = [
+  { value: 'Included', label: 'Included', color: '#10B981' },
+  { value: 'Future Scope', label: 'Future Scope', color: '#8B5CF6' },
+  { value: 'Optional Add-on', label: 'Optional', color: '#00E5FF' },
+];
 import { createRequirement, updateRequirement } from '@/app/actions/requirementActions';
 
 interface RequirementBuilderClientProps {
@@ -730,26 +743,22 @@ export default function RequirementBuilderClient({ initialData }: RequirementBui
 
                           <div className="flex items-center gap-2 shrink-0">
                             {/* Priority Select */}
-                            <select
+                            <CustomSelect
                               value={f.priority}
-                              onChange={(e) => updateFeatureField(mIdx, fIdx, 'priority', e.target.value)}
-                              className="text-[11px] font-bold bg-slate-100 dark:bg-white/10 rounded-lg px-2 py-1 text-slate-700 dark:text-slate-300 focus:outline-none border-0"
-                            >
-                              <option value="Must Have">Must Have</option>
-                              <option value="Should Have">Should Have</option>
-                              <option value="Nice to Have">Nice to Have</option>
-                            </select>
+                              onChange={(val) => updateFeatureField(mIdx, fIdx, 'priority', val)}
+                              options={SPEC_PRIORITY_OPTIONS}
+                              size="sm"
+                              minWidth={115}
+                            />
 
                             {/* Status Select */}
-                            <select
+                            <CustomSelect
                               value={f.status}
-                              onChange={(e) => updateFeatureField(mIdx, fIdx, 'status', e.target.value)}
-                              className="text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg px-2 py-1 focus:outline-none border-0"
-                            >
-                              <option value="Included">Included</option>
-                              <option value="Future Scope">Future Scope</option>
-                              <option value="Optional Add-on">Optional</option>
-                            </select>
+                              onChange={(val) => updateFeatureField(mIdx, fIdx, 'status', val)}
+                              options={SPEC_STATUS_OPTIONS}
+                              size="sm"
+                              minWidth={115}
+                            />
 
                             <button
                               type="button"
