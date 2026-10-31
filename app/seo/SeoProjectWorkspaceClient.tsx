@@ -3,19 +3,19 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  ArrowLeft, CheckCircle2, Clock, AlertCircle, Plus, Search, 
-  Trash2, Edit, ExternalLink, Globe, Gauge, Eye, Copy, 
-  Check, Sparkles, Filter, X, ChevronDown, CheckSquare, 
-  Square, Calendar, User, FileText, BarChart3, Layers, 
+import {
+  ArrowLeft, CheckCircle2, Clock, AlertCircle, Plus, Search,
+  Trash2, Edit, ExternalLink, Globe, Gauge, Eye, Copy,
+  Check, Sparkles, Filter, X, ChevronDown, CheckSquare,
+  Square, Calendar, User, FileText, BarChart3, Layers,
   Cpu, ShieldCheck, Loader2, Key, Target, Compass, Lock,
-  ArrowUpDown, Hash, MapPin, TrendingUp, AlertTriangle, Activity
+  ArrowUpDown, Hash, MapPin, TrendingUp, AlertTriangle, Activity, LayoutGrid, List
 } from 'lucide-react';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
-import { 
-  addOrUpdateTask, 
-  deleteTask, 
+import {
+  addOrUpdateTask,
+  deleteTask,
   auditSeoProject,
   createSeoReport,
   updateSeoReport,
@@ -121,12 +121,13 @@ export default function SeoProjectWorkspaceClient({
 }) {
   const { confirm } = useConfirm();
   const [project, setProject] = useState(initialProject);
-  
+
   // Tab Order Required: 1. tasks, 2. keywords, 3. baseline, 4. aeo, 5. reports
   const [activeMainTab, setActiveMainTab] = useState<'tasks' | 'keywords' | 'baseline' | 'aeo' | 'reports'>('tasks');
 
   // Task Filters & Search
   const [statusFilter, setStatusFilter] = useState('All');
+  const [taskViewMode, setTaskViewMode] = useState<'grid' | 'table'>('grid');
   const [workTypeFilter, setWorkTypeFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [isAuditing, setIsAuditing] = useState(false);
@@ -215,6 +216,7 @@ export default function SeoProjectWorkspaceClient({
     return [
       {
         id: 'total-tasks',
+        filterValue: 'All',
         label: 'Total Tasks',
         value: metrics.total,
         subtitle: '24 Canonical Action Items',
@@ -224,6 +226,7 @@ export default function SeoProjectWorkspaceClient({
       },
       {
         id: 'verified-live',
+        filterValue: 'Verified',
         label: 'Verified Live',
         value: metrics.verified,
         subtitle: 'Confirmed on Public HTML',
@@ -233,6 +236,7 @@ export default function SeoProjectWorkspaceClient({
       },
       {
         id: 'needs-approval',
+        filterValue: 'Needs Approval',
         label: 'Client Approvals',
         value: metrics.needsApproval,
         subtitle: 'Required Before Deployment',
@@ -242,6 +246,7 @@ export default function SeoProjectWorkspaceClient({
       },
       {
         id: 'in-progress',
+        filterValue: 'In Progress',
         label: 'In Progress',
         value: metrics.inProgress,
         subtitle: 'Active Engineering Fixes',
@@ -251,11 +256,12 @@ export default function SeoProjectWorkspaceClient({
       },
       {
         id: 'pending-backlog',
+        filterValue: 'Pending',
         label: 'Pending Backlog',
         value: metrics.pending,
         subtitle: 'Ready for Next Execution',
         badge: 'Queued',
-        icon: Square,
+        icon: Layers,
         color: '#8B5CF6',
       },
     ];
@@ -266,8 +272,8 @@ export default function SeoProjectWorkspaceClient({
     const mapped = keywords.filter((k: any) => k.mappingStatus === 'Mapped').length;
     const needsReview = keywords.filter((k: any) => k.mappingStatus === 'Needs Review').length;
     const notMapped = keywords.filter((k: any) => k.mappingStatus === 'Not Mapped').length;
-    const avgDifficulty = total > 0 
-      ? Math.round(keywords.reduce((acc: number, k: any) => acc + (k.keywordDifficulty || 0), 0) / total) 
+    const avgDifficulty = total > 0
+      ? Math.round(keywords.reduce((acc: number, k: any) => acc + (k.keywordDifficulty || 0), 0) / total)
       : 0;
     return { total, mapped, needsReview, notMapped, avgDifficulty };
   }, [keywords]);
@@ -638,7 +644,7 @@ export default function SeoProjectWorkspaceClient({
 
   return (
     <div className="relative min-h-screen text-slate-900 dark:text-white font-sans selection:bg-[#6324FC] selection:text-white pb-20">
-      
+
       {/* Ambient background glows */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-1/6 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-[#6324FC]/10 rounded-full blur-[140px]" />
@@ -651,7 +657,7 @@ export default function SeoProjectWorkspaceClient({
         {/* HEADER BAR (Standardized Breadcrumb + Telemetry Profile + Actions) */}
         {/* ========================================================================= */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5 pb-4 border-b border-black/5 dark:border-white/5">
-          
+
           <div className="flex items-start sm:items-center gap-3.5">
             <Link
               href="/seo"
@@ -664,8 +670,8 @@ export default function SeoProjectWorkspaceClient({
             <div>
               {/* Breadcrumb & Project Doc Number */}
               <div className="flex flex-wrap items-center gap-2 mb-1">
-                <Link 
-                  href="/seo" 
+                <Link
+                  href="/seo"
                   className="text-xs font-heading font-semibold text-slate-400 hover:text-[#6324FC] dark:hover:text-[#00E5FF] transition-colors"
                 >
                   SEO &amp; Reporting
@@ -717,7 +723,7 @@ export default function SeoProjectWorkspaceClient({
 
           {/* Quick Action Buttons (Dashboard Standardized) */}
           <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
-            
+
             {/* Copy Shareable Client Link */}
             <button
               type="button"
@@ -801,11 +807,23 @@ export default function SeoProjectWorkspaceClient({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-5">
             {workspaceTelemetry.map((k) => {
+              const isSelected = statusFilter === k.filterValue;
               const KIcon = k.icon;
               return (
                 <div
                   key={k.id}
-                  className="group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-[#6324FC]/60 hover:shadow-[0_16px_36px_rgba(99,36,252,0.22)] dark:hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10"
+                  onClick={() => setStatusFilter(statusFilter === k.filterValue ? 'All' : k.filterValue)}
+                  className={`group glass-card rounded-2xl p-5 lg:p-6 min-h-[175px] flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 bg-white dark:bg-[#0a0a0d] border ${
+                    isSelected
+                      ? 'ring-2 ring-purple-500/50'
+                      : 'border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/25'
+                  }`}
+                  style={{
+                    borderColor: isSelected ? k.color : undefined,
+                    boxShadow: isSelected
+                      ? `0 0 25px ${k.color}35`
+                      : undefined,
+                  }}
                 >
                   {/* Radial Hover Spotlight */}
                   <div
@@ -813,17 +831,17 @@ export default function SeoProjectWorkspaceClient({
                     style={{ backgroundColor: `${k.color}40` }}
                   />
 
-                  {/* Top Accent Neon Line */}
+                  {/* Top Accent Neon Line - Expands on hover */}
                   <div
-                    className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] transition-all duration-500 opacity-90"
+                    className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] transition-all duration-500 opacity-90 group-hover:opacity-100"
                     style={{
                       backgroundImage: `linear-gradient(to right, transparent, ${k.color}, transparent)`,
                       boxShadow: `0 0 10px ${k.color}`,
                     }}
                   />
 
-                  {/* Card Inner Sheen on Hover */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  {/* Subtle Card Glass Sheen Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/[0.02] dark:from-white/[0.04] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
                   {/* Top Row: Icon Badge & Status Pill */}
                   <div className="flex justify-between items-start mb-4 relative z-10">
@@ -839,14 +857,14 @@ export default function SeoProjectWorkspaceClient({
                     </div>
 
                     <span
-                      className="text-xs font-heading font-bold flex items-center gap-1 px-2.5 py-1 rounded-lg border transition-colors"
+                      className="text-xs font-heading font-bold flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-colors shadow-xs"
                       style={{
-                        backgroundColor: `${k.color}15`,
-                        borderColor: `${k.color}30`,
+                        backgroundColor: isSelected ? `${k.color}25` : `${k.color}15`,
+                        borderColor: `${k.color}35`,
                         color: k.color,
                       }}
                     >
-                      {k.badge}
+                      {isSelected ? '● Selected' : k.badge}
                     </span>
                   </div>
 
@@ -855,7 +873,10 @@ export default function SeoProjectWorkspaceClient({
                     <p className="text-xs font-heading font-bold text-secondary uppercase tracking-wider mb-1">
                       {k.label}
                     </p>
-                    <p className="text-2xl lg:text-3xl font-heading font-extrabold text-slate-900 dark:text-white font-mono tracking-tight mt-0.5 group-hover:text-[#6324FC] dark:group-hover:text-transparent dark:group-hover:bg-clip-text dark:group-hover:bg-gradient-to-r dark:group-hover:from-white dark:group-hover:to-[#00E5FF] transition-all">
+                    <p
+                      className="text-2xl lg:text-3xl font-heading font-extrabold font-mono tracking-tight group-hover:scale-105 transition-transform duration-300 origin-left"
+                      style={{ color: k.color }}
+                    >
                       {k.value}
                     </p>
                     <p className="text-xs font-sans text-secondary/80 mt-1.5 truncate">
@@ -871,8 +892,8 @@ export default function SeoProjectWorkspaceClient({
         {/* ========================================================================= */}
         {/* MAIN NAVIGATION TABS (Strict Order: 1. Tasks, 2. Keywords, 3. Baseline, 4. AEO, 5. Reports) */}
         {/* ========================================================================= */}
-        <div className="flex items-center gap-2 border-b border-black/5 dark:border-white/5 pb-2 overflow-x-auto custom-scrollbar">
-          
+        <div className="flex items-center gap-1.5 p-1.5 bg-slate-100 dark:bg-white/5 rounded-2xl border border-black/10 dark:border-white/10 overflow-x-auto custom-scrollbar">
+
           {/* Tab 1: Task Execution Matrix */}
           <button
             type="button"
@@ -965,12 +986,40 @@ export default function SeoProjectWorkspaceClient({
         {/* ========================================================================= */}
         {activeMainTab === 'tasks' && (
           <div className="space-y-4">
-            
-            {/* Filters Bar */}
-            <div className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl p-3.5 shadow-xs flex flex-col md:flex-row gap-3 justify-between items-center">
-              
-              {/* Search */}
-              <div className="relative flex-1 w-full md:max-w-md">
+
+            {/* View Mode Switcher + Search + Filters Bar (Matching Projects Dashboard) */}
+            <div className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl p-3.5 shadow-xs flex flex-col lg:flex-row gap-3 justify-between items-center">
+
+              {/* Left: View Mode Switcher (Grid View vs List Table) */}
+              <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-white/5 rounded-xl border border-black/10 dark:border-white/10 w-full sm:w-auto shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setTaskViewMode('grid')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-heading font-bold transition-all cursor-pointer ${
+                    taskViewMode === 'grid'
+                      ? 'bg-[#6324FC] text-white shadow-sm'
+                      : 'text-secondary hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <LayoutGrid size={13} />
+                  <span>Grid View</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTaskViewMode('table')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-heading font-bold transition-all cursor-pointer ${
+                    taskViewMode === 'table'
+                      ? 'bg-[#6324FC] text-white shadow-sm'
+                      : 'text-secondary hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <List size={13} />
+                  <span>List Table</span>
+                </button>
+              </div>
+
+              {/* Search Bar */}
+              <div className="relative flex-1 w-full max-w-md">
                 <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
@@ -981,26 +1030,20 @@ export default function SeoProjectWorkspaceClient({
                 />
               </div>
 
-              {/* Status Filter Badges */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 w-full md:w-auto">
-                {['All', 'Verified', 'In Progress', 'Pending', 'Needs Approval'].map((st) => (
-                  <button
-                    key={st}
-                    type="button"
-                    onClick={() => setStatusFilter(st)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-heading font-bold transition-all shrink-0 ${
-                      statusFilter === st
-                        ? 'bg-[#6324FC] text-white shadow-xs'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
-                    }`}
-                  >
-                    {st}
-                  </button>
-                ))}
-              </div>
+              {/* Status and Work Type Filters */}
+              <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto shrink-0">
+                <CustomSelect
+                  value={statusFilter}
+                  onChange={(val) => setStatusFilter(val)}
+                  options={[
+                    { value: 'All', label: 'All Statuses' },
+                    ...TASK_STATUS_OPTIONS
+                  ]}
+                  labelPrefix="Status"
+                  size="sm"
+                  minWidth={140}
+                />
 
-              {/* Work Type Custom Dropdown Filter */}
-              <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
                 <CustomSelect
                   value={workTypeFilter}
                   onChange={(val) => setWorkTypeFilter(val)}
@@ -1013,145 +1056,295 @@ export default function SeoProjectWorkspaceClient({
 
             </div>
 
-            {/* Tasks Table (Improved Spacing & Breathing Room) */}
-            <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0a0a0d] shadow-xs overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  
-                  <thead>
-                    <tr className="bg-slate-50/90 dark:bg-white/[0.02] border-b border-black/10 dark:border-white/10 text-[9px] font-heading font-extrabold uppercase tracking-wider text-slate-400">
-                      <th className="py-3.5 px-3.5 w-[75px]">ID</th>
-                      <th className="py-3.5 px-2.5 w-[75px]">Priority</th>
-                      <th className="py-3.5 px-3 w-[140px]">Status</th>
-                      <th className="py-3.5 px-3 w-[110px]">Work Type</th>
-                      <th className="py-3.5 px-3.5 w-[125px]">Page / Target</th>
-                      <th className="py-3.5 px-3.5 w-[230px]">Task &amp; Findings</th>
-                      <th className="py-3.5 px-4 w-[250px]">Action Taken</th>
-                      <th className="py-3.5 px-4 w-[220px]">Why It Matters</th>
-                      <th className="py-3.5 px-3 w-[85px]">Owner</th>
-                      <th className="py-3.5 px-3.5 text-right w-[80px]">Actions</th>
-                    </tr>
-                  </thead>
-
-                  <tbody className="divide-y divide-black/5 dark:divide-white/5">
-                    {filteredTasks.length === 0 ? (
-                      <tr>
-                        <td colSpan={10} className="py-14 text-center text-slate-400 italic">
-                          No tasks match your current filter.
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredTasks.map((t: any) => {
-                        return (
-                          <tr key={t.taskId || t._id} className="hover:bg-slate-50/60 dark:hover:bg-white/[0.02] transition-colors">
-                            
-                            {/* ID */}
-                            <td className="py-3.5 px-3.5 align-top font-mono font-bold text-[#6324FC] dark:text-[#00E5FF]">
-                              {t.taskId}
-                            </td>
-
-                            {/* Priority */}
-                            <td className="py-3.5 px-2.5 align-top">
-                              <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-mono font-bold ${
-                                t.priority === 'High' 
-                                  ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20' 
-                                  : t.priority === 'Medium'
-                                  ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
-                                  : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                              }`}>
-                                {t.priority}
-                              </span>
-                            </td>
-
-                            {/* Status (Interactive Custom Dropdown — Zero Clipping) */}
-                            <td className="py-3.5 px-3 align-top">
-                              <CustomSelect
-                                value={t.status}
-                                onChange={(newVal) => handleQuickStatusChange(t, newVal)}
-                                options={TASK_STATUS_OPTIONS}
-                                size="sm"
-                                minWidth={140}
-                              />
-                            </td>
-
-                            {/* Work Type */}
-                            <td className="py-3.5 px-3 align-top">
-                              <span className="font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded text-[11px]">
-                                {t.workType}
-                              </span>
-                            </td>
-
-                            {/* Page / Platform */}
-                            <td className="py-3.5 px-3.5 align-top font-mono text-[11px] text-slate-500 dark:text-slate-400">
-                              {t.pageOrPlatform}
-                            </td>
-
-                            {/* Task & Findings */}
-                            <td className="py-3.5 px-3.5 align-top">
-                              <div className="font-bold text-slate-900 dark:text-white leading-snug">
-                                {t.task}
-                              </div>
-                              {t.beforeFinding && (
-                                <div className="text-[10.5px] text-slate-400 mt-1 leading-relaxed">
-                                  <span className="font-semibold text-slate-500">Before: </span>
-                                  {t.beforeFinding}
-                                </div>
-                              )}
-                            </td>
-
-                            {/* Done / Proposed Action */}
-                            <td className="py-3.5 px-4 align-top">
-                              <div className="text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
-                                {t.doneProposedAction}
-                              </div>
-                              {t.evidence && (
-                                <div className="text-[9.5px] font-mono text-[#6324FC] dark:text-[#00E5FF] mt-1.5 truncate">
-                                  Source: {t.evidence}
-                                </div>
-                              )}
-                            </td>
-
-                            {/* Why It Matters */}
-                            <td className="py-3.5 px-4 align-top text-slate-600 dark:text-slate-400 italic leading-relaxed text-[11px]">
-                              {t.whyItMatters}
-                            </td>
-
-                            {/* Owner */}
-                            <td className="py-3.5 px-3 align-top font-mono text-[10px] text-slate-500">
-                              {t.owner}
-                            </td>
-
-                            {/* Actions */}
-                            <td className="py-3.5 px-3.5 align-top text-right">
-                              <div className="flex items-center justify-end gap-1">
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenEditTask(t)}
-                                  className="p-1.5 rounded-lg text-slate-400 hover:text-[#6324FC] hover:bg-[#6324FC]/10 transition-colors"
-                                  title="Edit task details"
-                                >
-                                  <Edit size={14} />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteTask(t.taskId || t._id)}
-                                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors"
-                                  title="Delete task"
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              </div>
-                            </td>
-
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-
-                </table>
-              </div>
+            {/* Showing Count */}
+            <div className="flex items-center justify-between text-xs font-mono text-secondary px-1">
+              <span>Showing <strong className="text-slate-900 dark:text-white font-bold">{filteredTasks.length}</strong> of {tasks.length} total tasks</span>
             </div>
+
+            {/* VIEW MODE 1: GRID CARDS (Dashboard Matching) */}
+            {taskViewMode === 'grid' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-5">
+                {filteredTasks.length === 0 ? (
+                  <div className="col-span-full py-16 text-center bg-white dark:bg-[#0a0a0d] rounded-2xl border border-black/10 dark:border-white/10">
+                    <CheckSquare size={32} className="mx-auto text-slate-400 mb-2 opacity-60" />
+                    <p className="text-sm font-heading font-bold text-slate-700 dark:text-slate-300">
+                      No tasks match your current filter
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Try clearing search or changing your filter dropdowns.
+                    </p>
+                  </div>
+                ) : (
+                  filteredTasks.map((t: any) => {
+                    const statusColor = t.status === 'Verified' ? '#10B981' : t.status === 'In Progress' ? '#00E5FF' : t.status === 'Needs Approval' ? '#F59E0B' : '#94A3B8';
+                    const priorityBg = t.priority === 'High' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20' : t.priority === 'Medium' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
+
+                    return (
+                      <div
+                        key={t.taskId || t._id}
+                        onClick={() => handleOpenEditTask(t)}
+                        className="group glass-card rounded-2xl p-5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-1 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/25 shadow-sm dark:shadow-md select-none min-h-[240px]"
+                      >
+                        {/* Radial Hover Spotlight */}
+                        <div
+                          className="absolute -top-10 -right-10 w-32 h-32 blur-[30px] rounded-full opacity-20 dark:opacity-30 group-hover:opacity-90 group-hover:scale-150 transition-all duration-500 pointer-events-none"
+                          style={{ backgroundColor: statusColor }}
+                        />
+
+                        {/* Top Accent Neon Line - Expands on hover */}
+                        <div
+                          className="absolute top-0 left-1/2 -translate-x-1/2 w-10 group-hover:w-full h-[2.5px] transition-all duration-500 opacity-80 group-hover:opacity-100"
+                          style={{
+                            backgroundImage: `linear-gradient(to right, transparent, ${statusColor}, transparent)`,
+                            boxShadow: `0 0 10px ${statusColor}`,
+                          }}
+                        />
+
+                        {/* Subtle Card Glass Sheen Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-black/[0.02] dark:from-white/[0.04] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+                        {/* Card Header: Task ID, Status & Priority Badges */}
+                        <div className="relative z-10 flex justify-between items-start gap-2">
+                          <span className="font-mono font-bold text-xs px-2.5 py-0.5 rounded-lg bg-[#6324FC]/10 text-[#6324FC] dark:text-[#00E5FF] border border-[#6324FC]/25 shadow-xs">
+                            {t.taskId}
+                          </span>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span
+                              className="px-2 py-0.5 rounded-md text-[9px] font-mono font-bold uppercase tracking-wider border flex items-center gap-1"
+                              style={{
+                                backgroundColor: `${statusColor}15`,
+                                borderColor: `${statusColor}35`,
+                                color: statusColor,
+                              }}
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: statusColor }} />
+                              {t.status}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded-md text-[9px] font-mono font-bold uppercase tracking-wider border ${priorityBg}`}>
+                              {t.priority}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Title & Platform Tags */}
+                        <div className="relative z-10 my-3 space-y-2">
+                          <h4 className="text-xs font-heading font-extrabold text-slate-900 dark:text-white leading-snug line-clamp-2 group-hover:text-[#6324FC] dark:group-hover:text-[#00E5FF] transition-colors">
+                            {t.task}
+                          </h4>
+
+                          <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
+                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/5 border border-black/5 dark:border-white/5 font-mono text-secondary">
+                              <Globe size={10} className="text-[#6324FC]" /> {t.pageOrPlatform}
+                            </span>
+                            <span className="px-2 py-0.5 rounded-md bg-purple-500/10 text-[#6324FC] dark:text-[#00E5FF] border border-[#6324FC]/20 font-semibold text-[9px]">
+                              {t.workType}
+                            </span>
+                          </div>
+
+                          {/* Findings / Proposed Action */}
+                          {t.doneProposedAction ? (
+                            <p className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
+                              <span className="font-semibold text-slate-900 dark:text-white">Action: </span>
+                              {t.doneProposedAction}
+                            </p>
+                          ) : t.beforeFinding ? (
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                              <span className="font-semibold text-slate-700 dark:text-slate-300">Before: </span>
+                              {t.beforeFinding}
+                            </p>
+                          ) : null}
+                        </div>
+
+                        {/* Card Footer: Status Select + Owner & Actions */}
+                        <div className="relative z-10 flex items-center justify-between pt-3 border-t border-black/5 dark:border-white/5 mt-auto">
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <CustomSelect
+                              value={t.status}
+                              onChange={(newVal) => handleQuickStatusChange(t, newVal)}
+                              options={TASK_STATUS_OPTIONS}
+                              size="sm"
+                              minWidth={130}
+                            />
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            <div
+                              className="w-6 h-6 rounded-full bg-purple-500/15 dark:bg-[#6324FC]/20 text-[#6324FC] dark:text-[#00E5FF] border border-black/10 dark:border-white/10 flex items-center justify-center text-[7px] font-bold shadow-xs"
+                              title={`Owner: ${t.owner || 'Mamun'}`}
+                            >
+                              {(t.owner || 'M').substring(0, 2).toUpperCase()}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenEditTask(t);
+                              }}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-[#6324FC] hover:bg-[#6324FC]/10 transition-colors"
+                              title="Edit Task"
+                            >
+                              <Edit size={13} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteTask(t.taskId || t._id);
+                              }}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors"
+                              title="Delete Task"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </div>
+
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
+
+            {/* VIEW MODE 2: LIST TABLE (Comprehensive 10-Column Matrix) */}
+            {taskViewMode === 'table' && (
+              <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0a0a0d] shadow-xs overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-slate-50/90 dark:bg-white/[0.02] border-b border-black/10 dark:border-white/10 text-[9px] font-heading font-extrabold uppercase tracking-wider text-slate-400">
+                        <th className="py-3.5 px-3.5 w-[75px]">ID</th>
+                        <th className="py-3.5 px-2.5 w-[75px]">Priority</th>
+                        <th className="py-3.5 px-3 w-[140px]">Status</th>
+                        <th className="py-3.5 px-3 w-[110px]">Work Type</th>
+                        <th className="py-3.5 px-3.5 w-[125px]">Page / Target</th>
+                        <th className="py-3.5 px-3.5 w-[230px]">Task &amp; Findings</th>
+                        <th className="py-3.5 px-4 w-[250px]">Action Taken</th>
+                        <th className="py-3.5 px-4 w-[220px]">Why It Matters</th>
+                        <th className="py-3.5 px-3 w-[85px]">Owner</th>
+                        <th className="py-3.5 px-3.5 text-right w-[80px]">Actions</th>
+                      </tr>
+                    </thead>
+
+                    <tbody className="divide-y divide-black/5 dark:divide-white/5">
+                      {filteredTasks.length === 0 ? (
+                        <tr>
+                          <td colSpan={10} className="py-14 text-center text-slate-400 italic">
+                            No tasks match your current filter.
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredTasks.map((t: any) => {
+                          return (
+                            <tr key={t.taskId || t._id} className="hover:bg-slate-50/60 dark:hover:bg-white/[0.02] transition-colors">
+
+                              {/* ID */}
+                              <td className="py-3.5 px-3.5 align-top font-mono font-bold text-[#6324FC] dark:text-[#00E5FF]">
+                                {t.taskId}
+                              </td>
+
+                              {/* Priority */}
+                              <td className="py-3.5 px-2.5 align-top">
+                                <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-mono font-bold ${
+                                  t.priority === 'High'
+                                    ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
+                                    : t.priority === 'Medium'
+                                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                                    : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                                }`}>
+                                  {t.priority}
+                                </span>
+                              </td>
+
+                              {/* Status (Interactive Custom Dropdown) */}
+                              <td className="py-3.5 px-3 align-top">
+                                <CustomSelect
+                                  value={t.status}
+                                  onChange={(newVal) => handleQuickStatusChange(t, newVal)}
+                                  options={TASK_STATUS_OPTIONS}
+                                  size="sm"
+                                  minWidth={140}
+                                />
+                              </td>
+
+                              {/* Work Type */}
+                              <td className="py-3.5 px-3 align-top">
+                                <span className="font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded text-[11px]">
+                                  {t.workType}
+                                </span>
+                              </td>
+
+                              {/* Page / Platform */}
+                              <td className="py-3.5 px-3.5 align-top font-mono text-[11px] text-slate-500 dark:text-slate-400">
+                                {t.pageOrPlatform}
+                              </td>
+
+                              {/* Task & Findings */}
+                              <td className="py-3.5 px-3.5 align-top">
+                                <div className="font-bold text-slate-900 dark:text-white leading-snug">
+                                  {t.task}
+                                </div>
+                                {t.beforeFinding && (
+                                  <div className="text-[10.5px] text-slate-400 mt-1 leading-relaxed">
+                                    <span className="font-semibold text-slate-500">Before: </span>
+                                    {t.beforeFinding}
+                                  </div>
+                                )}
+                              </td>
+
+                              {/* Done / Proposed Action */}
+                              <td className="py-3.5 px-4 align-top">
+                                <div className="text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
+                                  {t.doneProposedAction}
+                                </div>
+                                {t.evidence && (
+                                  <div className="text-[9.5px] font-mono text-[#6324FC] dark:text-[#00E5FF] mt-1.5 truncate">
+                                    Source: {t.evidence}
+                                  </div>
+                                )}
+                              </td>
+
+                              {/* Why It Matters */}
+                              <td className="py-3.5 px-4 align-top text-slate-600 dark:text-slate-400 italic leading-relaxed text-[11px]">
+                                {t.whyItMatters}
+                              </td>
+
+                              {/* Owner */}
+                              <td className="py-3.5 px-3 align-top font-mono text-[10px] text-slate-500">
+                                {t.owner}
+                              </td>
+
+                              {/* Actions */}
+                              <td className="py-3.5 px-3.5 align-top text-right">
+                                <div className="flex items-center justify-end gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenEditTask(t)}
+                                    className="p-1.5 rounded-lg text-slate-400 hover:text-[#6324FC] hover:bg-[#6324FC]/10 transition-colors"
+                                    title="Edit task details"
+                                  >
+                                    <Edit size={14} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteTask(t.taskId || t._id)}
+                                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors"
+                                    title="Delete task"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              </td>
+
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
 
           </div>
         )}
@@ -1161,7 +1354,7 @@ export default function SeoProjectWorkspaceClient({
         {/* ========================================================================= */}
         {activeMainTab === 'keywords' && (
           <div className="space-y-4">
-            
+
             {/* Keyword Telemetry Header */}
             <div className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
@@ -1264,7 +1457,7 @@ export default function SeoProjectWorkspaceClient({
 
             {/* Keyword Filter & Control Bar */}
             <div className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl p-3.5 shadow-xs flex flex-wrap gap-2.5 justify-between items-center">
-              
+
               {/* Search */}
               <div className="relative flex-1 min-w-[220px]">
                 <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -1310,7 +1503,7 @@ export default function SeoProjectWorkspaceClient({
             <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0a0a0d] shadow-xs overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
-                  
+
                   <thead>
                     <tr className="bg-slate-50/90 dark:bg-white/[0.02] border-b border-black/10 dark:border-white/10 text-[9px] font-heading font-extrabold uppercase tracking-wider text-slate-400">
                       <th className="py-3.5 px-3.5 w-[220px]">Keyword</th>
@@ -1337,8 +1530,8 @@ export default function SeoProjectWorkspaceClient({
                             {keywords.length === 0 ? 'No Keywords Mapped Yet' : 'No keywords match your filter'}
                           </p>
                           <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-                            {keywords.length === 0 
-                              ? 'Map your target commercial phrases and search intent to designated pages.' 
+                            {keywords.length === 0
+                              ? 'Map your target commercial phrases and search intent to designated pages.'
                               : 'Try adjusting your search query or dropdown filter.'}
                           </p>
                           {keywords.length === 0 && (
@@ -1356,7 +1549,7 @@ export default function SeoProjectWorkspaceClient({
                       filteredKeywords.map((kw: any) => {
                         return (
                           <tr key={kw._id || kw.keyword} className="hover:bg-slate-50/60 dark:hover:bg-white/[0.02] transition-colors">
-                            
+
                             {/* Keyword Title & Notes */}
                             <td className="py-3.5 px-3.5 align-top">
                               <span className="font-heading font-bold text-slate-900 dark:text-white block">
@@ -1417,10 +1610,10 @@ export default function SeoProjectWorkspaceClient({
                             {/* Difficulty */}
                             <td className="py-3.5 px-2.5 align-top text-center">
                               <span className={`font-mono font-bold ${
-                                kw.keywordDifficulty > 60 
-                                  ? 'text-rose-500' 
-                                  : kw.keywordDifficulty > 30 
-                                  ? 'text-amber-500' 
+                                kw.keywordDifficulty > 60
+                                  ? 'text-rose-500'
+                                  : kw.keywordDifficulty > 30
+                                  ? 'text-amber-500'
                                   : 'text-emerald-500'
                               }`}>
                                 {kw.keywordDifficulty || 0}
@@ -1440,8 +1633,8 @@ export default function SeoProjectWorkspaceClient({
                             {/* Priority */}
                             <td className="py-3.5 px-2.5 align-top">
                               <span className={`inline-block px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold ${
-                                kw.priority === 'High' 
-                                  ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20' 
+                                kw.priority === 'High'
+                                  ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
                                   : kw.priority === 'Medium'
                                   ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
                                   : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
@@ -1506,9 +1699,22 @@ export default function SeoProjectWorkspaceClient({
         {/* ========================================================================= */}
         {activeMainTab === 'baseline' && (
           <div className="space-y-6">
-            
-            {/* GSC Baseline Matrix */}
-            <div className="p-6 rounded-2xl bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-xs space-y-4">
+
+            {/* GSC Baseline Matrix (Dashboard Glassmorphic Standard) */}
+            <div className="group glass-card rounded-2xl p-6 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/25 shadow-sm dark:shadow-md transition-all duration-300 relative overflow-hidden space-y-4">
+              {/* Radial Hover Spotlight */}
+              <div
+                className="absolute -top-10 -right-10 w-36 h-36 blur-[35px] rounded-full opacity-20 dark:opacity-30 group-hover:opacity-80 transition-all duration-500 pointer-events-none"
+                style={{ backgroundColor: '#6324FC' }}
+              />
+              {/* Top Accent Neon Line */}
+              <div
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] transition-all duration-500 opacity-90 group-hover:opacity-100"
+                style={{
+                  backgroundImage: 'linear-gradient(to right, transparent, #6324FC, transparent)',
+                  boxShadow: '0 0 10px #6324FC',
+                }}
+              />
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-base font-heading font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
@@ -1559,8 +1765,21 @@ export default function SeoProjectWorkspaceClient({
               </div>
             </div>
 
-            {/* Google Business Profile Discovery */}
-            <div className="p-6 rounded-2xl bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-xs space-y-4">
+            {/* Google Business Profile Discovery (Dashboard Glassmorphic Standard) */}
+            <div className="group glass-card rounded-2xl p-6 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/25 shadow-sm dark:shadow-md transition-all duration-300 relative overflow-hidden space-y-4">
+              {/* Radial Hover Spotlight */}
+              <div
+                className="absolute -top-10 -right-10 w-36 h-36 blur-[35px] rounded-full opacity-20 dark:opacity-30 group-hover:opacity-80 transition-all duration-500 pointer-events-none"
+                style={{ backgroundColor: '#00E5FF' }}
+              />
+              {/* Top Accent Neon Line */}
+              <div
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] transition-all duration-500 opacity-90 group-hover:opacity-100"
+                style={{
+                  backgroundImage: 'linear-gradient(to right, transparent, #00E5FF, transparent)',
+                  boxShadow: '0 0 10px #00E5FF',
+                }}
+              />
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-base font-heading font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
@@ -1611,8 +1830,21 @@ export default function SeoProjectWorkspaceClient({
               </div>
             </div>
 
-            {/* Core Web Vitals Lab Baseline */}
-            <div className="p-6 rounded-2xl bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-xs space-y-4">
+            {/* Core Web Vitals Lab Baseline (Dashboard Glassmorphic Standard) */}
+            <div className="group glass-card rounded-2xl p-6 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/25 shadow-sm dark:shadow-md transition-all duration-300 relative overflow-hidden space-y-4">
+              {/* Radial Hover Spotlight */}
+              <div
+                className="absolute -top-10 -right-10 w-36 h-36 blur-[35px] rounded-full opacity-20 dark:opacity-30 group-hover:opacity-80 transition-all duration-500 pointer-events-none"
+                style={{ backgroundColor: '#EF4444' }}
+              />
+              {/* Top Accent Neon Line */}
+              <div
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-14 group-hover:w-full h-[2.5px] transition-all duration-500 opacity-90 group-hover:opacity-100"
+                style={{
+                  backgroundImage: 'linear-gradient(to right, transparent, #EF4444, transparent)',
+                  boxShadow: '0 0 10px #EF4444',
+                }}
+              />
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-base font-heading font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
@@ -1629,7 +1861,7 @@ export default function SeoProjectWorkspaceClient({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                
+
                 {/* Mobile Diagnostic Card */}
                 <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-black/5 dark:border-white/5 space-y-3">
                   <div className="flex items-center justify-between">
@@ -1736,7 +1968,7 @@ export default function SeoProjectWorkspaceClient({
         {/* ========================================================================= */}
         {activeMainTab === 'reports' && (
           <div className="space-y-4">
-            
+
             {/* Header & Create Report Action */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white dark:bg-[#0a0a0d] p-5 rounded-2xl border border-black/10 dark:border-white/10 shadow-xs">
               <div>
@@ -1809,8 +2041,16 @@ export default function SeoProjectWorkspaceClient({
                   return (
                     <div
                       key={report._id || report.reportId}
-                      className="p-5 rounded-2xl bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 hover:border-[#6324FC]/40 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs"
+                      className="group glass-card rounded-2xl p-5 bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/25 shadow-sm dark:shadow-md transition-all duration-300 relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
                     >
+                      {/* Top Accent Neon Line */}
+                      <div
+                        className="absolute top-0 left-1/2 -translate-x-1/2 w-12 group-hover:w-full h-[2px] transition-all duration-500 opacity-80 group-hover:opacity-100"
+                        style={{
+                          backgroundImage: 'linear-gradient(to right, transparent, #6324FC, transparent)',
+                          boxShadow: '0 0 10px #6324FC',
+                        }}
+                      />
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <span className="font-mono font-bold text-xs text-[#6324FC] dark:text-[#00E5FF]">
@@ -1876,7 +2116,7 @@ export default function SeoProjectWorkspaceClient({
       {isTaskModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
           <div className="bg-white dark:bg-[#0E0F17] rounded-3xl border border-black/10 dark:border-white/10 shadow-2xl max-w-2xl w-full overflow-hidden text-slate-900 dark:text-white animate-in fade-in zoom-in-95 duration-150">
-            
+
             {/* Modal Header */}
             <div className="p-6 border-b border-black/5 dark:border-white/10 flex items-center justify-between">
               <div>
@@ -1901,7 +2141,7 @@ export default function SeoProjectWorkspaceClient({
 
             {/* Modal Form */}
             <form onSubmit={handleSaveTask} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar">
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {/* Task ID (Read-only on edit) */}
                 <div>
@@ -2115,7 +2355,7 @@ export default function SeoProjectWorkspaceClient({
       {isKeywordModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
           <div className="bg-white dark:bg-[#0E0F17] rounded-3xl border border-black/10 dark:border-white/10 shadow-2xl max-w-xl w-full overflow-hidden text-slate-900 dark:text-white animate-in fade-in zoom-in-95 duration-150">
-            
+
             {/* Modal Header */}
             <div className="p-6 border-b border-black/5 dark:border-white/10 flex items-center justify-between">
               <div>
@@ -2140,7 +2380,7 @@ export default function SeoProjectWorkspaceClient({
 
             {/* Keyword Form */}
             <form onSubmit={handleSaveKeyword} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar">
-              
+
               <div>
                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                   Target Search Keyword *
@@ -2341,7 +2581,7 @@ export default function SeoProjectWorkspaceClient({
       {isReportModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
           <div className="bg-white dark:bg-[#0E0F17] rounded-3xl border border-black/10 dark:border-white/10 shadow-2xl max-w-xl w-full overflow-hidden text-slate-900 dark:text-white animate-in fade-in zoom-in-95 duration-150">
-            
+
             <div className="p-6 border-b border-black/5 dark:border-white/10 flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-1">
@@ -2364,7 +2604,7 @@ export default function SeoProjectWorkspaceClient({
             </div>
 
             <form onSubmit={handleSaveReport} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar">
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">

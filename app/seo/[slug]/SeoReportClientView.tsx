@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useRef, useMemo } from 'react';
-import { 
-  CheckCircle2, Clock, AlertCircle, Printer, Copy, Check, 
-  Sparkles, Loader2, Send, Download, Layers, Globe, Gauge, 
-  CheckSquare, FileText, ExternalLink, ShieldCheck, MapPin, 
+import {
+  CheckCircle2, Clock, AlertCircle, Printer, Copy, Check,
+  Sparkles, Loader2, Send, Download, Layers, Globe, Gauge,
+  CheckSquare, FileText, ExternalLink, ShieldCheck, MapPin,
   Mail, Phone, Building2, User, HelpCircle, X
 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -143,13 +143,13 @@ export default function SeoReportClientView({ project: initialProject }: { proje
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#07080B] text-slate-900 dark:text-slate-100 selection:bg-[#6324FC]/20 print:bg-white print:text-slate-900">
-      
+
       {/* Strict Print Specific CSS Rules isolating the A4 weekly report pages */}
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
           @page {
             size: A4 portrait;
-            margin: 14mm 16mm 16mm 16mm;
+            margin: 6mm 8mm;
           }
 
           *, *::before, *::after {
@@ -202,8 +202,6 @@ export default function SeoReportClientView({ project: initialProject }: { proje
           }
 
           .seo-page-2 {
-            page-break-before: always !important;
-            break-before: page !important;
             page-break-inside: avoid !important;
             break-inside: avoid !important;
             border: none !important;
@@ -217,7 +215,12 @@ export default function SeoReportClientView({ project: initialProject }: { proje
             box-sizing: border-box !important;
           }
 
-          table, tfoot, tr, td, th {
+          table, tfoot {
+            page-break-inside: auto !important;
+            break-inside: auto !important;
+          }
+
+          tr, td, th {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
           }
@@ -227,12 +230,12 @@ export default function SeoReportClientView({ project: initialProject }: { proje
       {/* Sticky Action Navigation Bar */}
       <nav className="sticky top-0 z-50 bg-white/90 dark:bg-[#0A0B10]/90 backdrop-blur-xl border-b border-black/5 dark:border-white/5 transition-all print:hidden">
         <div className="max-w-[1080px] mx-auto px-4 sm:px-6 h-18 flex items-center justify-between gap-4">
-          
+
           {/* Brand & Document ID */}
           <div className="flex items-center gap-3">
-            <img 
-              src={INJAAZH_EMBLEM_BASE64} 
-              alt="Injaazh Emblem" 
+            <img
+              src={INJAAZH_EMBLEM_BASE64}
+              alt="Injaazh Emblem"
               className="w-10 h-10 rounded-xl object-contain shadow-xs border border-black/5 dark:border-white/10"
             />
             <div>
@@ -255,7 +258,7 @@ export default function SeoReportClientView({ project: initialProject }: { proje
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
-            
+
             {/* Multi-report dropdown if reports exist */}
             {reports.length > 1 && (
               <select
@@ -329,7 +332,7 @@ export default function SeoReportClientView({ project: initialProject }: { proje
           ? 'py-12 bg-slate-200/60 dark:bg-black/60 flex flex-col items-center gap-10'
           : 'max-w-[1020px] px-4 sm:px-6 py-10 sm:py-14'
       } print:p-0 print:m-0 print:max-w-none print:bg-white`}>
-        
+
         {/* ================= PAGE 1: Executive Scorecard & Verified Deliverables ================= */}
         <div
           ref={page1Ref}
@@ -344,22 +347,22 @@ export default function SeoReportClientView({ project: initialProject }: { proje
           {/* Top Brand Accent */}
           <div className="h-2 bg-gradient-to-r from-[#6324FC] via-[#00E5FF] to-[#6324FC]" />
 
-          <div className="p-6 sm:p-8 lg:p-10 print:p-5 print:py-3.5 flex flex-col justify-between">
+          <div className="p-6 sm:p-8 lg:p-10 print:p-4 print:py-2.5 flex flex-col justify-between">
             <div>
-              
+
               {/* Header: Agency & Client Meta */}
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-3.5 print:pb-2.5 border-b border-slate-100">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-3.5 print:pb-2 border-b border-slate-100">
                 <div className="max-w-md">
                   <div className="flex items-center gap-2.5 mb-1.5">
-                    <img 
-                      src={INJAAZH_EMBLEM_BASE64} 
-                      alt="Injaazh Emblem" 
+                    <img
+                      src={INJAAZH_EMBLEM_BASE64}
+                      alt="Injaazh Emblem"
                       className="w-9 h-9 rounded-xl object-contain shadow-xs shrink-0"
                     />
                     <div>
-                      <img 
-                        src={INJAAZH_LOGO_BASE64} 
-                        alt="Injaazh Global" 
+                      <img
+                        src={INJAAZH_LOGO_BASE64}
+                        alt="Injaazh Global"
                         className="h-5.5 w-auto object-contain"
                       />
                       <p className="text-[9px] font-bold uppercase tracking-wider text-[#6324FC] mt-0.5">
@@ -382,12 +385,12 @@ export default function SeoReportClientView({ project: initialProject }: { proje
                   <h2 className="text-lg font-mono font-bold text-slate-900">
                     {currentReport?.reportId || project.docNumber || 'SEO-2026-001'}
                   </h2>
-                  
+
                   <div className="mt-1.5 space-y-0.5 text-[11px]">
                     <p className="text-slate-500">
                       <span className="font-semibold text-slate-700">Reporting Date: </span>
-                      {currentReport?.reportingDate 
-                        ? format(new Date(currentReport.reportingDate), 'MMMM dd, yyyy') 
+                      {currentReport?.reportingDate
+                        ? format(new Date(currentReport.reportingDate), 'MMMM dd, yyyy')
                         : format(new Date(project.lastAudited || new Date()), 'MMMM dd, yyyy')}
                     </p>
                     <p className="text-slate-500">
@@ -399,7 +402,7 @@ export default function SeoReportClientView({ project: initialProject }: { proje
               </div>
 
               {/* Client & Scope Header */}
-              <div className="py-3.5 print:py-2.5 border-b border-slate-100">
+              <div className="py-3.5 print:py-1.5 border-b border-slate-100">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
                   <div className="md:col-span-2">
                     <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Account &amp; Digital Property</span>
@@ -429,13 +432,13 @@ export default function SeoReportClientView({ project: initialProject }: { proje
               </div>
 
               {/* Weekly Performance Scorecard Matrix */}
-              <div className="py-3 print:py-2 border-b border-slate-100">
+              <div className="py-3 print:py-1.5 border-b border-slate-100">
                 <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#6324FC] mb-2 flex items-center gap-1.5">
                   <Gauge size={11} /> Performance Benchmarks &amp; Health Matrix
                 </h4>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                  
+
                   {/* GSC Organic */}
                   <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
                     <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">GSC Organic (3 Mo)</span>
@@ -544,7 +547,7 @@ export default function SeoReportClientView({ project: initialProject }: { proje
             </div>
 
             {/* Page 1 Footer */}
-            <div className="pt-3 print:pt-2 flex items-center justify-between text-[9px] text-slate-400 border-t border-slate-100 mt-2">
+            <div className="pt-3 print:pt-1.5 flex items-center justify-between text-[9px] text-slate-400 border-t border-slate-100 mt-2">
               <span className="font-medium">Injaazh Global • Confidential Weekly SEO Performance Report</span>
               <span className="font-mono font-semibold">Page 1 of 2</span>
             </div>
@@ -575,20 +578,20 @@ export default function SeoReportClientView({ project: initialProject }: { proje
           {/* Top Brand Accent */}
           <div className="h-2 bg-gradient-to-r from-[#6324FC] via-[#00E5FF] to-[#6324FC]" />
 
-          <div className="p-6 sm:p-8 lg:p-10 print:p-5 print:py-3.5 flex flex-col justify-between">
+          <div className="p-6 sm:p-8 lg:p-10 print:p-4 print:py-2.5 flex flex-col justify-between">
             <div>
-              
+
               {/* Page 2 Header */}
-              <div className="flex items-center justify-between pb-3 print:pb-2 border-b border-slate-100">
+              <div className="flex items-center justify-between pb-3 print:pb-1.5 border-b border-slate-100">
                 <div className="flex items-center gap-2">
-                  <img 
-                    src={INJAAZH_EMBLEM_BASE64} 
-                    alt="Injaazh Emblem" 
+                  <img
+                    src={INJAAZH_EMBLEM_BASE64}
+                    alt="Injaazh Emblem"
                     className="w-7 h-7 rounded-lg object-contain shadow-xs shrink-0"
                   />
-                  <img 
-                    src={INJAAZH_LOGO_BASE64} 
-                    alt="Injaazh Global" 
+                  <img
+                    src={INJAAZH_LOGO_BASE64}
+                    alt="Injaazh Global"
                     className="h-5 w-auto object-contain"
                   />
                   <span className="text-slate-300">•</span>
@@ -600,7 +603,7 @@ export default function SeoReportClientView({ project: initialProject }: { proje
               </div>
 
               {/* Action Required by Client (Needs Approval Section) */}
-              <div id="client-approvals" className="py-3.5 print:py-2 border-b border-slate-100">
+              <div id="client-approvals" className="py-3.5 print:py-1.5 border-b border-slate-100">
                 <div className="flex items-center justify-between mb-2">
                   <div>
                     <h4 className="text-[10px] font-bold uppercase tracking-wider text-amber-700 flex items-center gap-1.5">
@@ -617,7 +620,7 @@ export default function SeoReportClientView({ project: initialProject }: { proje
 
                 <div className="space-y-2.5">
                   {needsApprovalTasks.map((task: any, idx: number) => (
-                    <div 
+                    <div
                       key={idx}
                       className="p-3 print:p-2 rounded-xl bg-amber-50/50 border border-amber-200/70 flex flex-col sm:flex-row sm:items-start justify-between gap-3"
                     >
@@ -662,7 +665,7 @@ export default function SeoReportClientView({ project: initialProject }: { proje
               </div>
 
               {/* Next Sprint Priorities (In Progress & High-Priority Queue) */}
-              <div className="py-3.5 print:py-2 border-b border-slate-100">
+              <div className="py-3.5 print:py-1.5 border-b border-slate-100">
                 <div className="flex items-center justify-between mb-2">
                   <div>
                     <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#6324FC] flex items-center gap-1.5">
@@ -697,7 +700,7 @@ export default function SeoReportClientView({ project: initialProject }: { proje
               {/* Authorizing Signatures & Sign-off Section */}
               <div className="pt-3 print:pt-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
-                  
+
                   {/* Agency Lead */}
                   <div className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/80 flex flex-col justify-between">
                     <div>
@@ -754,7 +757,7 @@ export default function SeoReportClientView({ project: initialProject }: { proje
             </div>
 
             {/* Page 2 Footer */}
-            <div className="pt-3 print:pt-2 flex items-center justify-between text-[9px] text-slate-400 border-t border-slate-100 mt-2">
+            <div className="pt-3 print:pt-1.5 flex items-center justify-between text-[9px] text-slate-400 border-t border-slate-100 mt-2">
               <span className="font-medium">Injaazh Global • Confidential Weekly SEO Performance Report</span>
               <span className="font-mono font-semibold">Page 2 of 2</span>
             </div>
@@ -770,7 +773,7 @@ export default function SeoReportClientView({ project: initialProject }: { proje
       {selectedTaskForApproval && (
         <div data-html2canvas-ignore="true" className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 print:hidden">
           <div className="bg-white dark:bg-[#0E0F17] rounded-3xl p-6 sm:p-8 max-w-md w-full border border-slate-200 dark:border-white/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-150">
-            
+
             <div className="flex items-center justify-between pb-3 border-b border-black/5 dark:border-white/5 mb-4">
               <div className="flex items-center gap-2">
                 <span className="font-mono font-bold text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
