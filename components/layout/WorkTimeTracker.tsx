@@ -194,8 +194,26 @@ export default function WorkTimeTracker() {
     }
   };
 
+  if (!isLoaded) return null;
+
+  // Do not show time tracker on auth pages or public proposal pages
+  if (
+    pathname === '/' ||
+    pathname === '/login' ||
+    pathname === '/register' ||
+    pathname === '/forgot-password' ||
+    pathname?.startsWith('/reset-password') ||
+    pathname === '/proposal' ||
+    pathname?.startsWith('/proposal/') ||
+    (pathname?.startsWith('/requirements/') && !pathname?.startsWith('/requirements/create') && !pathname?.includes('/edit')) ||
+    pathname?.startsWith('/requirement/') ||
+    (pathname?.startsWith('/seo/') && !pathname?.startsWith('/seo/create') && !pathname?.includes('/manage') && !pathname?.includes('/edit'))
+  ) {
+    return null;
+  }
+
   return (
-    <div className="fixed bottom-6 right-24 z-40">
+    <div className="fixed bottom-6 right-24 z-40 print:hidden">
       <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-lg transition-all cursor-default group hover:border-[#6324FC]/50">
         
         <button 

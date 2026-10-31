@@ -21,7 +21,12 @@ export default function AppLayoutWrapper({ children, initialUser }: { children: 
     pathname === '/login' || 
     pathname === '/register' || 
     pathname === '/forgot-password' || 
-    pathname.startsWith('/reset-password');
+    pathname.startsWith('/reset-password') ||
+    pathname === '/proposal' ||
+    pathname.startsWith('/proposal/') ||
+    (pathname.startsWith('/requirements/') && !pathname.startsWith('/requirements/create') && !pathname.includes('/edit')) ||
+    pathname.startsWith('/requirement/') ||
+    (pathname.startsWith('/seo/') && !pathname.startsWith('/seo/create') && !pathname.includes('/manage') && !pathname.includes('/edit'));
 
   React.useEffect(() => {
     // If not auth page and initialUser is null (session invalid in DB),

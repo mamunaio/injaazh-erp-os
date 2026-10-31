@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { 
-  LayoutDashboard, Users, Briefcase, DollarSign, Settings, X, Wallet, Map, Clock, Globe, Sparkles, CheckSquare, Flame 
+  LayoutDashboard, Users, Briefcase, DollarSign, Settings, X, Wallet, Map, Clock, Globe, Sparkles, CheckSquare, Flame, FileText, ClipboardList, TrendingUp 
 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import { useSidebar } from './SidebarContext';
@@ -18,6 +18,9 @@ const navItems = [
   { name: 'Marketplace', href: '/marketplace', icon: Globe, category: 'Marketplace' },
   { name: 'Clients', href: '/marketplace/clients', icon: Users, category: 'Marketplace' },
   { name: 'Projects', href: '/projects', icon: Briefcase, category: 'Operations' },
+  { name: 'Proposals', href: '/proposals', icon: FileText, category: 'Operations' },
+  { name: 'Requirements', href: '/requirements', icon: ClipboardList, category: 'Operations' },
+  { name: 'SEO & Reporting', href: '/seo', icon: TrendingUp, category: 'Operations' },
   { name: 'Work Log & Tasks', href: '/tasks', icon: CheckSquare, category: 'Operations' },
   { name: 'Roadmap', href: '/roadmap', icon: Map, category: 'Operations' },
   { name: 'Timesheets', href: '/timesheets', icon: Clock, category: 'Operations' },
@@ -44,12 +47,12 @@ export default function Sidebar() {
     }
     
     if (user.role === 'editor') {
-      const allowed = ['/dashboard', '/lead-gen', '/lead-gen/dashboard', '/marketplace', '/marketplace/clients', '/projects', '/tasks', '/roadmap', '/timesheets', '/team-logs'];
+      const allowed = ['/dashboard', '/lead-gen', '/lead-gen/dashboard', '/marketplace', '/marketplace/clients', '/projects', '/proposals', '/requirements', '/seo', '/tasks', '/roadmap', '/timesheets', '/team-logs'];
       return allowed.includes(item.href);
     }
 
     if (user.role === 'marketplace_team') {
-      const allowed = ['/dashboard', '/lead-gen', '/lead-gen/dashboard', '/marketplace', '/marketplace/clients', '/tasks', '/team-logs'];
+      const allowed = ['/dashboard', '/lead-gen', '/lead-gen/dashboard', '/marketplace', '/marketplace/clients', '/proposals', '/requirements', '/seo', '/tasks', '/team-logs'];
       return allowed.includes(item.href);
     }
     

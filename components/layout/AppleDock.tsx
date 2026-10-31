@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, Users, Briefcase, DollarSign, Settings, Wallet, 
-  Map, Clock, Globe, CheckSquare, Sparkles, Command, Moon, Sun, Monitor
+  Map, Clock, Globe, CheckSquare, Sparkles, Command, Moon, Sun, Monitor, FileText, ClipboardList, TrendingUp
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useUser } from './UserContext';
@@ -27,6 +27,9 @@ const navItems: DockItemProps[] = [
   { name: 'Marketplace', href: '/marketplace', icon: Globe, category: 'Marketplace' },
   { name: 'Clients', href: '/marketplace/clients', icon: Users, category: 'Marketplace' },
   { name: 'Projects', href: '/projects', icon: Briefcase, category: 'Operations' },
+  { name: 'Proposals', href: '/proposals', icon: FileText, category: 'Operations' },
+  { name: 'Requirements', href: '/requirements', icon: ClipboardList, category: 'Operations' },
+  { name: 'SEO & Reports', href: '/seo', icon: TrendingUp, category: 'Operations' },
   { name: 'Tasks', href: '/tasks', icon: CheckSquare, category: 'Operations' },
   { name: 'Roadmap', href: '/roadmap', icon: Map, category: 'Operations' },
   { name: 'Timesheets', href: '/timesheets', icon: Clock, category: 'Operations' },
@@ -191,12 +194,12 @@ export default function AppleDock() {
     }
     
     if (user.role === 'editor') {
-      const allowed = ['/dashboard', '/marketplace', '/marketplace/clients', '/projects', '/tasks', '/roadmap', '/timesheets'];
+      const allowed = ['/dashboard', '/marketplace', '/marketplace/clients', '/projects', '/proposals', '/tasks', '/roadmap', '/timesheets'];
       return allowed.includes(item.href);
     }
 
     if (user.role === 'marketplace_team') {
-      const allowed = ['/dashboard', '/marketplace', '/marketplace/clients', '/tasks'];
+      const allowed = ['/dashboard', '/marketplace', '/marketplace/clients', '/proposals', '/tasks'];
       return allowed.includes(item.href);
     }
     

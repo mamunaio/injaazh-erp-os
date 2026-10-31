@@ -55,3 +55,6 @@ injaazh-ai-rules/
 
 # mobile expo
 mobile/.expo/
+
+# uploads
+public/uploads/

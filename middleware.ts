@@ -24,6 +24,11 @@ export async function middleware(request: NextRequest) {
     pathname === '/register' ||
     pathname === '/forgot-password' ||
     pathname.startsWith('/reset-password') ||
+    pathname === '/proposal' ||
+    pathname.startsWith('/proposal/') ||
+    (pathname.startsWith('/requirements/') && !pathname.startsWith('/requirements/create') && !pathname.includes('/edit')) ||
+    pathname.startsWith('/requirement/') ||
+    (pathname.startsWith('/seo/') && !pathname.startsWith('/seo/create') && !pathname.includes('/manage') && !pathname.includes('/edit')) ||
     pathname === '/api/mobile/auth/login';
 
   // Extract the user token from request cookies or Authorization header

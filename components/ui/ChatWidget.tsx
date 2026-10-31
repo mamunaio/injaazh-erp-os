@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Bot, User, Sparkles, Loader2, Minus, Trash2, ArrowUpRight, Copy } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -22,6 +23,7 @@ const quickPromptCategories = [
 ];
 
 export default function ChatWidget() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -132,6 +134,21 @@ export default function ChatWidget() {
     ]);
   };
 
+  if (
+    pathname === '/' ||
+    pathname === '/login' ||
+    pathname === '/register' ||
+    pathname === '/forgot-password' ||
+    pathname?.startsWith('/reset-password') ||
+    pathname === '/proposal' ||
+    pathname?.startsWith('/proposal/') ||
+    (pathname?.startsWith('/requirements/') && !pathname?.startsWith('/requirements/create') && !pathname?.includes('/edit')) ||
+    pathname?.startsWith('/requirement/') ||
+    (pathname?.startsWith('/seo/') && !pathname?.startsWith('/seo/create') && !pathname?.includes('/manage') && !pathname?.includes('/edit'))
+  ) {
+    return null;
+  }
+
   return (
     <>
       {/* Floating Action Button */}
@@ -144,7 +161,7 @@ export default function ChatWidget() {
             whileHover={{ scale: 1.06 }}
             whileTap={{ scale: 0.94 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 z-[999] w-12 h-12 rounded-2xl bg-gradient-to-br from-[#6324FC] to-[#8B5CF6] shadow-[0_0_25px_rgba(99,36,252,0.5)] flex items-center justify-center text-white border border-white/20 group cursor-pointer"
+            className="fixed bottom-6 right-6 z-[999] w-12 h-12 rounded-2xl bg-gradient-to-br from-[#6324FC] to-[#8B5CF6] shadow-[0_0_25px_rgba(99,36,252,0.5)] flex items-center justify-center text-white border border-white/20 group cursor-pointer print:hidden"
           >
             <Bot size={20} className="group-hover:rotate-12 transition-transform duration-300" />
             <span className="absolute -top-1 -right-1 flex h-3 w-3">
@@ -168,7 +185,7 @@ export default function ChatWidget() {
             }}
             exit={{ opacity: 0, y: 15, scale: 0.98 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
-            className={`fixed bottom-6 right-6 z-[999] w-[400px] max-w-[calc(100vw-2rem)] flex flex-col rounded-3xl overflow-hidden border border-black/10 dark:border-white/15 shadow-2xl backdrop-blur-2xl bg-white dark:bg-[#0a0a0d] ${isMinimized ? '' : 'max-h-[calc(100vh-5rem)]'}`}
+            className={`fixed bottom-6 right-6 z-[999] w-[400px] max-w-[calc(100vw-2rem)] flex flex-col rounded-3xl overflow-hidden border border-black/10 dark:border-white/15 shadow-2xl backdrop-blur-2xl bg-white dark:bg-[#0a0a0d] print:hidden ${isMinimized ? '' : 'max-h-[calc(100vh-5rem)]'}`}
           >
             {/* Header */}
             <div 
