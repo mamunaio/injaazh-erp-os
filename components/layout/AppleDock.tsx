@@ -194,12 +194,12 @@ export default function AppleDock() {
     }
     
     if (user.role === 'editor') {
-      const allowed = ['/dashboard', '/marketplace', '/marketplace/clients', '/projects', '/proposals', '/tasks', '/roadmap', '/timesheets'];
+      const allowed = ['/dashboard', '/marketplace', '/marketplace/clients', '/projects', '/proposals', '/requirements', '/seo', '/tasks', '/roadmap', '/timesheets'];
       return allowed.includes(item.href);
     }
 
     if (user.role === 'marketplace_team') {
-      const allowed = ['/dashboard', '/marketplace', '/marketplace/clients', '/proposals', '/tasks'];
+      const allowed = ['/dashboard', '/marketplace', '/marketplace/clients', '/proposals', '/requirements', '/seo', '/tasks'];
       return allowed.includes(item.href);
     }
     

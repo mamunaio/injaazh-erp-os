@@ -2,28 +2,32 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Search, 
-  Users, 
-  Briefcase, 
-  DollarSign, 
-  Settings, 
-  Mail, 
-  Sparkles, 
-  ArrowRight, 
-  Command, 
-  PlusCircle, 
-  Wallet, 
-  Clock, 
-  Map, 
+import {
+  Search,
+  Users,
+  Briefcase,
+  DollarSign,
+  Settings,
+  Mail,
+  Sparkles,
+  ArrowRight,
+  Command,
+  PlusCircle,
+  Wallet,
+  Clock,
+  Map,
   Activity,
   Layers,
   Bot,
   Globe,
-  Flame
+  Flame,
+  FileText,
+  ClipboardList,
+  TrendingUp
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useScrollLock } from '@/lib/useScrollLock';
+import { useUser } from './UserContext';
 
 interface CommandItem {
   id: string;
@@ -36,6 +40,7 @@ interface CommandItem {
 }
 
 export default function CommandCenter() {
+  const { user } = useUser();
   const [isOpen, setIsOpen] = useState(false);
   useScrollLock(isOpen);
   const [query, setQuery] = useState('');
@@ -62,6 +67,9 @@ export default function CommandCenter() {
     { id: 'nav-marketplace', name: 'Marketplace Operations', category: 'Navigation', icon: Globe, path: '/marketplace', color: 'text-indigo-500 bg-indigo-500/10' },
     { id: 'nav-clients', name: 'Marketplace Clients', category: 'Navigation', icon: Users, path: '/marketplace/clients', color: 'text-purple-500 bg-purple-500/10' },
     { id: 'nav-projects', name: 'Projects Kanban Board', category: 'Navigation', icon: Briefcase, path: '/projects', color: 'text-blue-500 bg-blue-500/10' },
+    { id: 'nav-proposals', name: 'Proposals', category: 'Navigation', icon: FileText, path: '/proposals', color: 'text-violet-500 bg-violet-500/10' },
+    { id: 'nav-requirements', name: 'Requirements', category: 'Navigation', icon: ClipboardList, path: '/requirements', color: 'text-sky-500 bg-sky-500/10' },
+    { id: 'nav-seo', name: 'SEO Workspace', category: 'Navigation', icon: TrendingUp, path: '/seo', color: 'text-emerald-500 bg-emerald-500/10' },
     { id: 'nav-roadmap', name: 'Milestone Roadmap', category: 'Navigation', icon: Map, path: '/roadmap', color: 'text-amber-500 bg-amber-500/10' },
     { id: 'nav-timesheets', name: 'Timesheets & Work Logs', category: 'Navigation', icon: Clock, path: '/timesheets', color: 'text-orange-500 bg-orange-500/10' },
     { id: 'nav-finance', name: 'Finance & Bank Ledger', category: 'Navigation', icon: DollarSign, path: '/finance', color: 'text-emerald-500 bg-emerald-500/10' },
@@ -74,8 +82,55 @@ export default function CommandCenter() {
     }, color: 'text-primary-500 bg-primary-500/10' },
   ];
 
-  const filtered = allCommands.filter(c => 
-    c.name.toLowerCase().includes(query.toLowerCase()) || 
+  const isCommandAllowed = (item: CommandItem) => {
+    if (!user) return false;
+    if (user.role === 'owner') return true;
+
+    const path = item.path ? item.path.split('?')[0] : '';
+
+    if (user.role === 'admin') {
+      if (path === '/daily-expenses') return false;
+      return true;
+    }
+
+    if (user.role === 'editor') {
+      if (item.action) return true;
+      const allowed = [
+        '/dashboard',
+        '/lead-gen',
+        '/marketplace',
+        '/projects',
+        '/proposals',
+        '/requirements',
+        '/seo',
+        '/tasks',
+        '/roadmap',
+        '/timesheets'
+      ];
+      return allowed.some(prefix => path === prefix || path.startsWith(prefix + '/'));
+    }
+
+    if (user.role === 'marketplace_team') {
+      if (item.action) return true;
+      const allowed = [
+        '/dashboard',
+        '/lead-gen',
+        '/marketplace',
+        '/proposals',
+        '/requirements',
+        '/seo',
+        '/tasks'
+      ];
+      return allowed.some(prefix => path === prefix || path.startsWith(prefix + '/'));
+    }
+
+    return false;
+  };
+
+  const availableCommands = allCommands.filter(isCommandAllowed);
+
+  const filtered = availableCommands.filter(c =>
+    c.name.toLowerCase().includes(query.toLowerCase()) ||
     c.category.toLowerCase().includes(query.toLowerCase())
   );
 
@@ -135,7 +190,7 @@ export default function CommandCenter() {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div 
+        <div
           role="dialog"
           aria-modal="true"
           className="fixed inset-0 z-[99999] flex items-start justify-center pt-[12vh] px-4 bg-black/75 backdrop-blur-xl overscroll-contain"
@@ -186,8 +241,8 @@ export default function CommandCenter() {
                       onClick={() => handleSelect(item)}
                       onMouseEnter={() => setSelectedIndex(index)}
                       className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all duration-150 group text-left ${
-                        isSelected 
-                          ? 'bg-[#6324FC]/15 text-[#6324FC] dark:text-white font-bold border border-[#6324FC]/40 shadow-[0_0_15px_rgba(99,36,252,0.15)]' 
+                        isSelected
+                          ? 'bg-[#6324FC]/15 text-[#6324FC] dark:text-white font-bold border border-[#6324FC]/40 shadow-[0_0_15px_rgba(99,36,252,0.15)]'
                           : 'text-slate-700 dark:text-slate-300 hover:bg-black/5 dark:hover:bg-white/5 border border-transparent'
                       }`}
                     >
@@ -204,11 +259,11 @@ export default function CommandCenter() {
                           </span>
                         </div>
                       </div>
-                      <ArrowRight 
-                        size={14} 
+                      <ArrowRight
+                        size={14}
                         className={`text-[#6324FC] dark:text-[#00E5FF] transition-transform duration-200 ${
                           isSelected ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'
-                        }`} 
+                        }`}
                       />
                     </button>
                   );

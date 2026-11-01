@@ -44,7 +44,7 @@ next-env.d.ts
 # electron
 dist-electron/
 dist/
-release/
+/release/
 *.exe
 *.dmg
 *.AppImage
