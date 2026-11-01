@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { 
   FileCode2, CheckCircle2, XCircle, Clock, Calendar, 
   Building2, User, Mail, Globe, MapPin, Phone, 
@@ -76,47 +76,170 @@ export default function RequirementClientView({ requirement: initialRequirement 
     }
   };
 
-  // PDF Export (Strictly 2 Pages A4 matching Proposal architecture)
+  // Dynamic Content-Aware Multi-Page PDF Export
   const handleDownloadPDF = async () => {
     if (!page1Ref.current || !page2Ref.current) return;
     setIsGeneratingPDF(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 80));
+      // Small pause to allow React to render PDF-specific state
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const pdfWidth = pdf.internal.pageSize.getWidth(); // 210mm
+      const pdfHeight = pdf.internal.pageSize.getHeight(); // 297mm
 
-      // Render Page 1 (Architecture, Tech Stack & Core Modules)
-      const canvas1 = await html2canvas(page1Ref.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: '#ffffff',
+      // Footer reservation: 14mm from bottom of each page
+      const footerReserveMm = 14;
+      const contentHeightMm = pdfHeight - footerReserveMm; // 283mm
+
+      // Helper function to capture an element and break it into clean page slices
+      const processSection = async (element: HTMLElement) => {
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          backgroundColor: '#ffffff',
+        });
+
+        const scaleY = canvas.height / element.offsetHeight;
+        const pageMaxCanvasH = canvas.width * (pdfHeight / pdfWidth);
+        const contentMaxCanvasH = canvas.width * (contentHeightMm / pdfWidth);
+
+        // If the entire canvas fits comfortably on one page
+        if (canvas.height <= pageMaxCanvasH) {
+          return [{ canvas, startY: 0, endY: canvas.height, heightMm: (canvas.height * pdfWidth) / canvas.width }];
+        }
+
+        // Element exceeds one page: compute safe break points at DOM element boundaries
+        const elRect = element.getBoundingClientRect();
+        const breakPoints: number[] = [];
+
+        // 1. Module container cards: prevent module cards from splitting awkwardly
+        const moduleCards = element.querySelectorAll('.rounded-xl.border');
+        moduleCards.forEach((m) => {
+          const r = m.getBoundingClientRect();
+          breakPoints.push((r.top - elRect.top) * scaleY);
+          breakPoints.push((r.bottom - elRect.top) * scaleY);
+        });
+
+        // 2. Table rows inside modules
+        const rows = element.querySelectorAll('tbody tr');
+        rows.forEach((tr) => {
+          const r = tr.getBoundingClientRect();
+          breakPoints.push((r.bottom - elRect.top) * scaleY);
+        });
+
+        // 3. Section divisions and boundaries
+        const sections = element.querySelectorAll('.border-b, .py-3, .py-3\\.5');
+        sections.forEach((sec) => {
+          const r = sec.getBoundingClientRect();
+          breakPoints.push((r.top - elRect.top) * scaleY);
+          breakPoints.push((r.bottom - elRect.top) * scaleY);
+        });
+
+        const prereqs = element.querySelector('.requirement-prerequisites');
+        if (prereqs) {
+          const r = prereqs.getBoundingClientRect();
+          breakPoints.push((r.top - elRect.top) * scaleY);
+          breakPoints.push((r.bottom - elRect.top) * scaleY);
+        }
+
+        const outOfScope = element.querySelector('.requirement-out-of-scope');
+        if (outOfScope) {
+          const r = outOfScope.getBoundingClientRect();
+          breakPoints.push((r.top - elRect.top) * scaleY);
+          breakPoints.push((r.bottom - elRect.top) * scaleY);
+        }
+
+        const sigs = element.querySelector('.requirement-signatures, .pt-3.print\\:pt-2:last-of-type');
+        if (sigs) {
+          const r = sigs.getBoundingClientRect();
+          breakPoints.push((r.top - elRect.top) * scaleY);
+          breakPoints.push((r.bottom - elRect.top) * scaleY);
+        }
+
+        // Deduplicate and sort
+        const sortedBreaks = Array.from(new Set(breakPoints)).sort((a, b) => a - b);
+
+        const slices: { canvas: HTMLCanvasElement; startY: number; endY: number; heightMm: number }[] = [];
+        let currentStartY = 0;
+
+        while (currentStartY < canvas.height) {
+          const maxTargetY = currentStartY + contentMaxCanvasH;
+
+          if (maxTargetY >= canvas.height) {
+            // Last slice fits remaining canvas
+            const sliceH = canvas.height - currentStartY;
+            const sliceCanvas = document.createElement('canvas');
+            sliceCanvas.width = canvas.width;
+            sliceCanvas.height = sliceH;
+            const ctx = sliceCanvas.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(canvas, 0, currentStartY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+              slices.push({
+                canvas: sliceCanvas,
+                startY: currentStartY,
+                endY: canvas.height,
+                heightMm: (sliceH * pdfWidth) / canvas.width,
+              });
+            }
+            break;
+          }
+
+          // Find the best breakpoint <= maxTargetY
+          const candidates = sortedBreaks.filter((b) => b > currentStartY + 50 && b <= maxTargetY);
+          let chosenBreak = candidates.length > 0 ? candidates[candidates.length - 1] : maxTargetY;
+
+          const sliceH = chosenBreak - currentStartY;
+          const sliceCanvas = document.createElement('canvas');
+          sliceCanvas.width = canvas.width;
+          sliceCanvas.height = sliceH;
+          const ctx = sliceCanvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(canvas, 0, currentStartY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+            slices.push({
+              canvas: sliceCanvas,
+              startY: currentStartY,
+              endY: chosenBreak,
+              heightMm: (sliceH * pdfWidth) / canvas.width,
+            });
+          }
+
+          currentStartY = chosenBreak;
+        }
+
+        return slices;
+      };
+
+      const slices1 = await processSection(page1Ref.current);
+      const slices2 = await processSection(page2Ref.current);
+      const allSlices = [...slices1, ...slices2];
+      const totalPages = allSlices.length;
+
+      // Draw each slice on its own PDF page
+      allSlices.forEach((slice, idx) => {
+        if (idx > 0) {
+          pdf.addPage();
+        }
+
+        const imgData = slice.canvas.toDataURL('image/png');
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, slice.heightMm, undefined, 'FAST');
+
+        // Draw crisp dynamic vector footer
+        pdf.setDrawColor(226, 232, 240); // slate-200
+        pdf.setLineWidth(0.3);
+        pdf.line(10, 287, 200, 287);
+
+        pdf.setFontSize(8);
+        pdf.setTextColor(148, 163, 184); // slate-400
+        pdf.text('Injaazh Global • Confidential Engineering Specification', 10, 292);
+        pdf.text(`Page ${idx + 1} of ${totalPages}`, 200, 292, { align: 'right' });
       });
-
-      const imgData1 = canvas1.toDataURL('image/png');
-      const h1 = (canvas1.height * pdfWidth) / canvas1.width;
-      pdf.addImage(imgData1, 'PNG', 0, 0, pdfWidth, Math.min(h1, pdfHeight), undefined, 'FAST');
-
-      // Render Page 2 (Extended Modules, Prerequisites, Scope Boundaries & Sign-off)
-      const canvas2 = await html2canvas(page2Ref.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-      });
-
-      pdf.addPage();
-      const imgData2 = canvas2.toDataURL('image/png');
-      const h2 = (canvas2.height * pdfWidth) / canvas2.width;
-      pdf.addImage(imgData2, 'PNG', 0, 0, pdfWidth, Math.min(h2, pdfHeight), undefined, 'FAST');
 
       pdf.save(`Requirement_${requirement.docNumber || 'PRD'}.pdf`);
-      toast.success('Requirements Specification PDF downloaded (2 Pages)');
+      toast.success(`Requirements Specification PDF downloaded (${totalPages} Pages)`);
     } catch (err: any) {
       console.error('PDF error:', err);
       toast.error('Failed to generate PDF. You can also use the Print button.');
@@ -203,6 +326,16 @@ export default function RequirementClientView({ requirement: initialRequirement 
   const page1Modules = modules.slice(0, splitIndex);
   const page2Modules = modules.slice(splitIndex);
 
+  // Calculate estimated physical page count for web view pagination display
+  const totalDocPages = useMemo(() => {
+    let pages = 1;
+    const p2Count = page2Modules.length;
+    const modulePages = Math.ceil(p2Count / 3.5);
+    const extraPages = (prerequisites.length > 0 || outOfScopeItems.length > 0) ? 1 : 0.5;
+    pages += Math.max(1, Math.ceil(modulePages + extraPages - 0.5));
+    return Math.max(2, pages);
+  }, [page2Modules.length, prerequisites.length, outOfScopeItems.length]);
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#07080B] text-slate-900 dark:text-slate-100 selection:bg-[#6324FC]/20 print:bg-white print:text-slate-900">
       
@@ -248,12 +381,11 @@ export default function RequirementClientView({ requirement: initialRequirement 
             padding: 0 !important;
           }
 
-          /* Enforce exact 2 pages print format */
           .requirement-page-1 {
-            page-break-after: always !important;
-            break-after: page !important;
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
+            page-break-after: auto !important;
+            break-after: auto !important;
+            page-break-inside: auto !important;
+            break-inside: auto !important;
             border: none !important;
             border-radius: 0 !important;
             box-shadow: none !important;
@@ -266,10 +398,10 @@ export default function RequirementClientView({ requirement: initialRequirement 
           }
 
           .requirement-page-2 {
-            page-break-before: always !important;
-            break-before: page !important;
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
+            page-break-before: auto !important;
+            break-before: auto !important;
+            page-break-inside: auto !important;
+            break-inside: auto !important;
             border: none !important;
             border-radius: 0 !important;
             box-shadow: none !important;
@@ -281,7 +413,29 @@ export default function RequirementClientView({ requirement: initialRequirement 
             box-sizing: border-box !important;
           }
 
-          table, tfoot, tr, td, th {
+          .rounded-xl.border {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+
+          table {
+            page-break-inside: auto !important;
+            break-inside: auto !important;
+            width: 100% !important;
+          }
+
+          thead {
+            display: table-header-group !important;
+          }
+
+          tr, td, th {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+
+          .requirement-prerequisites,
+          .requirement-out-of-scope,
+          .requirement-signatures {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
           }
@@ -621,9 +775,10 @@ export default function RequirementClientView({ requirement: initialRequirement 
             </div>
 
             {/* Page 1 Footer */}
-            <div className="pt-3 print:pt-2 flex items-center justify-between text-[9px] text-slate-400 border-t border-slate-100 mt-2">
+            <div data-html2canvas-ignore="true" className="pt-3 print:pt-2 flex items-center justify-between text-[9px] text-slate-400 border-t border-slate-100 mt-2">
               <span className="font-medium">Injaazh Global • Confidential Engineering Specification</span>
-              <span className="font-mono font-semibold">Page 1 of 2</span>
+              <span className="font-mono font-semibold print:hidden">Page 1 of {totalDocPages}</span>
+              <span className="font-mono font-semibold hidden print:inline">Engineering Specification • Page 1</span>
             </div>
 
           </div>
@@ -633,7 +788,7 @@ export default function RequirementClientView({ requirement: initialRequirement 
         <div data-html2canvas-ignore="true" className="print:hidden flex items-center justify-center gap-3 my-6 text-xs font-semibold text-slate-400">
           <div className="h-px bg-slate-200 dark:bg-white/10 flex-1 max-w-[120px]" />
           <span className="flex items-center gap-1.5 uppercase tracking-wider text-[10px] font-bold text-slate-400">
-            Page 2 of 2 • Extended Scope, Prerequisites &amp; Sign-off
+            Extended Scope, Prerequisites &amp; Sign-off
           </span>
           <div className="h-px bg-slate-200 dark:bg-white/10 flex-1 max-w-[120px]" />
         </div>
@@ -668,7 +823,7 @@ export default function RequirementClientView({ requirement: initialRequirement 
                   <span className="text-xs font-mono font-bold text-slate-700">{requirement.docNumber}</span>
                 </div>
                 <div className="text-[9px] font-bold uppercase tracking-wider text-[#6324FC] bg-[#6324FC]/10 px-2 py-0.5 rounded-full">
-                  Page 2 of 2 • Scope Boundaries &amp; Sign-off
+                  Scope Boundaries &amp; Sign-off
                 </div>
               </div>
 
@@ -749,7 +904,7 @@ export default function RequirementClientView({ requirement: initialRequirement 
               )}
 
               {/* Client Prerequisites & Assets Matrix */}
-              <div className="py-3 print:py-2 border-b border-slate-100">
+              <div className="py-3 print:py-2 border-b border-slate-100 requirement-prerequisites">
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <CheckSquare size={12} className="text-[#6324FC]" />
                   <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#6324FC]">
@@ -761,7 +916,7 @@ export default function RequirementClientView({ requirement: initialRequirement 
                 {prerequisites.length === 0 ? (
                   <p className="text-[10px] text-slate-500 italic">No external prerequisites required from client for this milestone.</p>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 print:grid-cols-2">
                     {prerequisites.map((prereq: any, pIdx: number) => (
                       <div key={pIdx} className="p-2 rounded-lg bg-slate-50 border border-slate-200/70 flex items-start gap-2">
                         <span className={`mt-0.5 shrink-0 w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] ${
@@ -782,7 +937,7 @@ export default function RequirementClientView({ requirement: initialRequirement 
               </div>
 
               {/* Scope Boundaries & Out of Scope Declarations */}
-              <div className="py-3 print:py-2 border-b border-slate-100">
+              <div className="py-3 print:py-2 border-b border-slate-100 requirement-out-of-scope">
                 <div className="flex items-center gap-1.5 mb-1">
                   <ShieldAlert size={12} className="text-rose-600" />
                   <h4 className="text-[10px] font-bold uppercase tracking-wider text-rose-600">
@@ -806,8 +961,8 @@ export default function RequirementClientView({ requirement: initialRequirement 
               </div>
 
               {/* Authorizing Signatures & Sign-off Section */}
-              <div className="pt-3 print:pt-2">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
+              <div className="pt-3 print:pt-2 requirement-signatures">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch print:grid-cols-2">
                   
                   {/* Left Column: Injaazh Engineering Representative */}
                   <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/70 border border-slate-200/80 flex flex-col justify-between">
@@ -917,9 +1072,10 @@ export default function RequirementClientView({ requirement: initialRequirement 
             </div>
 
             {/* Page 2 Footer */}
-            <div className="pt-3 print:pt-2 flex items-center justify-between text-[9px] text-slate-400 border-t border-slate-100 mt-2">
+            <div data-html2canvas-ignore="true" className="pt-3 print:pt-2 flex items-center justify-between text-[9px] text-slate-400 border-t border-slate-100 mt-2">
               <span className="font-medium">Injaazh Global • Confidential Engineering Specification</span>
-              <span className="font-mono font-semibold">Page 2 of 2</span>
+              <span className="font-mono font-semibold print:hidden">Page {totalDocPages} of {totalDocPages}</span>
+              <span className="font-mono font-semibold hidden print:inline">Scope &amp; Sign-off • Page {totalDocPages}</span>
             </div>
 
           </div>
