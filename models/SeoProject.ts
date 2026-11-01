@@ -23,6 +23,7 @@ export interface ISeoTask {
 export interface IKeywordMapping {
   _id?: string;
   keyword: string;
+  keywordRole?: 'Primary' | 'Secondary';
   keywordType: 'Primary' | 'Secondary';
   searchIntent: 'Informational' | 'Commercial' | 'Transactional' | 'Navigational';
   targetUrl: string;
@@ -33,8 +34,51 @@ export interface IKeywordMapping {
   targetPosition?: number | null;
   priority: 'High' | 'Medium' | 'Low';
   mappingStatus: 'Mapped' | 'Not Mapped' | 'Needs Review';
+  selectionRationale?: string;
   notes?: string;
   lastUpdated?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface IBaselineObservation {
+  _id?: string;
+  metricName: string;
+  source: 'GSC' | 'GBP' | 'PageSpeed' | 'Manual';
+  category: string;
+  metricValue: string;
+  unit?: string;
+  observationDate: string;
+  period?: string;
+  targetUrl?: string;
+  device?: 'Desktop' | 'Mobile' | 'All';
+  location?: string;
+  notes?: string;
+  evidence?: string;
+  isManual?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface IAeoItem {
+  _id?: string;
+  title: string;
+  targetQuery: string;
+  platform: 'ChatGPT' | 'Gemini' | 'Perplexity' | 'Claude' | 'Other';
+  targetUrl?: string;
+  category?: string;
+  currentVisibility: string;
+  targetVisibility: string;
+  brandMention: 'Yes' | 'No' | 'Partial';
+  competitorMention?: string;
+  recommendedAction?: string;
+  priority: 'High' | 'Medium' | 'Low';
+  status: 'Discovered' | 'In Progress' | 'Optimized' | 'Verified';
+  assignedTo?: string;
+  lastCheckedDate?: string;
+  notes?: string;
+  evidence?: string;
+  isManual?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -103,6 +147,12 @@ export interface ISeoProject extends Document {
 
   // Historical / Weekly Reports Associated with this Project
   reports: ISeoReport[];
+
+  // Granular Historical Observations (GSC, GBP, PageSpeed, Manual)
+  observations?: IBaselineObservation[];
+
+  // Granular AI Search Engine Optimization Items
+  aeoItems?: IAeoItem[];
 
   // Benchmarks & Baseline Source Observations (GSC, GBP, PageSpeed, Squarespace)
   baseline: {
@@ -192,9 +242,52 @@ const SeoReportSchema = new Schema<ISeoReport>(
   { timestamps: true }
 );
 
+const BaselineObservationSchema = new Schema<IBaselineObservation>(
+  {
+    metricName: { type: String, required: true, trim: true },
+    source: { type: String, enum: ['GSC', 'GBP', 'PageSpeed', 'Manual'], default: 'Manual' },
+    category: { type: String, default: 'General', trim: true },
+    metricValue: { type: String, required: true, trim: true },
+    unit: { type: String, default: '', trim: true },
+    observationDate: { type: String, default: () => new Date().toISOString().split('T')[0] },
+    period: { type: String, default: '', trim: true },
+    targetUrl: { type: String, default: '', trim: true },
+    device: { type: String, enum: ['Desktop', 'Mobile', 'All'], default: 'All' },
+    location: { type: String, default: '', trim: true },
+    notes: { type: String, default: '' },
+    evidence: { type: String, default: '' },
+    isManual: { type: Boolean, default: true },
+  },
+  { timestamps: true }
+);
+
+const AeoItemSchema = new Schema<IAeoItem>(
+  {
+    title: { type: String, required: true, trim: true },
+    targetQuery: { type: String, required: true, trim: true },
+    platform: { type: String, enum: ['ChatGPT', 'Gemini', 'Perplexity', 'Claude', 'Other'], default: 'ChatGPT' },
+    targetUrl: { type: String, default: '', trim: true },
+    category: { type: String, default: 'Brand Authority', trim: true },
+    currentVisibility: { type: String, default: 'Not Mentioned', trim: true },
+    targetVisibility: { type: String, default: 'Primary Source', trim: true },
+    brandMention: { type: String, enum: ['Yes', 'No', 'Partial'], default: 'No' },
+    competitorMention: { type: String, default: '', trim: true },
+    recommendedAction: { type: String, default: '' },
+    priority: { type: String, enum: ['High', 'Medium', 'Low'], default: 'Medium' },
+    status: { type: String, enum: ['Discovered', 'In Progress', 'Optimized', 'Verified'], default: 'Discovered' },
+    assignedTo: { type: String, default: 'Mamun', trim: true },
+    lastCheckedDate: { type: String, default: () => new Date().toISOString().split('T')[0] },
+    notes: { type: String, default: '' },
+    evidence: { type: String, default: '' },
+    isManual: { type: Boolean, default: true },
+  },
+  { timestamps: true }
+);
+
 const KeywordMappingSchema = new Schema<IKeywordMapping>(
   {
     keyword: { type: String, required: true, trim: true },
+    keywordRole: { type: String, enum: ['Primary', 'Secondary'], default: 'Primary' },
     keywordType: { type: String, enum: ['Primary', 'Secondary'], default: 'Primary' },
     searchIntent: { 
       type: String, 
@@ -213,6 +306,7 @@ const KeywordMappingSchema = new Schema<IKeywordMapping>(
       enum: ['Mapped', 'Not Mapped', 'Needs Review'], 
       default: 'Not Mapped' 
     },
+    selectionRationale: { type: String, default: '' },
     notes: { type: String, default: '' },
     lastUpdated: { type: String, default: () => new Date().toISOString().split('T')[0] },
   },
@@ -273,6 +367,8 @@ const SeoProjectSchema = new Schema<ISeoProject>(
     tasks: { type: [SeoTaskSchema], default: [] },
     keywords: { type: [KeywordMappingSchema], default: [] },
     reports: { type: [SeoReportSchema], default: [] },
+    observations: { type: [BaselineObservationSchema], default: [] },
+    aeoItems: { type: [AeoItemSchema], default: [] },
 
     baseline: {
       gsc: {

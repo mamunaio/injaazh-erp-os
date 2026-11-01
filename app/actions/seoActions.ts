@@ -97,6 +97,7 @@ function serializeSeoProject(p: any) {
     keywords: (p.keywords || []).map((k: any) => ({
       _id: k._id ? k._id.toString() : (k.id || ''),
       keyword: k.keyword || '',
+      keywordRole: k.keywordRole || 'Primary',
       keywordType: k.keywordType || 'Primary',
       searchIntent: k.searchIntent || 'Commercial',
       targetUrl: k.targetUrl || '',
@@ -107,6 +108,7 @@ function serializeSeoProject(p: any) {
       targetPosition: k.targetPosition ?? null,
       priority: k.priority || 'Medium',
       mappingStatus: k.mappingStatus || 'Not Mapped',
+      selectionRationale: k.selectionRationale || '',
       notes: k.notes || '',
       lastUpdated: k.lastUpdated || (k.updatedAt ? new Date(k.updatedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]),
       createdAt: k.createdAt ? new Date(k.createdAt).toISOString() : new Date().toISOString(),
@@ -181,6 +183,48 @@ function serializeSeoProject(p: any) {
       aeoSnapshot: r.aeoSnapshot || {},
       createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : new Date().toISOString(),
       updatedAt: r.updatedAt ? new Date(r.updatedAt).toISOString() : new Date().toISOString(),
+    })),
+
+    observations: (p.observations || []).map((o: any) => ({
+      _id: o._id ? o._id.toString() : (o.id || ''),
+      metricName: o.metricName || '',
+      source: o.source || 'Manual',
+      category: o.category || 'General',
+      metricValue: o.metricValue || '',
+      unit: o.unit || '',
+      observationDate: o.observationDate || (o.createdAt ? new Date(o.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]),
+      period: o.period || '',
+      targetUrl: o.targetUrl || '',
+      device: o.device || 'All',
+      location: o.location || '',
+      notes: o.notes || '',
+      evidence: o.evidence || '',
+      isManual: o.isManual !== false,
+      createdAt: o.createdAt ? new Date(o.createdAt).toISOString() : new Date().toISOString(),
+      updatedAt: o.updatedAt ? new Date(o.updatedAt).toISOString() : new Date().toISOString(),
+    })),
+
+    aeoItems: (p.aeoItems || []).map((a: any) => ({
+      _id: a._id ? a._id.toString() : (a.id || ''),
+      title: a.title || '',
+      targetQuery: a.targetQuery || '',
+      platform: a.platform || 'ChatGPT',
+      targetUrl: a.targetUrl || '',
+      category: a.category || 'Brand Authority',
+      currentVisibility: a.currentVisibility || 'Not Mentioned',
+      targetVisibility: a.targetVisibility || 'Primary Source',
+      brandMention: a.brandMention || 'No',
+      competitorMention: a.competitorMention || '',
+      recommendedAction: a.recommendedAction || '',
+      priority: a.priority || 'Medium',
+      status: a.status || 'Discovered',
+      assignedTo: a.assignedTo || 'Team',
+      lastCheckedDate: a.lastCheckedDate || (a.createdAt ? new Date(a.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]),
+      notes: a.notes || '',
+      evidence: a.evidence || '',
+      isManual: a.isManual !== false,
+      createdAt: a.createdAt ? new Date(a.createdAt).toISOString() : new Date().toISOString(),
+      updatedAt: a.updatedAt ? new Date(a.updatedAt).toISOString() : new Date().toISOString(),
     })),
 
     createdAt: p.createdAt ? new Date(p.createdAt).toISOString() : new Date().toISOString(),
@@ -845,6 +889,7 @@ export async function addOrUpdateKeyword(projectId: string, keywordData: any) {
 
     const payload: any = {
       keyword: cleanKeyword,
+      keywordRole: ['Primary', 'Secondary'].includes(keywordData.keywordRole) ? keywordData.keywordRole : 'Primary',
       keywordType: ['Primary', 'Secondary'].includes(keywordData.keywordType) ? keywordData.keywordType : 'Primary',
       searchIntent: ['Informational', 'Commercial', 'Transactional', 'Navigational'].includes(keywordData.searchIntent)
         ? keywordData.searchIntent
@@ -863,6 +908,7 @@ export async function addOrUpdateKeyword(projectId: string, keywordData: any) {
       mappingStatus: ['Mapped', 'Not Mapped', 'Needs Review'].includes(keywordData.mappingStatus)
         ? keywordData.mappingStatus
         : 'Not Mapped',
+      selectionRationale: keywordData.selectionRationale?.trim() || '',
       notes: keywordData.notes?.trim() || '',
       lastUpdated: new Date().toISOString().split('T')[0],
     };
@@ -929,6 +975,299 @@ export async function deleteKeyword(projectId: string, keywordId: string) {
   } catch (error: any) {
     console.error('Error deleting keyword:', error);
     return { success: false, error: error.message || 'Failed to delete keyword' };
+  }
+}
+
+/**
+ * Bulk import keywords into SEO project
+ */
+export async function bulkImportKeywords(projectId: string, keywordsList: any[]) {
+  try {
+    await requireWriteAuth();
+    await connectToDatabase();
+
+    const project = await SeoProject.findById(projectId);
+    if (!project) return { success: false, error: 'SEO Project not found' };
+
+    if (!Array.isArray(keywordsList) || keywordsList.length === 0) {
+      return { success: false, error: 'No keywords provided for import' };
+    }
+
+    if (!Array.isArray(project.keywords)) {
+      project.keywords = [];
+    }
+
+    const existingSet = new Set(project.keywords.map((k: any) => k.keyword.toLowerCase().trim()));
+    let importedCount = 0;
+    let skippedCount = 0;
+
+    for (const item of keywordsList) {
+      const phrase = (item.keyword || '').trim();
+      if (!phrase) {
+        skippedCount++;
+        continue;
+      }
+
+      if (existingSet.has(phrase.toLowerCase())) {
+        skippedCount++;
+        continue;
+      }
+
+      const role = ['Primary', 'Secondary'].includes(item.keywordRole) ? item.keywordRole : 'Primary';
+      const kwType = ['Primary', 'Secondary'].includes(item.keywordType) ? item.keywordType : role;
+      const intent = ['Informational', 'Commercial', 'Transactional', 'Navigational'].includes(item.searchIntent)
+        ? item.searchIntent
+        : 'Commercial';
+
+      const newKw: any = {
+        keyword: phrase,
+        keywordRole: role,
+        keywordType: kwType,
+        searchIntent: intent,
+        targetUrl: (item.targetUrl || '').trim(),
+        targetLocation: (item.targetLocation || '').trim() || project.targetLocation || 'New Jersey, US',
+        searchVolume: typeof item.searchVolume === 'number' ? item.searchVolume : parseInt(item.searchVolume) || 0,
+        keywordDifficulty: typeof item.keywordDifficulty === 'number' ? item.keywordDifficulty : parseInt(item.keywordDifficulty) || 0,
+        currentPosition: item.currentPosition !== null && item.currentPosition !== undefined && item.currentPosition !== '' ? Number(item.currentPosition) : null,
+        targetPosition: item.targetPosition !== null && item.targetPosition !== undefined && item.targetPosition !== '' ? Number(item.targetPosition) : null,
+        priority: ['High', 'Medium', 'Low'].includes(item.priority) ? item.priority : 'Medium',
+        mappingStatus: ['Mapped', 'Not Mapped', 'Needs Review'].includes(item.mappingStatus) ? item.mappingStatus : 'Not Mapped',
+        selectionRationale: (item.selectionRationale || '').trim(),
+        notes: (item.notes || '').trim(),
+        lastUpdated: new Date().toISOString().split('T')[0],
+      };
+
+      project.keywords.push(newKw);
+      existingSet.add(phrase.toLowerCase());
+      importedCount++;
+    }
+
+    project.updatedAt = new Date();
+    await project.save();
+
+    safeRevalidatePath('/seo');
+    safeRevalidatePath(`/seo/${project.slug}`);
+    safeRevalidatePath(`/seo/${project.slug}/manage`);
+    safeRevalidatePath(`/seo/${project._id}/manage`);
+
+    return {
+      success: true,
+      data: serializeSeoProject(project.toObject ? project.toObject() : project),
+      message: `Successfully imported ${importedCount} keywords (${skippedCount} skipped or duplicates)`,
+    };
+  } catch (error: any) {
+    console.error('Error bulk importing keywords:', error);
+    return { success: false, error: error.message || 'Failed to import keywords' };
+  }
+}
+
+/**
+ * Add or Update Baseline Observation (Manual CRUD with Date-based History)
+ */
+export async function addOrUpdateObservation(projectId: string, observationData: any) {
+  try {
+    await requireWriteAuth();
+    await connectToDatabase();
+
+    const project = await SeoProject.findById(projectId);
+    if (!project) return { success: false, error: 'SEO Project not found' };
+
+    if (!observationData.metricName || !observationData.metricName.trim()) {
+      return { success: false, error: 'Observation metric name is required' };
+    }
+    if (observationData.metricValue === undefined || observationData.metricValue === null || String(observationData.metricValue).trim() === '') {
+      return { success: false, error: 'Metric value is required' };
+    }
+
+    if (!Array.isArray(project.observations)) {
+      project.observations = [];
+    }
+
+    const payload: any = {
+      metricName: observationData.metricName.trim(),
+      source: ['GSC', 'GBP', 'PageSpeed', 'Manual'].includes(observationData.source) ? observationData.source : 'Manual',
+      category: observationData.category?.trim() || 'General',
+      metricValue: String(observationData.metricValue).trim(),
+      unit: observationData.unit?.trim() || '',
+      observationDate: observationData.observationDate || new Date().toISOString().split('T')[0],
+      period: observationData.period?.trim() || '',
+      targetUrl: observationData.targetUrl?.trim() || '',
+      device: ['Desktop', 'Mobile', 'All'].includes(observationData.device) ? observationData.device : 'All',
+      location: observationData.location?.trim() || '',
+      notes: observationData.notes?.trim() || '',
+      evidence: observationData.evidence?.trim() || '',
+      isManual: observationData.isManual !== false,
+    };
+
+    if (observationData._id) {
+      const idx = project.observations.findIndex((o: any) => o._id && o._id.toString() === observationData._id.toString());
+      if (idx >= 0) {
+        const existingObs: any = project.observations[idx];
+        project.observations[idx] = { ...(existingObs.toObject ? existingObs.toObject() : existingObs), ...payload };
+      } else {
+        project.observations.unshift(payload);
+      }
+    } else {
+      project.observations.unshift(payload);
+    }
+
+    project.updatedAt = new Date();
+    await project.save();
+
+    safeRevalidatePath('/seo');
+    safeRevalidatePath(`/seo/${project.slug}`);
+    safeRevalidatePath(`/seo/${project.slug}/manage`);
+    safeRevalidatePath(`/seo/${project._id}/manage`);
+
+    return {
+      success: true,
+      data: serializeSeoProject(project.toObject ? project.toObject() : project),
+      message: observationData._id ? 'Baseline observation updated successfully' : 'New baseline observation added',
+    };
+  } catch (error: any) {
+    console.error('Error saving baseline observation:', error);
+    return { success: false, error: error.message || 'Failed to save observation' };
+  }
+}
+
+/**
+ * Delete Baseline Observation
+ */
+export async function deleteObservation(projectId: string, observationId: string) {
+  try {
+    await requireWriteAuth();
+    await connectToDatabase();
+
+    const project = await SeoProject.findById(projectId);
+    if (!project) return { success: false, error: 'SEO Project not found' };
+
+    project.observations = (project.observations || []).filter(
+      (o: any) => o._id && o._id.toString() !== observationId
+    );
+
+    project.updatedAt = new Date();
+    await project.save();
+
+    safeRevalidatePath('/seo');
+    safeRevalidatePath(`/seo/${project.slug}`);
+    safeRevalidatePath(`/seo/${project.slug}/manage`);
+    safeRevalidatePath(`/seo/${project._id}/manage`);
+
+    return {
+      success: true,
+      data: serializeSeoProject(project.toObject ? project.toObject() : project),
+      message: 'Observation removed successfully',
+    };
+  } catch (error: any) {
+    console.error('Error deleting baseline observation:', error);
+    return { success: false, error: error.message || 'Failed to delete observation' };
+  }
+}
+
+/**
+ * Add or Update AEO Optimization Item (Manual CRUD)
+ */
+export async function addOrUpdateAeoItem(projectId: string, aeoData: any) {
+  try {
+    await requireWriteAuth();
+    await connectToDatabase();
+
+    const project = await SeoProject.findById(projectId);
+    if (!project) return { success: false, error: 'SEO Project not found' };
+
+    if (!aeoData.title || !aeoData.title.trim()) {
+      return { success: false, error: 'AEO optimization title is required' };
+    }
+    if (!aeoData.targetQuery || !aeoData.targetQuery.trim()) {
+      return { success: false, error: 'Target query / prompt is required' };
+    }
+
+    if (!Array.isArray(project.aeoItems)) {
+      project.aeoItems = [];
+    }
+
+    const payload: any = {
+      title: aeoData.title.trim(),
+      targetQuery: aeoData.targetQuery.trim(),
+      platform: ['ChatGPT', 'Gemini', 'Perplexity', 'Claude', 'Other'].includes(aeoData.platform) ? aeoData.platform : 'ChatGPT',
+      targetUrl: aeoData.targetUrl?.trim() || '',
+      category: aeoData.category?.trim() || 'Brand Authority',
+      currentVisibility: aeoData.currentVisibility?.trim() || 'Not Mentioned',
+      targetVisibility: aeoData.targetVisibility?.trim() || 'Primary Source',
+      brandMention: ['Yes', 'No', 'Partial'].includes(aeoData.brandMention) ? aeoData.brandMention : 'No',
+      competitorMention: aeoData.competitorMention?.trim() || '',
+      recommendedAction: aeoData.recommendedAction?.trim() || '',
+      priority: ['High', 'Medium', 'Low'].includes(aeoData.priority) ? aeoData.priority : 'Medium',
+      status: ['Discovered', 'In Progress', 'Optimized', 'Verified'].includes(aeoData.status) ? aeoData.status : 'Discovered',
+      assignedTo: aeoData.assignedTo?.trim() || 'Team',
+      lastCheckedDate: aeoData.lastCheckedDate || new Date().toISOString().split('T')[0],
+      notes: aeoData.notes?.trim() || '',
+      evidence: aeoData.evidence?.trim() || '',
+      isManual: aeoData.isManual !== false,
+    };
+
+    if (aeoData._id) {
+      const idx = project.aeoItems.findIndex((a: any) => a._id && a._id.toString() === aeoData._id.toString());
+      if (idx >= 0) {
+        const existingItem: any = project.aeoItems[idx];
+        project.aeoItems[idx] = { ...(existingItem.toObject ? existingItem.toObject() : existingItem), ...payload };
+      } else {
+        project.aeoItems.unshift(payload);
+      }
+    } else {
+      project.aeoItems.unshift(payload);
+    }
+
+    project.updatedAt = new Date();
+    await project.save();
+
+    safeRevalidatePath('/seo');
+    safeRevalidatePath(`/seo/${project.slug}`);
+    safeRevalidatePath(`/seo/${project.slug}/manage`);
+    safeRevalidatePath(`/seo/${project._id}/manage`);
+
+    return {
+      success: true,
+      data: serializeSeoProject(project.toObject ? project.toObject() : project),
+      message: aeoData._id ? 'AEO item updated successfully' : 'New AEO item added',
+    };
+  } catch (error: any) {
+    console.error('Error saving AEO item:', error);
+    return { success: false, error: error.message || 'Failed to save AEO item' };
+  }
+}
+
+/**
+ * Delete AEO Optimization Item
+ */
+export async function deleteAeoItem(projectId: string, aeoId: string) {
+  try {
+    await requireWriteAuth();
+    await connectToDatabase();
+
+    const project = await SeoProject.findById(projectId);
+    if (!project) return { success: false, error: 'SEO Project not found' };
+
+    project.aeoItems = (project.aeoItems || []).filter(
+      (a: any) => a._id && a._id.toString() !== aeoId
+    );
+
+    project.updatedAt = new Date();
+    await project.save();
+
+    safeRevalidatePath('/seo');
+    safeRevalidatePath(`/seo/${project.slug}`);
+    safeRevalidatePath(`/seo/${project.slug}/manage`);
+    safeRevalidatePath(`/seo/${project._id}/manage`);
+
+    return {
+      success: true,
+      data: serializeSeoProject(project.toObject ? project.toObject() : project),
+      message: 'AEO item removed successfully',
+    };
+  } catch (error: any) {
+    console.error('Error deleting AEO item:', error);
+    return { success: false, error: error.message || 'Failed to delete AEO item' };
   }
 }
 

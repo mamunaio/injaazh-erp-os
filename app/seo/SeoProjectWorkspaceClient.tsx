@@ -9,7 +9,8 @@ import {
   Check, Sparkles, Filter, X, ChevronDown, CheckSquare,
   Square, Calendar, User, FileText, BarChart3, Layers,
   Cpu, ShieldCheck, Loader2, Key, Target, Compass, Lock,
-  ArrowUpDown, Hash, MapPin, TrendingUp, AlertTriangle, Activity, LayoutGrid, List
+  ArrowUpDown, Hash, MapPin, TrendingUp, AlertTriangle, Activity, LayoutGrid, List,
+  UploadCloud, FileSpreadsheet, Info, ChevronRight, Bot
 } from 'lucide-react';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -21,7 +22,12 @@ import {
   updateSeoReport,
   deleteSeoReport,
   addOrUpdateKeyword,
-  deleteKeyword
+  deleteKeyword,
+  bulkImportKeywords,
+  addOrUpdateObservation,
+  deleteObservation,
+  addOrUpdateAeoItem,
+  deleteAeoItem
 } from '@/app/actions/seoActions';
 import { useConfirm } from '@/components/layout/ConfirmDialogProvider';
 import CustomSelect, { CustomSelectOption } from '@/components/ui/CustomSelect';
@@ -112,6 +118,80 @@ const REPORT_STATUS_OPTIONS: CustomSelectOption[] = [
   { value: 'Draft', label: 'Draft (Internal Preview)', color: '#F59E0B' },
 ];
 
+const KEYWORD_ROLE_OPTIONS: CustomSelectOption[] = [
+  { value: 'Primary', label: 'Primary Strategic Role', color: '#6324FC' },
+  { value: 'Secondary', label: 'Secondary / Supporting Role', color: '#00E5FF' },
+];
+
+const KEYWORD_ROLE_FILTER_OPTIONS: CustomSelectOption[] = [
+  { value: 'All', label: 'All Keyword Roles' },
+  ...KEYWORD_ROLE_OPTIONS,
+];
+
+const OBSERVATION_SOURCE_OPTIONS: CustomSelectOption[] = [
+  { value: 'Manual', label: 'Manual Entry', color: '#6324FC' },
+  { value: 'GSC', label: 'Google Search Console', color: '#3B82F6' },
+  { value: 'GBP', label: 'Google Business Profile', color: '#10B981' },
+  { value: 'PageSpeed', label: 'Google PageSpeed Insights', color: '#F59E0B' },
+];
+
+const OBSERVATION_SOURCE_FILTER_OPTIONS: CustomSelectOption[] = [
+  { value: 'All', label: 'All Data Sources' },
+  ...OBSERVATION_SOURCE_OPTIONS,
+];
+
+const OBSERVATION_CATEGORY_OPTIONS: CustomSelectOption[] = [
+  { value: 'Performance', label: 'Performance / Speed' },
+  { value: 'Rankings', label: 'Rankings & Search' },
+  { value: 'Traffic', label: 'Traffic & Clicks' },
+  { value: 'Local', label: 'Local & GBP Presence' },
+  { value: 'Technical', label: 'Technical SEO' },
+  { value: 'Conversion', label: 'Conversion & Engagement' },
+  { value: 'General', label: 'General Benchmark' },
+];
+
+const OBSERVATION_CATEGORY_FILTER_OPTIONS: CustomSelectOption[] = [
+  { value: 'All', label: 'All Categories' },
+  ...OBSERVATION_CATEGORY_OPTIONS,
+];
+
+const OBSERVATION_DEVICE_OPTIONS: CustomSelectOption[] = [
+  { value: 'All', label: 'All Devices' },
+  { value: 'Mobile', label: 'Mobile' },
+  { value: 'Desktop', label: 'Desktop' },
+];
+
+const AEO_PLATFORM_OPTIONS: CustomSelectOption[] = [
+  { value: 'ChatGPT', label: 'OpenAI ChatGPT', color: '#10A37F' },
+  { value: 'Perplexity', label: 'Perplexity AI', color: '#20B2AA' },
+  { value: 'Gemini', label: 'Google Gemini', color: '#1A73E8' },
+  { value: 'Claude', label: 'Anthropic Claude', color: '#D97706' },
+  { value: 'Other', label: 'Other AI Platform', color: '#6324FC' },
+];
+
+const AEO_PLATFORM_FILTER_OPTIONS: CustomSelectOption[] = [
+  { value: 'All', label: 'All AI Platforms' },
+  ...AEO_PLATFORM_OPTIONS,
+];
+
+const AEO_STATUS_OPTIONS: CustomSelectOption[] = [
+  { value: 'Discovered', label: 'Discovered', color: '#94A3B8' },
+  { value: 'In Progress', label: 'In Progress', color: '#3B82F6' },
+  { value: 'Optimized', label: 'Optimized', color: '#F59E0B' },
+  { value: 'Verified', label: 'Verified Citation', color: '#10B981' },
+];
+
+const AEO_STATUS_FILTER_OPTIONS: CustomSelectOption[] = [
+  { value: 'All', label: 'All Statuses' },
+  ...AEO_STATUS_OPTIONS,
+];
+
+const AEO_BRAND_MENTION_OPTIONS: CustomSelectOption[] = [
+  { value: 'Yes', label: 'Brand Mentioned (Yes)', color: '#10B981' },
+  { value: 'Partial', label: 'Partial / Indirect Mention', color: '#F59E0B' },
+  { value: 'No', label: 'Not Mentioned (No)', color: '#EF4444' },
+];
+
 export default function SeoProjectWorkspaceClient({
   initialProject,
   userRole,
@@ -153,13 +233,14 @@ export default function SeoProjectWorkspaceClient({
     approvalScope: 'Not required',
   });
 
-  // Keyword Modal State (Phase 5)
+  // Keyword Modal State (Phase 5 & 15)
   const keywords = useMemo(() => Array.isArray(project.keywords) ? project.keywords : [], [project.keywords]);
   const [isKeywordModalOpen, setIsKeywordModalOpen] = useState(false);
   const [editingKeyword, setEditingKeyword] = useState<any | null>(null);
   const [isSubmittingKeyword, setIsSubmittingKeyword] = useState(false);
   const [keywordForm, setKeywordForm] = useState({
     keyword: '',
+    keywordRole: 'Primary',
     keywordType: 'Primary',
     searchIntent: 'Commercial',
     targetUrl: '',
@@ -170,17 +251,81 @@ export default function SeoProjectWorkspaceClient({
     targetPosition: '' as string | number,
     priority: 'High',
     mappingStatus: 'Not Mapped',
+    selectionRationale: '',
     notes: '',
   });
 
-  // Keyword Filters & Search
+  // Keyword Filters, Search & Rationale Expansion
   const [keywordSearchQuery, setKeywordSearchQuery] = useState('');
+  const [keywordRoleFilter, setKeywordRoleFilter] = useState('All');
   const [keywordTypeFilter, setKeywordTypeFilter] = useState('All');
   const [keywordIntentFilter, setKeywordIntentFilter] = useState('All');
   const [keywordPriorityFilter, setKeywordPriorityFilter] = useState('All');
   const [keywordStatusFilter, setKeywordStatusFilter] = useState('All');
   const [keywordSortBy, setKeywordSortBy] = useState<'keyword' | 'searchVolume' | 'keywordDifficulty' | 'currentPosition' | 'priority'>('keyword');
   const [keywordSortDir, setKeywordSortDir] = useState<'asc' | 'desc'>('asc');
+  const [expandedRationaleKwId, setExpandedRationaleKwId] = useState<string | null>(null);
+
+  // Bulk Import Modal State
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importRawText, setImportRawText] = useState('');
+  const [isSubmittingImport, setIsSubmittingImport] = useState(false);
+
+  // Baseline Observations State (Phase 15 Stage 5)
+  const observations = useMemo(() => Array.isArray(project.observations) ? project.observations : [], [project.observations]);
+  const [isObservationModalOpen, setIsObservationModalOpen] = useState(false);
+  const [editingObservation, setEditingObservation] = useState<any | null>(null);
+  const [isSubmittingObservation, setIsSubmittingObservation] = useState(false);
+  const [observationForm, setObservationForm] = useState({
+    metricName: '',
+    source: 'Manual',
+    category: 'Performance',
+    metricValue: '',
+    unit: '',
+    observationDate: new Date().toISOString().split('T')[0],
+    period: '',
+    targetUrl: '',
+    device: 'All',
+    location: project.targetLocation || 'New Jersey, US',
+    notes: '',
+    evidence: '',
+    isManual: true,
+  });
+  const [obsSearchQuery, setObsSearchQuery] = useState('');
+  const [obsSourceFilter, setObsSourceFilter] = useState('All');
+  const [obsCategoryFilter, setObsCategoryFilter] = useState('All');
+
+  // AI Search Engine Optimization (AEO) Items State (Phase 15 Stage 5)
+  const aeoItems = useMemo(() => Array.isArray(project.aeoItems) ? project.aeoItems : [], [project.aeoItems]);
+  const [isAeoModalOpen, setIsAeoModalOpen] = useState(false);
+  const [editingAeoItem, setEditingAeoItem] = useState<any | null>(null);
+  const [isSubmittingAeo, setIsSubmittingAeo] = useState(false);
+  const [aeoForm, setAeoForm] = useState({
+    title: '',
+    targetQuery: '',
+    platform: 'ChatGPT',
+    targetUrl: '',
+    category: 'Brand Authority',
+    currentVisibility: 'Not Mentioned',
+    targetVisibility: 'Primary Source',
+    brandMention: 'No',
+    competitorMention: '',
+    recommendedAction: '',
+    priority: 'Medium',
+    status: 'Discovered',
+    assignedTo: 'Mamun',
+    lastCheckedDate: new Date().toISOString().split('T')[0],
+    notes: '',
+    evidence: '',
+    isManual: true,
+  });
+  const [aeoSearchQuery, setAeoSearchQuery] = useState('');
+  const [aeoPlatformFilter, setAeoPlatformFilter] = useState('All');
+  const [aeoStatusFilter, setAeoStatusFilter] = useState('All');
+
+  // Reports Filter & Search State
+  const [reportSearchQuery, setReportSearchQuery] = useState('');
+  const [reportStatusFilter, setReportStatusFilter] = useState('All');
 
   // Reports State
   const reports = useMemo(() => Array.isArray(project.reports) ? project.reports : [], [project.reports]);
@@ -288,26 +433,30 @@ export default function SeoProjectWorkspaceClient({
         (t.task?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
         (t.pageOrPlatform?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
         (t.whyItMatters?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-        (t.doneProposedAction?.toLowerCase() || '').includes(searchQuery.toLowerCase());
+        (t.doneProposedAction?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+        (t.nextStep?.toLowerCase() || '').includes(searchQuery.toLowerCase());
 
       return matchStatus && matchWorkType && matchSearch;
     });
   }, [tasks, statusFilter, workTypeFilter, searchQuery]);
 
-  // Filtered & Sorted Keywords
+  // Filtered & Sorted Keywords (Requirement A)
   const filteredKeywords = useMemo(() => {
     return keywords
       .filter((k: any) => {
+        const q = keywordSearchQuery.toLowerCase();
         const matchSearch =
-          (k.keyword?.toLowerCase() || '').includes(keywordSearchQuery.toLowerCase()) ||
-          (k.targetUrl?.toLowerCase() || '').includes(keywordSearchQuery.toLowerCase()) ||
-          (k.notes?.toLowerCase() || '').includes(keywordSearchQuery.toLowerCase());
+          (k.keyword?.toLowerCase() || '').includes(q) ||
+          (k.selectionRationale?.toLowerCase() || '').includes(q) ||
+          (k.targetUrl?.toLowerCase() || '').includes(q) ||
+          (k.notes?.toLowerCase() || '').includes(q);
+        const matchRole = keywordRoleFilter === 'All' || (k.keywordRole || 'Primary') === keywordRoleFilter;
         const matchType = keywordTypeFilter === 'All' || k.keywordType === keywordTypeFilter;
         const matchIntent = keywordIntentFilter === 'All' || k.searchIntent === keywordIntentFilter;
         const matchPriority = keywordPriorityFilter === 'All' || k.priority === keywordPriorityFilter;
         const matchStatus = keywordStatusFilter === 'All' || k.mappingStatus === keywordStatusFilter;
 
-        return matchSearch && matchType && matchIntent && matchPriority && matchStatus;
+        return matchSearch && matchRole && matchType && matchIntent && matchPriority && matchStatus;
       })
       .sort((a: any, b: any) => {
         let valA = a[keywordSortBy] ?? 0;
@@ -318,7 +467,50 @@ export default function SeoProjectWorkspaceClient({
         if (valA > valB) return keywordSortDir === 'asc' ? 1 : -1;
         return 0;
       });
-  }, [keywords, keywordSearchQuery, keywordTypeFilter, keywordIntentFilter, keywordPriorityFilter, keywordStatusFilter, keywordSortBy, keywordSortDir]);
+  }, [keywords, keywordSearchQuery, keywordRoleFilter, keywordTypeFilter, keywordIntentFilter, keywordPriorityFilter, keywordStatusFilter, keywordSortBy, keywordSortDir]);
+
+  // Filtered Baseline Observations (Requirement B)
+  const filteredObservations = useMemo(() => {
+    return observations.filter((o: any) => {
+      const q = obsSearchQuery.toLowerCase();
+      const matchSearch =
+        (o.metricName?.toLowerCase() || '').includes(q) ||
+        (o.category?.toLowerCase() || '').includes(q) ||
+        (o.notes?.toLowerCase() || '').includes(q) ||
+        (o.targetUrl?.toLowerCase() || '').includes(q);
+      const matchSource = obsSourceFilter === 'All' || o.source === obsSourceFilter;
+      const matchCategory = obsCategoryFilter === 'All' || o.category === obsCategoryFilter;
+      return matchSearch && matchSource && matchCategory;
+    });
+  }, [observations, obsSearchQuery, obsSourceFilter, obsCategoryFilter]);
+
+  // Filtered AEO Optimization Items (Requirement C)
+  const filteredAeoItems = useMemo(() => {
+    return aeoItems.filter((a: any) => {
+      const q = aeoSearchQuery.toLowerCase();
+      const matchSearch =
+        (a.title?.toLowerCase() || '').includes(q) ||
+        (a.targetQuery?.toLowerCase() || '').includes(q) ||
+        (a.recommendedAction?.toLowerCase() || '').includes(q) ||
+        (a.notes?.toLowerCase() || '').includes(q);
+      const matchPlatform = aeoPlatformFilter === 'All' || a.platform === aeoPlatformFilter;
+      const matchStatus = aeoStatusFilter === 'All' || a.status === aeoStatusFilter;
+      return matchSearch && matchPlatform && matchStatus;
+    });
+  }, [aeoItems, aeoSearchQuery, aeoPlatformFilter, aeoStatusFilter]);
+
+  // Filtered Weekly Reports (Requirement E)
+  const filteredReports = useMemo(() => {
+    return reports.filter((r: any) => {
+      const q = reportSearchQuery.toLowerCase();
+      const matchSearch =
+        (r.sprintTitle?.toLowerCase() || '').includes(q) ||
+        (r.reportId?.toLowerCase() || '').includes(q) ||
+        (r.executiveSummary?.toLowerCase() || '').includes(q);
+      const matchStatus = reportStatusFilter === 'All' || r.status === reportStatusFilter;
+      return matchSearch && matchStatus;
+    });
+  }, [reports, reportSearchQuery, reportStatusFilter]);
 
   // =========================================================================
   // TASK HANDLERS
@@ -435,9 +627,10 @@ export default function SeoProjectWorkspaceClient({
     setEditingKeyword(null);
     setKeywordForm({
       keyword: '',
+      keywordRole: 'Primary',
       keywordType: 'Primary',
       searchIntent: 'Commercial',
-      targetUrl: project.url || '',
+      targetUrl: project.url || '/',
       targetLocation: project.targetLocation || 'New Jersey, US',
       searchVolume: 0,
       keywordDifficulty: 0,
@@ -445,6 +638,7 @@ export default function SeoProjectWorkspaceClient({
       targetPosition: '',
       priority: 'High',
       mappingStatus: 'Not Mapped',
+      selectionRationale: '',
       notes: '',
     });
     setIsKeywordModalOpen(true);
@@ -454,6 +648,7 @@ export default function SeoProjectWorkspaceClient({
     setEditingKeyword(kw);
     setKeywordForm({
       keyword: kw.keyword || '',
+      keywordRole: kw.keywordRole || 'Primary',
       keywordType: kw.keywordType || 'Primary',
       searchIntent: kw.searchIntent || 'Commercial',
       targetUrl: kw.targetUrl || '',
@@ -464,9 +659,274 @@ export default function SeoProjectWorkspaceClient({
       targetPosition: kw.targetPosition !== null && kw.targetPosition !== undefined ? kw.targetPosition : '',
       priority: kw.priority || 'High',
       mappingStatus: kw.mappingStatus || 'Not Mapped',
+      selectionRationale: kw.selectionRationale || '',
       notes: kw.notes || '',
     });
     setIsKeywordModalOpen(true);
+  };
+
+  // Bulk Keyword Import Handlers
+  const handleOpenImportModal = () => {
+    setImportRawText('');
+    setIsImportModalOpen(true);
+  };
+
+  const handleBulkImportSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!importRawText.trim()) {
+      toast.error('Please paste CSV keyword data to import');
+      return;
+    }
+
+    const lines = importRawText.split('\n').map((l) => l.trim()).filter(Boolean);
+    if (lines.length === 0) {
+      toast.error('No valid lines found');
+      return;
+    }
+
+    // Parse CSV lines
+    const parsedKeywords: any[] = [];
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      // Skip header row if present
+      if (i === 0 && line.toLowerCase().includes('keyword')) continue;
+
+      const cols = line.split(',').map((c) => c.trim().replace(/^["']|["']$/g, ''));
+      if (!cols[0]) continue;
+
+      parsedKeywords.push({
+        keyword: cols[0],
+        targetUrl: cols[1] || '/',
+        keywordRole: cols[2] && ['Primary', 'Secondary'].includes(cols[2]) ? cols[2] : 'Primary',
+        keywordType: cols[2] && ['Primary', 'Secondary'].includes(cols[2]) ? cols[2] : 'Primary',
+        searchIntent: cols[3] || 'Commercial',
+        searchVolume: parseInt(cols[4]) || 0,
+        keywordDifficulty: parseInt(cols[5]) || 0,
+        currentPosition: cols[6] ? parseInt(cols[6]) : null,
+        targetPosition: cols[7] ? parseInt(cols[7]) : null,
+        selectionRationale: cols[8] || '',
+        notes: cols[9] || '',
+      });
+    }
+
+    if (parsedKeywords.length === 0) {
+      toast.error('Could not parse any keyword records from the supplied text');
+      return;
+    }
+
+    setIsSubmittingImport(true);
+    try {
+      const res = await bulkImportKeywords(project._id, parsedKeywords);
+      if (res.success && res.data) {
+        toast.success(res.message || 'Keywords imported successfully');
+        setProject(res.data);
+        setIsImportModalOpen(false);
+      } else {
+        toast.error(res.error || 'Failed to import keywords');
+      }
+    } catch {
+      toast.error('An unexpected error occurred during import');
+    } finally {
+      setIsSubmittingImport(false);
+    }
+  };
+
+  // Baseline Observations Handlers
+  const handleOpenAddObservation = () => {
+    setEditingObservation(null);
+    setObservationForm({
+      metricName: '',
+      source: 'Manual',
+      category: 'Performance',
+      metricValue: '',
+      unit: '',
+      observationDate: new Date().toISOString().split('T')[0],
+      period: '',
+      targetUrl: project.url || '/',
+      device: 'All',
+      location: project.targetLocation || 'New Jersey, US',
+      notes: '',
+      evidence: '',
+      isManual: true,
+    });
+    setIsObservationModalOpen(true);
+  };
+
+  const handleOpenEditObservation = (obs: any) => {
+    setEditingObservation(obs);
+    setObservationForm({
+      metricName: obs.metricName || '',
+      source: obs.source || 'Manual',
+      category: obs.category || 'General',
+      metricValue: obs.metricValue || '',
+      unit: obs.unit || '',
+      observationDate: obs.observationDate || new Date().toISOString().split('T')[0],
+      period: obs.period || '',
+      targetUrl: obs.targetUrl || '',
+      device: obs.device || 'All',
+      location: obs.location || project.targetLocation || 'New Jersey, US',
+      notes: obs.notes || '',
+      evidence: obs.evidence || '',
+      isManual: obs.isManual !== false,
+    });
+    setIsObservationModalOpen(true);
+  };
+
+  const handleSaveObservation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!observationForm.metricName.trim()) {
+      toast.error('Observation metric name is required');
+      return;
+    }
+    if (observationForm.metricValue === undefined || observationForm.metricValue === null || String(observationForm.metricValue).trim() === '') {
+      toast.error('Metric value is required');
+      return;
+    }
+
+    setIsSubmittingObservation(true);
+    try {
+      const payload = {
+        ...observationForm,
+        _id: editingObservation?._id,
+      };
+      const res = await addOrUpdateObservation(project._id, payload);
+      if (res.success && res.data) {
+        toast.success(res.message || 'Baseline observation saved');
+        setProject(res.data);
+        setIsObservationModalOpen(false);
+      } else {
+        toast.error(res.error || 'Failed to save observation');
+      }
+    } catch {
+      toast.error('Failed to save observation');
+    } finally {
+      setIsSubmittingObservation(false);
+    }
+  };
+
+  const handleDeleteObservation = async (obs: any) => {
+    const isConfirmed = await confirm({
+      title: 'Delete Baseline Observation?',
+      message: `Remove observation "${obs.metricName}" (${obs.metricValue} ${obs.unit || ''})? Historical records will be updated.`,
+      danger: true,
+      confirmText: 'Delete Observation',
+    });
+    if (!isConfirmed) return;
+
+    try {
+      const res = await deleteObservation(project._id, obs._id);
+      if (res.success && res.data) {
+        toast.success(res.message || 'Observation deleted');
+        setProject(res.data);
+      } else {
+        toast.error(res.error || 'Failed to delete observation');
+      }
+    } catch {
+      toast.error('Failed to delete observation');
+    }
+  };
+
+  // AEO Item Handlers
+  const handleOpenAddAeoItem = () => {
+    setEditingAeoItem(null);
+    setAeoForm({
+      title: '',
+      targetQuery: '',
+      platform: 'ChatGPT',
+      targetUrl: project.url || '/',
+      category: 'Brand Authority',
+      currentVisibility: 'Not Mentioned',
+      targetVisibility: 'Primary Source',
+      brandMention: 'No',
+      competitorMention: '',
+      recommendedAction: '',
+      priority: 'Medium',
+      status: 'Discovered',
+      assignedTo: 'Mamun',
+      lastCheckedDate: new Date().toISOString().split('T')[0],
+      notes: '',
+      evidence: '',
+      isManual: true,
+    });
+    setIsAeoModalOpen(true);
+  };
+
+  const handleOpenEditAeoItem = (item: any) => {
+    setEditingAeoItem(item);
+    setAeoForm({
+      title: item.title || '',
+      targetQuery: item.targetQuery || '',
+      platform: item.platform || 'ChatGPT',
+      targetUrl: item.targetUrl || '',
+      category: item.category || 'Brand Authority',
+      currentVisibility: item.currentVisibility || 'Not Mentioned',
+      targetVisibility: item.targetVisibility || 'Primary Source',
+      brandMention: item.brandMention || 'No',
+      competitorMention: item.competitorMention || '',
+      recommendedAction: item.recommendedAction || '',
+      priority: item.priority || 'Medium',
+      status: item.status || 'Discovered',
+      assignedTo: item.assignedTo || 'Mamun',
+      lastCheckedDate: item.lastCheckedDate || new Date().toISOString().split('T')[0],
+      notes: item.notes || '',
+      evidence: item.evidence || '',
+      isManual: item.isManual !== false,
+    });
+    setIsAeoModalOpen(true);
+  };
+
+  const handleSaveAeoItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!aeoForm.title.trim()) {
+      toast.error('AEO item title is required');
+      return;
+    }
+    if (!aeoForm.targetQuery.trim()) {
+      toast.error('Target query / prompt is required');
+      return;
+    }
+
+    setIsSubmittingAeo(true);
+    try {
+      const payload = {
+        ...aeoForm,
+        _id: editingAeoItem?._id,
+      };
+      const res = await addOrUpdateAeoItem(project._id, payload);
+      if (res.success && res.data) {
+        toast.success(res.message || 'AEO item saved');
+        setProject(res.data);
+        setIsAeoModalOpen(false);
+      } else {
+        toast.error(res.error || 'Failed to save AEO item');
+      }
+    } catch {
+      toast.error('Failed to save AEO item');
+    } finally {
+      setIsSubmittingAeo(false);
+    }
+  };
+
+  const handleDeleteAeoItem = async (item: any) => {
+    const isConfirmed = await confirm({
+      title: 'Delete AEO Item?',
+      message: `Remove AI visibility tracking for "${item.title}" on ${item.platform}?`,
+      danger: true,
+      confirmText: 'Delete AEO Item',
+    });
+    if (!isConfirmed) return;
+
+    try {
+      const res = await deleteAeoItem(project._id, item._id);
+      if (res.success && res.data) {
+        toast.success(res.message || 'AEO item deleted');
+        setProject(res.data);
+      } else {
+        toast.error(res.error || 'Failed to delete AEO item');
+      }
+    } catch {
+      toast.error('Failed to delete AEO item');
+    }
   };
 
   const handleSaveKeyword = async (e: React.FormEvent) => {
@@ -642,6 +1102,45 @@ export default function SeoProjectWorkspaceClient({
     }
   };
 
+  // Tab-Specific Contextual Action Button Mapping (Requirement D)
+  const contextualPrimaryAction = (() => {
+    switch (activeMainTab) {
+      case 'keywords':
+        return {
+          label: '+ Add Keyword',
+          onClick: handleOpenAddKeyword,
+          icon: Key,
+        };
+      case 'baseline':
+        return {
+          label: '+ Add Observation',
+          onClick: handleOpenAddObservation,
+          icon: BarChart3,
+        };
+      case 'aeo':
+        return {
+          label: '+ Add AEO Item',
+          onClick: handleOpenAddAeoItem,
+          icon: Cpu,
+        };
+      case 'reports':
+        return {
+          label: '+ Add Weekly Report',
+          onClick: handleOpenAddReport,
+          icon: FileText,
+        };
+      case 'tasks':
+      default:
+        return {
+          label: '+ Add Task',
+          onClick: handleOpenAddTask,
+          icon: Plus,
+        };
+    }
+  })();
+
+  const ContextualActionIcon = contextualPrimaryAction.icon;
+
   return (
     <div className="relative min-h-screen text-slate-900 dark:text-white font-sans selection:bg-[#6324FC] selection:text-white pb-20">
 
@@ -757,10 +1256,22 @@ export default function SeoProjectWorkspaceClient({
               <span>{isAuditing ? 'Auditing...' : 'Live Audit'}</span>
             </button>
 
-            {/* + Add Task Action (Dashboard Conic Laser Beam CTA) */}
+            {/* Secondary Action: Bulk Import (when on Keywords tab) */}
+            {activeMainTab === 'keywords' && (
+              <button
+                type="button"
+                onClick={handleOpenImportModal}
+                className="h-9 px-3.5 rounded-xl bg-purple-500/10 border border-purple-500/30 hover:border-purple-500 text-purple-700 dark:text-purple-300 text-xs font-heading font-semibold transition-all hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] shadow-xs flex items-center gap-2 cursor-pointer"
+              >
+                <UploadCloud size={14} className="text-purple-600 dark:text-purple-400" />
+                <span>Bulk Import</span>
+              </button>
+            )}
+
+            {/* Contextual Primary Action (Dashboard Conic Laser Beam CTA) */}
             <button
               type="button"
-              onClick={handleOpenAddTask}
+              onClick={contextualPrimaryAction.onClick}
               className="h-9 group relative p-[2px] rounded-xl overflow-hidden flex items-center justify-center cursor-pointer transition-all duration-300 active:scale-95 shadow-[0_0_20px_rgba(99,36,252,0.35)] hover:shadow-[0_0_35px_rgba(0,229,255,0.5),0_0_20px_rgba(236,72,153,0.35)]"
             >
               {/* Perfectly Centered Square Conic Glow Aura */}
@@ -781,9 +1292,9 @@ export default function SeoProjectWorkspaceClient({
 
               {/* Inner High-Contrast Surface */}
               <div className="relative z-10 w-full h-full px-3.5 rounded-[10px] bg-white dark:bg-[#0a0a0d] group-hover:bg-slate-50 dark:group-hover:bg-[#121218] text-slate-900 dark:text-white font-heading font-bold text-xs flex items-center gap-2 transition-all">
-                <Plus size={15} className="text-[#00E5FF] group-hover:rotate-90 drop-shadow-[0_0_6px_#00E5FF] transition-transform duration-300" />
+                <ContextualActionIcon size={15} className="text-[#00E5FF] group-hover:rotate-90 drop-shadow-[0_0_6px_#00E5FF] transition-transform duration-300" />
                 <span className="tracking-wide group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-slate-900 group-hover:to-[#6324FC] dark:group-hover:from-white dark:group-hover:via-[#00E5FF] dark:group-hover:to-[#EC4899] transition-all">
-                  + Add Task
+                  {contextualPrimaryAction.label}
                 </span>
               </div>
             </button>
@@ -944,6 +1455,11 @@ export default function SeoProjectWorkspaceClient({
           >
             <BarChart3 size={14} />
             <span>Baseline Observations (GSC, GBP, PageSpeed)</span>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+              activeMainTab === 'baseline' ? 'bg-white/20 text-white' : 'bg-black/5 dark:bg-white/10 text-slate-400'
+            }`}>
+              {observations.length}
+            </span>
           </button>
 
           {/* Tab 4: AI Search Optimization */}
@@ -958,6 +1474,11 @@ export default function SeoProjectWorkspaceClient({
           >
             <Cpu size={14} />
             <span>AI Search Engine Optimization (AEO)</span>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+              activeMainTab === 'aeo' ? 'bg-white/20 text-white' : 'bg-black/5 dark:bg-white/10 text-slate-400'
+            }`}>
+              {aeoItems.length}
+            </span>
           </button>
 
           {/* Tab 5: Weekly Reports */}
@@ -1473,6 +1994,14 @@ export default function SeoProjectWorkspaceClient({
               {/* Custom Dropdown Filters */}
               <div className="flex flex-wrap items-center gap-2">
                 <CustomSelect
+                  value={keywordRoleFilter}
+                  onChange={(val) => setKeywordRoleFilter(val)}
+                  options={KEYWORD_ROLE_FILTER_OPTIONS}
+                  size="sm"
+                  minWidth={130}
+                />
+
+                <CustomSelect
                   value={keywordTypeFilter}
                   onChange={(val) => setKeywordTypeFilter(val)}
                   options={KEYWORD_TYPE_FILTER_OPTIONS}
@@ -1507,6 +2036,7 @@ export default function SeoProjectWorkspaceClient({
                   <thead>
                     <tr className="bg-slate-50/90 dark:bg-white/[0.02] border-b border-black/10 dark:border-white/10 text-[9px] font-heading font-extrabold uppercase tracking-wider text-slate-400">
                       <th className="py-3.5 px-3.5 w-[220px]">Keyword</th>
+                      <th className="py-3.5 px-3 w-[100px]">Role</th>
                       <th className="py-3.5 px-3 w-[100px]">Type</th>
                       <th className="py-3.5 px-3 w-[120px]">Search Intent</th>
                       <th className="py-3.5 px-3.5 w-[200px]">Target Landing URL</th>
@@ -1550,11 +2080,32 @@ export default function SeoProjectWorkspaceClient({
                         return (
                           <tr key={kw._id || kw.keyword} className="hover:bg-slate-50/60 dark:hover:bg-white/[0.02] transition-colors">
 
-                            {/* Keyword Title & Notes */}
+                            {/* Keyword Title & Notes / Rationale */}
                             <td className="py-3.5 px-3.5 align-top">
-                              <span className="font-heading font-bold text-slate-900 dark:text-white block">
-                                {kw.keyword}
-                              </span>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="font-heading font-bold text-slate-900 dark:text-white block">
+                                  {kw.keyword}
+                                </span>
+                                {kw.selectionRationale && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setExpandedRationaleKwId(expandedRationaleKwId === (kw._id || kw.keyword) ? null : (kw._id || kw.keyword))}
+                                    className="px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-[#6324FC]/10 hover:bg-[#6324FC]/20 text-[#6324FC] dark:text-[#00E5FF] border border-[#6324FC]/20 transition-colors flex items-center gap-1 cursor-pointer"
+                                    title="View Strategic Selection Rationale"
+                                  >
+                                    <Info size={10} />
+                                    <span>Rationale</span>
+                                  </button>
+                                )}
+                              </div>
+                              {expandedRationaleKwId === (kw._id || kw.keyword) && kw.selectionRationale && (
+                                <div className="mt-2 p-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.04] border border-[#6324FC]/25 text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed shadow-xs">
+                                  <span className="font-bold text-[#6324FC] dark:text-[#00E5FF] text-[9.5px] uppercase tracking-wider block mb-1">
+                                    Selection Rationale:
+                                  </span>
+                                  {kw.selectionRationale}
+                                </div>
+                              )}
                               {kw.notes && (
                                 <span className="text-[10px] text-slate-400 italic block mt-0.5">
                                   {kw.notes}
@@ -1562,12 +2113,23 @@ export default function SeoProjectWorkspaceClient({
                               )}
                             </td>
 
+                            {/* Role (Requirement A3) */}
+                            <td className="py-3.5 px-3 align-top">
+                              <span className={`inline-block px-2 py-0.5 rounded text-[9.5px] font-bold ${
+                                (kw.keywordRole || 'Primary') === 'Primary'
+                                  ? 'bg-[#6324FC]/10 text-[#6324FC] dark:text-[#a782fc] border border-[#6324FC]/20'
+                                  : 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20'
+                              }`}>
+                                {kw.keywordRole || 'Primary'}
+                              </span>
+                            </td>
+
                             {/* Type */}
                             <td className="py-3.5 px-3 align-top">
                               <span className={`inline-block px-2 py-0.5 rounded text-[9.5px] font-bold ${
                                 kw.keywordType === 'Primary'
-                                  ? 'bg-[#6324FC]/10 text-[#6324FC] dark:text-[#a782fc] border border-[#6324FC]/20'
-                                  : 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20'
+                                  ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20'
+                                  : 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20'
                               }`}>
                                 {kw.keywordType}
                               </span>
@@ -1580,16 +2142,23 @@ export default function SeoProjectWorkspaceClient({
                               </span>
                             </td>
 
-                            {/* Target URL */}
+                            {/* Target URL (Requirement A5: Supports /, relative, and full URLs) */}
                             <td className="py-3.5 px-3.5 align-top font-mono text-[11px]">
                               {kw.targetUrl ? (
                                 <a
-                                  href={kw.targetUrl.startsWith('http') ? kw.targetUrl : `https://${kw.targetUrl}`}
+                                  href={
+                                    kw.targetUrl.startsWith('http')
+                                      ? kw.targetUrl
+                                      : kw.targetUrl.startsWith('/')
+                                      ? `${project.url.replace(/\/+$/, '')}${kw.targetUrl}`
+                                      : `https://${kw.targetUrl}`
+                                  }
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-slate-600 dark:text-slate-400 hover:text-[#6324FC] dark:hover:text-[#00E5FF] flex items-center gap-1 transition-colors truncate max-w-[190px]"
+                                  title={kw.targetUrl}
                                 >
-                                  <Globe size={11} className="shrink-0" />
+                                  <Globe size={11} className="shrink-0 text-[#6324FC]" />
                                   <span className="truncate">{kw.targetUrl}</span>
                                 </a>
                               ) : (
@@ -1921,6 +2490,192 @@ export default function SeoProjectWorkspaceClient({
               </div>
             </div>
 
+            {/* Granular Historical Baseline Observations (Requirement B) */}
+            <div className="space-y-4 pt-2">
+              <div className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                  <h3 className="text-base font-heading font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                    <BarChart3 size={18} className="text-[#6324FC] dark:text-[#00E5FF]" />
+                    Historical Baseline Observations &amp; Performance Logs
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Manual audit observations and historical benchmark logs with date-based tracking
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleOpenAddObservation}
+                  className="px-3.5 py-2 rounded-xl bg-[#6324FC] hover:bg-[#521bd6] text-white text-xs font-heading font-bold shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <Plus size={14} />
+                  <span>+ Add Observation</span>
+                </button>
+              </div>
+
+              {/* Filter and Search Bar */}
+              <div className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl p-3.5 shadow-xs flex flex-wrap gap-2.5 justify-between items-center">
+                <div className="relative flex-1 min-w-[220px]">
+                  <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search observations by metric name, notes, target URL..."
+                    value={obsSearchQuery}
+                    onChange={(e) => setObsSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-white/[0.03] border border-black/10 dark:border-white/10 rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-hidden focus:border-[#6324FC] transition-colors"
+                  />
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <CustomSelect
+                    value={obsSourceFilter}
+                    onChange={(val) => setObsSourceFilter(val)}
+                    options={OBSERVATION_SOURCE_FILTER_OPTIONS}
+                    size="sm"
+                    minWidth={140}
+                  />
+
+                  <CustomSelect
+                    value={obsCategoryFilter}
+                    onChange={(val) => setObsCategoryFilter(val)}
+                    options={OBSERVATION_CATEGORY_FILTER_OPTIONS}
+                    size="sm"
+                    minWidth={140}
+                  />
+                </div>
+              </div>
+
+              {/* Observations Table */}
+              <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0a0a0d] shadow-xs overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-slate-50/90 dark:bg-white/[0.02] border-b border-black/10 dark:border-white/10 text-[9px] font-heading font-extrabold uppercase tracking-wider text-slate-400">
+                        <th className="py-3.5 px-3.5 w-[220px]">Metric / Observation</th>
+                        <th className="py-3.5 px-3 w-[120px]">Source</th>
+                        <th className="py-3.5 px-3 w-[120px]">Category</th>
+                        <th className="py-3.5 px-3 w-[120px]">Value</th>
+                        <th className="py-3.5 px-3 w-[120px]">Date / Period</th>
+                        <th className="py-3.5 px-3 w-[160px]">Target URL / Device</th>
+                        <th className="py-3.5 px-3 w-[200px]">Notes &amp; Evidence</th>
+                        <th className="py-3.5 px-3.5 text-right w-[80px]">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-black/5 dark:divide-white/5">
+                      {filteredObservations.length === 0 ? (
+                        <tr>
+                          <td colSpan={8} className="py-14 text-center">
+                            <BarChart3 size={28} className="mx-auto text-slate-300 dark:text-slate-700 mb-2" />
+                            <p className="text-sm font-heading font-bold text-slate-700 dark:text-slate-300">
+                              {observations.length === 0 ? 'No Historical Observations Yet' : 'No observations match your filter'}
+                            </p>
+                            <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                              Record dated baseline metrics and manual audits to maintain historical comparison without overwriting.
+                            </p>
+                            {observations.length === 0 && (
+                              <button
+                                type="button"
+                                onClick={handleOpenAddObservation}
+                                className="mt-4 px-4 py-2 rounded-xl bg-[#6324FC] text-white text-xs font-bold shadow-xs hover:bg-[#521bd6] transition-all"
+                              >
+                                + Add First Observation
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredObservations.map((obs: any) => (
+                          <tr key={obs._id || obs.metricName} className="hover:bg-slate-50/60 dark:hover:bg-white/[0.02] transition-colors">
+                            <td className="py-3.5 px-3.5 align-top">
+                              <span className="font-heading font-bold text-slate-900 dark:text-white block">
+                                {obs.metricName}
+                              </span>
+                              {obs.location && (
+                                <span className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
+                                  <MapPin size={10} />
+                                  <span>{obs.location}</span>
+                                </span>
+                              )}
+                            </td>
+
+                            <td className="py-3.5 px-3 align-top">
+                              <span className={`inline-block px-2 py-0.5 rounded text-[9.5px] font-bold ${
+                                obs.source === 'Manual'
+                                  ? 'bg-[#6324FC]/10 text-[#6324FC] dark:text-[#a782fc] border border-[#6324FC]/20'
+                                  : obs.source === 'GSC'
+                                  ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20'
+                                  : obs.source === 'GBP'
+                                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                                  : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                              }`}>
+                                {obs.source}
+                              </span>
+                            </td>
+
+                            <td className="py-3.5 px-3 align-top text-slate-600 dark:text-slate-400 font-medium">
+                              {obs.category || 'General'}
+                            </td>
+
+                            <td className="py-3.5 px-3 align-top font-mono font-bold text-slate-900 dark:text-white">
+                              {obs.metricValue} {obs.unit && <span className="text-xs text-slate-400 font-normal">{obs.unit}</span>}
+                            </td>
+
+                            <td className="py-3.5 px-3 align-top font-mono text-[11px] text-slate-600 dark:text-slate-400">
+                              <div>{obs.observationDate}</div>
+                              {obs.period && <div className="text-[10px] text-slate-400 font-sans">{obs.period}</div>}
+                            </td>
+
+                            <td className="py-3.5 px-3 align-top text-[11px]">
+                              {obs.targetUrl && (
+                                <div className="truncate max-w-[150px] font-mono text-slate-600 dark:text-slate-400">
+                                  {obs.targetUrl}
+                                </div>
+                              )}
+                              {obs.device && (
+                                <span className="text-[9.5px] px-1.5 py-0.2 rounded bg-slate-100 dark:bg-white/5 text-slate-500 border border-black/5 dark:border-white/5 inline-block mt-0.5">
+                                  {obs.device}
+                                </span>
+                              )}
+                            </td>
+
+                            <td className="py-3.5 px-3 align-top text-[11px] text-slate-600 dark:text-slate-400 max-w-[200px]">
+                              {obs.notes && <p className="line-clamp-2">{obs.notes}</p>}
+                              {obs.evidence && (
+                                <span className="text-[10px] text-slate-400 italic block mt-0.5 truncate">
+                                  Evidence: {obs.evidence}
+                                </span>
+                              )}
+                            </td>
+
+                            <td className="py-3.5 px-3.5 align-top text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenEditObservation(obs)}
+                                  className="p-1.5 rounded-lg text-slate-400 hover:text-[#6324FC] hover:bg-[#6324FC]/10 transition-colors"
+                                  title="Edit Observation"
+                                >
+                                  <Edit size={13} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteObservation(obs)}
+                                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors"
+                                  title="Delete Observation"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
           </div>
         )}
 
@@ -1928,36 +2683,236 @@ export default function SeoProjectWorkspaceClient({
         {/* TAB 4: AI SEARCH ENGINE OPTIMIZATION (AEO) */}
         {/* ========================================================================= */}
         {activeMainTab === 'aeo' && (
-          <div className="p-6 rounded-2xl bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-xs space-y-6">
-            <div>
-              <h3 className="text-base font-heading font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                <Cpu size={18} className="text-[#6324FC]" />
-                AI Search Engine Visibility (ChatGPT, Perplexity &amp; Claude Citations)
-              </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Evaluates how often Hector Rivera Photography is recommended in direct conversational AI prompt answers
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-black/5 dark:border-white/5">
-                <span className="text-xs font-heading font-bold text-slate-400 uppercase tracking-wider block">ChatGPT Mentions Score</span>
-                <div className="text-3xl font-mono font-black text-[#6324FC] dark:text-[#00E5FF] mt-2">
-                  {project.aeo?.chatgptMentions || 142}
+          <div className="space-y-4">
+            <div className="p-6 rounded-2xl bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 shadow-xs space-y-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div>
+                  <h3 className="text-base font-heading font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Cpu size={18} className="text-[#6324FC]" />
+                    AI Search Engine Visibility (ChatGPT, Perplexity &amp; Claude Citations)
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Evaluates how often Hector Rivera Photography is recommended in direct conversational AI prompt answers
+                  </p>
                 </div>
-                <span className="text-xs text-emerald-500 font-semibold mt-1 inline-block">
-                  ↑ +{project.aeo?.chatgptTrendValue || 14}% month-over-month growth
-                </span>
+
+                <button
+                  type="button"
+                  onClick={handleOpenAddAeoItem}
+                  className="px-3.5 py-2 rounded-xl bg-[#6324FC] hover:bg-[#521bd6] text-white text-xs font-heading font-bold shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <Plus size={14} />
+                  <span>+ Add AEO Item</span>
+                </button>
               </div>
 
-              <div className="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-black/5 dark:border-white/5">
-                <span className="text-xs font-heading font-bold text-slate-400 uppercase tracking-wider block">Perplexity AI Recommendation Index</span>
-                <div className="text-3xl font-mono font-black text-emerald-500 mt-2">
-                  {project.aeo?.perplexityScore || 82} / 100
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-black/5 dark:border-white/5">
+                  <span className="text-xs font-heading font-bold text-slate-400 uppercase tracking-wider block">ChatGPT Mentions Score</span>
+                  <div className="text-3xl font-mono font-black text-[#6324FC] dark:text-[#00E5FF] mt-2">
+                    {project.aeo?.chatgptMentions || 142}
+                  </div>
+                  <span className="text-xs text-emerald-500 font-semibold mt-1 inline-block">
+                    ↑ +{project.aeo?.chatgptTrendValue || 14}% month-over-month growth
+                  </span>
                 </div>
-                <span className="text-xs text-emerald-500 font-semibold mt-1 inline-block">
-                  ↑ +{project.aeo?.perplexityTrendValue || 8}% top NJ wedding citations
-                </span>
+
+                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-black/5 dark:border-white/5">
+                  <span className="text-xs font-heading font-bold text-slate-400 uppercase tracking-wider block">Perplexity AI Recommendation Index</span>
+                  <div className="text-3xl font-mono font-black text-emerald-500 mt-2">
+                    {project.aeo?.perplexityScore || 82} / 100
+                  </div>
+                  <span className="text-xs text-emerald-500 font-semibold mt-1 inline-block">
+                    ↑ +{project.aeo?.perplexityTrendValue || 8}% top NJ wedding citations
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Granular AEO Query Matrix & Citations (Requirement C) */}
+            <div className="space-y-4">
+              <div className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                  <h3 className="text-base font-heading font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Bot size={18} className="text-[#6324FC] dark:text-[#00E5FF]" />
+                    AEO Query Matrix &amp; Brand Citation Tracking
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Manual AI recommendation benchmarks, target prompts, visibility status, and answer optimization tasks
+                  </p>
+                </div>
+              </div>
+
+              {/* Filter and Search Bar */}
+              <div className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl p-3.5 shadow-xs flex flex-wrap gap-2.5 justify-between items-center">
+                <div className="relative flex-1 min-w-[220px]">
+                  <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search AEO queries, prompts, recommendations..."
+                    value={aeoSearchQuery}
+                    onChange={(e) => setAeoSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-white/[0.03] border border-black/10 dark:border-white/10 rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-hidden focus:border-[#6324FC] transition-colors"
+                  />
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <CustomSelect
+                    value={aeoPlatformFilter}
+                    onChange={(val) => setAeoPlatformFilter(val)}
+                    options={AEO_PLATFORM_FILTER_OPTIONS}
+                    size="sm"
+                    minWidth={140}
+                  />
+
+                  <CustomSelect
+                    value={aeoStatusFilter}
+                    onChange={(val) => setAeoStatusFilter(val)}
+                    options={AEO_STATUS_FILTER_OPTIONS}
+                    size="sm"
+                    minWidth={140}
+                  />
+                </div>
+              </div>
+
+              {/* AEO Items Table */}
+              <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0a0a0d] shadow-xs overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-slate-50/90 dark:bg-white/[0.02] border-b border-black/10 dark:border-white/10 text-[9px] font-heading font-extrabold uppercase tracking-wider text-slate-400">
+                        <th className="py-3.5 px-3.5 w-[220px]">AEO Item / Target Prompt</th>
+                        <th className="py-3.5 px-3 w-[110px]">Platform</th>
+                        <th className="py-3.5 px-3 w-[150px]">Target Landing URL</th>
+                        <th className="py-3.5 px-3 w-[130px]">Visibility (Current/Target)</th>
+                        <th className="py-3.5 px-3 w-[100px]">Brand Mention</th>
+                        <th className="py-3.5 px-3 w-[200px]">Recommended Action</th>
+                        <th className="py-3.5 px-3 w-[110px]">Status</th>
+                        <th className="py-3.5 px-3.5 text-right w-[80px]">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-black/5 dark:divide-white/5">
+                      {filteredAeoItems.length === 0 ? (
+                        <tr>
+                          <td colSpan={8} className="py-14 text-center">
+                            <Bot size={28} className="mx-auto text-slate-300 dark:text-slate-700 mb-2" />
+                            <p className="text-sm font-heading font-bold text-slate-700 dark:text-slate-300">
+                              {aeoItems.length === 0 ? 'No AEO Items Tracked Yet' : 'No AEO items match your filter'}
+                            </p>
+                            <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                              Log conversational prompts tested on ChatGPT, Gemini, and Perplexity with recommendations to win AI citations.
+                            </p>
+                            {aeoItems.length === 0 && (
+                              <button
+                                type="button"
+                                onClick={handleOpenAddAeoItem}
+                                className="mt-4 px-4 py-2 rounded-xl bg-[#6324FC] text-white text-xs font-bold shadow-xs hover:bg-[#521bd6] transition-all"
+                              >
+                                + Add First AEO Item
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredAeoItems.map((item: any) => (
+                          <tr key={item._id || item.title} className="hover:bg-slate-50/60 dark:hover:bg-white/[0.02] transition-colors">
+                            <td className="py-3.5 px-3.5 align-top">
+                              <span className="font-heading font-bold text-slate-900 dark:text-white block">
+                                {item.title}
+                              </span>
+                              <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 block mt-0.5">
+                                "{item.targetQuery}"
+                              </span>
+                              {item.category && (
+                                <span className="text-[9.5px] text-slate-400 block mt-0.5">
+                                  {item.category}
+                                </span>
+                              )}
+                            </td>
+
+                            <td className="py-3.5 px-3 align-top">
+                              <span className={`inline-block px-2 py-0.5 rounded text-[9.5px] font-bold ${
+                                item.platform === 'ChatGPT'
+                                  ? 'bg-[#10A37F]/10 text-[#10A37F] border border-[#10A37F]/20'
+                                  : item.platform === 'Perplexity'
+                                  ? 'bg-[#20B2AA]/10 text-[#20B2AA] border border-[#20B2AA]/20'
+                                  : item.platform === 'Gemini'
+                                  ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20'
+                                  : item.platform === 'Claude'
+                                  ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                                  : 'bg-[#6324FC]/10 text-[#6324FC] border border-[#6324FC]/20'
+                              }`}>
+                                {item.platform}
+                              </span>
+                            </td>
+
+                            <td className="py-3.5 px-3 align-top font-mono text-[11px]">
+                              {item.targetUrl ? (
+                                <span className="text-slate-600 dark:text-slate-400 truncate max-w-[140px] block">
+                                  {item.targetUrl}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 italic">Site-wide</span>
+                              )}
+                            </td>
+
+                            <td className="py-3.5 px-3 align-top text-[11px]">
+                              <div className="font-semibold text-slate-900 dark:text-white">
+                                {item.currentVisibility || 'Not Mentioned'}
+                              </div>
+                              <div className="text-[10px] text-[#6324FC] dark:text-[#00E5FF]">
+                                Target: {item.targetVisibility || 'Primary Source'}
+                              </div>
+                            </td>
+
+                            <td className="py-3.5 px-3 align-top">
+                              <span className={`inline-block px-2 py-0.5 rounded text-[9.5px] font-bold ${
+                                item.brandMention === 'Yes'
+                                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                                  : item.brandMention === 'Partial'
+                                  ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                                  : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
+                              }`}>
+                                {item.brandMention}
+                              </span>
+                            </td>
+
+                            <td className="py-3.5 px-3 align-top text-[11px] text-slate-600 dark:text-slate-400 max-w-[200px]">
+                              {item.recommendedAction && <p className="line-clamp-2">{item.recommendedAction}</p>}
+                            </td>
+
+                            <td className="py-3.5 px-3 align-top">
+                              <span className="inline-block px-2 py-0.5 rounded text-[9.5px] font-bold bg-slate-100 dark:bg-white/5 border border-black/5 dark:border-white/5">
+                                {item.status}
+                              </span>
+                            </td>
+
+                            <td className="py-3.5 px-3.5 align-top text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenEditAeoItem(item)}
+                                  className="p-1.5 rounded-lg text-slate-400 hover:text-[#6324FC] hover:bg-[#6324FC]/10 transition-colors"
+                                  title="Edit AEO Item"
+                                >
+                                  <Edit size={13} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteAeoItem(item)}
+                                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors"
+                                  title="Delete AEO Item"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
@@ -2018,8 +2973,32 @@ export default function SeoProjectWorkspaceClient({
               </div>
             </div>
 
+            {/* Reports Search and Status Filter Bar */}
+            <div className="bg-white dark:bg-[#0a0a0d] border border-black/10 dark:border-white/10 rounded-2xl p-3.5 shadow-xs flex flex-wrap gap-2.5 justify-between items-center">
+              <div className="relative flex-1 min-w-[220px]">
+                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search reports by title, document ID, executive summary..."
+                  value={reportSearchQuery}
+                  onChange={(e) => setReportSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-white/[0.03] border border-black/10 dark:border-white/10 rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-hidden focus:border-[#6324FC] transition-colors"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <CustomSelect
+                  value={reportStatusFilter}
+                  onChange={(val) => setReportStatusFilter(val)}
+                  options={[{ value: 'All', label: 'All Report Statuses' }, ...REPORT_STATUS_OPTIONS]}
+                  size="sm"
+                  minWidth={150}
+                />
+              </div>
+            </div>
+
             {/* Reports List */}
-            {reports.length === 0 ? (
+            {filteredReports.length === 0 ? (
               <div className="py-16 px-6 text-center bg-white dark:bg-[#0a0a0d] rounded-2xl border border-black/10 dark:border-white/10">
                 <FileText size={32} className="mx-auto text-slate-400 mb-3 opacity-60" />
                 <h4 className="text-sm font-heading font-bold text-slate-900 dark:text-white">
@@ -2037,7 +3016,7 @@ export default function SeoProjectWorkspaceClient({
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-3">
-                {reports.map((report: any) => {
+                {filteredReports.map((report: any) => {
                   return (
                     <div
                       key={report._id || report.reportId}
@@ -2281,6 +3260,19 @@ export default function SeoProjectWorkspaceClient({
                 />
               </div>
 
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Next Step / Acceptance Criteria
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Acceptance criteria, next milestone, or follow-up action before implementation..."
+                  value={taskForm.nextStep}
+                  onChange={(e) => setTaskForm({ ...taskForm, nextStep: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs focus:outline-hidden focus:border-[#6324FC]"
+                />
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
@@ -2395,7 +3387,20 @@ export default function SeoProjectWorkspaceClient({
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Keyword Role * (Strategic)
+                  </label>
+                  <CustomSelect
+                    value={keywordForm.keywordRole}
+                    onChange={(val) => setKeywordForm({ ...keywordForm, keywordRole: val as any })}
+                    options={KEYWORD_ROLE_OPTIONS}
+                    className="w-full"
+                    triggerClassName="w-full"
+                  />
+                </div>
+
                 <div>
                   <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                     Keyword Type
@@ -2408,6 +3413,8 @@ export default function SeoProjectWorkspaceClient({
                     triggerClassName="w-full"
                   />
                 </div>
+
+
 
                 <div>
                   <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
@@ -2540,7 +3547,20 @@ export default function SeoProjectWorkspaceClient({
 
               <div>
                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                  Strategy Notes (Optional)
+                  Selection Rationale (Why this keyword was selected)
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Matches core wedding photography service in Passaic County, high local purchase intent..."
+                  value={keywordForm.selectionRationale}
+                  onChange={(e) => setKeywordForm({ ...keywordForm, selectionRationale: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs focus:outline-hidden focus:border-[#6324FC]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Strategy Notes (Technical &amp; Content Notes)
                 </label>
                 <textarea
                   rows={2}
@@ -2718,6 +3738,492 @@ export default function SeoProjectWorkspaceClient({
                 </button>
               </div>
 
+            </form>
+          </div>
+        </div>
+      )}
+
+
+      {/* ========================================================================= */}
+      {/* MODAL: ADD / EDIT BASELINE OBSERVATION (Requirement B) */}
+      {/* ========================================================================= */}
+      {isObservationModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+          <div className="bg-white dark:bg-[#0E0F17] rounded-3xl border border-black/10 dark:border-white/10 shadow-2xl max-w-xl w-full overflow-hidden text-slate-900 dark:text-white animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-6 border-b border-black/5 dark:border-white/10 flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="w-2 h-2 rounded-full bg-[#6324FC]" />
+                  <span className="text-[10px] font-mono font-bold text-[#6324FC] dark:text-[#00E5FF] uppercase tracking-wider">
+                    BASELINE METRICS &amp; OBSERVATION
+                  </span>
+                </div>
+                <h3 className="text-lg font-heading font-extrabold text-slate-900 dark:text-white">
+                  {editingObservation ? 'Edit Baseline Observation' : 'Add Baseline Observation'}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsObservationModalOpen(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveObservation} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Metric Name / Observation *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Mobile LCP (Largest Contentful Paint)"
+                  value={observationForm.metricName}
+                  onChange={(e) => setObservationForm({ ...observationForm, metricName: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-bold focus:outline-hidden focus:border-[#6324FC]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Data Source
+                  </label>
+                  <CustomSelect
+                    value={observationForm.source}
+                    onChange={(val) => setObservationForm({ ...observationForm, source: val as any })}
+                    options={OBSERVATION_SOURCE_OPTIONS}
+                    className="w-full"
+                    triggerClassName="w-full"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Metric Category
+                  </label>
+                  <CustomSelect
+                    value={observationForm.category}
+                    onChange={(val) => setObservationForm({ ...observationForm, category: val })}
+                    options={OBSERVATION_CATEGORY_OPTIONS}
+                    className="w-full"
+                    triggerClassName="w-full"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Metric Value *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. 5.5 or 374 or 18.2%"
+                    value={observationForm.metricValue}
+                    onChange={(e) => setObservationForm({ ...observationForm, metricValue: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-mono font-bold focus:outline-hidden focus:border-[#6324FC]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Unit (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. s, ms, clicks, impressions, %"
+                    value={observationForm.unit}
+                    onChange={(e) => setObservationForm({ ...observationForm, unit: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-mono focus:outline-hidden focus:border-[#6324FC]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Observation Date
+                  </label>
+                  <input
+                    type="date"
+                    value={observationForm.observationDate}
+                    onChange={(e) => setObservationForm({ ...observationForm, observationDate: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs focus:outline-hidden focus:border-[#6324FC]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Period / Date Range
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Oct 2026 or Last 28 Days"
+                    value={observationForm.period}
+                    onChange={(e) => setObservationForm({ ...observationForm, period: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs focus:outline-hidden focus:border-[#6324FC]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Target URL (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. / or /videos-gallery"
+                    value={observationForm.targetUrl}
+                    onChange={(e) => setObservationForm({ ...observationForm, targetUrl: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-mono focus:outline-hidden focus:border-[#6324FC]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Device Type
+                  </label>
+                  <CustomSelect
+                    value={observationForm.device}
+                    onChange={(val) => setObservationForm({ ...observationForm, device: val as any })}
+                    options={OBSERVATION_DEVICE_OPTIONS}
+                    className="w-full"
+                    triggerClassName="w-full"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Location / Geographic Scope
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Passaic, NJ or United States"
+                  value={observationForm.location}
+                  onChange={(e) => setObservationForm({ ...observationForm, location: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs focus:outline-hidden focus:border-[#6324FC]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Observation Notes (Optional)
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="Document findings, baseline conditions, or context..."
+                  value={observationForm.notes}
+                  onChange={(e) => setObservationForm({ ...observationForm, notes: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs focus:outline-hidden focus:border-[#6324FC]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Evidence / Source Link (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. GSC Performance Screenshot, PageSpeed test URL"
+                  value={observationForm.evidence}
+                  onChange={(e) => setObservationForm({ ...observationForm, evidence: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs focus:outline-hidden focus:border-[#6324FC]"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-black/5 dark:border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setIsObservationModalOpen(false)}
+                  className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-black dark:hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingObservation}
+                  className="px-5 py-2.5 rounded-xl bg-[#6324FC] hover:bg-[#521bd6] text-white text-xs font-bold shadow-md shadow-[#6324FC]/25 flex items-center gap-1.5 transition-all disabled:opacity-50"
+                >
+                  {isSubmittingObservation ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                  <span>{editingObservation ? 'Update Observation' : 'Save Observation'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL: ADD / EDIT AEO ITEM (Requirement C) */}
+      {/* ========================================================================= */}
+      {isAeoModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+          <div className="bg-white dark:bg-[#0E0F17] rounded-3xl border border-black/10 dark:border-white/10 shadow-2xl max-w-xl w-full overflow-hidden text-slate-900 dark:text-white animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-6 border-b border-black/5 dark:border-white/10 flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="w-2 h-2 rounded-full bg-[#00E5FF]" />
+                  <span className="text-[10px] font-mono font-bold text-[#6324FC] dark:text-[#00E5FF] uppercase tracking-wider">
+                    AI SEARCH ENGINE OPTIMIZATION
+                  </span>
+                </div>
+                <h3 className="text-lg font-heading font-extrabold text-slate-900 dark:text-white">
+                  {editingAeoItem ? 'Edit AEO Optimization Item' : 'Add AEO Optimization Item'}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAeoModalOpen(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveAeoItem} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  AEO Item Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Passaic NJ Wedding Photographer AI Citation"
+                  value={aeoForm.title}
+                  onChange={(e) => setAeoForm({ ...aeoForm, title: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-bold focus:outline-hidden focus:border-[#6324FC]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Target Query / Prompt *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Who is the best wedding photographer in Passaic County NJ?"
+                  value={aeoForm.targetQuery}
+                  onChange={(e) => setAeoForm({ ...aeoForm, targetQuery: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-mono focus:outline-hidden focus:border-[#6324FC]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    AI Search Platform *
+                  </label>
+                  <CustomSelect
+                    value={aeoForm.platform}
+                    onChange={(val) => setAeoForm({ ...aeoForm, platform: val as any })}
+                    options={AEO_PLATFORM_OPTIONS}
+                    className="w-full"
+                    triggerClassName="w-full"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Target Landing Page URL
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. / or /videos-gallery"
+                    value={aeoForm.targetUrl}
+                    onChange={(e) => setAeoForm({ ...aeoForm, targetUrl: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-mono focus:outline-hidden focus:border-[#6324FC]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Current Visibility Status
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Not Mentioned, Cited in footnotes"
+                    value={aeoForm.currentVisibility}
+                    onChange={(e) => setAeoForm({ ...aeoForm, currentVisibility: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs focus:outline-hidden focus:border-[#6324FC]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Target Visibility Goal
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Primary Source, Top 3 Recommendation"
+                    value={aeoForm.targetVisibility}
+                    onChange={(e) => setAeoForm({ ...aeoForm, targetVisibility: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs focus:outline-hidden focus:border-[#6324FC]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Brand Mentioned?
+                  </label>
+                  <CustomSelect
+                    value={aeoForm.brandMention}
+                    onChange={(val) => setAeoForm({ ...aeoForm, brandMention: val as any })}
+                    options={AEO_BRAND_MENTION_OPTIONS}
+                    className="w-full"
+                    triggerClassName="w-full"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Priority
+                  </label>
+                  <CustomSelect
+                    value={aeoForm.priority}
+                    onChange={(val) => setAeoForm({ ...aeoForm, priority: val as any })}
+                    options={TASK_PRIORITY_OPTIONS}
+                    className="w-full"
+                    triggerClassName="w-full"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Status
+                  </label>
+                  <CustomSelect
+                    value={aeoForm.status}
+                    onChange={(val) => setAeoForm({ ...aeoForm, status: val as any })}
+                    options={AEO_STATUS_OPTIONS}
+                    className="w-full"
+                    triggerClassName="w-full"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Competitor Mentioned (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Local competitor studios mentioned in prompt answer"
+                  value={aeoForm.competitorMention}
+                  onChange={(e) => setAeoForm({ ...aeoForm, competitorMention: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs focus:outline-hidden focus:border-[#6324FC]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Recommended Content / Action
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Build dedicated Passaic NJ wedding FAQ section and entity citations to trigger Claude / Perplexity answer snippet..."
+                  value={aeoForm.recommendedAction}
+                  onChange={(e) => setAeoForm({ ...aeoForm, recommendedAction: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs focus:outline-hidden focus:border-[#6324FC]"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-black/5 dark:border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setIsAeoModalOpen(false)}
+                  className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-black dark:hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingAeo}
+                  className="px-5 py-2.5 rounded-xl bg-[#6324FC] hover:bg-[#521bd6] text-white text-xs font-bold shadow-md shadow-[#6324FC]/25 flex items-center gap-1.5 transition-all disabled:opacity-50"
+                >
+                  {isSubmittingAeo ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                  <span>{editingAeoItem ? 'Update AEO Item' : 'Save AEO Item'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL: BULK CSV KEYWORD IMPORT (Requirement A6) */}
+      {/* ========================================================================= */}
+      {isImportModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+          <div className="bg-white dark:bg-[#0E0F17] rounded-3xl border border-black/10 dark:border-white/10 shadow-2xl max-w-xl w-full overflow-hidden text-slate-900 dark:text-white animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-6 border-b border-black/5 dark:border-white/10 flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="w-2 h-2 rounded-full bg-[#6324FC]" />
+                  <span className="text-[10px] font-mono font-bold text-[#6324FC] dark:text-[#00E5FF] uppercase tracking-wider">
+                    BULK KEYWORD IMPORT
+                  </span>
+                </div>
+                <h3 className="text-lg font-heading font-extrabold text-slate-900 dark:text-white">
+                  Import Target Keywords from CSV
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsImportModalOpen(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleBulkImportSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar">
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-black/10 dark:border-white/10 text-[11px] text-slate-600 dark:text-slate-400">
+                <span className="font-bold text-slate-900 dark:text-white block mb-1">CSV Format Guidelines:</span>
+                <code>Keyword, Target URL, Role (Primary/Secondary), Search Intent, Volume, Difficulty, Current Rank, Target Rank, Selection Rationale, Notes</code>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Paste CSV Lines (One per row) *
+                </label>
+                <textarea
+                  rows={8}
+                  required
+                  placeholder={"Wedding photographer Passaic NJ, /, Primary, Commercial, 1200, 42, 18, 3, Core local ranking target, Optimize H1\nNorth Jersey wedding photographer, /, Secondary, Commercial, 850, 38, 24, 5, Regional variant, Anchor text"}
+                  value={importRawText}
+                  onChange={(e) => setImportRawText(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-mono focus:outline-hidden focus:border-[#6324FC]"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-black/5 dark:border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setIsImportModalOpen(false)}
+                  className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-black dark:hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingImport}
+                  className="px-5 py-2.5 rounded-xl bg-[#6324FC] hover:bg-[#521bd6] text-white text-xs font-bold shadow-md shadow-[#6324FC]/25 flex items-center gap-1.5 transition-all disabled:opacity-50"
+                >
+                  {isSubmittingImport ? <Loader2 size={14} className="animate-spin" /> : <UploadCloud size={14} />}
+                  <span>Confirm Import</span>
+                </button>
+              </div>
             </form>
           </div>
         </div>
