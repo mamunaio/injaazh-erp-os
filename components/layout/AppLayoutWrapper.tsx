@@ -40,10 +40,10 @@ export default function AppLayoutWrapper({ children, initialUser }: { children: 
 
   if (isAuthPage) {
     return (
-      <>
+      <UserProvider initialUser={initialUser}>
         <GlobalModalScrollLock />
         <main className="min-h-screen bg-slate-50 dark:bg-[#0A0A0B]">{children}</main>
-      </>
+      </UserProvider>
     );
   }
 
