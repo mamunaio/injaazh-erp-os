@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { 
   FileText, Download, CheckCircle2, XCircle, Clock, 
@@ -75,48 +75,165 @@ export default function ProposalClientView({ initialProposal }: { initialProposa
     }
   };
 
-  // PDF Export (Strictly 2 Pages A4)
+  // Dynamic Content-Aware Multi-Page PDF Export
   const handleDownloadPDF = async () => {
     if (!page1Ref.current || !page2Ref.current) return;
     setIsGeneratingPDF(true);
 
     try {
       // Small pause to allow React to render PDF-specific state
-      await new Promise((resolve) => setTimeout(resolve, 80));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const pdfWidth = pdf.internal.pageSize.getWidth(); // 210mm
+      const pdfHeight = pdf.internal.pageSize.getHeight(); // 297mm
 
-      // Render Page 1 (Deliverables, Pricing & Summary)
-      const canvas1 = await html2canvas(page1Ref.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: '#ffffff',
+      // Footer reservation: 14mm from bottom of each page
+      const footerReserveMm = 14;
+      const contentHeightMm = pdfHeight - footerReserveMm; // 283mm
+
+      // Helper function to capture an element and break it into clean page slices
+      const processSection = async (element: HTMLElement) => {
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          backgroundColor: '#ffffff',
+        });
+
+        const scaleY = canvas.height / element.offsetHeight;
+        const pageMaxCanvasH = canvas.width * (pdfHeight / pdfWidth);
+        const contentMaxCanvasH = canvas.width * (contentHeightMm / pdfWidth);
+
+        // If the entire canvas fits comfortably on one page
+        if (canvas.height <= pageMaxCanvasH) {
+          return [{ canvas, startY: 0, endY: canvas.height, heightMm: (canvas.height * pdfWidth) / canvas.width }];
+        }
+
+        // Element exceeds one page: compute safe break points at DOM element boundaries
+        const elRect = element.getBoundingClientRect();
+        const breakPoints: number[] = [];
+
+        // 1. Table rows: ensure no table row is cut in half
+        const rows = element.querySelectorAll('tbody tr');
+        rows.forEach((tr) => {
+          const r = tr.getBoundingClientRect();
+          breakPoints.push((r.bottom - elRect.top) * scaleY);
+        });
+
+        // 2. Table footer: subtotal and totals
+        const tfoot = element.querySelector('tfoot');
+        if (tfoot) {
+          const r = tfoot.getBoundingClientRect();
+          breakPoints.push((r.bottom - elRect.top) * scaleY);
+        }
+
+        // 3. Section divisions and Signature boundary
+        const sections = element.querySelectorAll('.border-b, .py-4, .pt-4, .py-3\\.5');
+        sections.forEach((sec) => {
+          const r = sec.getBoundingClientRect();
+          breakPoints.push((r.bottom - elRect.top) * scaleY);
+        });
+
+        const sigs = element.querySelector('.proposal-signatures');
+        if (sigs) {
+          const r = sigs.getBoundingClientRect();
+          breakPoints.push((r.top - elRect.top) * scaleY);
+          breakPoints.push((r.bottom - elRect.top) * scaleY);
+        }
+
+        // Deduplicate and sort
+        const sortedBreaks = Array.from(new Set(breakPoints)).sort((a, b) => a - b);
+
+        const slices: { canvas: HTMLCanvasElement; startY: number; endY: number; heightMm: number }[] = [];
+        let currentStartY = 0;
+
+        while (currentStartY < canvas.height) {
+          const maxEndY = currentStartY + contentMaxCanvasH;
+          if (maxEndY >= canvas.height) {
+            const sliceH = canvas.height - currentStartY;
+            slices.push({
+              canvas,
+              startY: currentStartY,
+              endY: canvas.height,
+              heightMm: (sliceH * pdfWidth) / canvas.width,
+            });
+            break;
+          }
+
+          // Find the best break point that fits within maxEndY
+          let bestBreak = maxEndY;
+          for (let i = sortedBreaks.length - 1; i >= 0; i--) {
+            if (sortedBreaks[i] > currentStartY + 120 * scaleY && sortedBreaks[i] <= maxEndY) {
+              bestBreak = sortedBreaks[i];
+              break;
+            }
+          }
+
+          const sliceH = bestBreak - currentStartY;
+          slices.push({
+            canvas,
+            startY: currentStartY,
+            endY: bestBreak,
+            heightMm: (sliceH * pdfWidth) / canvas.width,
+          });
+          currentStartY = bestBreak;
+        }
+
+        return slices;
+      };
+
+      // Process both Section 1 (Scope, Deliverables, Investment) and Section 2 (Milestones, Terms, Signatures)
+      const section1Slices = await processSection(page1Ref.current);
+      const section2Slices = await processSection(page2Ref.current);
+
+      const allPages = [...section1Slices, ...section2Slices];
+      const totalPages = allPages.length;
+
+      allPages.forEach((slice, idx) => {
+        if (idx > 0) {
+          pdf.addPage();
+        }
+
+        // Render the slice onto a clean sub-canvas to ensure crisp, exact bitmap placement
+        const sliceCanvas = document.createElement('canvas');
+        sliceCanvas.width = slice.canvas.width;
+        sliceCanvas.height = slice.endY - slice.startY;
+        const ctx = sliceCanvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(
+            slice.canvas,
+            0,
+            slice.startY,
+            slice.canvas.width,
+            slice.endY - slice.startY,
+            0,
+            0,
+            slice.canvas.width,
+            slice.endY - slice.startY
+          );
+        }
+
+        const sliceImgData = sliceCanvas.toDataURL('image/png');
+        pdf.addImage(sliceImgData, 'PNG', 0, 0, pdfWidth, slice.heightMm, undefined, 'FAST');
+
+        // Draw Professional Vector Footer with Dynamic Page Numbering: "Page X of N"
+        pdf.setDrawColor(226, 232, 240); // Slate-200 border line
+        pdf.setLineWidth(0.3);
+        pdf.line(10, 287, 200, 287);
+
+        pdf.setFontSize(8);
+        pdf.setTextColor(148, 163, 184); // Slate-400
+        pdf.text('Injaazh Global • Confidential Commercial Proposal', 10, 292);
+
+        const pageText = `Page ${idx + 1} of ${totalPages}`;
+        const pageTextWidth = pdf.getTextWidth(pageText);
+        pdf.text(pageText, 200 - pageTextWidth, 292);
       });
-
-      const imgData1 = canvas1.toDataURL('image/png');
-      const h1 = (canvas1.height * pdfWidth) / canvas1.width;
-      pdf.addImage(imgData1, 'PNG', 0, 0, pdfWidth, Math.min(h1, pdfHeight), undefined, 'FAST');
-
-      // Render Page 2 (Milestones, Terms & Sign-offs)
-      const canvas2 = await html2canvas(page2Ref.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-      });
-
-      pdf.addPage();
-      const imgData2 = canvas2.toDataURL('image/png');
-      const h2 = (canvas2.height * pdfWidth) / canvas2.width;
-      pdf.addImage(imgData2, 'PNG', 0, 0, pdfWidth, Math.min(h2, pdfHeight), undefined, 'FAST');
 
       pdf.save(`Proposal_${proposal.proposalNumber || 'Document'}.pdf`);
-      toast.success('Proposal PDF downloaded (2 Pages)');
+      toast.success(`Proposal PDF downloaded (${totalPages} Pages)`);
     } catch (err: any) {
       console.error('PDF error:', err);
       toast.error('Failed to generate PDF. You can also use the Print button.');
@@ -186,6 +303,14 @@ export default function ProposalClientView({ initialProposal }: { initialProposa
     }
   };
 
+  const totalDocPages = useMemo(() => {
+    const itemCount = proposal.items?.length || 0;
+    const milestoneCount = proposal.milestones?.length || 0;
+    const p1Pages = itemCount <= 4 ? 1 : itemCount <= 8 ? 2 : Math.ceil(itemCount / 5);
+    const p2Pages = milestoneCount > 3 ? 2 : 1;
+    return Math.max(2, p1Pages + p2Pages);
+  }, [proposal.items?.length, proposal.milestones?.length]);
+
   const currencySymbol = proposal.currency || '$';
   const isAccepted = proposal.status === 'Accepted';
   const isDeclined = proposal.status === 'Declined';
@@ -235,12 +360,12 @@ export default function ProposalClientView({ initialProposal }: { initialProposa
             padding: 0 !important;
           }
 
-          /* Enforce exact 2 pages print format */
+          /* Dynamic content-aware print pagination rules */
           .proposal-page-1 {
-            page-break-after: always !important;
-            break-after: page !important;
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
+            page-break-after: auto !important;
+            break-after: auto !important;
+            page-break-inside: auto !important;
+            break-inside: auto !important;
             border: none !important;
             border-radius: 0 !important;
             box-shadow: none !important;
@@ -255,8 +380,8 @@ export default function ProposalClientView({ initialProposal }: { initialProposa
           .proposal-page-2 {
             page-break-before: always !important;
             break-before: page !important;
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
+            page-break-inside: auto !important;
+            break-inside: auto !important;
             border: none !important;
             border-radius: 0 !important;
             box-shadow: none !important;
@@ -268,7 +393,27 @@ export default function ProposalClientView({ initialProposal }: { initialProposa
             box-sizing: border-box !important;
           }
 
-          table, tfoot, tr, td, th {
+          table {
+            page-break-inside: auto !important;
+            break-inside: auto !important;
+            width: 100% !important;
+          }
+
+          thead {
+            display: table-header-group !important;
+          }
+
+          tr {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+
+          tfoot {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+
+          .proposal-signatures {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
           }
@@ -566,9 +711,10 @@ export default function ProposalClientView({ initialProposal }: { initialProposa
             </div>
 
             {/* Page 1 Footer */}
-            <div className="pt-3 print:pt-2 flex items-center justify-between text-[9px] text-slate-400 border-t border-slate-100 mt-2">
+            <div data-html2canvas-ignore="true" className="pt-3 print:pt-2 flex items-center justify-between text-[9px] text-slate-400 border-t border-slate-100 mt-2">
               <span className="font-medium">Injaazh Global • Confidential Commercial Proposal</span>
-              <span className="font-mono font-semibold">Page 1 of 2</span>
+              <span className="font-mono font-semibold print:hidden">Page 1 of {totalDocPages}</span>
+              <span className="font-mono font-semibold hidden print:inline">Commercial Scope • Page 1</span>
             </div>
 
           </div>
@@ -578,7 +724,7 @@ export default function ProposalClientView({ initialProposal }: { initialProposa
         <div data-html2canvas-ignore="true" className="print:hidden flex items-center justify-center gap-3 my-6 text-xs font-semibold text-slate-400">
           <div className="h-px bg-slate-200 dark:bg-white/10 flex-1 max-w-[120px]" />
           <span className="flex items-center gap-1.5 uppercase tracking-wider text-[10px] font-bold text-slate-400">
-            Page 2 of 2 • Milestones, Terms & Sign-off
+            Milestones, Terms & Sign-off
           </span>
           <div className="h-px bg-slate-200 dark:bg-white/10 flex-1 max-w-[120px]" />
         </div>
@@ -612,7 +758,7 @@ export default function ProposalClientView({ initialProposal }: { initialProposa
                   <span className="text-xs font-mono font-bold text-slate-700">{proposal.proposalNumber}</span>
                 </div>
                 <div className="text-[9px] font-bold uppercase tracking-wider text-[#6324FC] bg-[#6324FC]/10 px-2 py-0.5 rounded-full">
-                  Page 2 of 2 • Terms & Acceptance
+                  Terms & Acceptance
                 </div>
               </div>
 
@@ -624,7 +770,7 @@ export default function ProposalClientView({ initialProposal }: { initialProposa
                   </h4>
                   <p className="text-[10px] text-slate-400 mb-2.5">Phase-by-phase implementation schedule</p>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 print:grid-cols-3">
                     {proposal.milestones.map((milestone: any, mIdx: number) => (
                       <div key={mIdx} className="p-3 print:p-2 rounded-xl bg-slate-50 border border-slate-200/70 relative">
                         <div className="flex items-center justify-between mb-1">
@@ -667,8 +813,8 @@ export default function ProposalClientView({ initialProposal }: { initialProposa
               </div>
 
               {/* Authorizing Signatures & Acceptance Section */}
-              <div className="pt-4 print:pt-2">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 items-stretch">
+              <div className="pt-4 print:pt-2 proposal-signatures">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 items-stretch print:grid-cols-2">
                   
                   {/* Left Column: Injaazh Representative */}
                   <div className="p-5 rounded-2xl bg-slate-50/70 border border-slate-200/80 flex flex-col justify-between">
@@ -793,9 +939,10 @@ export default function ProposalClientView({ initialProposal }: { initialProposa
             </div>
 
             {/* Page 2 Footer */}
-            <div className="pt-6 flex items-center justify-between text-[10px] text-slate-400 border-t border-slate-100 mt-6">
+            <div data-html2canvas-ignore="true" className="pt-6 flex items-center justify-between text-[10px] text-slate-400 border-t border-slate-100 mt-6">
               <span className="font-medium">This proposal is generated by Injaazh ERP OS. Certified authentic digital document.</span>
-              <span className="font-mono font-semibold">Page 2 of 2</span>
+              <span className="font-mono font-semibold print:hidden">Page {totalDocPages} of {totalDocPages}</span>
+              <span className="font-mono font-semibold hidden print:inline">Terms & Signatures • Page {totalDocPages}</span>
             </div>
 
           </div>
